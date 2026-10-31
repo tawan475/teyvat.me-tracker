@@ -10,14 +10,17 @@ import { weaponIcon } from '@/lib/assets'
 import { useAccountRoute } from '@/views/account/context'
 import GameStars from './GameStars.vue'
 import RefinementPips from './RefinementPips.vue'
+import { useDetailTip } from './detail-tip'
 
 /**
  * The equipped weapon as the weapon screen shows it: icon, level, refinement,
  * base ATK and the substat (none on 1–2★); what the passive always adds is
- * in the tooltip. The name opens the Weapons page on it.
+ * in the tooltip. The name opens the Weapons page on it. In the character
+ * details the rest of the block shows the passive (detail-tip).
  */
 const props = defineProps<{ weapon: EquippedWeapon | null; accountId: number }>()
 const routeName = useAccountRoute()
+const tip = useDetailTip()
 
 const lines = computed(() => (props.weapon ? weaponLines(props.weapon) : null))
 const passiveTitle = computed(() =>
@@ -36,6 +39,7 @@ const passiveTitle = computed(() =>
     v-if="weapon"
     class="flex items-center gap-3 rounded-xl border border-border-default bg-surface-raised/85 p-2.5 sm:p-3"
     :aria-label="$t('game.weapon')"
+    v-bind="tip?.bind({ kind: 'weapon' }) ?? {}"
   >
     <GameIcon
       :src="weaponIcon(weapon.key, weapon.ascension)"
@@ -67,7 +71,11 @@ const passiveTitle = computed(() =>
           <span class="sr-only">{{ $t('characters.weapon.locked') }}</span>
         </span>
       </p>
-      <dl v-if="lines" class="flex flex-wrap gap-1.5 text-sm" :title="passiveTitle">
+      <dl
+        v-if="lines"
+        class="flex flex-wrap gap-1.5 text-sm"
+        :title="tip ? undefined : passiveTitle"
+      >
         <div
           v-for="stat in [lines.atk, lines.sub].filter((s) => s !== null)"
           :key="stat.key"

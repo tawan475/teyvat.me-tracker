@@ -395,6 +395,23 @@ html.theme-switching *::after {
   animation-timing-function: ease-out;
 }
 
+/* The character details' parts that show what they do (characters/detail-tip):
+   a pointer, a focus ring, and the accent ring while the tip is pinned. The
+   share card is scaled down, so its ring is drawn thicker. */
+.detail-tip-target {
+  cursor: pointer;
+}
+.detail-tip-target:focus-visible,
+.detail-tip-on {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.detail-tip-card:focus-visible,
+.detail-tip-card.detail-tip-on {
+  outline-width: 5px;
+  outline-offset: 5px;
+}
+
 /* Rows that scroll sideways by design (chip rows, stat strips, wide old
    tables on phones): no scrollbar (scroll-hide), and the clipped edges fade
    (scroll-fade-x) so the overflow shows. Where scroll-driven animations

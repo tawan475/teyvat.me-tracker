@@ -48,6 +48,7 @@ import {
   type CardOwner,
 } from './share-card'
 import { cardPieces, expShare, ownerParts } from './share-card-model'
+import { useDetailTip, type TipSubject } from './detail-tip'
 import { constellationIcons, talentIcons } from './talent-icons'
 import { ELEMENT_TEXT } from './tokens'
 import { useCrownIcon } from './use-boosts'
@@ -69,7 +70,9 @@ import { useCrownIcon } from './use-boosts'
  * Its own palette (share-card CARD_THEMES, light or dark whatever the
  * page's), sizes in px (not the page's rem), no viewport breakpoints and no
  * masks with images, so the export draws what the page shows. Details are
- * in tooltips, as elsewhere.
+ * in tooltips, as elsewhere; in the character details the talents,
+ * constellations, weapon, sets, pieces and element show what they do
+ * instead (detail-tip).
  */
 const props = defineProps<{
   character: CharacterView
@@ -218,6 +221,11 @@ function rollTitle(key: string, rolls: readonly InferredRoll[]): string {
 }
 
 const ownerLine = computed(() => ownerParts(props.owner))
+
+const tip = useDetailTip()
+/** A part's tip props (the card's thicker ring), none outside the character details. */
+const tipOf = (subject: TipSubject, side = false) =>
+  tip?.bind(subject, { ring: 'card', side }) ?? {}
 </script>
 
 <template>
@@ -256,13 +264,13 @@ const ownerLine = computed(() => ownerParts(props.owner))
       >
         <div class="flex flex-col gap-[10px]">
           <div class="flex min-w-0 items-center gap-[18px]">
-            <ElementIcon
+            <span
               v-if="c.element"
-              :element="c.element"
-              decorative
-              list
-              class="size-[60px]!"
-            />
+              class="inline-flex shrink-0 rounded-full"
+              v-bind="tipOf({ kind: 'element' })"
+            >
+              <ElementIcon :element="c.element" decorative list class="size-[60px]!" />
+            </span>
             <!-- The padding (undone by the margin) gives accents and descenders room
                  inside truncate's clip (Xiangling's g was cut). -->
             <h1
@@ -349,12 +357,15 @@ const ownerLine = computed(() => ownerParts(props.owner))
           <li
             v-for="(src, index) in constellations"
             :key="index"
-            class="flex"
+            class="flex rounded-full"
             :title="
-              index < c.constellation
-                ? `C${index + 1}`
-                : $t('characters.constellation.lockedTitle', { n: index + 1 })
+              tip
+                ? undefined
+                : index < c.constellation
+                  ? `C${index + 1}`
+                  : $t('characters.constellation.lockedTitle', { n: index + 1 })
             "
+            v-bind="tipOf({ kind: 'constellation', index }, true)"
           >
             <ElementDisc
               :src="src"
@@ -370,10 +381,11 @@ const ownerLine = computed(() => ownerParts(props.owner))
         <div class="flex flex-col gap-[22px]">
           <ul class="flex items-end gap-[30px]" :aria-label="$t('game.talents')">
             <li
-              v-for="t in talents"
+              v-for="(t, index) in talents"
               :key="t.key"
-              class="flex flex-col items-center gap-[10px]"
-              :title="talentTitle(t)"
+              class="flex flex-col items-center gap-[10px] rounded-[24px]"
+              :title="tip ? undefined : talentTitle(t)"
+              v-bind="tipOf({ kind: 'talent', index })"
             >
               <ElementDisc :src="glyphs[t.key]" :element="c.element" :px="112" :glyph="90" />
               <span
@@ -432,6 +444,7 @@ const ownerLine = computed(() => ownerParts(props.owner))
           v-if="c.weapon"
           class="flex items-center gap-[20px] px-[22px] py-[18px]"
           :class="PANEL"
+          v-bind="tipOf({ kind: 'weapon' })"
         >
           <!-- The game's header art: the rarity's gradient, the emblem (48%), the icon -->
           <span
@@ -453,7 +466,10 @@ const ownerLine = computed(() => ownerParts(props.owner))
             />
           </span>
           <div class="flex min-w-0 flex-col gap-[8px]">
-            <p class="truncate text-[30px] leading-[1.1] font-semibold" :title="c.weapon.name">
+            <p
+              class="truncate text-[30px] leading-[1.1] font-semibold"
+              :title="tip ? undefined : c.weapon.name"
+            >
               {{ c.weapon.name }}
             </p>
             <p class="flex items-center gap-[12px] text-[22px]">
@@ -550,8 +566,9 @@ const ownerLine = computed(() => ownerParts(props.owner))
           <p
             v-for="{ set, pieces } in bonus"
             :key="set.setKey"
-            class="flex items-center gap-[14px]"
-            :title="setTitle(set)"
+            class="flex items-center gap-[14px] rounded-[10px]"
+            :title="tip ? undefined : setTitle(set)"
+            v-bind="tipOf({ kind: 'set', setKey: set.setKey })"
           >
             <span class="size-[44px] shrink-0">
               <FadeImage :src="artifactSetIcon(set.setKey)" class="size-full" />
@@ -559,7 +576,7 @@ const ownerLine = computed(() => ownerParts(props.owner))
             <span class="min-w-0 flex-[1_1_auto] truncate text-[23px]">{{ set.name }}</span>
             <span
               class="min-w-[36px] rounded-[10px] bg-(--card-set-on-bg) px-[10px] py-[2px] text-center text-[22px] font-bold text-(--card-set-on)"
-              :title="$t('share.card.pieceBonus', { n: pieces })"
+              :title="tip ? undefined : $t('share.card.pieceBonus', { n: pieces })"
               >{{ pieces }}</span
             >
           </p>
@@ -595,7 +612,8 @@ const ownerLine = computed(() => ownerParts(props.owner))
             v-if="piece"
             class="flex min-w-0 flex-1 items-stretch overflow-hidden"
             :class="PANEL"
-            :title="title"
+            :title="tip ? undefined : title"
+            v-bind="tipOf({ kind: 'set', setKey: piece.setKey }, true)"
           >
             <!-- The band: the game's header art (rarity gradient, emblem at 70%), a shade
                  under the text, the icon, the level; the main stat, stars, CV and RV -->

@@ -15,9 +15,14 @@ import {
   formatStatValue,
 } from '@/utils/artifact-stats'
 import { RARITY_TEXT } from './tokens'
+import { useDetailTip } from './detail-tip'
 
-/** One equipped artifact (or its empty slot) in the character details, rolls included. */
+/**
+ * One equipped artifact (or its empty slot) in the character details, rolls
+ * included; its set's bonuses show on hover or click (detail-tip).
+ */
 const props = defineProps<{ slotKey: SlotKey; piece: EquippedArtifact | null }>()
+const tip = useDetailTip()
 
 const rolls = computed(() => (props.piece ? inferArtifactRolls(props.piece) : []))
 const rollCount = computed(() => {
@@ -40,6 +45,7 @@ function rollTitle(index: number, key: string): string {
   <article
     v-if="piece"
     class="flex min-w-0 flex-col gap-2 rounded-xl border border-border-default bg-surface-raised p-3"
+    v-bind="tip?.bind({ kind: 'set', setKey: piece.setKey }) ?? {}"
   >
     <header class="flex items-center gap-2.5">
       <GameIcon
@@ -67,7 +73,10 @@ function rollTitle(index: number, key: string): string {
           }}</span>
           <span class="sr-only">{{ $t('characters.stars', { n: piece.rarity }) }}</span>
         </p>
-        <p class="truncate text-sm font-medium" :title="formatSetName(piece.setKey)">
+        <p
+          class="truncate text-sm font-medium"
+          :title="tip ? undefined : formatSetName(piece.setKey)"
+        >
           {{ formatSetName(piece.setKey) }}
         </p>
       </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { useElementSize } from '@vueuse/core'
-import { BookOpen, Wrench } from 'lucide-vue-next'
+import { Wrench } from 'lucide-vue-next'
 import ConstellationStars from '@/components/ui/ConstellationStars.vue'
 import CritValue from '@/components/ui/CritValue.vue'
 import RollValue from '@/components/ui/RollValue.vue'
@@ -9,7 +9,6 @@ import ElementIcon from '@/components/ui/ElementIcon.vue'
 import ExpProgress from '@/components/ui/ExpProgress.vue'
 import LevelText from '@/components/ui/LevelText.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
-import UiButton from '@/components/ui/UiButton.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import type { GiCapture } from '@gdt/shared'
@@ -34,6 +33,7 @@ import ArtifactPiece from './ArtifactPiece.vue'
 import BuildStats from './BuildStats.vue'
 import CharacterTimeline from './CharacterTimeline.vue'
 import ConstellationIcons from './ConstellationIcons.vue'
+import DetailTipPanel from './DetailTipPanel.vue'
 import FriendshipBadge from './FriendshipBadge.vue'
 import GuidesDialog from './GuidesDialog.vue'
 import GuidesSection from './GuidesSection.vue'
@@ -46,6 +46,7 @@ import SplashArt from './SplashArt.vue'
 import TalentLevels from './TalentLevels.vue'
 import WeaponBlock from './WeaponBlock.vue'
 import { CARD_HEIGHT, CARD_WIDTH, type CardOwner } from './share-card'
+import { createDetailTip, provideDetailTip } from './detail-tip'
 import { ELEMENT_GLOW } from './tokens'
 import { useConstellationBoosts } from './use-boosts'
 
@@ -58,7 +59,9 @@ import { useConstellationBoosts } from './use-boosts'
  * sets, the five pieces). The export draws its own copy of the card
  * (CharacterModal, on a canvas: share-card-canvas), whatever this shows.
  * History's View shows a past capture's build in place of now (`past`),
- * with a strip on top to step through the history or come back.
+ * with a strip on top to step through the history or come back. Talents,
+ * constellations, the weapon, the artifact sets and the element show what
+ * they do on hover, pinned by a click (detail-tip).
  */
 const props = defineProps<{
   /** The build on screen: now, or the past capture's while viewing one. */
@@ -139,12 +142,19 @@ function step(delta: -1 | 1) {
   view(next ?? null)
 }
 
-// Guides: the footer button and the Videos chip open the dialog.
+// Guides: the Guides section's Videos chip opens the dialog.
 const guides = computed(() => guidesFor(c.value.key))
 const guidesOpen = ref(false)
+
+const tip = createDetailTip()
+provideDetailTip(tip)
+const tipShown = computed(() => tip.hover.value ?? tip.pinned.value)
 watch(
-  () => c.value.key,
-  () => (guidesOpen.value = false),
+  () => [c.value.key, props.showcase, props.viewing] as const,
+  () => {
+    guidesOpen.value = false
+    tip.close()
+  },
 )
 </script>
 
@@ -182,16 +192,10 @@ watch(
           />
         </div>
       </div>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <template v-if="c.gaps.length">
-          <Wrench class="size-4 text-warning-text" aria-hidden="true" />
-          <span class="sr-only">{{ $t('characters.detail.toDo') }}</span>
-          <UiBadge v-for="gap in c.gaps" :key="gap.kind" tone="warning">{{ gap.text }}</UiBadge>
-        </template>
-        <UiButton size="sm" class="ml-auto" @click="guidesOpen = true">
-          <BookOpen class="size-4" aria-hidden="true" />
-          {{ $t('characters.guides.button') }}
-        </UiButton>
+      <div v-if="c.gaps.length" class="flex flex-wrap items-center gap-1.5">
+        <Wrench class="size-4 text-warning-text" aria-hidden="true" />
+        <span class="sr-only">{{ $t('characters.detail.toDo') }}</span>
+        <UiBadge v-for="gap in c.gaps" :key="gap.kind" tone="warning">{{ gap.text }}</UiBadge>
       </div>
       <GuidesSection :guides="guides" @videos="guidesOpen = true" />
     </template>
@@ -234,7 +238,14 @@ watch(
           <div class="flex min-w-0 flex-col gap-4 p-4 sm:p-5 md:pl-3">
             <header class="flex min-w-0 flex-col gap-1.5">
               <p class="flex min-w-0 items-center gap-2">
-                <ElementIcon v-if="c.element" :element="c.element" size="lg" list />
+                <span
+                  v-if="c.element"
+                  class="inline-flex rounded-full"
+                  v-bind="tip.bind({ kind: 'element' })"
+                >
+                  <ElementIcon :element="c.element" size="lg" list decorative />
+                  <span class="sr-only">{{ ELEMENT_LABELS[c.element] }}</span>
+                </span>
                 <span
                   class="min-w-0 truncate font-display text-2xl font-semibold sm:text-3xl"
                   :title="kind"
@@ -283,19 +294,14 @@ watch(
           </div>
         </div>
 
-        <!-- What is left to do (the "needs work" badges), the Guides button at the right -->
+        <!-- What is left to do (the "needs work" badges) -->
         <div
+          v-if="c.gaps.length"
           class="relative flex min-h-12 flex-wrap items-center gap-1.5 border-t border-border-default bg-surface-base/80 py-2 pr-3 pl-4 sm:pl-5"
         >
-          <template v-if="c.gaps.length">
-            <Wrench class="size-4 text-warning-text" aria-hidden="true" />
-            <span class="sr-only">{{ $t('characters.detail.toDo') }}</span>
-            <UiBadge v-for="gap in c.gaps" :key="gap.kind" tone="warning">{{ gap.text }}</UiBadge>
-          </template>
-          <UiButton size="sm" class="ml-auto" @click="guidesOpen = true">
-            <BookOpen class="size-4" aria-hidden="true" />
-            {{ $t('characters.guides.button') }}
-          </UiButton>
+          <Wrench class="size-4 text-warning-text" aria-hidden="true" />
+          <span class="sr-only">{{ $t('characters.detail.toDo') }}</span>
+          <UiBadge v-for="gap in c.gaps" :key="gap.kind" tone="warning">{{ gap.text }}</UiBadge>
         </div>
       </section>
 
@@ -360,6 +366,7 @@ watch(
       />
     </section>
 
+    <DetailTipPanel :shown="tipShown" :character="c" :talents="talents" @close="tip.close()" />
     <GuidesDialog
       :open="guidesOpen"
       :character-key="c.key"

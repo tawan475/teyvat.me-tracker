@@ -289,8 +289,16 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
       continue
     }
     const deltaBlob = encodeSectionBlob(slot, delta, true, keyframe.decoded)
-    const full = storeFull(slot, value, hash, keyframe.base ?? keyframe)
     const growth = input.growthBytes ?? DELTA_GROWTH_BYTES_V2
+    // A delta far under the cost model's bound against the keyframe's own
+    // size (a new full section is about as big) is stored without making the
+    // full section to compare: that took two strong deflates of the whole
+    // section per upload.
+    if (deltaBlob.data.length ** 2 <= growth * keyframe.size) {
+      refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
+      continue
+    }
+    const full = storeFull(slot, value, hash, keyframe.base ?? keyframe)
     if (deltaBlob.data.length ** 2 <= 2 * growth * full.size) {
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
     } else {

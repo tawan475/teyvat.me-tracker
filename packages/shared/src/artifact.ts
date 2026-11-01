@@ -85,6 +85,21 @@ function substatTuple(s: GoodSubstat): [string, number, number | null] {
   return [s.key, s.value, s.initialValue ?? null]
 }
 
-export function hashArtifactIdentity(identity: ArtifactIdentity): Promise<string> {
-  return sha256Hex128(artifactIdentityText(identity))
+/**
+ * Hashes already made in this isolate, by identity text. An upload holds the
+ * same ~2,000 artifacts as the last one, so a warm Worker hashes only the
+ * new ones (hashing all of them was a quarter of an import's encoding time).
+ * Emptied when full; ~60 B of text and 32 of hash each, so ~5 MB at most.
+ */
+const identityHashes = new Map<string, string>()
+const IDENTITY_HASHES_MAX = 50_000
+
+export async function hashArtifactIdentity(identity: ArtifactIdentity): Promise<string> {
+  const text = artifactIdentityText(identity)
+  const known = identityHashes.get(text)
+  if (known !== undefined) return known
+  const hash = await sha256Hex128(text)
+  if (identityHashes.size >= IDENTITY_HASHES_MAX) identityHashes.clear()
+  identityHashes.set(text, hash)
+  return hash
 }

@@ -147,9 +147,11 @@ export function encodeSectionBlobVariants(
   dictionary: DecodedBlob | null,
 ): { standalone: EncodedBlob; withBase: EncodedBlob | null } {
   const payload = sectionPayload(kind, value, false)
-  const standalone = compress(payload, null)
+  // Both ways weigh the same plain deflate: run it once.
+  const plain = deflate(payload.subarray(1))
+  const standalone = compress(payload, null, plain)
   if (!dictionary) return { standalone, withBase: null }
-  const withBase = compress(payload, dictionary)
+  const withBase = compress(payload, dictionary, plain)
   return { standalone, withBase: withBase.usesBase ? withBase : null }
 }
 
@@ -161,9 +163,12 @@ function sectionPayload(kind: SectionKind, value: unknown, delta: boolean): Uint
   try {
     const variants = encodeBinaryVariants(kind, { value: bare, delta })
     for (const variant of variants) {
+      // One that could not replace the pick needs no check (decoding and
+      // printing a whole section back is most of an import's encoding time).
+      if (payload && variant.length >= payload.length - 1) continue
       // Never trust a layout that does not give the value back exactly.
       if (JSON.stringify(withoutBase(decodeBinary(kind, variant, 'b'))) !== expected) continue
-      if (!payload || variant.length < payload.length - 1) payload = variant
+      payload = variant
     }
     if (payload) payload = prefixed(LAYOUT_BINARY, payload)
   } catch (error) {
@@ -181,11 +186,16 @@ function prefixed(layout: number, bytes: Uint8Array): Uint8Array {
   return out
 }
 
-function compress(payload: Uint8Array, base: DecodedBlob | null): EncodedBlob {
+/** `deflated`: the body's plain deflate when the caller already made it. */
+function compress(
+  payload: Uint8Array,
+  base: DecodedBlob | null,
+  deflated?: Uint8Array,
+): EncodedBlob {
   const layout = payload[0]!
   const body = payload.subarray(1)
   const candidates: [number, Uint8Array][] = [[STORED, body]]
-  candidates.push([DEFLATED, deflate(body)])
+  candidates.push([DEFLATED, deflated ?? deflate(body)])
   if (base) candidates.push([DEFLATED_WITH_BASE, deflate(body, base.payload)])
   let best = candidates[0]!
   for (const candidate of candidates) if (candidate[1].length < best[1].length) best = candidate

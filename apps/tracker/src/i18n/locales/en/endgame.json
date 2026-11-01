@@ -21,6 +21,8 @@
   "level": "Lv. {n}",
   "levels": "Lv. {from}–{to}",
   "hpAt": "HP at Lv. {n}",
+  "beforeBonus": "Base",
+  "beforeBonusTip": "HP before this difficulty's bonus: here the game adds a further HP bonus per boss that isn't known yet.",
   "noEntry": "No Living Beings entry",
   "or": "or",
   "abyss": {

@@ -21,6 +21,8 @@
   "level": "Niv. {n}",
   "levels": "Niv. {from}–{to}",
   "hpAt": "PV au niv. {n}",
+  "beforeBonus": "Base",
+  "beforeBonusTip": "PV avant le bonus de cette difficulté : le jeu y ajoute à chaque boss un bonus de PV supplémentaire encore inconnu.",
   "noEntry": "Absent du Bestiaire",
   "or": "ou",
   "abyss": {

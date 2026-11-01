@@ -21,6 +21,8 @@
   "level": "Lv. {n}",
   "levels": "Lv. {from}–{to}",
   "hpAt": "HP di Lv. {n}",
+  "beforeBonus": "Dasar",
+  "beforeBonusTip": "HP sebelum bonus tingkat kesulitan ini: di sini game menambahkan bonus HP lain untuk tiap bos yang belum diketahui.",
   "noEntry": "Tidak ada di Makhluk Hidup",
   "or": "atau",
   "abyss": {

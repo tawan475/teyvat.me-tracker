@@ -21,6 +21,8 @@
   "level": "Nv. {n}",
   "levels": "Nv. {from}–{to}",
   "hpAt": "Vida no Nv. {n}",
+  "beforeBonus": "Base",
+  "beforeBonusTip": "Vida antes do bônus desta dificuldade: aqui o jogo adiciona a cada chefe um bônus de Vida extra ainda desconhecido.",
   "noEntry": "Sem registro em Seres Vivos",
   "or": "ou",
   "abyss": {

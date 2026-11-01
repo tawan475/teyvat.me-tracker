@@ -21,6 +21,8 @@
   "level": "Lv.{n}",
   "levels": "Lv.{from}–{to}",
   "hpAt": "Lv.{n}のHP",
+  "beforeBonus": "基礎",
+  "beforeBonusTip": "難易度ボーナス前のHP：この難易度ではボスごとにさらにHPボーナスが加わりますが、その値はまだ不明です。",
   "noEntry": "生物誌に未登録",
   "or": "または",
   "abyss": {

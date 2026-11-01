@@ -21,6 +21,8 @@
   "level": "Cấp {n}",
   "levels": "Lv. {from}–{to}",
   "hpAt": "HP ở Lv. {n}",
+  "beforeBonus": "Cơ bản",
+  "beforeBonusTip": "HP trước phần thưởng của độ khó này: ở đây trò chơi cộng thêm cho mỗi trùm một lượng HP chưa rõ.",
   "noEntry": "Không có trong Sách Sinh Vật",
   "or": "hoặc",
   "abyss": {

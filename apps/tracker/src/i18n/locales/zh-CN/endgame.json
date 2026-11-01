@@ -21,6 +21,8 @@
   "level": "Lv. {n}",
   "levels": "{from}–{to}级",
   "hpAt": "{n}级生命值",
+  "beforeBonus": "基础",
+  "beforeBonusTip": "难度加成前的生命值：此难度下游戏还会为每个首领额外提高生命值，具体数值尚未知晓。",
   "noEntry": "生物志中无此条目",
   "or": "或",
   "abyss": {

@@ -4,10 +4,10 @@ import type { StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import BossPicture from './BossPicture.vue'
-import { stygianBossPicture, type EndgameData } from '@/data/endgame'
-import { formatNumber, formatShort } from '@/lib/format'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import { stygianBossPicture, stygianHpTip as hpTip, type EndgameData } from '@/data/endgame'
+import { formatShort } from '@/lib/format'
 import { gameIcon } from '@/lib/assets'
-import { t } from '@/i18n'
 import { STYGIAN_GROUND } from './modes'
 
 /**
@@ -55,7 +55,8 @@ const bosses = computed(() => {
         codex: props.data.data.monsters.get(boss.monster)?.codex ?? 0,
         level,
         hp,
-        hpTip: hp ? `${t('endgame.hpAt', { n: level })}: ${formatNumber(hp)}` : '',
+        before: !!chosen.value?.beforeBonus[i],
+        hpTip: hpTip(hp, level, !!chosen.value?.beforeBonus[i]),
       },
     ]
   })
@@ -127,12 +128,14 @@ const bosses = computed(() => {
           <span class="flex flex-col gap-1 px-4 pt-3.5 pb-3">
             <span class="text-base leading-snug font-semibold">{{ b.short }}</span>
             <span v-if="b.title" class="text-sm text-warning-text">{{ b.title }}</span>
-            <span
-              class="tabular mt-1 font-mono text-sm font-semibold"
-              :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
-              :title="b.hpTip"
-              >♥ {{ b.hp ? formatShort(b.hp) : '—' }}</span
-            >
+            <span class="mt-1 flex items-center gap-1.5" :title="b.hpTip">
+              <span
+                class="tabular font-mono text-sm font-semibold"
+                :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
+                >♥ {{ b.hp ? formatShort(b.hp) : '—' }}</span
+              >
+              <UiBadge v-if="b.before">{{ $t('endgame.beforeBonus') }}</UiBadge>
+            </span>
             <span v-if="b.boss.recommendations" class="mt-1.5 flex flex-wrap gap-1.5">
               <GameText
                 v-for="i in range(b.boss.recommendations)"

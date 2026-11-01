@@ -21,6 +21,8 @@
   "level": "Liv. {n}",
   "levels": "Liv. {from}–{to}",
   "hpAt": "PS al liv. {n}",
+  "beforeBonus": "Base",
+  "beforeBonusTip": "PS prima del bonus di questa difficoltà: qui il gioco aggiunge a ogni boss un ulteriore bonus di PS non ancora noto.",
   "noEntry": "Non presente in Esseri viventi",
   "or": "o",
   "abyss": {

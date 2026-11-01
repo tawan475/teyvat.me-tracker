@@ -5,10 +5,12 @@ import type { AbyssPeriod, StygianSeason, TheaterSeason } from '@gdt/game-data/e
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import BossPicture from './BossPicture.vue'
 import {
   abyssTopEnemies,
   stygianBossPicture,
+  stygianHpTip,
   stygianTop,
   type AnySeason,
   type EndgameData,
@@ -16,9 +18,8 @@ import {
 } from '@/data/endgame'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
-import { formatNumber, formatShort } from '@/lib/format'
+import { formatShort } from '@/lib/format'
 import { characterBanner, characterIcon, gameIcon } from '@/lib/assets'
-import { t } from '@/i18n'
 import { STYGIAN_GROUND } from './modes'
 
 /**
@@ -82,7 +83,8 @@ const bosses = computed(() => {
         codex: monster(boss.monster)?.codex ?? 0,
         level: top.level,
         hp,
-        hpTip: hp ? `${t('endgame.hpAt', { n: top.level })}: ${formatNumber(hp)}` : '',
+        before: !!top.beforeBonus[i],
+        hpTip: stygianHpTip(hp, top.level, !!top.beforeBonus[i]),
       },
     ]
   })
@@ -220,6 +222,9 @@ const art = computed(() => {
               :title="b.hpTip"
               >♥ {{ b.hp ? formatShort(b.hp) : '—' }}</span
             >
+            <UiBadge v-if="b.before" class="shrink-0" :title="b.hpTip">{{
+              $t('endgame.beforeBonus')
+            }}</UiBadge>
           </component>
         </li>
       </ul>

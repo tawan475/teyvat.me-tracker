@@ -21,6 +21,8 @@
   "level": "Sv. {n}",
   "levels": "Sv. {from}–{to}",
   "hpAt": "Sv. {n} HP",
+  "beforeBonus": "Temel",
+  "beforeBonusTip": "Bu zorluğun bonusundan önceki Can: Oyun burada her boss'a henüz bilinmeyen ek bir Can bonusu ekler.",
   "noEntry": "Canlılar kaydı yok",
   "or": "veya",
   "abyss": {

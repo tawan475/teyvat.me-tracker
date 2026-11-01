@@ -21,7 +21,9 @@ import {
   type SERVER_OFFSETS,
 } from '@gdt/game-data/endgame'
 import type { GenshinServer } from '@gdt/shared'
+import { t } from '@/i18n'
 import type { Locale } from '@/i18n/locale'
+import { formatNumber } from '@/lib/format'
 
 export const ENDGAME_MODES = ['abyss', 'theater', 'stygian'] as const
 export type EndgameMode = (typeof ENDGAME_MODES)[number]
@@ -121,6 +123,16 @@ export function elapsedPercent(
   const end = seasonTime(season.end, server)
   if (!(end > start)) return 100
   return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+}
+
+/**
+ * A Stygian boss's HP tooltip: the exact figure at the level and, when it is before the
+ * difficulty's per-boss bonus (Fearless/Dire without known multipliers), what that means.
+ */
+export function stygianHpTip(hp: number, level: number, before: boolean): string {
+  if (!hp) return ''
+  const line = `${t('endgame.hpAt', { n: level })}: ${formatNumber(hp)}`
+  return before ? `${line}\n${t('endgame.beforeBonusTip')}` : line
 }
 
 /**

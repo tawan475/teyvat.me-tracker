@@ -21,6 +21,8 @@
   "level": "St. {n}",
   "levels": "Stufe {from}–{to}",
   "hpAt": "LP auf Stufe {n}",
+  "beforeBonus": "Basis",
+  "beforeBonusTip": "LP vor dem Bonus dieses Schwierigkeitsgrads: Das Spiel gibt jedem Boss hier einen weiteren LP-Bonus, der noch unbekannt ist.",
   "noEntry": "Kein Eintrag unter Lebewesen",
   "or": "oder",
   "abyss": {

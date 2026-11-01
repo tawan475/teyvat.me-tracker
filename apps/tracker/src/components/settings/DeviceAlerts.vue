@@ -169,16 +169,21 @@ async function test() {
           {{ $t('settings.devices.alerts.captureNote') }}
         </p>
         <label class="flex items-center justify-between gap-4 py-2">
-          <span class="text-sm font-medium">{{ $t('settings.devices.alerts.resinAt') }}</span>
-          <UiInput
-            v-model="amount"
-            inputmode="numeric"
-            class="w-24 text-right"
-            :placeholder="$t('settings.devices.alerts.resinOff')"
-            :disabled="busy"
-            @blur="saveAmount"
-            @keydown.enter="saveAmount"
-          />
+          <span class="min-w-0 flex-1 text-sm font-medium">{{
+            $t('settings.devices.alerts.resinAt')
+          }}</span>
+          <!-- The input is full width by itself: its box sets the width. -->
+          <span class="w-24 shrink-0">
+            <UiInput
+              v-model="amount"
+              inputmode="numeric"
+              class="text-right"
+              :placeholder="$t('settings.devices.alerts.resinOff')"
+              :disabled="busy"
+              @blur="saveAmount"
+              @keydown.enter="saveAmount"
+            />
+          </span>
         </label>
         <UiSwitch
           v-for="kind in kinds"

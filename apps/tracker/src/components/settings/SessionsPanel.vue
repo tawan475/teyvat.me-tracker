@@ -255,7 +255,7 @@ async function signOut() {
           :model-value="targetKey(row)"
           :options="targetOptions(row)"
           :disabled="saving === row.id || busy !== null"
-          class="order-last w-full sm:order-none sm:w-64"
+          class="order-last w-full sm:order-none sm:ml-auto sm:w-64"
           :aria-label="$t('settings.devices.uploadsGoTo')"
           :title="$t('settings.devices.uploadsTitle')"
           @update:model-value="(key) => setTarget(row, key)"

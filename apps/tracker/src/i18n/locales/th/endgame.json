@@ -1,0 +1,46 @@
+{
+  "title": "เอนด์เกม",
+  "modes": {
+    "abyss": "Spiral Abyss",
+    "theater": "โรงละครในจินตนาการ",
+    "stygian": "ศึกเดือดแดนเร้นลับ"
+  },
+  "modesLabel": "โหมด",
+  "seasons": "ซีซัน",
+  "status": {
+    "active": "กำลังเปิด",
+    "ended": "สิ้นสุดแล้ว"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "เปิด",
+  "allSeasons": "ทุกซีซัน",
+  "empty": "ยังไม่มีข้อมูล",
+  "loadFailed": "โหลดข้อมูลไม่สำเร็จ",
+  "level": "Lv. {n}",
+  "abyss": {
+    "blessing": "พรแห่งจันทรา",
+    "floor": "ชั้น {n}",
+    "chamber": "ห้อง {n}",
+    "firstHalf": "ครึ่งแรก",
+    "secondHalf": "ครึ่งหลัง",
+    "disorder": "กระแสพลังผิดปกติ"
+  },
+  "theater": {
+    "elements": "ธาตุ",
+    "opening": "ตัวละครเปิดฉาก",
+    "guests": "ตัวละครรับเชิญพิเศษ",
+    "difficulty": "ระดับความยาก",
+    "difficultyN": "{n}",
+    "acts": "{n} องก์",
+    "act": "องก์ {n}",
+    "extra": "การต่อสู้เพิ่มเติม",
+    "oneOf": "แต่ละรอบจะเจอหนึ่งในกลุ่มนี้",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "ระดับความยาก",
+    "mechanics": "กลไก",
+    "recommended": "แนะนำ"
+  }
+}

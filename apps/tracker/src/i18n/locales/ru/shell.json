@@ -20,7 +20,8 @@
     "users": "Пользователи",
     "storage": "Хранилище",
     "roles": "Роли",
-    "audit": "Журнал"
+    "audit": "Журнал",
+    "endgame": "Эндгейм"
   },
   "section": {
     "staff": "Персонал",
@@ -84,7 +85,8 @@
     "notFound": "Не найдено",
     "inspect": "Просмотр · {page}",
     "developers": "Разработчикам",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Эндгейм"
   },
   "notFound": {
     "title": "Страница не найдена",

@@ -1,0 +1,46 @@
+{
+  "title": "Endgame",
+  "modes": {
+    "abyss": "Gewundener Abgrund",
+    "theater": "Theater der träumerischen Realität",
+    "stygian": "Düsterer Ansturm"
+  },
+  "modesLabel": "Modus",
+  "seasons": "Saisons",
+  "status": {
+    "active": "Aktiv",
+    "ended": "Beendet"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Öffnen",
+  "allSeasons": "Alle Saisons",
+  "empty": "Noch nichts da",
+  "loadFailed": "Die Daten konnten nicht geladen werden",
+  "level": "St. {n}",
+  "abyss": {
+    "blessing": "Monatssegen",
+    "floor": "Ebene {n}",
+    "chamber": "Kammer {n}",
+    "firstHalf": "Erste Hälfte",
+    "secondHalf": "Zweite Hälfte",
+    "disorder": "Elementaranomalie"
+  },
+  "theater": {
+    "elements": "Elemente",
+    "opening": "Eröffnungsfiguren",
+    "guests": "Sonderfiguren",
+    "difficulty": "Schwierigkeitsgrad",
+    "difficultyN": "{n}",
+    "acts": "{n} Akte",
+    "act": "Akt {n}",
+    "extra": "Zusatzkämpfe",
+    "oneOf": "Jeder Versuch trifft auf eine dieser Gruppen",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Schwierigkeitsgrad",
+    "mechanics": "Mechaniken",
+    "recommended": "Empfohlen"
+  }
+}

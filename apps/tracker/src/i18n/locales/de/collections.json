@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Gespielt, Belohnung nicht abgeholt",
     "songs": "Lieder",
     "search": "Lieder suchen"
+  },
+  "enemies": {
+    "search": "Suchen",
+    "searchPlaceholder": "Suchen …",
+    "faction": "Kategorie",
+    "all": "Alle",
+    "factions": {
+      "elemental": "Elementarwesen",
+      "hilichurl": "Hilichurl-Stämme",
+      "abyss": "Der Abgrund",
+      "fatui": "Fatui",
+      "automaton": "Automata",
+      "human": "Weitere Menschen",
+      "beast": "Mystische Bestien",
+      "boss": "Einprägsame Gegner",
+      "aviary": "Vögel",
+      "animal": "Landgänger",
+      "fish": "Fische",
+      "critter": "Anderes"
+    },
+    "noMatch": "Keine Einträge gefunden",
+    "level": "Stufe",
+    "baseStats": "Basisattribute",
+    "hp": "LP",
+    "hpPlayers": "LP ({n} Sp.)",
+    "atk": "ANG",
+    "def": "VTD",
+    "em": "EK",
+    "res": "Elementar-RES",
+    "physical": "Physisch",
+    "specialNames": "Besondere Namen",
+    "rewards": "Belohnungen",
+    "variants": "Varianten",
+    "variant": "Variante {id}",
+    "wildlife": "Wildtiere haben keine Kampfwerte",
+    "loadFailed": "Der Eintrag konnte nicht geladen werden",
+    "close": "Schließen",
+    "open": "{name} öffnen"
   }
 }

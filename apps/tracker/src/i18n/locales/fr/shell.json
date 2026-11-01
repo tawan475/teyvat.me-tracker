@@ -20,7 +20,8 @@
     "users": "Utilisateurs",
     "storage": "Stockage",
     "roles": "Rôles",
-    "audit": "Audit"
+    "audit": "Audit",
+    "endgame": "Fin de jeu"
   },
   "section": {
     "staff": "Équipe",
@@ -84,7 +85,8 @@
     "notFound": "Introuvable",
     "inspect": "Inspecter · {page}",
     "developers": "Développeurs",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Fin de jeu"
   },
   "notFound": {
     "title": "Page introuvable",

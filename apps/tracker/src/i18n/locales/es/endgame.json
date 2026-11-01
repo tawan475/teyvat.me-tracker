@@ -1,0 +1,46 @@
+{
+  "title": "Contenido final",
+  "modes": {
+    "abyss": "Espiral del Abismo",
+    "theater": "Teatro Fantasía",
+    "stygian": "Conflagración estigia"
+  },
+  "modesLabel": "Modo",
+  "seasons": "Temporadas",
+  "status": {
+    "active": "Activa",
+    "ended": "Finalizada"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Abrir",
+  "allSeasons": "Todas las temporadas",
+  "empty": "Aún no hay nada",
+  "loadFailed": "No se pudieron cargar los datos",
+  "level": "Niv. {n}",
+  "abyss": {
+    "blessing": "Bendición de la Luna Abismal",
+    "floor": "Piso {n}",
+    "chamber": "Sala {n}",
+    "firstHalf": "Primera mitad",
+    "secondHalf": "Segunda mitad",
+    "disorder": "Líneas ley anómalas"
+  },
+  "theater": {
+    "elements": "Elementos",
+    "opening": "Personajes inaugurales",
+    "guests": "Invitados especiales",
+    "difficulty": "Dificultad",
+    "difficultyN": "{n}",
+    "acts": "{n} actos",
+    "act": "Acto {n}",
+    "extra": "Combates extra",
+    "oneOf": "Cada intento se enfrenta a uno de estos",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Dificultad",
+    "mechanics": "Mecánicas",
+    "recommended": "Recomendado"
+  }
+}

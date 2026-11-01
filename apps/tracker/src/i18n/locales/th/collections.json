@@ -269,5 +269,43 @@
     "rewardsLeftHint": "เล่นแล้ว ยังไม่รับรางวัล",
     "songs": "เพลง",
     "search": "ค้นหาเพลง"
+  },
+  "enemies": {
+    "search": "ค้นหา",
+    "searchPlaceholder": "ค้นหา…",
+    "faction": "หมวดหมู่",
+    "all": "ทั้งหมด",
+    "factions": {
+      "elemental": "สิ่งมีชีวิตธาตุ",
+      "hilichurl": "ชนเผ่า Hilichurl",
+      "abyss": "Abyss",
+      "fatui": "Fatui",
+      "automaton": "จักรกลอัตโนมัติ",
+      "human": "กองกำลังของมนุษย์อื่น ๆ",
+      "beast": "สัตว์อสูรลึกลับ",
+      "boss": "ศัตรูที่น่าจดจำ",
+      "aviary": "นก",
+      "animal": "สัตว์ป่า",
+      "fish": "ปลา",
+      "critter": "อื่น ๆ"
+    },
+    "noMatch": "ไม่พบรายการที่ตรงกัน",
+    "level": "เลเวล",
+    "baseStats": "ค่าสถานะพื้นฐาน",
+    "hp": "พลังชีวิต",
+    "hpPlayers": "HP ({n} คน)",
+    "atk": "พลังโจมตี",
+    "def": "พลังป้องกัน",
+    "em": "EM",
+    "res": "ต้านทานธาตุ",
+    "physical": "กายภาพ",
+    "specialNames": "ชื่อเฉพาะ",
+    "rewards": "รางวัล",
+    "variants": "รูปแบบอื่น",
+    "variant": "รูปแบบ {id}",
+    "wildlife": "สัตว์ป่าไม่มีค่าสถานะการต่อสู้",
+    "loadFailed": "โหลดรายการนี้ไม่สำเร็จ",
+    "close": "ปิด",
+    "open": "เปิด {name}"
   }
 }

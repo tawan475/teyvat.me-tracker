@@ -20,7 +20,8 @@
     "users": "Kullanıcılar",
     "storage": "Depolama",
     "roles": "Roller",
-    "audit": "Denetim"
+    "audit": "Denetim",
+    "endgame": "Oyun sonu"
   },
   "section": {
     "staff": "Yetkili",
@@ -84,7 +85,8 @@
     "notFound": "Bulunamadı",
     "inspect": "İncele · {page}",
     "developers": "Geliştiriciler",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Oyun sonu"
   },
   "notFound": {
     "title": "Sayfa bulunamadı",

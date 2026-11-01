@@ -20,7 +20,8 @@
     "users": "Usuarios",
     "storage": "Almacenamiento",
     "roles": "Roles",
-    "audit": "Auditoría"
+    "audit": "Auditoría",
+    "endgame": "Contenido final"
   },
   "section": {
     "staff": "Administración",
@@ -84,7 +85,8 @@
     "notFound": "No encontrado",
     "inspect": "Inspeccionar · {page}",
     "developers": "Desarrolladores",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Contenido final"
   },
   "notFound": {
     "title": "Página no encontrada",

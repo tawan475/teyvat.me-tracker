@@ -20,7 +20,8 @@
     "users": "Người dùng",
     "storage": "Lưu trữ",
     "roles": "Vai trò",
-    "audit": "Nhật ký"
+    "audit": "Nhật ký",
+    "endgame": "Nội dung cuối"
   },
   "section": {
     "staff": "Quản trị",
@@ -84,7 +85,8 @@
     "notFound": "Không tìm thấy",
     "inspect": "Kiểm tra · {page}",
     "developers": "Nhà phát triển",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Nội dung cuối"
   },
   "notFound": {
     "title": "Không tìm thấy trang",

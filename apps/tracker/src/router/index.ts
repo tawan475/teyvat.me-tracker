@@ -33,6 +33,8 @@ declare module 'vue-router' {
 const COLLECTION_TAB_PATTERN =
   'achievements|world|spincrystals|anecdotes|archive|handbook|living-beings|tcg|recipes|crafting|wardrobe|hangouts|blueprints|music|aranara'
 const WISH_BANNER_PATTERN = 'character|weapon|standard|chronicled|beginners'
+// data/endgame.ts ENDGAME_MODES (kept here: the router is startup code, the data module isn't).
+const ENDGAME_MODE_PATTERN = 'abyss|theater|stygian'
 
 const account = (path: string, name: string, title: PageKey, load: () => Promise<unknown>) => ({
   path,
@@ -358,6 +360,12 @@ const router = createRouter({
               'account-collections',
               'collections',
               () => import('@/views/account/CollectionsView.vue'),
+            ),
+            account(
+              `endgame/:mode(${ENDGAME_MODE_PATTERN})?/:season(\\d+)?`,
+              'account-endgame',
+              'endgame',
+              () => import('@/views/account/EndgameView.vue'),
             ),
             account(
               'wishes',

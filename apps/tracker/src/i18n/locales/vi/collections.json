@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Đã chơi, chưa nhận thưởng",
     "songs": "Bài hát",
     "search": "Tìm bài hát"
+  },
+  "enemies": {
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm kiếm…",
+    "faction": "Phân loại",
+    "all": "Tất cả",
+    "factions": {
+      "elemental": "Sinh Mệnh Nguyên Tố",
+      "hilichurl": "Bộ Tộc Hilichurl",
+      "abyss": "Vực Sâu",
+      "fatui": "Fatui",
+      "automaton": "Cơ Quan Tự Động",
+      "human": "Các thế lực loài người khác",
+      "beast": "Ma Thú Đột Biến",
+      "boss": "Kẻ Thù Mạnh Đáng Nhớ",
+      "aviary": "Chim",
+      "animal": "Thú",
+      "fish": "Cá",
+      "critter": "Khác"
+    },
+    "noMatch": "Không có mục phù hợp",
+    "level": "Cấp",
+    "baseStats": "Thuộc Tính Căn Bản",
+    "hp": "HP",
+    "hpPlayers": "HP ({n} người)",
+    "atk": "Tấn Công",
+    "def": "Phòng Ngự",
+    "em": "EM",
+    "res": "Kháng nguyên tố",
+    "physical": "Vật Lý",
+    "specialNames": "Tên riêng",
+    "rewards": "Thưởng",
+    "variants": "Biến thể",
+    "variant": "Biến thể {id}",
+    "wildlife": "Sinh vật hoang dã không có chỉ số chiến đấu",
+    "loadFailed": "Không tải được mục này",
+    "close": "Đóng",
+    "open": "Mở {name}"
   }
 }

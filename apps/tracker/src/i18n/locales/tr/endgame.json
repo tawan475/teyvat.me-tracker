@@ -1,0 +1,46 @@
+{
+  "title": "Oyun sonu",
+  "modes": {
+    "abyss": "Hiçlik Sarmalı",
+    "theater": "Hayal Dünyası Tiyatrosu",
+    "stygian": "Kasvetli Taarruz"
+  },
+  "modesLabel": "Mod",
+  "seasons": "Sezonlar",
+  "status": {
+    "active": "Devam ediyor",
+    "ended": "Bitti"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Aç",
+  "allSeasons": "Tüm sezonlar",
+  "empty": "Henüz bir şey yok",
+  "loadFailed": "Veriler yüklenemedi",
+  "level": "Sv. {n}",
+  "abyss": {
+    "blessing": "Hiçlik Ayının Lütfu",
+    "floor": "{n}. Kat",
+    "chamber": "{n}. Oda",
+    "firstHalf": "İlk Yarı",
+    "secondHalf": "İkinci Yarı",
+    "disorder": "Ley Hattı Bozukluğu"
+  },
+  "theater": {
+    "elements": "Elementler",
+    "opening": "Açılış Karakterleri",
+    "guests": "Özel Konuk Oyuncular",
+    "difficulty": "Zorluk",
+    "difficultyN": "{n}",
+    "acts": "{n} perde",
+    "act": "{n}. Perde",
+    "extra": "Ek dövüşler",
+    "oneOf": "Her denemede bunlardan biri",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Zorluk",
+    "mechanics": "Mekanikler",
+    "recommended": "Önerilen"
+  }
+}

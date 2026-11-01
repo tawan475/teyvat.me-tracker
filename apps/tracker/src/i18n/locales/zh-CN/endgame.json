@@ -1,0 +1,46 @@
+{
+  "title": "终局挑战",
+  "modes": {
+    "abyss": "深境螺旋",
+    "theater": "幻想真境剧诗",
+    "stygian": "幽境危战"
+  },
+  "modesLabel": "挑战模式",
+  "seasons": "期数",
+  "status": {
+    "active": "进行中",
+    "ended": "已结束"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "打开",
+  "allSeasons": "全部期数",
+  "empty": "暂无内容",
+  "loadFailed": "无法加载终局数据",
+  "level": "Lv. {n}",
+  "abyss": {
+    "blessing": "渊月祝福",
+    "floor": "第{n}层",
+    "chamber": "第{n}间",
+    "firstHalf": "上半场",
+    "secondHalf": "下半场",
+    "disorder": "地脉异常"
+  },
+  "theater": {
+    "elements": "元素",
+    "opening": "开幕角色",
+    "guests": "特邀角色",
+    "difficulty": "难度",
+    "difficultyN": "{n}",
+    "acts": "{n}幕",
+    "act": "第{n}幕",
+    "extra": "额外战斗",
+    "oneOf": "每次挑战遇到其中一组",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "难度",
+    "mechanics": "机制",
+    "recommended": "推荐"
+  }
+}

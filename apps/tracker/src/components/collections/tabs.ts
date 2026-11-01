@@ -88,7 +88,6 @@ export const NEEDS_CATALOG: ReadonlySet<CollectionTab> = new Set([
   'world',
   'archive',
   'handbook',
-  'living-beings',
   'tcg',
   'recipes',
   'crafting',
@@ -193,7 +192,8 @@ export const TAB_TOPICS: Readonly<Record<CollectionTab, readonly CollectionTopic
   // `world`: the World Quests' region names.
   archive: ['archive', 'world'],
   handbook: ['handbook'],
-  'living-beings': ['archive'],
+  // The enemy encyclopedia loads its own data (data/enemies.ts).
+  'living-beings': [],
   tcg: ['tcg'],
   recipes: ['recipes'],
   crafting: ['crafting'],

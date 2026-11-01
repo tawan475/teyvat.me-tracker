@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Jogada, recompensa não coletada",
     "songs": "Músicas",
     "search": "Buscar músicas"
+  },
+  "enemies": {
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar…",
+    "faction": "Categoria",
+    "all": "Todos",
+    "factions": {
+      "elemental": "Vida Elemental",
+      "hilichurl": "Hilichurls",
+      "abyss": "Abismo",
+      "fatui": "Fatui",
+      "automaton": "Autômatos",
+      "human": "Outras facções humanas",
+      "beast": "Fera mítica",
+      "boss": "Chefe",
+      "aviary": "Pássaros",
+      "animal": "Animais",
+      "fish": "Peixes",
+      "critter": "Outros"
+    },
+    "noMatch": "Nenhum resultado",
+    "level": "Nível",
+    "baseStats": "Atributos Básicos",
+    "hp": "Vida",
+    "hpPlayers": "Vida ({n} jog.)",
+    "atk": "ATQ",
+    "def": "DEF",
+    "em": "PE",
+    "res": "RES Elemental",
+    "physical": "Físico",
+    "specialNames": "Nomes especiais",
+    "rewards": "Recompensas",
+    "variants": "Variantes",
+    "variant": "Variante {id}",
+    "wildlife": "A vida selvagem não tem atributos de combate",
+    "loadFailed": "Não foi possível carregar este registro",
+    "close": "Fechar",
+    "open": "Abrir {name}"
   }
 }

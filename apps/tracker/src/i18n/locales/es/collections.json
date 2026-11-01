@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Jugada, recompensa sin reclamar",
     "songs": "Canciones",
     "search": "Buscar canciones"
+  },
+  "enemies": {
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar…",
+    "faction": "Categoría",
+    "all": "Todos",
+    "factions": {
+      "elemental": "Seres elementales",
+      "hilichurl": "Hilichurls",
+      "abyss": "Abismo",
+      "fatui": "Fatui",
+      "automaton": "Autómatas",
+      "human": "Humanos",
+      "beast": "Bestias exóticas",
+      "boss": "Enemigos memorables",
+      "aviary": "Aves",
+      "animal": "Animales terrestres",
+      "fish": "Peces",
+      "critter": "Otros"
+    },
+    "noMatch": "No hay coincidencias",
+    "level": "Nivel",
+    "baseStats": "Atributos básicos",
+    "hp": "Vida",
+    "hpPlayers": "Vida ({n} j.)",
+    "atk": "ATQ",
+    "def": "DEF",
+    "em": "ME",
+    "res": "RES elemental",
+    "physical": "Físico",
+    "specialNames": "Nombres especiales",
+    "rewards": "Recompensas",
+    "variants": "Variantes",
+    "variant": "Variante {id}",
+    "wildlife": "La fauna no tiene atributos de combate",
+    "loadFailed": "No se pudo cargar esta entrada",
+    "close": "Cerrar",
+    "open": "Abrir {name}"
   }
 }

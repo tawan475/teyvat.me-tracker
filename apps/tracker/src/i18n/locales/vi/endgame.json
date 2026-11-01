@@ -1,0 +1,46 @@
+{
+  "title": "Nội dung cuối",
+  "modes": {
+    "abyss": "La Hoàn Thâm Cảnh",
+    "theater": "Nhà Hát Giả Tưởng",
+    "stygian": "Ảo Cảnh Hiểm Ác"
+  },
+  "modesLabel": "Chế độ",
+  "seasons": "Mùa",
+  "status": {
+    "active": "Đang diễn ra",
+    "ended": "Đã kết thúc"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Mở",
+  "allSeasons": "Tất cả các mùa",
+  "empty": "Chưa có gì",
+  "loadFailed": "Không tải được dữ liệu",
+  "level": "Cấp {n}",
+  "abyss": {
+    "blessing": "Uyên Nguyệt Chúc Phúc",
+    "floor": "Tầng {n}",
+    "chamber": "Gian {n}",
+    "firstHalf": "Nửa Trận Đầu",
+    "secondHalf": "Nửa Trận Sau",
+    "disorder": "Địa Mạch Bất Thường"
+  },
+  "theater": {
+    "elements": "Nguyên Tố",
+    "opening": "Nhân Vật Mở Màn",
+    "guests": "Khách Mời Đặc Biệt",
+    "difficulty": "Độ Khó",
+    "difficultyN": "{n}",
+    "acts": "{n} màn",
+    "act": "Màn {n}",
+    "extra": "Trận thêm",
+    "oneOf": "Mỗi lượt gặp một trong các nhóm này",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Độ Khó",
+    "mechanics": "Cơ chế",
+    "recommended": "Đề Xuất"
+  }
+}

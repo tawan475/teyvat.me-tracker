@@ -20,7 +20,8 @@
     "users": "ユーザー",
     "storage": "容量",
     "roles": "ロール",
-    "audit": "監査"
+    "audit": "監査",
+    "endgame": "エンドコンテンツ"
   },
   "section": {
     "staff": "スタッフ",
@@ -84,7 +85,8 @@
     "notFound": "見つかりません",
     "inspect": "閲覧 · {page}",
     "developers": "開発者向け",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "エンドコンテンツ"
   },
   "notFound": {
     "title": "ページが見つかりません",

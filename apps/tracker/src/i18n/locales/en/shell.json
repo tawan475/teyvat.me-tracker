@@ -20,7 +20,8 @@
     "users": "Users",
     "storage": "Storage",
     "roles": "Roles",
-    "audit": "Audit"
+    "audit": "Audit",
+    "endgame": "Endgame"
   },
   "section": {
     "staff": "Staff",
@@ -84,7 +85,8 @@
     "notFound": "Not found",
     "inspect": "Inspect · {page}",
     "developers": "Developers",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Endgame"
   },
   "notFound": {
     "title": "Page not found",

@@ -20,7 +20,8 @@
     "users": "ผู้ใช้",
     "storage": "พื้นที่จัดเก็บ",
     "roles": "บทบาท",
-    "audit": "ตรวจสอบ"
+    "audit": "ตรวจสอบ",
+    "endgame": "เอนด์เกม"
   },
   "section": {
     "staff": "ทีมงาน",
@@ -84,7 +85,8 @@
     "notFound": "ไม่พบ",
     "inspect": "ตรวจดู · {page}",
     "developers": "นักพัฒนา",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "เอนด์เกม"
   },
   "notFound": {
     "title": "ไม่พบหน้านี้",

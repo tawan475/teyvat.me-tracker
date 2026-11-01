@@ -1,0 +1,46 @@
+{
+  "title": "Contenuti endgame",
+  "modes": {
+    "abyss": "Abisso a spirale",
+    "theater": "Teatro immaginario",
+    "stygian": "Battaglia nel regno oscuro"
+  },
+  "modesLabel": "Modalità",
+  "seasons": "Stagioni",
+  "status": {
+    "active": "In corso",
+    "ended": "Terminata"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Apri",
+  "allSeasons": "Tutte le stagioni",
+  "empty": "Ancora niente",
+  "loadFailed": "Impossibile caricare i dati",
+  "level": "Liv. {n}",
+  "abyss": {
+    "blessing": "Benedizione lunare dell'Abisso",
+    "floor": "Piano {n}",
+    "chamber": "Sala {n}",
+    "firstHalf": "Prima metà",
+    "secondHalf": "Seconda metà",
+    "disorder": "Anomalia geomantica"
+  },
+  "theater": {
+    "elements": "Elementi",
+    "opening": "Personaggi di apertura",
+    "guests": "Ospiti d'onore speciali",
+    "difficulty": "Difficoltà",
+    "difficultyN": "{n}",
+    "acts": "{n} atti",
+    "act": "Atto {n}",
+    "extra": "Scontri extra",
+    "oneOf": "Ogni tentativo affronta uno di questi gruppi",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Difficoltà",
+    "mechanics": "Meccaniche",
+    "recommended": "Consigliato"
+  }
+}

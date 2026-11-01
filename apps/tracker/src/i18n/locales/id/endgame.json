@@ -1,0 +1,46 @@
+{
+  "title": "Endgame",
+  "modes": {
+    "abyss": "Spiral Abyss",
+    "theater": "Imaginarium Theater",
+    "stygian": "Stygian Onslaught"
+  },
+  "modesLabel": "Mode",
+  "seasons": "Musim",
+  "status": {
+    "active": "Aktif",
+    "ended": "Selesai"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Buka",
+  "allSeasons": "Semua musim",
+  "empty": "Belum ada",
+  "loadFailed": "Gagal memuat data",
+  "level": "Lv. {n}",
+  "abyss": {
+    "blessing": "Blessing of the Abyssal Moon",
+    "floor": "Lantai {n}",
+    "chamber": "Ruang {n}",
+    "firstHalf": "Paruh Awal",
+    "secondHalf": "Paruh Akhir",
+    "disorder": "Gangguan Ley Line"
+  },
+  "theater": {
+    "elements": "Elemen",
+    "opening": "Karakter Pembuka",
+    "guests": "Karakter Undangan",
+    "difficulty": "Tingkat Kesulitan",
+    "difficultyN": "{n}",
+    "acts": "{n} babak",
+    "act": "Babak {n}",
+    "extra": "Pertarungan tambahan",
+    "oneOf": "Setiap percobaan menghadapi salah satunya",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Tingkat Kesulitan",
+    "mechanics": "Mekanik",
+    "recommended": "Rekomendasi"
+  }
+}

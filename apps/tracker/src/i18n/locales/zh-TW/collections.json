@@ -269,5 +269,43 @@
     "rewardsLeftHint": "已遊玩，獎勵未領取",
     "songs": "歌曲",
     "search": "搜尋歌曲"
+  },
+  "enemies": {
+    "search": "搜尋",
+    "searchPlaceholder": "搜尋…",
+    "faction": "類別",
+    "all": "全部",
+    "factions": {
+      "elemental": "元素生命",
+      "hilichurl": "丘丘部族",
+      "abyss": "深淵",
+      "fatui": "愚人眾",
+      "automaton": "自律機關",
+      "human": "其他人類勢力",
+      "beast": "異種魔獸",
+      "boss": "值得銘記的強敵",
+      "aviary": "禽鳥",
+      "animal": "走獸",
+      "fish": "魚類",
+      "critter": "其他"
+    },
+    "noMatch": "沒有符合的條目",
+    "level": "等級",
+    "baseStats": "基礎屬性",
+    "hp": "生命值",
+    "hpPlayers": "生命值（{n}人）",
+    "atk": "攻擊力",
+    "def": "防禦力",
+    "em": "精通",
+    "res": "元素抗性",
+    "physical": "物理",
+    "specialNames": "特殊名稱",
+    "rewards": "獎勵",
+    "variants": "變體",
+    "variant": "變體 {id}",
+    "wildlife": "野生生物沒有戰鬥屬性",
+    "loadFailed": "無法載入此條目",
+    "close": "關閉",
+    "open": "開啟 {name}"
   }
 }

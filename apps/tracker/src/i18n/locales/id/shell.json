@@ -20,7 +20,8 @@
     "users": "Pengguna",
     "storage": "Penyimpanan",
     "roles": "Peran",
-    "audit": "Audit"
+    "audit": "Audit",
+    "endgame": "Endgame"
   },
   "section": {
     "staff": "Staf",
@@ -84,7 +85,8 @@
     "notFound": "Tidak ditemukan",
     "inspect": "Periksa · {page}",
     "developers": "Pengembang",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Endgame"
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",

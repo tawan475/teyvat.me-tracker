@@ -1,0 +1,46 @@
+{
+  "title": "Contenu de fin de jeu",
+  "modes": {
+    "abyss": "Profondeurs spiralées",
+    "theater": "Théâtre de l'imaginarium",
+    "stygian": "Carnage chtonien"
+  },
+  "modesLabel": "Mode",
+  "seasons": "Saisons",
+  "status": {
+    "active": "En cours",
+    "ended": "Terminée"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Ouvrir",
+  "allSeasons": "Toutes les saisons",
+  "empty": "Rien pour le moment",
+  "loadFailed": "Impossible de charger les données",
+  "level": "Niv. {n}",
+  "abyss": {
+    "blessing": "Bénédiction de la lune abyssale",
+    "floor": "Étage {n}",
+    "chamber": "Salle {n}",
+    "firstHalf": "1e moitié",
+    "secondHalf": "2e moitié",
+    "disorder": "Anomalie énergétique"
+  },
+  "theater": {
+    "elements": "Éléments",
+    "opening": "Personnages d'ouverture",
+    "guests": "Personnages caméos",
+    "difficulty": "Difficulté",
+    "difficultyN": "{n}",
+    "acts": "{n} actes",
+    "act": "Acte {n}",
+    "extra": "Combats bonus",
+    "oneOf": "Chaque tentative affronte l’un de ces groupes",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Difficulté",
+    "mechanics": "Mécaniques",
+    "recommended": "Recommandé"
+  }
+}

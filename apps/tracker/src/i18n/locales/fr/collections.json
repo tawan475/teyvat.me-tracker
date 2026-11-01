@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Jouée, récompense non récupérée",
     "songs": "Chansons",
     "search": "Rechercher une chanson"
+  },
+  "enemies": {
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher…",
+    "faction": "Catégorie",
+    "all": "Tout",
+    "factions": {
+      "elemental": "Entités élémentaires",
+      "hilichurl": "Brutocollinus",
+      "abyss": "Abîme",
+      "fatui": "Fatui",
+      "automaton": "Automates",
+      "human": "Humains",
+      "beast": "Bêtes mystiques",
+      "boss": "Boss",
+      "aviary": "Oiseaux",
+      "animal": "Animaux terrestres",
+      "fish": "Poissons",
+      "critter": "Autre"
+    },
+    "noMatch": "Aucune entrée ne correspond",
+    "level": "Niv.",
+    "baseStats": "Stats de base",
+    "hp": "PV",
+    "hpPlayers": "PV ({n} j.)",
+    "atk": "ATQ",
+    "def": "DÉF",
+    "em": "ME",
+    "res": "RÉS élémentaire",
+    "physical": "Physique",
+    "specialNames": "Noms particuliers",
+    "rewards": "Récompenses",
+    "variants": "Variantes",
+    "variant": "Variante {id}",
+    "wildlife": "La faune n’a pas de stats de combat",
+    "loadFailed": "Impossible de charger cette entrée",
+    "close": "Fermer",
+    "open": "Ouvrir {name}"
   }
 }

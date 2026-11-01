@@ -28,6 +28,7 @@ import ui from './ui.json'
 import live from './live.json'
 import sharing from './sharing.json'
 import landing from './landing.json'
+import endgame from './endgame.json'
 
 const messages = {
   common,
@@ -58,6 +59,7 @@ const messages = {
   live,
   sharing,
   landing,
+  endgame,
 }
 
 export default messages

@@ -1,0 +1,46 @@
+{
+  "title": "Conteúdo final",
+  "modes": {
+    "abyss": "Abismo do Espiral",
+    "theater": "Teatro das Realidades Imaginárias",
+    "stygian": "Confronto Abissal"
+  },
+  "modesLabel": "Modo",
+  "seasons": "Temporadas",
+  "status": {
+    "active": "Ativa",
+    "ended": "Encerrada"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Abrir",
+  "allSeasons": "Todas as temporadas",
+  "empty": "Nada aqui ainda",
+  "loadFailed": "Não foi possível carregar os dados",
+  "level": "Nv. {n}",
+  "abyss": {
+    "blessing": "Bênção da Lua Abissal",
+    "floor": "Andar {n}",
+    "chamber": "Câmara {n}",
+    "firstHalf": "Primeira Metade",
+    "secondHalf": "Segunda Metade",
+    "disorder": "Desordem das Linhas Ley"
+  },
+  "theater": {
+    "elements": "Elementos",
+    "opening": "Personagens de Abertura",
+    "guests": "Personagens convidados",
+    "difficulty": "Dificuldade",
+    "difficultyN": "{n}",
+    "acts": "{n} atos",
+    "act": "Ato {n}",
+    "extra": "Batalhas extras",
+    "oneOf": "Cada tentativa enfrenta um destes grupos",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Dificuldade",
+    "mechanics": "Mecânicas",
+    "recommended": "Recomendado"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "title": "Эндгейм",
+  "modes": {
+    "abyss": "Витая Бездна",
+    "theater": "Театр «Воображариум»",
+    "stygian": "Мрачный натиск"
+  },
+  "modesLabel": "Режим",
+  "seasons": "Сезоны",
+  "status": {
+    "active": "Идёт",
+    "ended": "Завершён"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "Открыть",
+  "allSeasons": "Все сезоны",
+  "empty": "Пока пусто",
+  "loadFailed": "Не удалось загрузить данные",
+  "level": "Ур. {n}",
+  "abyss": {
+    "blessing": "Благословение Бездны",
+    "floor": "Этаж {n}",
+    "chamber": "Зал {n}",
+    "firstHalf": "Первая половина",
+    "secondHalf": "Вторая половина",
+    "disorder": "Аномалия артерий земли"
+  },
+  "theater": {
+    "elements": "Элементы",
+    "opening": "Открывающие персонажи",
+    "guests": "Специально приглашённые персонажи",
+    "difficulty": "Сложность",
+    "difficultyN": "{n}",
+    "acts": "Актов: {n}",
+    "act": "Акт {n}",
+    "extra": "Дополнительные бои",
+    "oneOf": "В каждой попытке — одна из этих групп",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "Сложность",
+    "mechanics": "Механики",
+    "recommended": "Рекомендовано"
+  }
+}

@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Oynandı, ödül alınmadı",
     "songs": "Şarkılar",
     "search": "Şarkı ara"
+  },
+  "enemies": {
+    "search": "Ara",
+    "searchPlaceholder": "Ara…",
+    "faction": "Kategori",
+    "all": "Tümü",
+    "factions": {
+      "elemental": "Element Yaşam Formları",
+      "hilichurl": "Dağ Yabanileri",
+      "abyss": "Hiçlik",
+      "fatui": "Fatui",
+      "automaton": "Canavar Makinaları",
+      "human": "Diğer İnsan Grupları",
+      "beast": "Efsanevi Canavarlar",
+      "boss": "Şanlı Düşmanlar",
+      "aviary": "Kuş",
+      "animal": "Canavarlar",
+      "fish": "Balıklar",
+      "critter": "Diğer"
+    },
+    "noMatch": "Eşleşen kayıt yok",
+    "level": "Seviye",
+    "baseStats": "Temel İstatistikler",
+    "hp": "Can",
+    "hpPlayers": "Can ({n} oyuncu)",
+    "atk": "Saldırı",
+    "def": "Savunma",
+    "em": "EU",
+    "res": "Element DİR",
+    "physical": "Fiziksel",
+    "specialNames": "Özel adlar",
+    "rewards": "Ödüller",
+    "variants": "Varyantlar",
+    "variant": "Varyant {id}",
+    "wildlife": "Yaban hayatının dövüş istatistikleri yok",
+    "loadFailed": "Bu kayıt yüklenemedi",
+    "close": "Kapat",
+    "open": "{name} aç"
   }
 }

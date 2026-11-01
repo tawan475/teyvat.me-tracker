@@ -1,0 +1,46 @@
+{
+  "title": "엔드 콘텐츠",
+  "modes": {
+    "abyss": "나선 비경",
+    "theater": "현실 속 환상극",
+    "stygian": "지맥 제압전"
+  },
+  "modesLabel": "모드",
+  "seasons": "시즌",
+  "status": {
+    "active": "진행 중",
+    "ended": "종료"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "열기",
+  "allSeasons": "모든 시즌",
+  "empty": "아직 없습니다",
+  "loadFailed": "엔드 콘텐츠 데이터를 불러오지 못했습니다",
+  "level": "Lv. {n}",
+  "abyss": {
+    "blessing": "연월 축복",
+    "floor": "{n}층",
+    "chamber": "{n}번째 방",
+    "firstHalf": "전반부",
+    "secondHalf": "후반부",
+    "disorder": "지맥 이상"
+  },
+  "theater": {
+    "elements": "원소",
+    "opening": "개막 캐릭터",
+    "guests": "초청 캐릭터",
+    "difficulty": "난이도",
+    "difficultyN": "{n}",
+    "acts": "{n}막",
+    "act": "{n}막",
+    "extra": "추가 전투",
+    "oneOf": "도전마다 이 중 하나",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "난이도",
+    "mechanics": "기믹",
+    "recommended": "추천"
+  }
+}

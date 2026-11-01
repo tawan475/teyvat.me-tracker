@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Giocata, ricompensa non ritirata",
     "songs": "Brani",
     "search": "Cerca brani"
+  },
+  "enemies": {
+    "search": "Cerca",
+    "searchPlaceholder": "Cerca…",
+    "faction": "Categoria",
+    "all": "Tutti",
+    "factions": {
+      "elemental": "Entità elementali",
+      "hilichurl": "Hilichurl",
+      "abyss": "Abisso",
+      "fatui": "Fatui",
+      "automaton": "Automi",
+      "human": "Altre fazioni umane",
+      "beast": "Bestie mistiche",
+      "boss": "Nemici importanti",
+      "aviary": "Uccelli",
+      "animal": "Animali terrestri",
+      "fish": "Pesci",
+      "critter": "Altro"
+    },
+    "noMatch": "Nessuna voce corrisponde",
+    "level": "Livello",
+    "baseStats": "Statistiche di base",
+    "hp": "PS",
+    "hpPlayers": "PS ({n} gioc.)",
+    "atk": "ATT",
+    "def": "DIF",
+    "em": "ME",
+    "res": "RES elementale",
+    "physical": "Fisico",
+    "specialNames": "Nomi particolari",
+    "rewards": "Ricompense",
+    "variants": "Varianti",
+    "variant": "Variante {id}",
+    "wildlife": "La fauna non ha statistiche di combattimento",
+    "loadFailed": "Impossibile caricare questa voce",
+    "close": "Chiudi",
+    "open": "Apri {name}"
   }
 }

@@ -1,0 +1,46 @@
+{
+  "title": "エンドコンテンツ",
+  "modes": {
+    "abyss": "深境螺旋",
+    "theater": "幻想シアター",
+    "stygian": "幽境の激戦"
+  },
+  "modesLabel": "モード",
+  "seasons": "シーズン",
+  "status": {
+    "active": "開催中",
+    "ended": "終了"
+  },
+  "id": "ID {id}",
+  "period": "{start} – {end}",
+  "open": "開く",
+  "allSeasons": "すべてのシーズン",
+  "empty": "まだありません",
+  "loadFailed": "エンドコンテンツのデータを読み込めませんでした",
+  "level": "Lv.{n}",
+  "abyss": {
+    "blessing": "淵月の祝福",
+    "floor": "第{n}層",
+    "chamber": "第{n}間",
+    "firstHalf": "前半",
+    "secondHalf": "後半",
+    "disorder": "地脈異常"
+  },
+  "theater": {
+    "elements": "元素",
+    "opening": "開幕キャスト",
+    "guests": "特別招待キャスト",
+    "difficulty": "難易度",
+    "difficultyN": "{n}",
+    "acts": "{n}幕",
+    "act": "第{n}幕",
+    "extra": "追加戦闘",
+    "oneOf": "挑戦ごとにいずれか1組",
+    "season": "{month}"
+  },
+  "stygian": {
+    "difficulty": "難易度",
+    "mechanics": "ギミック",
+    "recommended": "オススメ"
+  }
+}

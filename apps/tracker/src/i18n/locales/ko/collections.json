@@ -269,5 +269,43 @@
     "rewardsLeftHint": "플레이함, 보상 미수령",
     "songs": "곡",
     "search": "곡 검색"
+  },
+  "enemies": {
+    "search": "검색",
+    "searchPlaceholder": "검색…",
+    "faction": "분류",
+    "all": "전체",
+    "factions": {
+      "elemental": "원소 생명체",
+      "hilichurl": "츄츄 부족",
+      "abyss": "심연",
+      "fatui": "우인단",
+      "automaton": "자동 장치",
+      "human": "기타 인간 세력",
+      "beast": "돌연변이 마수",
+      "boss": "새겨둬야 할 강적",
+      "aviary": "조류",
+      "animal": "짐승",
+      "fish": "어류",
+      "critter": "기타"
+    },
+    "noMatch": "일치하는 항목이 없습니다",
+    "level": "레벨",
+    "baseStats": "기초 속성",
+    "hp": "HP",
+    "hpPlayers": "HP ({n}인)",
+    "atk": "공격력",
+    "def": "방어력",
+    "em": "원마",
+    "res": "원소 내성",
+    "physical": "물리",
+    "specialNames": "고유 이름",
+    "rewards": "보상",
+    "variants": "변형",
+    "variant": "변형 {id}",
+    "wildlife": "야생 생물에는 전투 능력치가 없습니다",
+    "loadFailed": "이 항목을 불러오지 못했습니다",
+    "close": "닫기",
+    "open": "{name} 열기"
   }
 }

@@ -269,5 +269,43 @@
     "rewardsLeftHint": "プレイ済み、報酬未受取",
     "songs": "曲",
     "search": "曲を検索"
+  },
+  "enemies": {
+    "search": "検索",
+    "searchPlaceholder": "検索…",
+    "faction": "分類",
+    "all": "すべて",
+    "factions": {
+      "elemental": "元素生命",
+      "hilichurl": "ヒルチャール部族",
+      "abyss": "アビス",
+      "fatui": "ファデュイ",
+      "automaton": "自律装置",
+      "human": "その他人間勢力",
+      "beast": "異種の魔獣",
+      "boss": "名前を覚えるべき強敵",
+      "aviary": "鳥",
+      "animal": "獣類",
+      "fish": "魚類",
+      "critter": "その他"
+    },
+    "noMatch": "該当する項目がありません",
+    "level": "レベル",
+    "baseStats": "基本ステータス",
+    "hp": "HP",
+    "hpPlayers": "HP（{n}人）",
+    "atk": "攻撃力",
+    "def": "防御力",
+    "em": "熟知",
+    "res": "元素耐性",
+    "physical": "物理",
+    "specialNames": "固有名",
+    "rewards": "報酬",
+    "variants": "バリエーション",
+    "variant": "バリエーション {id}",
+    "wildlife": "野生生物には戦闘ステータスがありません",
+    "loadFailed": "この項目を読み込めませんでした",
+    "close": "閉じる",
+    "open": "{name}を開く"
   }
 }

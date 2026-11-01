@@ -20,7 +20,8 @@
     "users": "사용자",
     "storage": "저장 공간",
     "roles": "역할",
-    "audit": "감사"
+    "audit": "감사",
+    "endgame": "엔드 콘텐츠"
   },
   "section": {
     "staff": "스태프",
@@ -84,7 +85,8 @@
     "notFound": "찾을 수 없음",
     "inspect": "조회 · {page}",
     "developers": "개발자",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "엔드 콘텐츠"
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",

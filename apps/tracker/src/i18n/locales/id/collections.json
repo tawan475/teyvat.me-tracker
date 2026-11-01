@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Dimainkan, hadiah belum diambil",
     "songs": "Lagu",
     "search": "Cari lagu"
+  },
+  "enemies": {
+    "search": "Cari",
+    "searchPlaceholder": "Cari…",
+    "faction": "Kategori",
+    "all": "Semua",
+    "factions": {
+      "elemental": "Makhluk Elemental",
+      "hilichurl": "Suku Hilichurl",
+      "abyss": "Abyss",
+      "fatui": "Fatui",
+      "automaton": "Automaton",
+      "human": "Kelompok Manusia Lainnya",
+      "beast": "Makhluk Mistis",
+      "boss": "Musuh Kuat",
+      "aviary": "Burung",
+      "animal": "Hewan Darat",
+      "fish": "Ikan",
+      "critter": "Lainnya"
+    },
+    "noMatch": "Tidak ada yang cocok",
+    "level": "Level",
+    "baseStats": "Stats Dasar",
+    "hp": "HP",
+    "hpPlayers": "HP ({n} pemain)",
+    "atk": "ATK",
+    "def": "DEF",
+    "em": "EM",
+    "res": "RES Elemental",
+    "physical": "Physical",
+    "specialNames": "Nama khusus",
+    "rewards": "Hadiah",
+    "variants": "Varian",
+    "variant": "Varian {id}",
+    "wildlife": "Satwa liar tidak punya stats bertarung",
+    "loadFailed": "Gagal memuat entri ini",
+    "close": "Tutup",
+    "open": "Buka {name}"
   }
 }

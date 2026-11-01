@@ -20,7 +20,8 @@
     "users": "Utenti",
     "storage": "Spazio",
     "roles": "Ruoli",
-    "audit": "Registro"
+    "audit": "Registro",
+    "endgame": "Endgame"
   },
   "section": {
     "staff": "Staff",
@@ -84,7 +85,8 @@
     "notFound": "Non trovato",
     "inspect": "Ispeziona · {page}",
     "developers": "Sviluppatori",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "Endgame"
   },
   "notFound": {
     "title": "Pagina non trovata",

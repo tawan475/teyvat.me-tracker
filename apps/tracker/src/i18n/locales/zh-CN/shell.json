@@ -20,7 +20,8 @@
     "users": "用户",
     "storage": "存储",
     "roles": "身份组",
-    "audit": "审计"
+    "audit": "审计",
+    "endgame": "终局挑战"
   },
   "section": {
     "staff": "管理后台",
@@ -84,7 +85,8 @@
     "notFound": "未找到",
     "inspect": "查看 · {page}",
     "developers": "开发者",
-    "leyline": "Leyline"
+    "leyline": "Leyline",
+    "endgame": "终局挑战"
   },
   "notFound": {
     "title": "页面不存在",

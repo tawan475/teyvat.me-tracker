@@ -269,5 +269,43 @@
     "rewardsLeftHint": "Played, reward not claimed",
     "songs": "Songs",
     "search": "Search songs"
+  },
+  "enemies": {
+    "search": "Search",
+    "searchPlaceholder": "Search…",
+    "faction": "Faction",
+    "all": "All",
+    "factions": {
+      "elemental": "Elemental Lifeforms",
+      "hilichurl": "Hilichurls",
+      "abyss": "The Abyss",
+      "fatui": "Fatui",
+      "automaton": "Automatons",
+      "human": "Other Human Factions",
+      "beast": "Mystical Beasts",
+      "boss": "Enemies of Note",
+      "aviary": "Birds",
+      "animal": "Beasts",
+      "fish": "Fish",
+      "critter": "Other"
+    },
+    "noMatch": "No entries match",
+    "level": "Level",
+    "baseStats": "Base Stats",
+    "hp": "HP",
+    "hpPlayers": "HP ({n}P)",
+    "atk": "ATK",
+    "def": "DEF",
+    "em": "EM",
+    "res": "Elemental RES",
+    "physical": "Physical",
+    "specialNames": "Special Names",
+    "rewards": "Rewards",
+    "variants": "Variants",
+    "variant": "Variant {id}",
+    "wildlife": "Wildlife has no combat stats",
+    "loadFailed": "Couldn't load the enemy",
+    "close": "Close",
+    "open": "Open {name}"
   }
 }

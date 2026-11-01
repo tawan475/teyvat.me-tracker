@@ -3,6 +3,7 @@ import type { CustomTask, DomainEventWindow, GameNotice, PlannerTask } from '@gd
 import { computed, ref, shallowRef, watch } from 'vue'
 import {
   AlarmClock,
+  CalendarDays,
   Check,
   ChevronDown,
   Eye,
@@ -19,6 +20,7 @@ import UiPopover from '@/components/ui/UiPopover.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { t } from '@/i18n'
+import { IMAGE_BASE, giCdnArt } from '@/lib/assets'
 import { formatDateTime, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useFeedback } from '@/stores/feedback'
@@ -39,6 +41,7 @@ import {
   undoneInput,
   weekdayOf,
   type CapturedTasks,
+  type TaskIcon,
   type TaskRow,
 } from './tasks'
 import { moveBy, moveTo } from './allocation'
@@ -92,6 +95,15 @@ const rows = computed(() =>
   ),
 )
 const builtins = computed(() => listedBuiltins(props.capture))
+
+const iconUrl = (icon: TaskIcon) =>
+  icon.from === 'cdn' ? giCdnArt(icon.name) : `${IMAGE_BASE}${icon.name}.webp`
+/** A white glyph as a mask over the text colour (gi-cdn and nanoka both answer CORS). */
+const glyphStyle = (icon: TaskIcon) => {
+  const mask = `url("${iconUrl(icon)}") center / contain no-repeat`
+  return { mask, WebkitMask: mask }
+}
+
 /** "4 of 4 done · From the capture of 14:02": what a captured row's figure means. */
 function captureTitle(row: TaskRow): string {
   const c = row.capture
@@ -507,6 +519,24 @@ const summary = computed(() => {
           :title="row.note ? `${row.name} · ${row.note}` : row.name"
           @click="row.kind === 'custom' ? edit(row) : undefined"
         >
+          <!-- The game's icon for a built-in task; a glyph takes the text colour -->
+          <span class="inline-flex size-6 shrink-0 items-center justify-center" aria-hidden="true">
+            <span
+              v-if="row.builtin?.icon.glyph"
+              class="size-5 bg-current"
+              :style="glyphStyle(row.builtin.icon)"
+            />
+            <img
+              v-else-if="row.builtin"
+              :src="iconUrl(row.builtin.icon)"
+              alt=""
+              class="size-6 object-contain"
+              loading="lazy"
+              decoding="async"
+            />
+            <CalendarDays v-else-if="row.kind === 'event'" class="size-4 text-text-muted" />
+            <ListChecks v-else class="size-4 text-text-muted" />
+          </span>
           <span
             v-if="row.tag"
             class="shrink-0 rounded px-1.5 py-px text-[0.6875rem] font-medium"

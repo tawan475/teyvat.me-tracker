@@ -147,6 +147,19 @@ export interface BuiltinTask {
   seelie?: string
   /** Listed only while the newest capture has this part of `gi_tasks`. */
   capture?: 'expeditions' | 'realm' | 'welkin' | 'arRewards' | 'signIns'
+  /** The game's own icon for it, shown before the name. */
+  icon: TaskIcon
+}
+
+/**
+ * A task's game icon: `cdn` art gi-cdn publishes by hand (its publish.json
+ * `extra`), `game` an image nanoka hosts. A `glyph` is white on clear (a
+ * menu button icon) and is drawn in the text colour instead.
+ */
+export interface TaskIcon {
+  name: string
+  from: 'cdn' | 'game'
+  glyph?: boolean
 }
 
 const MONDAY = 1
@@ -159,6 +172,7 @@ const MONDAY = 1
 export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   {
     id: 'commissions',
+    icon: { name: 'UI_MarkQuest_Events_Start', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.commissions')
     },
@@ -168,6 +182,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'weekly-bosses',
+    icon: { name: 'UI_MarkTower_Weekly', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.weeklyBosses')
     },
@@ -177,6 +192,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'battle-pass',
+    icon: { name: 'UI_BtnIcon_BattlePass', from: 'cdn', glyph: true },
     get name() {
       return t('planner.task.builtin.battlePass')
     },
@@ -185,6 +201,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'reputation',
+    icon: { name: 'UI_MarkQuest_Reputation_Start', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.reputation')
     },
@@ -193,6 +210,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'abyss',
+    icon: { name: 'UI_MarkTower_Tower', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.abyss')
     },
@@ -202,6 +220,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'theater',
+    icon: { name: 'UI_MarkTower_RoleCombat', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.theater')
     },
@@ -211,6 +230,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'bargains',
+    icon: { name: 'UI_Icon_Paimon', from: 'cdn' },
     get name() {
       return t('planner.task.builtin.bargains')
     },
@@ -220,6 +240,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'transformer',
+    icon: { name: 'UI_ItemIcon_220021', from: 'game' },
     get name() {
       return t('planner.task.builtin.transformer')
     },
@@ -228,6 +249,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'expeditions',
+    icon: { name: 'UI_Talent_Expedition_Mengde', from: 'game', glyph: true },
     get name() {
       return t('planner.task.builtin.expeditions')
     },
@@ -237,6 +259,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'realm',
+    icon: { name: 'UI_ItemIcon_204', from: 'game' },
     get name() {
       return t('planner.task.builtin.realm')
     },
@@ -246,6 +269,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'welkin',
+    icon: { name: 'UI_ItemIcon_1202', from: 'game' },
     get name() {
       return t('planner.task.builtin.welkin')
     },
@@ -255,6 +279,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'ar-rewards',
+    icon: { name: 'UI_BtnIcon_Handbook', from: 'cdn', glyph: true },
     get name() {
       return t('planner.task.builtin.arRewards')
     },
@@ -264,6 +289,7 @@ export const BUILTIN_TASKS: readonly BuiltinTask[] = [
   },
   {
     id: 'sign-ins',
+    icon: { name: 'UI_Icon_Activity_SignInTab', from: 'cdn', glyph: true },
     get name() {
       return t('planner.task.builtin.signIns')
     },

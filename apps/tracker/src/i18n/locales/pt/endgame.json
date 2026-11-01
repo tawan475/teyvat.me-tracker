@@ -6,25 +6,32 @@
     "stygian": "Confronto Abissal"
   },
   "modesLabel": "Modo",
-  "seasons": "Temporadas",
   "status": {
     "active": "Ativa",
     "ended": "Encerrada"
   },
-  "id": "ID {id}",
+  "daysLeft": "Faltam {n} d",
+  "activeLeft": "Ativa · falta {n} dia | Ativa · faltam {n} dias",
   "period": "{start} – {end}",
-  "open": "Abrir",
-  "allSeasons": "Todas as temporadas",
+  "earlier": "Anteriores",
+  "openSeason": "Abrir temporada",
+  "olderSeason": "Temporada anterior",
+  "newerSeason": "Temporada seguinte",
   "empty": "Nada aqui ainda",
   "loadFailed": "Não foi possível carregar os dados",
   "level": "Nv. {n}",
+  "levels": "Nv. {from}–{to}",
+  "hpAt": "Vida no Nv. {n}",
+  "noEntry": "Sem registro em Seres Vivos",
+  "or": "ou",
   "abyss": {
     "blessing": "Bênção da Lua Abissal",
     "floor": "Andar {n}",
     "chamber": "Câmara {n}",
     "firstHalf": "Primeira Metade",
     "secondHalf": "Segunda Metade",
-    "disorder": "Desordem das Linhas Ley"
+    "disorder": "Desordem das Linhas Ley",
+    "floors": "Andares"
   },
   "theater": {
     "elements": "Elementos",

@@ -6,25 +6,32 @@
     "stygian": "Battaglia nel regno oscuro"
   },
   "modesLabel": "Modalità",
-  "seasons": "Stagioni",
   "status": {
     "active": "In corso",
     "ended": "Terminata"
   },
-  "id": "ID {id}",
+  "daysLeft": "Mancano {n} g",
+  "activeLeft": "In corso · manca {n} giorno | In corso · mancano {n} giorni",
   "period": "{start} – {end}",
-  "open": "Apri",
-  "allSeasons": "Tutte le stagioni",
+  "earlier": "Precedenti",
+  "openSeason": "Apri stagione",
+  "olderSeason": "Stagione precedente",
+  "newerSeason": "Stagione successiva",
   "empty": "Ancora niente",
   "loadFailed": "Impossibile caricare i dati",
   "level": "Liv. {n}",
+  "levels": "Liv. {from}–{to}",
+  "hpAt": "PS al liv. {n}",
+  "noEntry": "Non presente in Esseri viventi",
+  "or": "o",
   "abyss": {
     "blessing": "Benedizione lunare dell'Abisso",
     "floor": "Piano {n}",
     "chamber": "Sala {n}",
     "firstHalf": "Prima metà",
     "secondHalf": "Seconda metà",
-    "disorder": "Anomalia geomantica"
+    "disorder": "Anomalia geomantica",
+    "floors": "Piani"
   },
   "theater": {
     "elements": "Elementi",

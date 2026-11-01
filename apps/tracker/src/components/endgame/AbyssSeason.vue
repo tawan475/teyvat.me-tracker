@@ -1,100 +1,163 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { AbyssPeriod } from '@gdt/game-data/endgame'
+import { Zap } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
-import UiPanel from '@/components/ui/UiPanel.vue'
-import type { EndgameData } from '@/data/endgame'
+import UiSegmented from '@/components/ui/UiSegmented.vue'
+import { monsterHp, type EndgameData } from '@/data/endgame'
 import { gameIcon } from '@/lib/assets'
-import LineupEnemy from './LineupEnemy.vue'
+import { t } from '@/i18n'
+import EnemyTile from './EnemyTile.vue'
 
 /**
- * A Spiral Abyss period: the Blessing of the Abyssal Moon, then floors 9-12,
- * each with its Ley Line Disorders and three chambers (the level the game
- * shows, each half's enemies).
+ * A Spiral Abyss period: the blessing on its art, then one floor at a time
+ * (Floor 12 first, the one that matters): its Ley Line Disorders and three
+ * chambers, each half's enemies with their HP at the chamber's level.
  */
-const props = defineProps<{ season: AbyssPeriod; data: EndgameData }>()
-defineEmits<{ enemy: [codex: number] }>()
+const props = defineProps<{
+  season: AbyssPeriod
+  data: EndgameData
+  name: string
+  period: string
+  left: number
+}>()
+defineEmits<{ enemy: [codex: number, level: number] }>()
 
 const text = computed(() => props.data.text)
-const blessing = computed(() => gameIcon(props.season.icon))
-const monster = (id: number) => props.data.data.monsters.get(id)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
+const floorNo = ref(0)
+watch(
+  () => props.season.id,
+  () => (floorNo.value = props.season.floors.at(-1)?.floor ?? 0),
+  { immediate: true },
+)
+const floorOptions = computed(() =>
+  props.season.floors.map((f) => ({
+    value: f.floor,
+    label: t('endgame.abyss.floor', { n: f.floor }),
+    title: t('endgame.levels', {
+      from: f.chambers[0]?.level ?? 0,
+      to: f.chambers.at(-1)?.level ?? 0,
+    }),
+  })),
+)
+const floor = computed(() => props.season.floors.find((f) => f.floor === floorNo.value) ?? null)
+const chambers = computed(() =>
+  (floor.value?.chambers ?? []).map((c) => ({
+    ...c,
+    halves: c.halves.map((half) =>
+      half.map((e) => {
+        const level = e.level || c.level
+        return {
+          ...e,
+          level,
+          monster: props.data.data.monsters.get(e.monster),
+          name: text.value.get(`monster.${e.monster}`),
+          hp: monsterHp(props.data.data, props.data.enemies, e.monster, level),
+        }
+      }),
+    ),
+  })),
+)
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <UiPanel>
-      <div class="flex min-w-0 items-start gap-4">
-        <img
-          v-if="blessing"
-          :src="blessing"
-          alt=""
-          class="h-12 w-auto max-w-24 shrink-0 object-contain max-sm:hidden"
+    <section
+      class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
+    >
+      <div class="relative h-44 bg-surface-sunken sm:h-56">
+        <img :src="gameIcon(season.icon)" alt="" class="absolute inset-0 size-full object-cover" />
+        <span
+          class="absolute inset-0 bg-linear-to-r from-surface-base/95 via-surface-base/55 to-transparent"
         />
-        <div class="flex min-w-0 flex-1 flex-col gap-1">
-          <p class="text-xs font-semibold tracking-wide text-accent-text uppercase">
-            {{ $t('endgame.abyss.blessing') }}
-          </p>
-          <h3 class="text-lg font-semibold break-words">
-            {{ text.get(`abyss.${season.id}.name`) }}
-          </h3>
-          <GameText
-            :text="text.get(`abyss.${season.id}.desc`)"
-            :sprites="data.data.sprites"
-            :sprite-name="sprite"
-            class="text-sm leading-relaxed text-text-secondary"
-          />
-        </div>
-      </div>
-    </UiPanel>
-
-    <UiPanel v-for="floor in season.floors" :key="floor.floor" flush>
-      <template #header>
-        <h3 class="text-base font-semibold">{{ $t('endgame.abyss.floor', { n: floor.floor }) }}</h3>
-      </template>
-      <div class="flex flex-col gap-4 p-3 sm:p-5">
-        <div v-if="floor.disorders.length" class="flex flex-col gap-1.5">
-          <h4 class="text-xs font-semibold text-text-muted">{{ $t('endgame.abyss.disorder') }}</h4>
-          <GameText
-            v-for="d in floor.disorders"
-            :key="d"
-            :text="text.get(`disorder.${d}`)"
-            :sprites="data.data.sprites"
-            :sprite-name="sprite"
-            class="rounded-md bg-surface-sunken px-3 py-2 text-sm leading-relaxed"
-          />
-        </div>
-        <section
-          v-for="chamber in floor.chambers"
-          :key="chamber.chamber"
-          class="flex min-w-0 flex-col gap-2"
-        >
-          <h4 class="flex items-baseline gap-2 text-sm font-semibold">
-            {{ $t('endgame.abyss.chamber', { n: chamber.chamber }) }}
-            <span class="tabular font-mono text-xs font-normal text-text-muted">{{
-              $t('endgame.level', { n: chamber.level })
+        <div class="absolute bottom-4 left-4 flex max-w-xl flex-col gap-1.5 sm:bottom-6 sm:left-6">
+          <span class="text-xs font-semibold tracking-wide text-accent-text uppercase">{{
+            $t('endgame.abyss.blessing')
+          }}</span>
+          <h2 class="text-2xl font-bold sm:text-3xl">{{ name }}</h2>
+          <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span class="tabular font-mono text-text-secondary">{{ period }}</span>
+            <span v-if="left > 0" class="font-semibold text-success-text">{{
+              $t('endgame.activeLeft', { n: left }, left)
             }}</span>
-          </h4>
-          <div class="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
-            <div v-for="(half, h) in chamber.halves" :key="h" class="flex min-w-0 flex-col gap-1.5">
-              <p class="text-xs text-text-muted">
-                {{ h ? $t('endgame.abyss.secondHalf') : $t('endgame.abyss.firstHalf') }}
-              </p>
-              <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-1.5">
-                <li v-for="(enemy, i) in half" :key="i" class="flex min-w-0">
-                  <LineupEnemy
-                    class="w-full"
-                    :monster="monster(enemy.monster)"
-                    :name="text.get(`monster.${enemy.monster}`)"
-                    :level="enemy.level"
-                    @open="$emit('enemy', $event)"
-                  />
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
+          </span>
+        </div>
       </div>
-    </UiPanel>
+      <GameText
+        :text="text.get(`abyss.${season.id}.desc`)"
+        :sprites="data.data.sprites"
+        :sprite-name="sprite"
+        class="px-4 py-3.5 text-sm leading-relaxed text-text-secondary sm:px-6"
+      />
+    </section>
+
+    <div class="scroll-hide scroll-fade-x -mx-4 min-w-0 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <UiSegmented
+        v-model="floorNo"
+        :options="floorOptions"
+        :label="$t('endgame.abyss.floors')"
+        size="md"
+      />
+    </div>
+
+    <ul
+      v-if="floor?.disorders.length"
+      class="flex flex-col gap-2"
+      :aria-label="$t('endgame.abyss.disorder')"
+    >
+      <li
+        v-for="d in floor.disorders"
+        :key="d"
+        class="flex items-start gap-2.5 rounded-lg border border-accent-text/35 bg-accent/10 px-3.5 py-2.5 text-sm leading-relaxed"
+      >
+        <Zap class="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
+        <GameText
+          :text="text.get(`disorder.${d}`)"
+          :sprites="data.data.sprites"
+          :sprite-name="sprite"
+        />
+      </li>
+    </ul>
+
+    <div class="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-3">
+      <section
+        v-for="chamber in chambers"
+        :key="chamber.chamber"
+        class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+      >
+        <header
+          class="flex items-baseline justify-between gap-2 border-b border-border-default px-4 py-3"
+        >
+          <h3 class="text-base font-semibold">
+            {{ $t('endgame.abyss.chamber', { n: chamber.chamber }) }}
+          </h3>
+          <span class="tabular font-mono text-xs text-text-muted">{{
+            $t('endgame.level', { n: chamber.level })
+          }}</span>
+        </header>
+        <div
+          v-for="(half, h) in chamber.halves"
+          :key="h"
+          class="flex min-w-0 flex-col gap-2 px-3 py-3"
+          :class="h > 0 ? 'border-t border-dashed border-border-default' : ''"
+        >
+          <span class="px-1 text-xs font-semibold tracking-wide text-text-muted uppercase">{{
+            h ? $t('endgame.abyss.secondHalf') : $t('endgame.abyss.firstHalf')
+          }}</span>
+          <ul class="flex flex-wrap gap-1">
+            <li v-for="(enemy, i) in half" :key="i">
+              <EnemyTile
+                :monster="enemy.monster"
+                :name="enemy.name"
+                :level="enemy.level"
+                :hp="enemy.hp"
+                @open="(codex, level) => $emit('enemy', codex, level)"
+              />
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
   </div>
 </template>

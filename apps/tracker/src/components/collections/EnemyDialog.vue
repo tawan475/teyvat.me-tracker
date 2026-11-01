@@ -22,10 +22,22 @@ import { t } from '@/i18n'
  * (1-200: HP with 1-4 players, ATK, DEF, EM), its RES, special names, what
  * the Adventurer Handbook says it drops, and its variants at the same level.
  */
-const props = defineProps<{ enemy: Enemy | null; data: EnemyData }>()
+const props = defineProps<{
+  enemy: Enemy | null
+  data: EnemyData
+  /** The level to open at (the chamber, act or difficulty it was clicked in); 90 without one. */
+  level?: number
+}>()
 defineEmits<{ close: [] }>()
 
 const level = ref(90)
+watch(
+  () => [props.enemy?.id, props.level] as const,
+  ([id]) => {
+    if (id) level.value = Math.min(Math.max(props.level ?? 90, 1), MAX_ENEMY_LEVEL)
+  },
+  { immediate: true },
+)
 const name = computed(() => (props.enemy ? props.data.names.name(props.enemy.id) : ''))
 const special = computed(() => (props.enemy ? props.data.names.special(props.enemy.id) : []))
 const description = useResource(

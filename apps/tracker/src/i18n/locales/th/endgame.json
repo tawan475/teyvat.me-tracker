@@ -6,25 +6,32 @@
     "stygian": "ศึกเดือดแดนเร้นลับ"
   },
   "modesLabel": "โหมด",
-  "seasons": "ซีซัน",
   "status": {
     "active": "กำลังเปิด",
     "ended": "สิ้นสุดแล้ว"
   },
-  "id": "ID {id}",
+  "daysLeft": "เหลือ {n} วัน",
+  "activeLeft": "กำลังเปิด · เหลือ {n} วัน",
   "period": "{start} – {end}",
-  "open": "เปิด",
-  "allSeasons": "ทุกซีซัน",
+  "earlier": "ที่ผ่านมา",
+  "openSeason": "เปิดดูซีซัน",
+  "olderSeason": "ซีซันก่อนหน้า",
+  "newerSeason": "ซีซันถัดไป",
   "empty": "ยังไม่มีข้อมูล",
   "loadFailed": "โหลดข้อมูลไม่สำเร็จ",
   "level": "Lv. {n}",
+  "levels": "Lv. {from}–{to}",
+  "hpAt": "HP ที่ Lv. {n}",
+  "noEntry": "ไม่มีในสิ่งมีชีวิต",
+  "or": "หรือ",
   "abyss": {
     "blessing": "พรแห่งจันทรา",
     "floor": "ชั้น {n}",
     "chamber": "ห้อง {n}",
     "firstHalf": "ครึ่งแรก",
     "secondHalf": "ครึ่งหลัง",
-    "disorder": "กระแสพลังผิดปกติ"
+    "disorder": "กระแสพลังผิดปกติ",
+    "floors": "ชั้น"
   },
   "theater": {
     "elements": "ธาตุ",

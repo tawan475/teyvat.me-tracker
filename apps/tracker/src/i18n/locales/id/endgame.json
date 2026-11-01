@@ -6,25 +6,32 @@
     "stygian": "Stygian Onslaught"
   },
   "modesLabel": "Mode",
-  "seasons": "Musim",
   "status": {
     "active": "Aktif",
     "ended": "Selesai"
   },
-  "id": "ID {id}",
+  "daysLeft": "Sisa {n} hari",
+  "activeLeft": "Aktif · sisa {n} hari",
   "period": "{start} – {end}",
-  "open": "Buka",
-  "allSeasons": "Semua musim",
+  "earlier": "Sebelumnya",
+  "openSeason": "Buka musim",
+  "olderSeason": "Musim sebelumnya",
+  "newerSeason": "Musim berikutnya",
   "empty": "Belum ada",
   "loadFailed": "Gagal memuat data",
   "level": "Lv. {n}",
+  "levels": "Lv. {from}–{to}",
+  "hpAt": "HP di Lv. {n}",
+  "noEntry": "Tidak ada di Makhluk Hidup",
+  "or": "atau",
   "abyss": {
     "blessing": "Blessing of the Abyssal Moon",
     "floor": "Lantai {n}",
     "chamber": "Ruang {n}",
     "firstHalf": "Paruh Awal",
     "secondHalf": "Paruh Akhir",
-    "disorder": "Gangguan Ley Line"
+    "disorder": "Gangguan Ley Line",
+    "floors": "Lantai"
   },
   "theater": {
     "elements": "Elemen",

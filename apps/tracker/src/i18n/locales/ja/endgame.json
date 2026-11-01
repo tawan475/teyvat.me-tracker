@@ -6,25 +6,32 @@
     "stygian": "幽境の激戦"
   },
   "modesLabel": "モード",
-  "seasons": "シーズン",
   "status": {
     "active": "開催中",
     "ended": "終了"
   },
-  "id": "ID {id}",
+  "daysLeft": "残り{n}日",
+  "activeLeft": "開催中 · 残り{n}日",
   "period": "{start} – {end}",
-  "open": "開く",
-  "allSeasons": "すべてのシーズン",
+  "earlier": "過去の開催",
+  "openSeason": "詳細を見る",
+  "olderSeason": "前の期間",
+  "newerSeason": "次の期間",
   "empty": "まだありません",
   "loadFailed": "エンドコンテンツのデータを読み込めませんでした",
   "level": "Lv.{n}",
+  "levels": "Lv.{from}–{to}",
+  "hpAt": "Lv.{n}のHP",
+  "noEntry": "生物誌に未登録",
+  "or": "または",
   "abyss": {
     "blessing": "淵月の祝福",
     "floor": "第{n}層",
     "chamber": "第{n}間",
     "firstHalf": "前半",
     "secondHalf": "後半",
-    "disorder": "地脈異常"
+    "disorder": "地脈異常",
+    "floors": "層"
   },
   "theater": {
     "elements": "元素",

@@ -6,25 +6,32 @@
     "stygian": "Düsterer Ansturm"
   },
   "modesLabel": "Modus",
-  "seasons": "Saisons",
   "status": {
     "active": "Aktiv",
     "ended": "Beendet"
   },
-  "id": "ID {id}",
+  "daysLeft": "Noch {n} T.",
+  "activeLeft": "Läuft · noch {n} Tag | Läuft · noch {n} Tage",
   "period": "{start} – {end}",
-  "open": "Öffnen",
-  "allSeasons": "Alle Saisons",
+  "earlier": "Frühere",
+  "openSeason": "Saison öffnen",
+  "olderSeason": "Vorherige Saison",
+  "newerSeason": "Nächste Saison",
   "empty": "Noch nichts da",
   "loadFailed": "Die Daten konnten nicht geladen werden",
   "level": "St. {n}",
+  "levels": "Stufe {from}–{to}",
+  "hpAt": "LP auf Stufe {n}",
+  "noEntry": "Kein Eintrag unter Lebewesen",
+  "or": "oder",
   "abyss": {
     "blessing": "Monatssegen",
     "floor": "Ebene {n}",
     "chamber": "Kammer {n}",
     "firstHalf": "Erste Hälfte",
     "secondHalf": "Zweite Hälfte",
-    "disorder": "Elementaranomalie"
+    "disorder": "Elementaranomalie",
+    "floors": "Ebenen"
   },
   "theater": {
     "elements": "Elemente",

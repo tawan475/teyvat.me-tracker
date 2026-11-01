@@ -1,39 +1,42 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
-import SeasonList from '@/components/endgame/SeasonList.vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import ModeCards from '@/components/endgame/ModeCards.vue'
+import SeasonArchive from '@/components/endgame/SeasonArchive.vue'
+import SeasonHero from '@/components/endgame/SeasonHero.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
-import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
-import UiIconButton from '@/components/ui/UiIconButton.vue'
-import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import {
   ENDGAME_MODES,
-  dateOf,
+  daysLeft,
   isEndgameMode,
   loadEndgameData,
   seasonName,
-  seasonStatus,
+  seasonTime,
   startedSeasons,
   type AnySeason,
   type EndgameMode,
-  type SeasonRow,
 } from '@/data/endgame'
 import { loadEnemyData } from '@/data/enemies'
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { loadGameIcons } from '@/lib/assets'
+import { formatMonthDay } from '@/lib/format'
 import { t } from '@/i18n'
 import { useAccount, useAccountRoute } from './context'
 
 /**
- * Endgame: the Spiral Abyss, Imaginarium Theater and Stygian Onslaught as the
- * game lists them (`/endgame/<mode>`: seasons newest first; `/<id>`: one
- * season). Game data only, the same for every account; dates are read on the
- * account's server. An enemy opens its Living Beings entry (`?enemy=<id>`).
+ * Endgame: the Spiral Abyss, Imaginarium Theater and Stygian Onslaught.
+ * The three modes are cards on top of every page (`/endgame/<mode>`); a
+ * mode's page leads with its newest season as a picture card, then its
+ * earlier seasons a year at a time; `/<id>` is one season, with older/newer
+ * steps. Game data only, the same for every account; dates are read on the
+ * account's server, and seasons not started yet are left out. An enemy opens
+ * its Living Beings entry at the level it was clicked at (`?enemy=<id>&lv=`).
  */
 const route = useRoute()
 const router = useRouter()
@@ -58,77 +61,70 @@ const resource = useResource(
   },
 )
 
-// The clock the statuses read: once a minute, so "Active" moves on while the page is open.
+// The clock the statuses read: once a minute, so "days left" moves on while the page is open.
 const now = ref(Date.now())
 const timer = setInterval(() => (now.value = Date.now()), 60_000)
 onBeforeUnmount(() => clearInterval(timer))
+const server = computed(() => account.value.server)
 
 const to = (m: EndgameMode, season?: number) => ({
   name: accountRoute('account-endgame'),
   params: { accountId: account.value.id, mode: m, season: season ? String(season) : '' },
 })
-const modeOptions = computed(() =>
-  ENDGAME_MODES.map((m) => ({ value: m, label: t(`endgame.modes.${m}`) })),
-)
-const chosenMode = computed({
-  get: () => mode.value,
-  set: (m: EndgameMode) => void router.replace(to(m)),
-})
 
 const monthFormat = computed(
   () => new Intl.DateTimeFormat(locale.value, { year: 'numeric', month: 'long' }),
 )
-function nameOf(season: AnySeason): string {
+function nameOf(m: EndgameMode, season: AnySeason): string {
   const data = resource.data.value
-  const name = data ? seasonName(mode.value, season, data.text) : ''
+  const name = data ? seasonName(m, season, data.text) : ''
   if (name) return name
-  const [y, m] = season.start.split('-').map(Number) as [number, number]
-  return monthFormat.value.format(new Date(Date.UTC(y, m - 1, 15)))
+  const [y, mo] = season.start.split('-').map(Number) as [number, number]
+  return monthFormat.value.format(new Date(Date.UTC(y, mo - 1, 15)))
 }
-const period = (s: AnySeason) => t('endgame.period', { start: dateOf(s.start), end: dateOf(s.end) })
+const periodOf = (s: AnySeason) =>
+  t('endgame.period', {
+    start: formatMonthDay(seasonTime(s.start, server.value)),
+    end: formatMonthDay(seasonTime(s.end, server.value)),
+  })
 
-const seasons = computed(() =>
-  resource.data.value
-    ? startedSeasons(resource.data.value.data, mode.value, now.value, account.value.server)
-    : [],
+const listed = (m: EndgameMode) =>
+  resource.data.value ? startedSeasons(resource.data.value.data, m, now.value, server.value) : []
+const seasons = computed(() => listed(mode.value))
+const current = computed(
+  () =>
+    Object.fromEntries(ENDGAME_MODES.map((m) => [m, listed(m)[0] ?? null])) as Record<
+      EndgameMode,
+      AnySeason | null
+    >,
 )
-const rows = computed<SeasonRow[]>(() =>
-  seasons.value.map((s) => ({
-    id: s.id,
-    name: nameOf(s),
-    status: seasonStatus(s, now.value, account.value.server) === 'active' ? 'active' : 'ended',
-    period: period(s),
-    to: to(mode.value, s.id),
-  })),
-)
-const season = computed(() => seasons.value.find((s) => s.id === seasonId.value) ?? null)
+const index = computed(() => seasons.value.findIndex((s) => s.id === seasonId.value))
+const season = computed(() => seasons.value[index.value] ?? null)
+const older = computed(() => seasons.value[index.value + 1] ?? null)
+const newer = computed(() => (index.value > 0 ? seasons.value[index.value - 1]! : null))
 
 // Enemies open their Living Beings entry, loaded the first time one is asked for.
 const enemyId = computed(() => Number(route.query.enemy) || 0)
+const enemyLevel = computed(() => Number(route.query.lv) || undefined)
 const enemies = useResource(
   () => (enemyId.value ? locale.value : null),
   (lang) => (lang ? loadEnemyData(lang) : Promise.resolve(null)),
 )
 const openEnemy = computed(() => enemies.data.value?.enemies.byId.get(enemyId.value) ?? null)
-function showEnemy(id: number | null) {
+function showEnemy(id: number | null, level?: number) {
   const query = { ...route.query }
-  if (id) query.enemy = String(id)
-  else delete query.enemy
+  delete query.lv
+  if (id) {
+    query.enemy = String(id)
+    if (level) query.lv = String(level)
+  } else delete query.enemy
   void router.replace({ query })
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-5">
     <PageHeader :title="$t('endgame.title')" />
-
-    <UiSegmented
-      v-model="chosenMode"
-      :options="modeOptions"
-      :label="$t('endgame.modesLabel')"
-      size="md"
-      class="self-start max-sm:w-full"
-    />
 
     <UiError
       v-if="resource.error.value && !resource.data.value"
@@ -136,46 +132,100 @@ function showEnemy(id: number | null) {
       :error="resource.error.value"
       @retry="resource.reload"
     />
-    <div v-else-if="!resource.data.value" class="flex flex-col gap-2" aria-busy="true">
-      <UiSkeleton v-for="n in 8" :key="n" class="h-16 w-full" />
+    <div v-else-if="!resource.data.value" class="flex flex-col gap-4" aria-busy="true">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <UiSkeleton v-for="n in 3" :key="n" class="h-36" />
+      </div>
+      <UiSkeleton class="h-72 w-full" />
     </div>
 
-    <template v-else-if="seasonId && season">
-      <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-        <UiIconButton :label="$t('endgame.allSeasons')" :to="to(mode)">
-          <ArrowLeft class="size-5" aria-hidden="true" />
-        </UiIconButton>
-        <div class="flex min-w-0 flex-1 flex-col">
-          <h2 class="truncate text-lg font-semibold">{{ nameOf(season) }}</h2>
-          <p class="tabular truncate font-mono text-xs text-text-muted">
-            {{ $t('endgame.id', { id: season.id }) }} · {{ period(season) }}
-          </p>
-        </div>
-        <UiBadge
-          :tone="seasonStatus(season, now, account.server) === 'active' ? 'success' : 'neutral'"
-          >{{
-            $t(
-              `endgame.status.${seasonStatus(season, now, account.server) === 'active' ? 'active' : 'ended'}`,
-            )
-          }}</UiBadge
-        >
-      </div>
-      <component
-        :is="SEASON_VIEW[mode]"
-        :key="`${mode}-${season.id}`"
-        :season="season as never"
+    <template v-else>
+      <ModeCards
         :data="resource.data.value"
-        @enemy="showEnemy"
+        :current="current"
+        :mode="mode"
+        :now="now"
+        :server="server"
+        :name-of="nameOf"
+        :to="(m) => to(m)"
       />
-    </template>
 
-    <UiEmpty v-else-if="!rows.length" :title="$t('endgame.empty')" />
-    <SeasonList v-else :rows="rows" :label="$t('endgame.seasons')" />
+      <template v-if="seasonId && season">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <RouterLink
+            :to="to(mode)"
+            class="inline-flex items-center gap-1 rounded-md text-sm text-accent-text hover:underline"
+          >
+            <ChevronLeft class="size-4" aria-hidden="true" />{{ $t(`endgame.modes.${mode}`) }}
+          </RouterLink>
+          <div class="flex min-w-0 gap-2">
+            <UiButton
+              v-if="older"
+              variant="secondary"
+              size="sm"
+              :to="to(mode, older.id)"
+              :title="$t('endgame.olderSeason')"
+              class="min-w-0"
+            >
+              <ChevronLeft class="size-4 shrink-0" aria-hidden="true" /><span class="truncate">{{
+                nameOf(mode, older)
+              }}</span>
+            </UiButton>
+            <UiButton
+              v-if="newer"
+              variant="secondary"
+              size="sm"
+              :to="to(mode, newer.id)"
+              :title="$t('endgame.newerSeason')"
+              class="min-w-0"
+            >
+              <span class="truncate">{{ nameOf(mode, newer) }}</span
+              ><ChevronRight class="size-4 shrink-0" aria-hidden="true" />
+            </UiButton>
+          </div>
+        </div>
+        <component
+          :is="SEASON_VIEW[mode]"
+          :key="`${mode}-${season.id}`"
+          :season="season as never"
+          :data="resource.data.value"
+          :name="nameOf(mode, season)"
+          :period="periodOf(season)"
+          :left="daysLeft(season, now, server)"
+          @enemy="showEnemy"
+        />
+      </template>
+
+      <UiEmpty v-else-if="!seasons.length" :title="$t('endgame.empty')" />
+      <template v-else>
+        <SeasonHero
+          :key="`${mode}-${seasons[0]!.id}`"
+          :mode="mode"
+          :season="seasons[0]!"
+          :data="resource.data.value"
+          :name="nameOf(mode, seasons[0]!)"
+          :period="periodOf(seasons[0]!)"
+          :left="daysLeft(seasons[0]!, now, server)"
+          :to="to(mode, seasons[0]!.id)"
+          @enemy="showEnemy"
+        />
+        <SeasonArchive
+          v-if="seasons.length > 1"
+          :mode="mode"
+          :seasons="seasons.slice(1)"
+          :data="resource.data.value"
+          :name-of="(s) => nameOf(mode, s)"
+          :period-of="periodOf"
+          :to="(s) => to(mode, s.id)"
+        />
+      </template>
+    </template>
 
     <EnemyDialog
       v-if="enemies.data.value"
       :enemy="openEnemy"
       :data="enemies.data.value"
+      :level="enemyLevel"
       @close="showEnemy(null)"
     />
   </div>

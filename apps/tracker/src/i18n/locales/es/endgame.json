@@ -6,25 +6,32 @@
     "stygian": "Conflagración estigia"
   },
   "modesLabel": "Modo",
-  "seasons": "Temporadas",
   "status": {
     "active": "Activa",
     "ended": "Finalizada"
   },
-  "id": "ID {id}",
+  "daysLeft": "Quedan {n} d",
+  "activeLeft": "Activa · queda {n} día | Activa · quedan {n} días",
   "period": "{start} – {end}",
-  "open": "Abrir",
-  "allSeasons": "Todas las temporadas",
+  "earlier": "Anteriores",
+  "openSeason": "Abrir temporada",
+  "olderSeason": "Temporada anterior",
+  "newerSeason": "Temporada siguiente",
   "empty": "Aún no hay nada",
   "loadFailed": "No se pudieron cargar los datos",
   "level": "Niv. {n}",
+  "levels": "Nv. {from}–{to}",
+  "hpAt": "Vida a Nv. {n}",
+  "noEntry": "Sin entrada en Seres vivos",
+  "or": "o",
   "abyss": {
     "blessing": "Bendición de la Luna Abismal",
     "floor": "Piso {n}",
     "chamber": "Sala {n}",
     "firstHalf": "Primera mitad",
     "secondHalf": "Segunda mitad",
-    "disorder": "Líneas ley anómalas"
+    "disorder": "Líneas ley anómalas",
+    "floors": "Pisos"
   },
   "theater": {
     "elements": "Elementos",

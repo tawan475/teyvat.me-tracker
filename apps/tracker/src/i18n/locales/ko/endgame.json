@@ -6,25 +6,32 @@
     "stygian": "지맥 제압전"
   },
   "modesLabel": "모드",
-  "seasons": "시즌",
   "status": {
     "active": "진행 중",
     "ended": "종료"
   },
-  "id": "ID {id}",
+  "daysLeft": "{n}일 남음",
+  "activeLeft": "진행 중 · {n}일 남음",
   "period": "{start} – {end}",
-  "open": "열기",
-  "allSeasons": "모든 시즌",
+  "earlier": "지난 시즌",
+  "openSeason": "시즌 보기",
+  "olderSeason": "이전 시즌",
+  "newerSeason": "다음 시즌",
   "empty": "아직 없습니다",
   "loadFailed": "엔드 콘텐츠 데이터를 불러오지 못했습니다",
   "level": "Lv. {n}",
+  "levels": "Lv.{from}–{to}",
+  "hpAt": "Lv.{n} HP",
+  "noEntry": "생물지에 없음",
+  "or": "또는",
   "abyss": {
     "blessing": "연월 축복",
     "floor": "{n}층",
     "chamber": "{n}번째 방",
     "firstHalf": "전반부",
     "secondHalf": "후반부",
-    "disorder": "지맥 이상"
+    "disorder": "지맥 이상",
+    "floors": "층"
   },
   "theater": {
     "elements": "원소",

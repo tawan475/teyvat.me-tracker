@@ -6,25 +6,32 @@
     "stygian": "Ảo Cảnh Hiểm Ác"
   },
   "modesLabel": "Chế độ",
-  "seasons": "Mùa",
   "status": {
     "active": "Đang diễn ra",
     "ended": "Đã kết thúc"
   },
-  "id": "ID {id}",
+  "daysLeft": "Còn {n} ngày",
+  "activeLeft": "Đang mở · còn {n} ngày",
   "period": "{start} – {end}",
-  "open": "Mở",
-  "allSeasons": "Tất cả các mùa",
+  "earlier": "Mùa trước",
+  "openSeason": "Xem mùa",
+  "olderSeason": "Mùa trước đó",
+  "newerSeason": "Mùa sau đó",
   "empty": "Chưa có gì",
   "loadFailed": "Không tải được dữ liệu",
   "level": "Cấp {n}",
+  "levels": "Lv. {from}–{to}",
+  "hpAt": "HP ở Lv. {n}",
+  "noEntry": "Không có trong Sách Sinh Vật",
+  "or": "hoặc",
   "abyss": {
     "blessing": "Uyên Nguyệt Chúc Phúc",
     "floor": "Tầng {n}",
     "chamber": "Gian {n}",
     "firstHalf": "Nửa Trận Đầu",
     "secondHalf": "Nửa Trận Sau",
-    "disorder": "Địa Mạch Bất Thường"
+    "disorder": "Địa Mạch Bất Thường",
+    "floors": "Tầng"
   },
   "theater": {
     "elements": "Nguyên Tố",

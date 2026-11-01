@@ -6,25 +6,32 @@
     "stygian": "幽境危戰"
   },
   "modesLabel": "挑戰模式",
-  "seasons": "期數",
   "status": {
     "active": "進行中",
     "ended": "已結束"
   },
-  "id": "ID {id}",
+  "daysLeft": "剩餘{n}天",
+  "activeLeft": "進行中 · 剩餘{n}天",
   "period": "{start} – {end}",
-  "open": "開啟",
-  "allSeasons": "全部期數",
+  "earlier": "往期",
+  "openSeason": "查看本期",
+  "olderSeason": "上一期",
+  "newerSeason": "下一期",
   "empty": "暫無內容",
   "loadFailed": "無法載入終局資料",
   "level": "Lv. {n}",
+  "levels": "{from}–{to}級",
+  "hpAt": "{n}級生命值",
+  "noEntry": "生物誌中無此條目",
+  "or": "或",
   "abyss": {
     "blessing": "淵月祝福",
     "floor": "第{n}層",
     "chamber": "第{n}間",
     "firstHalf": "上半場",
     "secondHalf": "下半場",
-    "disorder": "地脈異常"
+    "disorder": "地脈異常",
+    "floors": "層"
   },
   "theater": {
     "elements": "元素",

@@ -3,152 +3,260 @@ import { computed, ref, watch } from 'vue'
 import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
-import GameIcon from '@/components/ui/GameIcon.vue'
-import UiPanel from '@/components/ui/UiPanel.vue'
-import UiSegmented from '@/components/ui/UiSegmented.vue'
-import type { EndgameData } from '@/data/endgame'
+import { monsterHp, type EndgameData } from '@/data/endgame'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
-import { characterIcon } from '@/lib/assets'
+import { characterBanner, characterIcon } from '@/lib/assets'
 import { t } from '@/i18n'
-import LineupEnemy from './LineupEnemy.vue'
+import EnemyTile from './EnemyTile.vue'
 
 /**
- * An Imaginarium Theater season: its elements, Opening Characters and Special
- * Guest Stars; per difficulty, each act's level and the lineups a run can
- * meet there (a named boss act shows its title and what it does), then the
- * hardest difficulty's extra bouts.
+ * An Imaginarium Theater season: a column that stays in view (the namecard,
+ * elements, Opening Characters, Special Guest Stars and the difficulties),
+ * beside the chosen difficulty's acts, one row each: a boss act shows its
+ * boss and what it does; any other its lineups side by side (a run meets one
+ * of them); then the hardest difficulty's extra bouts.
  */
-const props = defineProps<{ season: TheaterSeason; data: EndgameData }>()
-defineEmits<{ enemy: [codex: number] }>()
+const props = defineProps<{
+  season: TheaterSeason
+  data: EndgameData
+  name: string
+  period: string
+  left: number
+}>()
+defineEmits<{ enemy: [codex: number, level: number] }>()
 
 const text = computed(() => props.data.text)
+const sprite = (id: number) => text.value.get(`sprite.${id}`)
+const element = (name: string) => name.toLowerCase() as Element
 const difficulty = ref(0)
 watch(
   () => props.season.id,
   () => (difficulty.value = props.season.difficulties.at(-1)?.difficulty ?? 0),
   { immediate: true },
 )
-const options = computed(() =>
+const difficulties = computed(() =>
   props.season.difficulties.map((d) => ({
     value: d.difficulty,
     label:
       text.value.get(`theaterDifficulty.${d.difficulty}`) ||
       t('endgame.theater.difficultyN', { n: d.difficulty }),
-    title: t('endgame.theater.acts', { n: d.acts.length + d.extra.length }),
+    acts: d.acts.length + d.extra.length,
   })),
 )
 const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
-const element = (name: string) => name.toLowerCase() as Element
-const lineup = (level: number) => props.data.data.theaterLevels.get(level) ?? []
-const monster = (id: number) => props.data.data.monsters.get(id)
-const sprite = (id: number) => text.value.get(`sprite.${id}`)
-const cast = computed(() => [
-  { key: 'opening', label: t('endgame.theater.opening'), list: props.season.opening },
-  { key: 'guests', label: t('endgame.theater.guests'), list: props.season.guests },
-])
-const sections = computed(() =>
+
+const lineup = (level: number, actLevel: number) =>
+  (props.data.data.theaterLevels.get(level) ?? []).map((e) => {
+    const at = e.level || actLevel
+    return {
+      ...e,
+      level: at,
+      monster: props.data.data.monsters.get(e.monster),
+      name: text.value.get(`monster.${e.monster}`),
+      hp: monsterHp(props.data.data, props.data.enemies, e.monster, at),
+    }
+  })
+const row = (act: TheaterAct, extra: boolean) => {
+  const named = act.levels.length === 1 && !!text.value.get(`theater.${act.levels[0]}.name`)
+  return {
+    key: `${extra ? 'x' : ''}${act.act}-${act.levels.join(',')}`,
+    act: act.act,
+    level: act.level,
+    extra,
+    named,
+    title: named ? text.value.get(`theater.${act.levels[0]}.name`) : '',
+    desc: named ? text.value.get(`theater.${act.levels[0]}.desc`) : '',
+    lineups: act.levels.map((l) => lineup(l, act.level)),
+  }
+}
+const acts = computed(() =>
   chosen.value
     ? [
-        { key: 'acts', title: '', acts: chosen.value.acts },
-        { key: 'extra', title: t('endgame.theater.extra'), acts: chosen.value.extra },
-      ].filter((s) => s.acts.length)
+        ...chosen.value.acts.map((a) => row(a, false)),
+        ...chosen.value.extra.map((a) => row(a, true)),
+      ]
     : [],
 )
-const actKey = (act: TheaterAct) => `${act.act}-${act.levels.join(',')}`
+const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
-    <UiPanel>
-      <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-1.5">
-          <h3 class="text-xs font-semibold text-text-muted">
-            {{ $t('endgame.theater.elements') }}
-          </h3>
-          <ul class="flex flex-wrap gap-3">
+  <div class="flex flex-wrap items-start gap-4">
+    <aside
+      class="flex max-w-full min-w-0 flex-[1_1_18rem] flex-col gap-3 lg:sticky lg:top-24 lg:max-w-[20rem]"
+    >
+      <section
+        class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
+      >
+        <div class="relative h-28 bg-surface-sunken">
+          <img
+            :src="characterBanner(season.opening[0] ?? '')"
+            alt=""
+            class="size-full object-cover"
+          />
+          <span class="absolute inset-0 bg-linear-to-b from-transparent to-surface-raised" />
+        </div>
+        <div class="relative -mt-8 flex flex-col gap-1.5 px-4 pb-4">
+          <h2 class="text-2xl font-bold">{{ name }}</h2>
+          <span class="flex flex-wrap gap-x-3 text-sm">
+            <span class="tabular font-mono text-text-muted">{{ period }}</span>
+            <span v-if="left > 0" class="font-semibold text-success-text">{{
+              $t('endgame.activeLeft', { n: left }, left)
+            }}</span>
+          </span>
+          <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
             <li v-for="e in season.elements" :key="e" class="flex items-center gap-1.5 text-sm">
               <ElementIcon :element="element(e)" size="lg" decorative />
               {{ $t(`game.element.${element(e)}`) }}
             </li>
           </ul>
         </div>
-        <div v-for="group in cast" :key="group.key" class="flex flex-col gap-1.5">
-          <h3 class="text-xs font-semibold text-text-muted">{{ group.label }}</h3>
-          <ul class="flex flex-wrap gap-2">
-            <li v-for="key in group.list" :key="key" :title="characterName(key)">
-              <GameIcon :src="characterIcon(key)" :name="characterName(key)" size="md" />
+      </section>
+
+      <section
+        class="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-raised p-4 shadow-sm"
+      >
+        <template v-for="group in ['opening', 'guests'] as const" :key="group">
+          <h3
+            class="text-xs font-semibold tracking-wide uppercase"
+            :class="group === 'guests' ? 'text-warning-text' : 'text-text-muted'"
+          >
+            {{ $t(`endgame.theater.${group}`) }}
+          </h3>
+          <ul
+            class="grid gap-x-1.5 gap-y-2"
+            :class="group === 'guests' ? 'grid-cols-4' : 'grid-cols-3'"
+          >
+            <li
+              v-for="key in season[group]"
+              :key="key"
+              class="flex min-w-0 flex-col items-center gap-1"
+            >
+              <img
+                :src="characterIcon(key)"
+                :alt="characterName(key)"
+                class="size-13 rounded-full border-2 bg-surface-overlay object-cover"
+                :class="group === 'guests' ? 'border-warning-text' : 'border-border-strong'"
+              />
+              <span class="w-full truncate text-center text-xs text-text-secondary">{{
+                characterName(key)
+              }}</span>
             </li>
           </ul>
-        </div>
-      </div>
-    </UiPanel>
+        </template>
+      </section>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <span class="text-sm font-semibold text-text-secondary">{{
-        $t('endgame.theater.difficulty')
-      }}</span>
-      <div class="scroll-hide scroll-fade-x -mx-4 min-w-0 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <UiSegmented
-          v-model="difficulty"
-          :options="options"
-          :label="$t('endgame.theater.difficulty')"
-        />
-      </div>
-    </div>
-
-    <UiPanel v-for="section in sections" :key="section.key" flush>
-      <template v-if="section.title" #header>
-        <h3 class="text-base font-semibold">{{ section.title }}</h3>
-      </template>
-      <ol class="flex flex-col divide-y divide-border-default">
-        <li
-          v-for="act in section.acts"
-          :key="actKey(act)"
-          class="flex min-w-0 flex-col gap-2 p-3 sm:p-4"
+      <section
+        class="flex flex-col gap-0.5 rounded-xl border border-border-default bg-surface-raised p-2 shadow-sm"
+        role="radiogroup"
+        :aria-label="$t('endgame.theater.difficulty')"
+      >
+        <h3 class="px-3 pt-1 pb-1.5 text-xs font-semibold tracking-wide text-text-muted uppercase">
+          {{ $t('endgame.theater.difficulty') }}
+        </h3>
+        <button
+          v-for="d in difficulties"
+          :key="d.value"
+          type="button"
+          role="radio"
+          :aria-checked="d.value === difficulty"
+          class="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors"
+          :class="
+            d.value === difficulty
+              ? 'bg-surface-overlay font-semibold text-text-primary ring-1 ring-warning-text ring-inset'
+              : 'text-text-secondary hover:bg-surface-overlay'
+          "
+          @click="difficulty = d.value"
         >
-          <h4 class="flex items-baseline gap-2 text-sm font-semibold">
-            {{ $t('endgame.theater.act', { n: act.act }) }}
-            <span class="tabular font-mono text-xs font-normal text-text-muted">{{
-              $t('endgame.level', { n: act.level })
-            }}</span>
-          </h4>
-          <p v-if="act.levels.length > 1" class="text-xs text-text-muted">
-            {{ $t('endgame.theater.oneOf') }}
-          </p>
-          <div
-            v-for="level in act.levels"
-            :key="level"
-            class="flex min-w-0 flex-col gap-1.5"
-            :class="
-              act.levels.length > 1 && 'rounded-lg border border-dashed border-border-default p-2'
-            "
+          <span class="truncate">{{ d.label }}</span>
+          <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
+            $t('endgame.theater.acts', { n: d.acts })
+          }}</span>
+        </button>
+      </section>
+    </aside>
+
+    <ol class="flex min-w-0 flex-[999_1_32rem] flex-col gap-3">
+      <li v-for="(a, i) in acts" :key="a.key" class="flex flex-col gap-3">
+        <h3
+          v-if="i === firstExtra"
+          class="mt-2 text-xs font-semibold tracking-wide text-warning-text uppercase"
+        >
+          {{ $t('endgame.theater.extra') }}
+        </h3>
+        <section
+          class="flex min-w-0 flex-col rounded-xl border bg-surface-raised shadow-sm"
+          :class="a.named ? 'border-warning-text/55' : 'border-border-default'"
+        >
+          <header
+            class="flex items-baseline justify-between gap-3 border-b border-border-default px-4 py-2.5"
           >
-            <template v-if="text.get(`theater.${level}.name`)">
-              <p class="font-semibold">{{ text.get(`theater.${level}.name`) }}</p>
-              <GameText
-                :text="text.get(`theater.${level}.desc`)"
-                :sprites="data.data.sprites"
-                :sprite-name="sprite"
-                class="text-sm leading-relaxed text-text-secondary"
-              />
-            </template>
-            <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-1.5">
-              <li v-for="(enemy, i) in lineup(level)" :key="i" class="flex min-w-0">
-                <LineupEnemy
-                  class="w-full"
-                  :monster="monster(enemy.monster)"
-                  :name="text.get(`monster.${enemy.monster}`)"
-                  :level="enemy.level"
-                  @open="$emit('enemy', $event)"
+            <h4
+              class="min-w-0 truncate text-sm font-semibold"
+              :class="a.named && 'text-warning-text'"
+            >
+              {{ a.extra ? '' : $t('endgame.theater.act', { n: a.act })
+              }}{{ a.named && !a.extra ? ' · ' : '' }}{{ a.title }}
+            </h4>
+            <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
+              $t('endgame.level', { n: a.level })
+            }}</span>
+          </header>
+          <div v-if="a.named" class="flex min-w-0 items-start gap-4 p-3 sm:px-4">
+            <EnemyTile
+              v-for="(e, j) in a.lineups[0]?.slice(0, 1)"
+              :key="j"
+              :monster="e.monster"
+              :name="e.name"
+              :level="e.level"
+              :hp="e.hp"
+              size="lg"
+              class="shrink-0"
+              @open="(codex, level) => $emit('enemy', codex, level)"
+            />
+            <GameText
+              :text="a.desc"
+              :sprites="data.data.sprites"
+              :sprite-name="sprite"
+              class="min-w-0 pt-1 text-sm leading-relaxed text-text-secondary"
+            />
+          </div>
+          <div
+            v-else
+            class="grid min-w-0"
+            :class="a.lineups.length > 1 ? 'md:grid-cols-2' : ''"
+            :title="a.lineups.length > 1 ? $t('endgame.theater.oneOf') : undefined"
+          >
+            <ul
+              v-for="(enemies, j) in a.lineups"
+              :key="j"
+              class="relative flex min-w-0 flex-wrap content-start gap-1 p-2.5"
+              :class="
+                j > 0 &&
+                'border-t border-dashed border-border-strong md:border-t-0 md:border-l md:pl-4'
+              "
+            >
+              <span
+                v-if="j > 0"
+                class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-surface-raised px-1.5 text-xs text-text-muted md:top-1/2 md:-left-3 md:translate-x-0 md:-translate-y-1/2 md:px-0.5"
+                >{{ $t('endgame.or') }}</span
+              >
+              <li v-for="(e, k) in enemies" :key="k">
+                <EnemyTile
+                  :monster="e.monster"
+                  :name="e.name"
+                  :level="e.level"
+                  :hp="e.hp"
+                  @open="(codex, level) => $emit('enemy', codex, level)"
                 />
               </li>
             </ul>
           </div>
-        </li>
-      </ol>
-    </UiPanel>
+        </section>
+      </li>
+    </ol>
   </div>
 </template>

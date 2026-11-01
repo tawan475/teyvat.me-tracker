@@ -15,12 +15,13 @@ import {
   type AbyssPeriod,
   type Endgame,
   type EndgameText,
+  type StygianBoss,
   type StygianSeason,
   type TheaterSeason,
   type SERVER_OFFSETS,
 } from '@gdt/game-data/endgame'
+import { loadEnemies, type Enemies } from '@gdt/game-data/enemies'
 import type { GenshinServer } from '@gdt/shared'
-import type { RouteLocationRaw } from 'vue-router'
 import type { Locale } from '@/i18n/locale'
 
 export const ENDGAME_MODES = ['abyss', 'theater', 'stygian'] as const
@@ -32,18 +33,11 @@ export const isEndgameMode = (value: unknown): value is EndgameMode =>
 
 export type SeasonStatus = 'upcoming' | 'active' | 'ended'
 
-/** A row of the Endgame page's season list. */
-export interface SeasonRow {
-  id: number
-  name: string
-  status: Exclude<SeasonStatus, 'upcoming'>
-  period: string
-  to: RouteLocationRaw
-}
-
 export interface EndgameData {
   data: Endgame
   text: EndgameText
+  /** The Living Beings stats (the lineups' HP). */
+  enemies: Enemies
 }
 
 const cache = new Map<Locale, Promise<EndgameData>>()
@@ -52,10 +46,9 @@ const cache = new Map<Locale, Promise<EndgameData>>()
 export function loadEndgameData(lang: Locale): Promise<EndgameData> {
   let found = cache.get(lang)
   if (!found) {
-    found = Promise.all([loadEndgame(), loadEndgameText(lang)]).then(([data, text]) => ({
-      data,
-      text,
-    }))
+    found = Promise.all([loadEndgame(), loadEndgameText(lang), loadEnemies()]).then(
+      ([data, text, enemies]) => ({ data, text, enemies }),
+    )
     found.catch(() => cache.delete(lang))
     cache.set(lang, found)
   }
@@ -105,6 +98,69 @@ export function seasonName(mode: EndgameMode, season: AnySeason, text: EndgameTe
 
 /** A schedule date's day ("2026-10-16 04:00:00" -> "2026-10-16"), for compact ranges. */
 export const dateOf = (date: string) => date.slice(0, 10)
+
+/** The year a season starts in (the archive's year chips). */
+export const seasonYear = (season: { start: string }) => season.start.slice(0, 4)
+
+const DAY = 86_400_000
+
+/** Whole days left until a season ends on the account's server (0 once it has). */
+export function daysLeft(
+  season: { end: string },
+  now: number,
+  server: GenshinServer | null | undefined,
+): number {
+  return Math.max(0, Math.ceil((seasonTime(season.end, server) - now) / DAY))
+}
+
+/** How far through its period a season is, 0-100 (the mode cards' bars). */
+export function elapsedPercent(
+  season: { start: string; end: string },
+  now: number,
+  server: GenshinServer | null | undefined,
+): number {
+  const start = seasonTime(season.start, server)
+  const end = seasonTime(season.end, server)
+  if (!(end > start)) return 100
+  return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+}
+
+/**
+ * A lineup monster's HP with 1-4 players at a level, from its Living Beings
+ * entry (the encyclopedia's figure: the endgame may scale it further); null
+ * when it has no entry (Battle-Hardened variants) or no stats.
+ */
+export function monsterHp(
+  data: Endgame,
+  enemies: Enemies,
+  monster: number,
+  level: number,
+): number[] | null {
+  const codex = data.monsters.get(monster)?.codex
+  const stats = codex ? enemies.byId.get(codex)?.stats : null
+  return stats && level ? enemies.statsAt(stats, level).hp : null
+}
+
+/**
+ * A Stygian opponent's picture: the game's own boss art (the boss on its
+ * purple swirl, UI_Img_LeyLineChallenge_*), else its icon. `art` says which,
+ * since the art has room around the boss and is shown a little closer.
+ */
+export function stygianBossPicture(boss: StygianBoss): { name: string; art: boolean } {
+  return boss.art ? { name: boss.art, art: true } : { name: boss.icon, art: false }
+}
+
+/** The distinct enemies of an Abyss period's last floor, in order (its cards' preview). */
+export function abyssTopEnemies(season: AbyssPeriod, count = 6): number[] {
+  const floor = season.floors.at(-1)
+  const ids = floor?.chambers.flatMap((c) => c.halves.flat().map((e) => e.monster)) ?? []
+  return [...new Set(ids)].slice(0, count)
+}
+
+/** The highest difficulty of a Stygian season (what its card's HP is read at). */
+export function stygianTop(season: StygianSeason): StygianSeason['difficulties'][number] | null {
+  return season.difficulties.at(-1) ?? null
+}
 
 /** One piece of game text: plain, a coloured run, or an inline icon (`{SPRITE_PRESET#id}`). */
 export type GameRun =

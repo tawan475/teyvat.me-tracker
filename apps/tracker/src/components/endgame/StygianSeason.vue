@@ -3,130 +3,173 @@ import { computed, ref, watch } from 'vue'
 import type { StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
-import UiPanel from '@/components/ui/UiPanel.vue'
-import UiSegmented from '@/components/ui/UiSegmented.vue'
-import type { EndgameData } from '@/data/endgame'
+import BossPicture from './BossPicture.vue'
+import { monsterHp, stygianBossPicture, type EndgameData } from '@/data/endgame'
+import { formatNumber, formatShort } from '@/lib/format'
 import { gameIcon } from '@/lib/assets'
+import { t } from '@/i18n'
+import { STYGIAN_GROUND } from './modes'
 
 /**
- * A Stygian Onslaught season: per difficulty the monster
- * level and its three opponents (picture, name, description, mechanics and
- * the characters the game recommends).
+ * A Stygian Onslaught season: its difficulties as a scale (each with its
+ * monster level; the hardest first chosen), then the three opponents. A
+ * card's top (picture, name, HP at the chosen level, the characters the game
+ * recommends) is one button that opens the boss's Living Beings entry;
+ * below it, its mechanics, numbered.
  */
-const props = defineProps<{ season: StygianSeason; data: EndgameData }>()
-defineEmits<{ enemy: [codex: number] }>()
+const props = defineProps<{
+  season: StygianSeason
+  data: EndgameData
+  name: string
+  period: string
+  left: number
+}>()
+defineEmits<{ enemy: [codex: number, level: number] }>()
 
 const text = computed(() => props.data.text)
+const sprite = (id: number) => text.value.get(`sprite.${id}`)
 const difficulty = ref(0)
 watch(
   () => props.season.id,
   () => (difficulty.value = props.season.difficulties.at(-1)?.difficulty ?? 0),
   { immediate: true },
 )
-const options = computed(() =>
-  props.season.difficulties.map((d) => ({
-    value: d.difficulty,
-    label: text.value.get(`stygianDifficulty.${d.difficulty}`) || String(d.difficulty),
-  })),
-)
 const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
-const bosses = computed(() =>
-  (chosen.value?.bosses ?? []).flatMap((id) => {
-    const boss = props.data.data.stygianBosses.get(id)
-    return boss ? [boss] : []
-  }),
-)
-const codexOf = (monster: number) => props.data.data.monsters.get(monster)?.codex ?? 0
-const sprite = (id: number) => text.value.get(`sprite.${id}`)
 const range = (n: number) => Array.from({ length: n }, (_, i) => i)
+const bosses = computed(() => {
+  const level = chosen.value?.level ?? 0
+  return (chosen.value?.bosses ?? []).flatMap((id) => {
+    const boss = props.data.data.stygianBosses.get(id)
+    if (!boss) return []
+    const full = text.value.get(`stygianBoss.${id}.name`)
+    const [short, ...title] = full.split(':')
+    const hp = monsterHp(props.data.data, props.data.enemies, boss.monster, level)
+    return [
+      {
+        boss,
+        full,
+        short: short!.trim(),
+        title: title.join(':').trim(),
+        codex: props.data.data.monsters.get(boss.monster)?.codex ?? 0,
+        level,
+        hp,
+        hpTip: hp
+          ? `${t('endgame.hpAt', { n: level })}\n${hp.map((v, i) => `${i + 1}P ${formatNumber(Math.round(v))}`).join(' · ')}`
+          : t('endgame.noEntry'),
+      },
+    ]
+  })
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <!-- The season's own text ("The following characters will have…") is left out: the
-         data has no list of those characters, so it would point at nothing. -->
-
-    <div class="flex flex-wrap items-center gap-3">
-      <span class="text-sm font-semibold text-text-secondary">{{
-        $t('endgame.stygian.difficulty')
-      }}</span>
-      <div class="scroll-hide scroll-fade-x -mx-4 min-w-0 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <UiSegmented
-          v-model="difficulty"
-          :options="options"
-          :label="$t('endgame.stygian.difficulty')"
-        />
-      </div>
-      <span v-if="chosen" class="tabular font-mono text-sm text-text-muted">{{
-        $t('endgame.level', { n: chosen.level })
-      }}</span>
+    <div class="flex flex-col gap-1">
+      <h2 class="text-2xl font-bold sm:text-3xl">{{ name }}</h2>
+      <span class="flex flex-wrap gap-x-3 text-sm">
+        <span class="tabular font-mono text-text-muted">{{ period }}</span>
+        <span v-if="left > 0" class="font-semibold text-success-text">{{
+          $t('endgame.activeLeft', { n: left }, left)
+        }}</span>
+      </span>
     </div>
 
-    <div class="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-3">
-      <UiPanel v-for="boss in bosses" :key="boss.id">
-        <div class="flex min-w-0 flex-col gap-3">
-          <component
-            :is="codexOf(boss.monster) ? 'button' : 'div'"
-            :type="codexOf(boss.monster) ? 'button' : undefined"
-            class="flex min-w-0 items-center gap-3 rounded-lg text-left"
-            :class="
-              codexOf(boss.monster) &&
-              'transition-colors hover:bg-surface-overlay focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none'
-            "
-            @click="codexOf(boss.monster) && $emit('enemy', codexOf(boss.monster))"
-          >
-            <GameIcon
-              :src="gameIcon(boss.icon)"
-              :name="text.get(`stygianBoss.${boss.id}.name`)"
-              size="lg"
-              class="shrink-0"
+    <div
+      role="radiogroup"
+      :aria-label="$t('endgame.stygian.difficulty')"
+      class="grid grid-cols-3 gap-1.5 sm:grid-cols-6"
+    >
+      <button
+        v-for="d in season.difficulties"
+        :key="d.difficulty"
+        type="button"
+        role="radio"
+        :aria-checked="d.difficulty === difficulty"
+        class="flex min-h-12 flex-col items-center justify-center rounded-lg border px-2 py-1.5 text-sm transition-colors"
+        :class="
+          d.difficulty === difficulty
+            ? 'border-rarity-4 bg-surface-overlay font-semibold text-text-primary ring-1 ring-rarity-4'
+            : 'border-border-default bg-surface-raised text-text-secondary hover:bg-surface-overlay'
+        "
+        @click="difficulty = d.difficulty"
+      >
+        <span class="truncate">{{
+          text.get(`stygianDifficulty.${d.difficulty}`) || String(d.difficulty)
+        }}</span>
+        <span class="tabular font-mono text-xs font-normal text-text-muted">{{
+          $t('endgame.level', { n: d.level })
+        }}</span>
+      </button>
+    </div>
+
+    <div class="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-3">
+      <article
+        v-for="b in bosses"
+        :key="b.boss.id"
+        class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
+      >
+        <component
+          :is="b.codex ? 'button' : 'div'"
+          :type="b.codex ? 'button' : undefined"
+          class="group flex flex-col text-left"
+          :class="b.codex && 'transition-colors hover:bg-surface-overlay'"
+          :title="b.codex ? b.full : `${b.full}\n${$t('endgame.noEntry')}`"
+          @click="b.codex && $emit('enemy', b.codex, b.level)"
+        >
+          <span class="flex h-48 items-end justify-center overflow-hidden" :class="STYGIAN_GROUND">
+            <BossPicture
+              :src="gameIcon(stygianBossPicture(b.boss).name)"
+              :art="stygianBossPicture(b.boss).art"
+              :name="b.full"
+              class="h-full w-full transition-transform group-hover:scale-[1.03]"
             />
-            <h3 class="min-w-0 flex-1 text-base font-semibold break-words">
-              {{ text.get(`stygianBoss.${boss.id}.name`) }}
-            </h3>
-          </component>
-          <GameText
-            v-if="text.get(`stygianBoss.${boss.id}.desc`)"
-            :text="text.get(`stygianBoss.${boss.id}.desc`)"
-            class="text-sm leading-relaxed text-text-secondary"
-          />
-          <div v-if="boss.mechanics" class="flex flex-col gap-2">
-            <h4 class="text-xs font-semibold text-text-muted">
-              {{ $t('endgame.stygian.mechanics') }}
-            </h4>
-            <div
-              v-for="i in range(boss.mechanics)"
-              :key="i"
-              class="flex flex-col gap-1 rounded-md bg-surface-sunken px-3 py-2 text-sm"
+          </span>
+          <span class="flex flex-col gap-1 px-4 pt-3.5 pb-3">
+            <span class="text-base leading-snug font-semibold">{{ b.short }}</span>
+            <span v-if="b.title" class="text-sm text-warning-text">{{ b.title }}</span>
+            <span
+              class="tabular mt-1 font-mono text-sm font-semibold"
+              :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
+              :title="b.hpTip"
+              >♥ {{ b.hp ? formatShort(b.hp[0]!) : '—' }}</span
             >
-              <p class="font-semibold">
-                {{ text.get(`stygianBoss.${boss.id}.mechanic.${i}.name`) }}
-              </p>
+            <span v-if="b.boss.recommendations" class="mt-1.5 flex flex-wrap gap-1.5">
               <GameText
-                :text="text.get(`stygianBoss.${boss.id}.mechanic.${i}.text`)"
+                v-for="i in range(b.boss.recommendations)"
+                :key="i"
+                :text="text.get(`stygianBoss.${b.boss.id}.recommend.${i}`)"
                 :sprites="data.data.sprites"
                 :sprite-name="sprite"
-                class="leading-relaxed text-text-secondary"
+                class="rounded-full border border-border-default bg-surface-sunken px-2.5 py-0.5 text-xs"
+              />
+            </span>
+          </span>
+        </component>
+        <ol v-if="b.boss.mechanics" class="flex flex-col border-t border-border-default px-4">
+          <li
+            v-for="i in range(b.boss.mechanics)"
+            :key="i"
+            class="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-2.5 py-3"
+            :class="i > 0 ? 'border-t border-border-default' : ''"
+          >
+            <span
+              class="flex size-6 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent-text"
+              >{{ i + 1 }}</span
+            >
+            <div class="flex min-w-0 flex-col gap-1">
+              <b class="text-sm">{{ text.get(`stygianBoss.${b.boss.id}.mechanic.${i}.name`) }}</b>
+              <GameText
+                :text="text.get(`stygianBoss.${b.boss.id}.mechanic.${i}.text`)"
+                :sprites="data.data.sprites"
+                :sprite-name="sprite"
+                class="text-sm leading-relaxed text-text-secondary"
               />
             </div>
-          </div>
-          <div v-if="boss.recommendations" class="flex flex-col gap-1.5">
-            <h4 class="text-xs font-semibold text-text-muted">
-              {{ $t('endgame.stygian.recommended') }}
-            </h4>
-            <GameText
-              v-for="i in range(boss.recommendations)"
-              :key="i"
-              :text="text.get(`stygianBoss.${boss.id}.recommend.${i}`)"
-              :sprites="data.data.sprites"
-              :sprite-name="sprite"
-              class="text-sm"
-            />
-          </div>
-        </div>
-      </UiPanel>
+          </li>
+        </ol>
+      </article>
     </div>
   </div>
 </template>

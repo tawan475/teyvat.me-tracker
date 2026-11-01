@@ -6,25 +6,32 @@
     "stygian": "Мрачный натиск"
   },
   "modesLabel": "Режим",
-  "seasons": "Сезоны",
   "status": {
     "active": "Идёт",
     "ended": "Завершён"
   },
-  "id": "ID {id}",
+  "daysLeft": "Осталось {n} дн.",
+  "activeLeft": "Идёт · осталось {n} дн.",
   "period": "{start} – {end}",
-  "open": "Открыть",
-  "allSeasons": "Все сезоны",
+  "earlier": "Прошлые",
+  "openSeason": "Открыть сезон",
+  "olderSeason": "Предыдущий сезон",
+  "newerSeason": "Следующий сезон",
   "empty": "Пока пусто",
   "loadFailed": "Не удалось загрузить данные",
   "level": "Ур. {n}",
+  "levels": "Ур. {from}–{to}",
+  "hpAt": "HP на ур. {n}",
+  "noEntry": "Нет в разделе «Существа»",
+  "or": "или",
   "abyss": {
     "blessing": "Благословение Бездны",
     "floor": "Этаж {n}",
     "chamber": "Зал {n}",
     "firstHalf": "Первая половина",
     "secondHalf": "Вторая половина",
-    "disorder": "Аномалия артерий земли"
+    "disorder": "Аномалия артерий земли",
+    "floors": "Этажи"
   },
   "theater": {
     "elements": "Элементы",

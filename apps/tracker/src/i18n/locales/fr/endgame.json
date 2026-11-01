@@ -6,25 +6,32 @@
     "stygian": "Carnage chtonien"
   },
   "modesLabel": "Mode",
-  "seasons": "Saisons",
   "status": {
     "active": "En cours",
     "ended": "Terminée"
   },
-  "id": "ID {id}",
+  "daysLeft": "{n} j restants",
+  "activeLeft": "En cours · {n} jour restant | En cours · {n} jours restants",
   "period": "{start} – {end}",
-  "open": "Ouvrir",
-  "allSeasons": "Toutes les saisons",
+  "earlier": "Précédentes",
+  "openSeason": "Ouvrir la saison",
+  "olderSeason": "Saison précédente",
+  "newerSeason": "Saison suivante",
   "empty": "Rien pour le moment",
   "loadFailed": "Impossible de charger les données",
   "level": "Niv. {n}",
+  "levels": "Niv. {from}–{to}",
+  "hpAt": "PV au niv. {n}",
+  "noEntry": "Absent du Bestiaire",
+  "or": "ou",
   "abyss": {
     "blessing": "Bénédiction de la lune abyssale",
     "floor": "Étage {n}",
     "chamber": "Salle {n}",
     "firstHalf": "1e moitié",
     "secondHalf": "2e moitié",
-    "disorder": "Anomalie énergétique"
+    "disorder": "Anomalie énergétique",
+    "floors": "Étages"
   },
   "theater": {
     "elements": "Éléments",

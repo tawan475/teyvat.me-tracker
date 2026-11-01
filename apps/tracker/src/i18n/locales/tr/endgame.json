@@ -6,25 +6,32 @@
     "stygian": "Kasvetli Taarruz"
   },
   "modesLabel": "Mod",
-  "seasons": "Sezonlar",
   "status": {
     "active": "Devam ediyor",
     "ended": "Bitti"
   },
-  "id": "ID {id}",
+  "daysLeft": "{n} gün kaldı",
+  "activeLeft": "Devam ediyor · {n} gün kaldı",
   "period": "{start} – {end}",
-  "open": "Aç",
-  "allSeasons": "Tüm sezonlar",
+  "earlier": "Önceki sezonlar",
+  "openSeason": "Sezonu aç",
+  "olderSeason": "Önceki sezon",
+  "newerSeason": "Sonraki sezon",
   "empty": "Henüz bir şey yok",
   "loadFailed": "Veriler yüklenemedi",
   "level": "Sv. {n}",
+  "levels": "Sv. {from}–{to}",
+  "hpAt": "Sv. {n} HP",
+  "noEntry": "Canlılar kaydı yok",
+  "or": "veya",
   "abyss": {
     "blessing": "Hiçlik Ayının Lütfu",
     "floor": "{n}. Kat",
     "chamber": "{n}. Oda",
     "firstHalf": "İlk Yarı",
     "secondHalf": "İkinci Yarı",
-    "disorder": "Ley Hattı Bozukluğu"
+    "disorder": "Ley Hattı Bozukluğu",
+    "floors": "Katlar"
   },
   "theater": {
     "elements": "Elementler",

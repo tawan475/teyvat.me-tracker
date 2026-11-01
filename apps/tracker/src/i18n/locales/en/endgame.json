@@ -6,25 +6,32 @@
     "stygian": "Stygian Onslaught"
   },
   "modesLabel": "Endgame mode",
-  "seasons": "Seasons",
   "status": {
     "active": "Active",
     "ended": "Ended"
   },
-  "id": "ID {id}",
+  "daysLeft": "{n}d left",
+  "activeLeft": "Active · {n} day left | Active · {n} days left",
   "period": "{start} – {end}",
-  "open": "Open",
-  "allSeasons": "All seasons",
+  "earlier": "Earlier",
+  "openSeason": "Open season",
+  "olderSeason": "Older season",
+  "newerSeason": "Newer season",
   "empty": "Nothing here yet",
   "loadFailed": "Couldn't load the endgame data",
   "level": "Lv. {n}",
+  "levels": "Lv. {from}–{to}",
+  "hpAt": "HP at Lv. {n}",
+  "noEntry": "No Living Beings entry",
+  "or": "or",
   "abyss": {
     "blessing": "Blessing of the Abyssal Moon",
     "floor": "Floor {n}",
     "chamber": "Chamber {n}",
     "firstHalf": "First Half",
     "secondHalf": "Second Half",
-    "disorder": "Ley Line Disorder"
+    "disorder": "Ley Line Disorder",
+    "floors": "Floors"
   },
   "theater": {
     "elements": "Elements",

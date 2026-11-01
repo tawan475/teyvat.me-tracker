@@ -230,24 +230,28 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
           </div>
           <div
             v-else
-            class="grid min-w-0"
+            class="grid min-w-0 gap-px overflow-hidden rounded-b-xl bg-border-default"
             :class="a.lineups.length > 1 ? 'md:grid-cols-2' : ''"
             :title="a.lineups.length > 1 ? $t('endgame.theater.oneOf') : undefined"
           >
+            <!-- One cell per lineup a run can draw, divided by hairlines; each after the first
+                 starts with "or", inside the card at any width. -->
             <ul
               v-for="(enemies, j) in a.lineups"
               :key="j"
-              class="relative flex min-w-0 flex-wrap content-start gap-1 p-2.5"
+              class="flex min-w-0 flex-wrap content-start items-center gap-1 bg-surface-raised p-2.5"
               :class="
-                j > 0 &&
-                'border-t border-dashed border-border-strong md:border-t-0 md:border-l md:pl-4'
+                j === a.lineups.length - 1 && a.lineups.length % 2 === 1 && j > 0
+                  ? 'md:col-span-2'
+                  : ''
               "
             >
-              <span
+              <li
                 v-if="j > 0"
-                class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-surface-raised px-1.5 text-xs text-text-muted md:top-1/2 md:-left-3 md:translate-x-0 md:-translate-y-1/2 md:px-0.5"
-                >{{ $t('endgame.or') }}</span
+                class="rounded-full bg-surface-overlay px-2 py-0.5 text-xs font-medium text-text-muted"
               >
+                {{ $t('endgame.or') }}
+              </li>
               <li v-for="(e, k) in enemies" :key="k">
                 <EnemyTile
                   :monster="e.monster"

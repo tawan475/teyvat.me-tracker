@@ -562,13 +562,16 @@ const tipOf = (subject: TipSubject, side = false) =>
           </p>
         </div>
 
-        <div class="flex flex-col gap-[12px] px-[24px] py-[18px]" :class="PANEL">
+        <div
+          class="flex flex-col gap-[12px] px-[24px] py-[18px]"
+          :class="PANEL"
+          v-bind="c.sets.length ? tipOf({ kind: 'sets' }) : {}"
+        >
           <p
             v-for="{ set, pieces } in bonus"
             :key="set.setKey"
             class="flex items-center gap-[14px] rounded-[10px]"
             :title="tip ? undefined : setTitle(set)"
-            v-bind="tipOf({ kind: 'set', setKey: set.setKey })"
           >
             <span class="size-[44px] shrink-0">
               <FadeImage :src="artifactSetIcon(set.setKey)" class="size-full" />
@@ -613,7 +616,7 @@ const tipOf = (subject: TipSubject, side = false) =>
             class="flex min-w-0 flex-1 items-stretch overflow-hidden"
             :class="PANEL"
             :title="tip ? undefined : title"
-            v-bind="tipOf({ kind: 'set', setKey: piece.setKey }, true)"
+            v-bind="tipOf({ kind: 'piece', slot }, true)"
           >
             <!-- The band: the game's header art (rarity gradient, emblem at 70%), a shade
                  under the text, the icon, the level; the main stat, stars, CV and RV -->

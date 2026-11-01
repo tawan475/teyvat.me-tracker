@@ -1,7 +1,7 @@
 /**
  * What a part of the character details does, on hover or click: the
  * details (CharacterDetail) provide one tip, the parts (talents,
- * constellations, weapon, artifact sets, element) spread `bind(subject)` on
+ * constellations, weapon, artifact sets and pieces, element) spread `bind(subject)` on
  * their element. A mouse hovering shows the tip while it stays; a click (or
  * a tap, Enter, Space) pins it and rings the part until it is clicked again,
  * another part is, or Escape / a click elsewhere closes it. Outside the
@@ -15,6 +15,10 @@ export type TipSubject =
   | { kind: 'constellation'; index: number }
   | { kind: 'weapon' }
   | { kind: 'set'; setKey: string }
+  /** Every set the build wears (the share card's sets panel). */
+  | { kind: 'sets' }
+  /** One worn artifact, by GOOD slot. */
+  | { kind: 'piece'; slot: string }
   | { kind: 'element' }
 
 export interface TipShown {
@@ -38,6 +42,8 @@ export function subjectId(subject: TipSubject): string {
       return `${subject.kind}:${subject.index}`
     case 'set':
       return `set:${subject.setKey}`
+    case 'piece':
+      return `piece:${subject.slot}`
     default:
       return subject.kind
   }

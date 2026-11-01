@@ -215,5 +215,9 @@
     "videos": "视频",
     "videosCount": "视频 · {n}",
     "search": "搜索"
+  },
+  "tip": {
+    "talentInfo": "天赋介绍",
+    "skillAttributes": "详细属性"
   }
 }

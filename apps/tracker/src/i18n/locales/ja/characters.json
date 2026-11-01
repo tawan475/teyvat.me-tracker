@@ -215,5 +215,9 @@
     "videos": "動画",
     "videosCount": "動画 · {n}",
     "search": "検索"
+  },
+  "tip": {
+    "talentInfo": "天賦紹介",
+    "skillAttributes": "ステータス詳細"
   }
 }

@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, shallowRef, watch } from 'vue'
-import { X } from 'lucide-vue-next'
-import type { CharacterDetail, SetBonus, WeaponDetail } from '@gdt/game-data/details'
+import { ChevronLeft, ChevronRight, X } from 'lucide-vue-next'
+import type { CharacterDetail, SetDetail, WeaponDetail } from '@gdt/game-data/details'
 import { gameTextLines } from '@gdt/game-data/material-details'
+import { artifactPieceName } from '@/components/artifacts/piece-name'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
+import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
-import { TALENT_LABELS, type TalentLevel } from '@/data/character-build'
-import { ELEMENT_LABELS, WEAPON_TYPE_LABELS, type CharacterView } from '@/data/characters'
-import { artifactSetIcon, weaponIcon } from '@/lib/assets'
+import { TALENT_LABELS, bonusSets, type TalentLevel } from '@/data/character-build'
+import {
+  ELEMENT_LABELS,
+  SLOT_LABELS,
+  SLOT_ORDER,
+  WEAPON_TYPE_LABELS,
+  type CharacterView,
+} from '@/data/characters'
+import { artifactIcon, artifactSetIcon, weaponIcon } from '@/lib/assets'
+import { readStorage, writeStorage } from '@/lib/storage'
 import { useUpdateHold } from '@/live/holds'
 import { formatSetName } from '@/utils/artifact-stats'
 import ElementDisc from './ElementDisc.vue'
@@ -20,11 +29,14 @@ import { constellationIcons, talentIcons } from './talent-icons'
 
 /**
  * The tip of a character details' part (detail-tip): what the game says it
- * does, beside the part. A talent: its name, kind and level, its
- * description; a constellation: locked or not, its description; the weapon:
- * its passive at the refinement held; an artifact set: each bonus, the ones
- * the build doesn't reach dimmed; the element: its name and the weapon
- * type. Text from `@gdt/game-data/details` (English where the language has
+ * does, beside the part. A talent: its name, kind and level, and like the
+ * game two tabs, Talent Info (its description) and Skill Attributes (each
+ * value at its level; a pinned tip steps through levels 1-15; the tab picked
+ * last is kept per device); a constellation: locked or not, its
+ * description; the weapon: its passive at the refinement held, then its
+ * lore; an artifact set, or every set the build wears: each bonus, the ones
+ * it doesn't reach dimmed; a piece: its name, its set's bonuses and its
+ * lore; the element: its name and the weapon type. Text from `@gdt/game-data/details` (English where the language has
  * none). A hovered tip lets the pointer through; a pinned one has a close
  * button, scrolls, and closes on Escape or a click outside any part.
  */
@@ -42,7 +54,7 @@ const details = () => import('@gdt/game-data/details')
 // The character's text, the weapon's and the sets', each loaded once per key and language.
 const kit = shallowRef<CharacterDetail | null | undefined>()
 const passive = shallowRef<WeaponDetail | null | undefined>()
-const sets = shallowRef(new Map<string, SetBonus[] | null>())
+const sets = shallowRef(new Map<string, SetDetail | null>())
 watch(
   () => [c.value.key, locale.value] as const,
   ([key, lang]) => {
@@ -67,26 +79,78 @@ watch(
   { immediate: true },
 )
 watch(locale, () => (sets.value = new Map()))
+/** The sets the shown tip needs. */
+const wantedSets = computed<string[]>(() => {
+  const subject = props.shown?.subject
+  if (subject?.kind === 'set') return [subject.setKey]
+  if (subject?.kind === 'sets') return c.value.sets.map((s) => s.setKey)
+  if (subject?.kind === 'piece') {
+    const piece = c.value.artifacts.find((a) => a?.slotKey === subject.slot)
+    return piece ? [piece.setKey] : []
+  }
+  return []
+})
 watch(
-  () => (props.shown?.subject.kind === 'set' ? props.shown.subject.setKey : null),
-  (key) => {
-    if (!key || sets.value.has(key)) return
+  wantedSets,
+  (keys) => {
     const lang = locale.value
-    void details()
-      .then((m) => m.loadSetDetail(key, lang))
-      .catch(() => undefined)
-      .then((found) => {
-        sets.value = new Map(sets.value).set(key, found ?? null)
-      })
+    for (const key of keys) {
+      if (sets.value.has(key)) continue
+      void details()
+        .then((m) => m.loadSetDetail(key, lang))
+        .catch(() => undefined)
+        .then((found) => {
+          sets.value = new Map(sets.value).set(key, found ?? null)
+        })
+    }
   },
   { immediate: true },
 )
 
+// A talent's two tabs, like the game's; the one picked last stays picked (per device).
+type TalentTab = 'info' | 'attributes'
+const TAB_KEY = 'characters:tip-tab'
+const talentTab = shallowRef<TalentTab>(
+  readStorage(TAB_KEY) === 'attributes' ? 'attributes' : 'info',
+)
+watch(talentTab, (tab) => writeStorage(TAB_KEY, tab))
+const tabOptions = computed(() => [
+  { value: 'info' as const, label: t('characters.tip.talentInfo') },
+  { value: 'attributes' as const, label: t('characters.tip.skillAttributes') },
+])
+const MAX_TALENT_LEVEL = 15
+/** The level Skill Attributes shows: the talent's own, until a pinned tip steps away. */
+const attributeLevel = shallowRef(1)
+/** The shown talent's level (with its C3/C5 boost). */
+const ownLevel = computed(() => {
+  const subject = props.shown?.subject
+  return subject?.kind === 'talent' ? props.talents[subject.index]?.level : undefined
+})
+watch(
+  () => [props.shown?.subject, ownLevel.value] as const,
+  ([, level]) => {
+    if (level !== undefined) attributeLevel.value = level
+  },
+  { immediate: true },
+)
+function stepLevel(by: 1 | -1) {
+  attributeLevel.value = Math.min(MAX_TALENT_LEVEL, Math.max(1, attributeLevel.value + by))
+}
+
 interface Section {
+  /** A heading over this section and the ones after it (a set's name, among several). */
+  group?: string
   label?: string
   text: string
-  /** Not reached (a set bonus short of pieces). */
+  /** Not reached (a set bonus short of pieces), or lore. */
   muted?: boolean
+  /** Lore: under a rule, in italics. */
+  lore?: boolean
+}
+
+interface Attribute {
+  label: string
+  value: string
 }
 
 interface Content {
@@ -94,7 +158,22 @@ interface Content {
   sub: string[]
   /** undefined while the text loads. */
   sections: Section[] | undefined
+  /** A talent's Skill Attributes at `attributeLevel`; undefined: no tabs. */
+  attributes?: Attribute[]
 }
+
+/** One set's bonuses, the ones `count` pieces don't reach dimmed. */
+function setSections(setKey: string, count: number, group?: string): Section[] {
+  return (sets.value.get(setKey)?.bonuses ?? []).map((b, i) => ({
+    group: i === 0 ? group : undefined,
+    label: t('share.card.pieceBonus', { n: b.pieces }),
+    text: b.description,
+    muted: count < b.pieces,
+  }))
+}
+
+const loreSection = (text: string | undefined): Section[] =>
+  text ? [{ text, muted: true, lore: true }] : []
 
 const content = computed<Content | null>(() => {
   const subject = props.shown?.subject
@@ -105,6 +184,8 @@ const content = computed<Content | null>(() => {
       const level = props.talents[subject.index]
       if (!level) return null
       const text = kit.value?.talents[subject.index]
+      const rows = kit.value?.attributes[subject.index] ?? []
+      const at = attributeLevel.value
       return {
         title: text?.name ?? TALENT_LABELS[level.key],
         sub: [
@@ -113,6 +194,12 @@ const content = computed<Content | null>(() => {
           ...(level.crowned ? [t('characters.crowned')] : []),
         ],
         sections: kit.value === undefined ? undefined : text ? [{ text: text.description }] : [],
+        attributes: rows.length
+          ? rows.map((row) => ({
+              label: row.label,
+              value: row.values[Math.min(at, row.values.length) - 1] ?? row.values[0] ?? '',
+            }))
+          : undefined,
       }
     }
     case 'constellation': {
@@ -144,22 +231,49 @@ const content = computed<Content | null>(() => {
         title: weapon.name,
         sub: [`Lv. ${weapon.level}`, `R${weapon.refinement}`],
         sections:
-          found === undefined ? undefined : found && text ? [{ label: found.name, text }] : [],
+          found === undefined
+            ? undefined
+            : [
+                ...(found && text ? [{ label: found.name, text }] : []),
+                ...loreSection(found?.lore),
+              ],
       }
     }
     case 'set': {
       const count = ch.sets.find((s) => s.setKey === subject.setKey)?.count ?? 0
-      const bonuses = sets.value.get(subject.setKey)
       return {
         title: formatSetName(subject.setKey),
         sub: [`×${count}`],
-        sections: !sets.value.has(subject.setKey)
-          ? undefined
-          : (bonuses ?? []).map((b) => ({
-              label: t('share.card.pieceBonus', { n: b.pieces }),
-              text: b.description,
-              muted: count < b.pieces,
-            })),
+        sections: sets.value.has(subject.setKey) ? setSections(subject.setKey, count) : undefined,
+      }
+    }
+    case 'sets': {
+      // The bonuses reached first (a 4-piece, 2 + 2), then single pieces.
+      const reached = bonusSets(ch.sets).map(({ set }) => set)
+      const listed = [...reached, ...ch.sets.filter((s) => !reached.includes(s))]
+      if (!listed.length) return null
+      return {
+        title: t('characters.sets'),
+        sub: listed.map((s) => `${s.name} ×${s.count}`),
+        sections: listed.every((s) => sets.value.has(s.setKey))
+          ? listed.flatMap((s) => setSections(s.setKey, s.count, s.name))
+          : undefined,
+      }
+    }
+    case 'piece': {
+      const piece = ch.artifacts.find((a) => a?.slotKey === subject.slot)
+      if (!piece) return null
+      const count = ch.sets.find((s) => s.setKey === piece.setKey)?.count ?? 0
+      const slot = (SLOT_ORDER as readonly string[]).indexOf(piece.slotKey)
+      return {
+        title: artifactPieceName(piece.setKey, piece.slotKey) ?? formatSetName(piece.setKey),
+        sub: [SLOT_LABELS[piece.slotKey], `+${piece.level}`],
+        sections: sets.value.has(piece.setKey)
+          ? [
+              ...setSections(piece.setKey, count, formatSetName(piece.setKey)),
+              ...loreSection(sets.value.get(piece.setKey)?.lore[slot]),
+            ]
+          : undefined,
       }
     }
     case 'element': {
@@ -199,6 +313,16 @@ const icon = computed<TipIcon | null>(() => {
     case 'set': {
       const set = ch.sets.find((s) => s.setKey === subject.setKey)
       return { item: artifactSetIcon(subject.setKey), rarity: set?.rarity }
+    }
+    case 'sets': {
+      const set = bonusSets(ch.sets)[0]?.set ?? ch.sets[0]
+      return set ? { item: artifactSetIcon(set.setKey), rarity: set.rarity } : null
+    }
+    case 'piece': {
+      const piece = ch.artifacts.find((a) => a?.slotKey === subject.slot)
+      return piece
+        ? { item: artifactIcon(piece.setKey, piece.slotKey), rarity: piece.rarity }
+        : null
     }
     default:
       return null
@@ -361,8 +485,53 @@ const labelId = computed(() => `detail-tip-${props.shown ? subjectId(props.shown
           <X class="size-5" aria-hidden="true" />
         </UiIconButton>
       </div>
+      <div v-if="content.attributes" class="shrink-0 px-3 pt-2.5">
+        <UiSegmented
+          v-model="talentTab"
+          :options="tabOptions"
+          :label="content.title"
+          class="w-full [&>*]:flex-1"
+        />
+      </div>
       <div
-        v-if="content.sections === undefined || content.sections.length"
+        v-if="content.attributes && talentTab === 'attributes'"
+        class="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain px-3 py-2.5 text-sm"
+      >
+        <div v-if="shown.pinned" class="flex items-center gap-1">
+          <UiIconButton
+            :label="$t('ui.modal.previous')"
+            :disabled="attributeLevel <= 1"
+            @click="stepLevel(-1)"
+          >
+            <ChevronLeft class="size-5" aria-hidden="true" />
+          </UiIconButton>
+          <span
+            class="tabular flex-1 text-center font-semibold"
+            :class="attributeLevel === ownLevel ? '' : 'text-accent-text'"
+            aria-live="polite"
+            >Lv. {{ attributeLevel }}</span
+          >
+          <UiIconButton
+            :label="$t('ui.modal.next')"
+            :disabled="attributeLevel >= MAX_TALENT_LEVEL"
+            @click="stepLevel(1)"
+          >
+            <ChevronRight class="size-5" aria-hidden="true" />
+          </UiIconButton>
+        </div>
+        <dl class="flex flex-col">
+          <div
+            v-for="row in content.attributes"
+            :key="row.label"
+            class="flex items-baseline gap-3 border-b border-border-default py-1.5 last:border-b-0"
+          >
+            <dt class="min-w-0 flex-1 text-text-secondary">{{ row.label }}</dt>
+            <dd class="tabular max-w-[55%] text-right font-semibold">{{ row.value }}</dd>
+          </div>
+        </dl>
+      </div>
+      <div
+        v-else-if="content.sections === undefined || content.sections.length"
         class="flex min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-2.5 text-sm leading-relaxed"
       >
         <div v-if="content.sections === undefined" class="flex flex-col gap-2" aria-hidden="true">
@@ -375,8 +544,15 @@ const labelId = computed(() => `detail-tip-${props.shown ? subjectId(props.shown
           v-else
           :key="i"
           class="flex flex-col gap-1.5"
-          :class="section.muted ? 'text-text-muted' : ''"
+          :class="[
+            section.muted ? 'text-text-muted' : '',
+            section.lore ? 'border-t border-border-default pt-2.5 italic' : '',
+            section.group && i ? 'mt-1 border-t border-border-default pt-2.5' : '',
+          ]"
         >
+          <h3 v-if="section.group" class="text-sm font-semibold text-text-primary not-italic">
+            {{ section.group }}
+          </h3>
           <h3 v-if="section.label" class="text-xs font-semibold text-text-secondary">
             {{ section.label }}
           </h3>

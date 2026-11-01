@@ -19,7 +19,8 @@ import { useDetailTip } from './detail-tip'
 
 /**
  * One equipped artifact (or its empty slot) in the character details, rolls
- * included; its set's bonuses show on hover or click (detail-tip).
+ * included; its name, its set's bonuses and its lore show on hover or click
+ * (detail-tip).
  */
 const props = defineProps<{ slotKey: SlotKey; piece: EquippedArtifact | null }>()
 const tip = useDetailTip()
@@ -45,7 +46,7 @@ function rollTitle(index: number, key: string): string {
   <article
     v-if="piece"
     class="flex min-w-0 flex-col gap-2 rounded-xl border border-border-default bg-surface-raised p-3"
-    v-bind="tip?.bind({ kind: 'set', setKey: piece.setKey }) ?? {}"
+    v-bind="tip?.bind({ kind: 'piece', slot: slotKey }) ?? {}"
   >
     <header class="flex items-center gap-2.5">
       <GameIcon

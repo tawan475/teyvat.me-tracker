@@ -215,5 +215,9 @@
     "videos": "Video",
     "videosCount": "Video · {n}",
     "search": "Tìm kiếm"
+  },
+  "tip": {
+    "talentInfo": "Giới Thiệu",
+    "skillAttributes": "Chi Tiết"
   }
 }

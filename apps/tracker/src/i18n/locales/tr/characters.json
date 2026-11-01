@@ -215,5 +215,9 @@
     "videos": "Videolar",
     "videosCount": "Videolar · {n}",
     "search": "Ara"
+  },
+  "tip": {
+    "talentInfo": "Yetenek Bilgisi",
+    "skillAttributes": "Beceri Özellikleri"
   }
 }

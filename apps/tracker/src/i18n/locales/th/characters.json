@@ -215,5 +215,9 @@
     "videos": "วิดีโอ",
     "videosCount": "วิดีโอ · {n}",
     "search": "ค้นหา"
+  },
+  "tip": {
+    "talentInfo": "ข้อมูลพรสวรรค์",
+    "skillAttributes": "ค่าสถานะสกิล"
   }
 }

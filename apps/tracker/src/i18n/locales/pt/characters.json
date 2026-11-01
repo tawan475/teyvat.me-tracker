@@ -215,5 +215,9 @@
     "videos": "Vídeos",
     "videosCount": "Vídeos · {n}",
     "search": "Pesquisar"
+  },
+  "tip": {
+    "talentInfo": "Informações do Talento",
+    "skillAttributes": "Detalhes do Atributo"
   }
 }

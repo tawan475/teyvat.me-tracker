@@ -215,5 +215,9 @@
     "videos": "影片",
     "videosCount": "影片 · {n}",
     "search": "搜尋"
+  },
+  "tip": {
+    "talentInfo": "天賦介紹",
+    "skillAttributes": "詳細屬性"
   }
 }

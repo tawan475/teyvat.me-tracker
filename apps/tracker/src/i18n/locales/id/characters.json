@@ -215,5 +215,9 @@
     "videos": "Video",
     "videosCount": "Video · {n}",
     "search": "Cari"
+  },
+  "tip": {
+    "talentInfo": "Info Talenta",
+    "skillAttributes": "Stats Skill"
   }
 }

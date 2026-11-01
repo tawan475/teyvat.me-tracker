@@ -396,6 +396,40 @@ describe('wish files', () => {
     expect(pullsOf(file.accounts[1]!.records).get(200)![0]!.item.name).toBe('Kuki Shinobu')
   })
 
+  it("reads paimon.moe's Manual Input pulls (UTC ISO times)", () => {
+    const pulls = [
+      {
+        id: 'cool_steel',
+        time: '2020-10-01T00:19:16Z',
+        type: 'weapon',
+        pity: 1,
+        manualInput: true,
+      },
+      {
+        id: 'amber',
+        time: '2020-10-01T00:19:16.000Z',
+        type: 'character',
+        pity: 2,
+        manualInput: true,
+      },
+      { type: 'weapon', id: 'black_tassel', time: '2021-02-04 22:04:56', pity: 1 },
+    ]
+    const asia = parseWishFile(
+      JSON.stringify({ 'wish-uid': UID, server: 'Asia', 'wish-counter-standard': { pulls } }),
+    ).accounts[0]!
+    expect(asia.records.map((r) => r.time)).toEqual([
+      '2020-10-01 08:19:16',
+      '2020-10-01 08:19:16',
+      '2021-02-04 22:04:56',
+    ])
+    expect(pullsOf(asia.records, 8).get(200)).toHaveLength(3)
+    // No server in the backup: the UTC clock.
+    const unknown = parseWishFile(
+      JSON.stringify({ 'wish-uid': UID, 'wish-counter-standard': { pulls } }),
+    ).accounts[0]!
+    expect(unknown.records[0]!.time).toBe('2020-10-01 00:19:16')
+  })
+
   it('refuses what it cannot read', () => {
     expect(() => parseWishFile('hello')).toThrow()
     expect(() => parseWishFile('{"foo":1}')).toThrow()

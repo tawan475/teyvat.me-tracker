@@ -252,10 +252,26 @@ const PAIMON_SERVER_TZ: Readonly<Record<string, number>> = {
   Europe: 1,
 }
 
+/** paimon.moe's Manual Input pulls: a UTC ISO time ("2020-10-01T00:19:16Z"). */
+const PAIMON_UTC_TIME = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?Z$/
+
+/**
+ * A paimon.moe pull's time on the server's clock: synced pulls are already
+ * ("2021-02-04 22:04:56"); a Manual Input one is UTC and moves to `timezone`
+ * (kept as the UTC clock when the backup names no server).
+ */
+function paimonTime(time: string, timezone: number | null): string {
+  const m = PAIMON_UTC_TIME.exec(time.trim())
+  if (!m) return time
+  const utc = Date.parse(`${m[1]}T${m[2]}Z`) / 1000
+  return Number.isNaN(utc) ? time : formatWishTime(utc + (timezone ?? 0) * 3600)
+}
+
 /**
  * paimon.moe's own backup: one account per key prefix ('' is its first).
  * Its item ids are names in snake case ("hu_tao"); the table's names come
- * back from them. Times are the server's clock, as the API gave them.
+ * back from them. Times are the server's clock, as the API gave them, but
+ * Manual Input pulls carry a UTC ISO time (paimonTime).
  */
 export function parsePaimonBackup(json: Record<string, unknown>): WishFile {
   const prefixes = new Set<string>()
@@ -266,6 +282,8 @@ export function parsePaimonBackup(json: Record<string, unknown>): WishFile {
   }
   const accounts: WishFileAccount[] = []
   for (const prefix of [...prefixes].sort()) {
+    const server = str(json[`${prefix}server`])
+    const timezone = PAIMON_SERVER_TZ[server] ?? null
     const records: WishRecord[] = []
     for (const [suffix, banner] of Object.entries(PAIMON_COUNTERS)) {
       const counter = json[prefix + suffix] as { pulls?: unknown } | undefined
@@ -274,7 +292,7 @@ export function parsePaimonBackup(json: Record<string, unknown>): WishFile {
         const info = wishItemByLooseKey(str(pull.id).replace(/[_-]/g, ' '))
         records.push({
           gacha_type: str(pull.code) || banner,
-          time: str(pull.time),
+          time: paimonTime(str(pull.time), timezone),
           name: info?.name ?? str(pull.id),
           item_type: info ? wishItemTypeLabel(info.kind) : str(pull.type),
           rank_type: info ? String(info.rarity) : '',
@@ -282,10 +300,9 @@ export function parsePaimonBackup(json: Record<string, unknown>): WishFile {
       }
     }
     const uid = str(json[`${prefix}wish-uid`]) || null
-    const server = str(json[`${prefix}server`])
     accounts.push({
       uid,
-      timezone: PAIMON_SERVER_TZ[server] ?? null,
+      timezone,
       lang: 'en-us',
       records,
     })

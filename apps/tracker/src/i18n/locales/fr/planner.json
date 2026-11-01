@@ -358,6 +358,8 @@
     "need": "Nécessaire {n}",
     "craftedTitle": "Synthétisé à partir du palier inférieur",
     "craft": "Synthétiser {n}",
+    "craftOf": "Synthétiser {n} / {max}",
+    "sliderTitle": "Réglez le curseur de synthèse du jeu sur {n} (il va jusqu'à {max} une fois le palier inférieur synthétisé) : ni plus, ni moins",
     "capture": "Capture {n}",
     "backLabel": "{name} : revenir aux {n} de la capture",
     "backTitle": "Revenir à {n}",

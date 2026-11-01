@@ -358,6 +358,8 @@
     "need": "Cần {n}",
     "craftedTitle": "Ghép từ bậc thấp hơn",
     "craft": "Ghép {n}",
+    "craftOf": "Ghép {n} / {max}",
+    "sliderTitle": "Đặt thanh ghép trong game ở {n} (tối đa {max} sau khi ghép bậc thấp hơn): không thừa, không thiếu",
     "capture": "Bản ghi {n}",
     "backLabel": "{name}: quay về {n} của bản ghi",
     "backTitle": "Quay về {n}",

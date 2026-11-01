@@ -358,6 +358,8 @@
     "need": "필요 {n}",
     "craftedTitle": "아래 단계로 합성",
     "craft": "합성 {n}",
+    "craftOf": "합성 {n} / {max}",
+    "sliderTitle": "게임의 합성 슬라이더를 {n}에 맞추세요 (아래 단계를 합성한 뒤 최대 {max}). 더도 덜도 말고",
     "capture": "캡처 {n}",
     "backLabel": "{name}: 캡처 값 {n}(으)로 되돌리기",
     "backTitle": "{n}(으)로 되돌리기",

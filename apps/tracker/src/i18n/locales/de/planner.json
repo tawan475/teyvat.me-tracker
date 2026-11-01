@@ -358,6 +358,8 @@
     "need": "{n} nötig",
     "craftedTitle": "Aus der Stufe darunter hergestellt",
     "craft": "{n} herstellen",
+    "craftOf": "{n} / {max} herstellen",
+    "sliderTitle": "Stelle den Regler beim Herstellen auf {n} (er reicht bis {max}, sobald die Stufe darunter hergestellt ist): nicht mehr, nicht weniger",
     "capture": "Erfassung {n}",
     "backLabel": "{name}: zurück auf {n} aus der Erfassung",
     "backTitle": "Zurück auf {n}",

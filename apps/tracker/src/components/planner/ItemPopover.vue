@@ -11,6 +11,7 @@ import UiPopover from '@/components/ui/UiPopover.vue'
 import { t } from '@/i18n'
 import { gameIcon, materialIcon } from '@/lib/assets'
 import { formatCompact, formatNumber } from '@/lib/format'
+import { sliderMax } from './craft-slider'
 import { rowText, type CraftRow } from './crafting'
 import type { ItemContext } from './item-popover'
 import { materialSoft } from './material-soft'
@@ -104,11 +105,13 @@ interface Row {
   need: number
   missing: number
   crafted: number
+  /** The game's crafting slider maximum when this tier's turn comes (craft-slider.ts). */
+  slider: number | null
   mine: number
 }
 
-const rows = computed<Row[]>(() =>
-  members.value.map((m) => {
+const rows = computed<Row[]>(() => {
+  const list = members.value.map((m) => {
     const line = props.totals?.lines.get(m.key)
     const isMora = m.key === props.planner.mora.key
     const mora = props.totals?.mora
@@ -119,12 +122,24 @@ const rows = computed<Row[]>(() =>
       need: isMora ? (mora?.need ?? 0) : (line?.need ?? 0),
       missing: isMora ? (mora?.missing ?? 0) : (line?.missing ?? 0),
       crafted: line?.crafted ?? 0,
+      slider: null as number | null,
       mine: isMora
         ? (props.context?.requirement.mora ?? 0)
         : (props.context?.requirement.items.get(m.key) ?? 0),
     }
-  }),
-)
+  })
+  const family = material.value?.family
+  if (family && family.members.length === list.length) {
+    const max = sliderMax(
+      list.map((r) => r.have),
+      list.map((r) => r.crafted),
+      family.craftMora,
+      count(props.bag, props.planner.mora.key),
+    )
+    list.forEach((r, i) => (r.slider = max[i] ?? null))
+  }
+  return list
+})
 
 /** What is being typed, per material, while its input has focus. */
 const drafts = reactive(new Map<string, string>())
@@ -313,8 +328,22 @@ const keysHint = '↑ / W +1 · ↓ / S −1 · Shift ±10'
             <span
               v-if="row.crafted"
               class="text-text-secondary"
-              :title="$t('planner.popover.craftedTitle')"
-              >{{ $t('planner.popover.craft', { n: formatCompact(row.crafted) }) }}</span
+              :title="
+                row.slider === null
+                  ? $t('planner.popover.craftedTitle')
+                  : $t('planner.popover.sliderTitle', {
+                      n: formatNumber(row.crafted),
+                      max: formatNumber(row.slider),
+                    })
+              "
+              >{{
+                row.slider === null
+                  ? $t('planner.popover.craft', { n: formatCompact(row.crafted) })
+                  : $t('planner.popover.craftOf', {
+                      n: formatNumber(row.crafted),
+                      max: formatNumber(row.slider),
+                    })
+              }}</span
             >
             <span
               v-if="row.have !== row.captured"

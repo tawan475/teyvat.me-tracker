@@ -358,6 +358,8 @@
     "need": "Perlu {n}",
     "craftedTitle": "Di-craft dari tingkat di bawahnya",
     "craft": "Craft {n}",
+    "craftOf": "Craft {n} / {max}",
+    "sliderTitle": "Atur slider craft di game ke {n} (maksimal {max} setelah tingkat di bawahnya di-craft): tidak lebih, tidak kurang",
     "capture": "Tangkapan {n}",
     "backLabel": "{name}: kembali ke {n} dari tangkapan",
     "backTitle": "Kembali ke {n}",

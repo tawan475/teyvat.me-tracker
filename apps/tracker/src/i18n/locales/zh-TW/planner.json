@@ -358,6 +358,8 @@
     "need": "需求 {n}",
     "craftedTitle": "由低一階合成",
     "craft": "合成 {n}",
+    "craftOf": "合成 {n} / {max}",
+    "sliderTitle": "把遊戲裡的合成滑桿調到 {n}（合成好低一階後最多 {max}），不多也不少",
     "capture": "擷取 {n}",
     "backLabel": "{name}：恢復為擷取資料的 {n}",
     "backTitle": "恢復為 {n}",

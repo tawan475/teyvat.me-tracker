@@ -358,6 +358,8 @@
     "need": "Servono {n}",
     "craftedTitle": "Creato dal livello inferiore",
     "craft": "Crea {n}",
+    "craftOf": "Crea {n} / {max}",
+    "sliderTitle": "Imposta il cursore di creazione del gioco su {n} (arriva a {max} dopo aver creato il livello inferiore): né più né meno",
     "capture": "Cattura {n}",
     "backLabel": "{name}: torna ai {n} della cattura",
     "backTitle": "Torna a {n}",

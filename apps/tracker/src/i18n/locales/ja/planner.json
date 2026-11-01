@@ -358,6 +358,8 @@
     "need": "必要 {n}",
     "craftedTitle": "1つ下のランクから合成",
     "craft": "合成 {n}",
+    "craftOf": "合成 {n} / {max}",
+    "sliderTitle": "ゲームの合成スライダーを {n} に合わせてください（下のランクを合成した後の最大は {max}）。多すぎず少なすぎず",
     "capture": "キャプチャ {n}",
     "backLabel": "{name}：キャプチャの{n}に戻す",
     "backTitle": "{n}に戻す",

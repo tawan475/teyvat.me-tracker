@@ -358,6 +358,8 @@
     "need": "Necesitas {n}",
     "craftedTitle": "Sintetizado con el nivel inferior",
     "craft": "Sintetizar {n}",
+    "craftOf": "Sintetizar {n} / {max}",
+    "sliderTitle": "Pon el control de síntesis del juego en {n} (llega hasta {max} cuando el nivel inferior ya está sintetizado): ni más ni menos",
     "capture": "Captura {n}",
     "backLabel": "{name}: volver a los {n} de la captura",
     "backTitle": "Volver a {n}",

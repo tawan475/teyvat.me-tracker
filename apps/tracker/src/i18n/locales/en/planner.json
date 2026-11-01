@@ -358,6 +358,8 @@
     "need": "Need {n}",
     "craftedTitle": "Crafted from the tier below",
     "craft": "Craft {n}",
+    "craftOf": "Craft {n} / {max}",
+    "sliderTitle": "Set the game's crafting slider to {n} (it goes up to {max} once the tier below is crafted): no more, no less",
     "capture": "Capture {n}",
     "backLabel": "{name}: back to the capture's {n}",
     "backTitle": "Back to {n}",

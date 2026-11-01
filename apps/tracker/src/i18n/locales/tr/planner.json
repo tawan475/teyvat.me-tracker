@@ -358,6 +358,8 @@
     "need": "Gereken {n}",
     "craftedTitle": "Alt kademeden üretilir",
     "craft": "{n} üret",
+    "craftOf": "{n} / {max} üret",
+    "sliderTitle": "Oyundaki üretim kaydırıcısını {n} yapın (alt kademe üretildikten sonra en fazla {max}): ne fazla ne eksik",
     "capture": "Tarama {n}",
     "backLabel": "{name}: taramadaki {n} değerine dön",
     "backTitle": "{n} değerine dön",

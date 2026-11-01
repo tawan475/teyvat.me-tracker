@@ -205,6 +205,7 @@
     "weaponType": "ประเภทอาวุธ",
     "element": "ธาตุ",
     "image": "รูปภาพ (ที่อยู่ https)",
+    "banner": "นามบัตร (ที่อยู่ https)",
     "character": "ตัวละคร",
     "weapon": "อาวุธ",
     "newWeapon": "อาวุธกำหนดเอง",

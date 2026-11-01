@@ -205,6 +205,7 @@
     "weaponType": "Tipo de Arma",
     "element": "Elemento",
     "image": "Imagem (endereço https)",
+    "banner": "Cartão de Visita (endereço https)",
     "character": "Personagem",
     "weapon": "Arma",
     "newWeapon": "Arma personalizada",

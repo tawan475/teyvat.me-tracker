@@ -114,11 +114,19 @@ const weaponOptions = computed(() =>
         @update:model-value="set('weapon', $event)"
       />
     </div>
-    <CustomImageInput
-      :model-value="profile.image"
-      :live="live"
-      @update:model-value="set('image', $event)"
-    />
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <CustomImageInput
+        :model-value="profile.image"
+        :live="live"
+        @update:model-value="set('image', $event)"
+      />
+      <CustomImageInput
+        :model-value="profile.banner"
+        :live="live"
+        :label="$t('planner.custom.banner')"
+        @update:model-value="set('banner', $event)"
+      />
+    </div>
     <div
       class="scroll-hide scroll-fade-x -mx-1 flex gap-1.5 overflow-x-auto px-1"
       role="radiogroup"

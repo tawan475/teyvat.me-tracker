@@ -404,6 +404,8 @@ export const customCharacter = z.object({
   /** Weekly boss drop. */
   weekly: goodKeySchema.optional(),
   image: customImage.optional(),
+  /** The goal card's background (a namecard), an https address like `image`. */
+  banner: customImage.optional(),
 })
 
 /** Planner goal for a custom character: a character goal plus what it is. */

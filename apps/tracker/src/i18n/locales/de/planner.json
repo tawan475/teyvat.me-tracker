@@ -205,6 +205,7 @@
     "weaponType": "Waffentyp",
     "element": "Element",
     "image": "Bild (https-Adresse)",
+    "banner": "Namenskärtchen (https-Adresse)",
     "character": "Figur",
     "weapon": "Waffe",
     "newWeapon": "Eigene Waffe",

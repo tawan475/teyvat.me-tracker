@@ -205,6 +205,7 @@
     "weaponType": "武器タイプ",
     "element": "元素",
     "image": "画像（https アドレス）",
+    "banner": "名刺（https アドレス）",
     "character": "キャラクター",
     "weapon": "武器",
     "newWeapon": "カスタム武器",

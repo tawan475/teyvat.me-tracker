@@ -205,6 +205,7 @@
     "weaponType": "Tipe senjata",
     "element": "Elemen",
     "image": "Gambar (alamat https)",
+    "banner": "Kartu Nama (alamat https)",
     "character": "Karakter",
     "weapon": "Senjata",
     "newWeapon": "Senjata kustom",

@@ -205,6 +205,7 @@
     "weaponType": "무기 종류",
     "element": "원소",
     "image": "이미지 (https 주소)",
+    "banner": "명함 (https 주소)",
     "character": "캐릭터",
     "weapon": "무기",
     "newWeapon": "사용자 지정 무기",

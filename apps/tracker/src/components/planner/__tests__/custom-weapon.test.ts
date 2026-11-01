@@ -82,6 +82,7 @@ describe('preset files', () => {
     weapon: 'polearm',
     book: 'TeachingsOfDiligence',
     image: 'https://example.com/nova.png',
+    banner: 'https://example.com/nova-namecard.png',
   }
   const { custom: weapon } = copyOf(5)
 

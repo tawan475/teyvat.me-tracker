@@ -226,7 +226,7 @@ const portrait = computed(() => {
       element: ch.element,
       tag: ch.owned || ch.constellation ? `C${ch.constellation}` : '',
       tagTitle: t('planner.card.constellation', { n: ch.constellation }),
-      banner: ch.custom ? '' : characterBanner(ch.key),
+      banner: ch.custom ? (ch.custom.banner ?? '') : characterBanner(ch.key),
     }
   const w = props.entry.weapons[0]!
   return {

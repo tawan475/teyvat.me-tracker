@@ -205,6 +205,7 @@
     "weaponType": "Weapon type",
     "element": "Element",
     "image": "Picture (https address)",
+    "banner": "Namecard (https address)",
     "character": "Character",
     "weapon": "Weapon",
     "newWeapon": "Custom weapon",

@@ -2,11 +2,12 @@
 import { computed, ref, watch } from 'vue'
 import { Check } from 'lucide-vue-next'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
+import ItemArt from '@/components/ui/ItemArt.vue'
 import type { Element } from '@/data/game-meta'
 
 /**
  * A goal card's portrait, drawn as the game draws one: the picture on its
- * rarity's gradient, the element in a corner disc and a corner tag
+ * rarity's cell (the game's gradient with the knot, ItemArt `small`), the element in a corner disc and a corner tag
  * ("C1" for a character's constellation, "R5" for a weapon's refinement).
  * A custom character (no picture) gets its initials in a dashed frame.
  * While picking cards, a tick sits on it. 64 px on phones, 72 from `sm`;
@@ -36,14 +37,6 @@ watch(
   () => (failed.value = false),
 )
 
-// Literal class names so Tailwind sees them (ItemTile's backdrops).
-const BACKDROP: Record<number, string> = {
-  5: 'from-rarity-5/45 to-rarity-5/10',
-  4: 'from-rarity-4/45 to-rarity-4/10',
-  3: 'from-rarity-3/40 to-rarity-3/10',
-  2: 'from-rarity-2/40 to-rarity-2/10',
-  1: 'from-rarity-1/40 to-rarity-1/10',
-}
 const initials = computed(() =>
   props.name
     .replace(/[^A-Za-z0-9 ]/g, '')
@@ -62,12 +55,10 @@ const initials = computed(() =>
     :class="size === 'sm' ? 'size-12 sm:size-14' : 'size-16 sm:size-18'"
   >
     <span
-      class="block size-full overflow-hidden rounded-xl bg-linear-to-br"
-      :class="[
-        rarity ? BACKDROP[rarity] : 'from-surface-overlay to-surface-sunken',
-        custom ? 'outline-1 outline-border-strong outline-dashed' : '',
-      ]"
+      class="relative block size-full overflow-hidden rounded-xl bg-surface-sunken"
+      :class="custom && !src ? 'outline-1 outline-border-strong outline-dashed' : ''"
     >
+      <ItemArt :rarity="rarity" small />
       <img
         v-if="src && !failed"
         :key="src"
@@ -75,12 +66,12 @@ const initials = computed(() =>
         decoding="async"
         :src="src"
         :alt="name"
-        class="size-full object-contain"
+        class="relative size-full object-contain"
         @error="failed = true"
       />
       <span
         v-else
-        class="flex size-full items-center justify-center font-mono text-base text-text-muted"
+        class="relative flex size-full items-center justify-center font-mono text-base text-text-muted"
         :title="name"
         >{{ initials }}</span
       >

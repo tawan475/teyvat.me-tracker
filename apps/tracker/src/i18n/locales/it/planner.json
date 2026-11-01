@@ -205,6 +205,7 @@
     "weaponType": "Tipo di arma",
     "element": "Elemento",
     "image": "Immagine (indirizzo https)",
+    "banner": "Carta giocatore (indirizzo https)",
     "character": "Personaggio",
     "weapon": "Arma",
     "newWeapon": "Arma personalizzata",

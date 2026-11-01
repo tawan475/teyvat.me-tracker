@@ -205,6 +205,7 @@
     "weaponType": "武器類型",
     "element": "元素",
     "image": "圖片（https 位址）",
+    "banner": "名片（https 位址）",
     "character": "角色",
     "weapon": "武器",
     "newWeapon": "自訂武器",

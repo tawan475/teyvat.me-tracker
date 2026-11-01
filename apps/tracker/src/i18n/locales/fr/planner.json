@@ -205,6 +205,7 @@
     "weaponType": "Type d'arme",
     "element": "Élément",
     "image": "Image (adresse https)",
+    "banner": "Thème (adresse https)",
     "character": "Personnage",
     "weapon": "Arme",
     "newWeapon": "Arme personnalisée",

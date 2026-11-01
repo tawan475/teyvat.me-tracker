@@ -8,7 +8,7 @@ import UiInput from '@/components/ui/UiInput.vue'
  * field is left (or on Enter, or as typed with `live`) and only when valid;
  * cleared, it is undefined (the initials show).
  */
-const props = defineProps<{ modelValue?: string; live?: boolean }>()
+const props = defineProps<{ modelValue?: string; live?: boolean; label?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string | undefined] }>()
 
 const text = ref(props.modelValue ?? '')
@@ -28,7 +28,7 @@ function send(value: string) {
 
 <template>
   <label class="flex min-w-0 flex-col gap-1">
-    <span class="text-sm text-text-secondary">{{ $t('planner.custom.image') }}</span>
+    <span class="text-sm text-text-secondary">{{ label ?? $t('planner.custom.image') }}</span>
     <UiInput
       v-model="text"
       type="url"

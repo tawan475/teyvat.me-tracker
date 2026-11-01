@@ -34,5 +34,23 @@
     "weaponAndStats": "Arme et statistiques",
     "pieceBonus": "Bonus {n} pièces",
     "rvTitle": "Valeur des jets : chaque jet de sous-stat en % de son jet maximal, additionnés"
+  },
+  "art": {
+    "title": "Image de la carte",
+    "splash": "Image du personnage",
+    "background": "Arrière-plan",
+    "upload": "Importer une image",
+    "useGame": "Utiliser celle du jeu",
+    "place": "Position",
+    "up": "Monter",
+    "down": "Descendre",
+    "left": "Vers la gauche",
+    "right": "Vers la droite",
+    "smaller": "Plus petit",
+    "bigger": "Plus grand",
+    "reset": "Réinitialiser la position",
+    "local": "Vos images restent dans ce navigateur et ne sont jamais envoyées.",
+    "tooBig": "Images jusqu'à 20 Mo",
+    "notImage": "Ce n'est pas une image que ce navigateur peut afficher"
   }
 }

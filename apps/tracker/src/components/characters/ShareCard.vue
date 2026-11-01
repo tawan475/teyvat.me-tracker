@@ -27,6 +27,7 @@ import CardRollBars from './CardRollBars.vue'
 import ElementDisc from './ElementDisc.vue'
 import GameStars from './GameStars.vue'
 import FadeImage from './FadeImage.vue'
+import { NO_ART, type CardArt } from './card-art-place'
 import SplashArt from './SplashArt.vue'
 import { CONSTELLATION_MAX_STYLE, isMaxConstellation, refinementStyle } from './max-badges'
 import { artTone } from './measure-art'
@@ -84,6 +85,8 @@ const props = defineProps<{
   takenAt: number | null
   /** A past capture's build (History's View): the date reads "Build of …". */
   past?: boolean
+  /** The player's own art and its place (card-art.ts); the game's without. */
+  art?: CardArt
 }>()
 
 /** Tailwind's rem-based spacing pinned to 4px, so stray utilities don't follow the page's root size. */
@@ -112,7 +115,14 @@ const WEAPON_EMBLEM_STYLE = emblemStyle(WEAPON_EMBLEM)
 
 const c = computed(() => props.character)
 const splash = computed(() => splashPlace(c.value.key))
-const banner = computed(() => characterBanner(c.value.key))
+const art = computed(() => props.art ?? NO_ART)
+/** The art box moved and sized around its middle (the PNG does the same: placeRect). */
+const artTransform = computed(() => {
+  const { x, y, scale } = art.value
+  return x || y || scale !== 1 ? `translate(${x}px, ${y}px) scale(${scale})` : undefined
+})
+/** The picture the header's tone is read from: the player's background, else the namecard. */
+const banner = computed(() => art.value.background ?? characterBanner(c.value.key))
 /**
  * A light card writes its name dark with a white glow; where the namecard is
  * dark behind it (art-tone), the name takes the dark card's white instead.
@@ -237,21 +247,42 @@ const tipOf = (subject: TipSubject, side = false) =>
     <!-- One picture, back to front: the namecard blurred into atmosphere (it is only
          840×400; oversized so the blur has no edge), a scrim, the element's glow, the
          splash cut-out whole with its shadow, a full-width vignette. No boxes, no masks. -->
+    <!-- The player's background as it is (no blur: they picked it to be seen) -->
+    <img
+      v-if="art.background"
+      :src="art.background"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 size-full max-w-none object-cover"
+    />
     <FadeImage
+      v-else
       :src="banner"
       class="pointer-events-none absolute top-[-40px] left-[-60px] h-[1160px] w-[2040px] max-w-none object-cover [filter:var(--card-namecard-filter)]"
     />
     <div class="absolute inset-0 [background:var(--card-scrim)]" />
     <div class="absolute inset-0" :style="{ background: glow }" />
-    <SplashArt
-      :character-key="c.key"
-      :name="c.name"
-      :rarity="c.rarity"
-      class="absolute h-[1100px] w-[2200px]"
-      :style="{ left: `${splash.left}px`, top: `${splash.top}px` }"
-      :full="splashFull(c.key)"
-      img-class="object-contain! [filter:var(--card-splash-shadow)]"
-    />
+    <div
+      class="pointer-events-none absolute h-[1100px] w-[2200px] origin-center"
+      :style="{ left: `${splash.left}px`, top: `${splash.top}px`, transform: artTransform }"
+    >
+      <img
+        v-if="art.splash"
+        :src="art.splash"
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 size-full max-w-none object-contain [filter:var(--card-splash-shadow)]"
+      />
+      <SplashArt
+        v-else
+        :character-key="c.key"
+        :name="c.name"
+        :rarity="c.rarity"
+        class="absolute inset-0"
+        :full="splashFull(c.key)"
+        img-class="object-contain! [filter:var(--card-splash-shadow)]"
+      />
+    </div>
     <div class="absolute inset-0 [background:var(--card-vignette)]" />
 
     <div

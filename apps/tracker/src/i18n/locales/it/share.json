@@ -34,5 +34,23 @@
     "weaponAndStats": "Arma e statistiche",
     "pieceBonus": "Bonus {n} pezzi",
     "rvTitle": "Valore dei tiri: ogni tiro di statistica secondaria in % del suo tiro massimo, sommati"
+  },
+  "art": {
+    "title": "Immagine della scheda",
+    "splash": "Immagine del personaggio",
+    "background": "Sfondo",
+    "upload": "Carica immagine",
+    "useGame": "Usa quella del gioco",
+    "place": "Posizione",
+    "up": "Sposta su",
+    "down": "Sposta giù",
+    "left": "Sposta a sinistra",
+    "right": "Sposta a destra",
+    "smaller": "Più piccola",
+    "bigger": "Più grande",
+    "reset": "Ripristina posizione",
+    "local": "Le tue immagini restano in questo browser e non vengono mai caricate.",
+    "tooBig": "Immagini fino a 20 MB",
+    "notImage": "Non è un'immagine che questo browser può mostrare"
   }
 }

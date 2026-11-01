@@ -47,6 +47,7 @@ import {
   parseFilterShadow,
   withAlpha,
 } from './card-paint'
+import { NO_ART, placeRect, type CardArt } from './card-art-place'
 import { artTone } from './measure-art'
 import {
   BAND_EMBLEM,
@@ -92,6 +93,8 @@ export interface CardDrawing {
   /** The bars under the level and friendship (share-card-model expShare). */
   levelBar: number | null
   friendshipBar: number | null
+  /** The player's own art and its place (card-art.ts); the game's without. */
+  art?: CardArt
 }
 
 export interface DrawnCard {
@@ -116,9 +119,11 @@ const RIGHT = { x: PAD_X + 700 + 32 + 528 + 32, w: 532 }
 export async function drawShareCard(input: CardDrawing, scale = 1): Promise<DrawnCard> {
   const c = input.character
   const pieces = cardPieces(c)
+  const art = input.art ?? NO_ART
   const splashArt = SPLASH_FULL[c.key]
-  const splashUrl = splashArt ? giCdnArt(`FullWish_${c.key}`) : characterSplash(c.key)
-  const banner = characterBanner(c.key)
+  const splashUrl =
+    art.splash ?? (splashArt ? giCdnArt(`FullWish_${c.key}`) : characterSplash(c.key))
+  const banner = art.background ?? characterBanner(c.key)
   const glyphs = talentIcons(c.key)
   const constellations = constellationIcons(c.key)
   const element = c.element ? elementIconLight(c.element) : ''
@@ -156,7 +161,7 @@ export async function drawShareCard(input: CardDrawing, scale = 1): Promise<Draw
   const p = new Painter(CARD_WIDTH, CARD_HEIGHT, scale)
   try {
     const card = new CardPainter(p, input, images, fonts.tabular, tone.top)
-    card.background(splashUrl, portraitImages)
+    card.background(splashUrl, banner, portraitImages)
     card.layout()
     card.header()
     card.constellations(constellations)
@@ -196,14 +201,16 @@ class CardPainter extends CardPaint {
 
   // -------------------------------------------------- background
 
-  background(splashUrl: string, portrait: CardImages | null) {
+  background(splashUrl: string, bannerUrl: string, portrait: CardImages | null) {
     const { p, ctx } = this
+    const art = this.input.art ?? NO_ART
     ctx.fillStyle = this.v('--card-ground')
     ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT)
 
-    // The namecard, oversized and blurred into atmosphere.
-    const namecard = this.images.get(characterBanner(this.c.key))
-    if (namecard) {
+    // The player's background as it is, else the namecard oversized and blurred into atmosphere.
+    const namecard = this.images.get(bannerUrl)
+    if (namecard && art.background) p.cover(namecard, 0, 0, CARD_WIDTH, CARD_HEIGHT)
+    else if (namecard) {
       const filter = /blur\(([\d.]+)px\) saturate\(([\d.]+)\) brightness\(([\d.]+)\)/.exec(
         this.v('--card-namecard-filter'),
       )
@@ -219,26 +226,32 @@ class CardPainter extends CardPaint {
     this.cssGradients(this.v('--card-scrim'))
     if (this.c.element) this.drawGlow(this.c.element)
 
-    // The splash (the uncut art where the game's is cut), with its shadow.
+    // The splash (the player's art, else the uncut art where the game's is cut), with its
+    // shadow, in the art box moved and sized as the player set it (placeRect).
     const place = splashPlace(this.c.key)
+    const box = { left: place.left, top: place.top, width: 2200, height: 1100 }
+    const at = (x: number, y: number, width: number, height: number) =>
+      placeRect({ x, y, width, height }, box, art)
+    const frame = at(place.left, place.top, 2200, 1100)
     const splash = this.images.get(splashUrl)
     const shadow = parseFilterShadow(this.v('--card-splash-shadow'))
     if (splash) {
-      const full = SPLASH_FULL[this.c.key]
+      const full = art.splash ? undefined : SPLASH_FULL[this.c.key]
       const draw = () => {
         if (full) {
           const k = SPLASH_BOX_SCALE
-          p.image(
-            splash,
+          const r = at(
             place.left + full.x * k,
             place.top + full.y * k,
             full.width * full.scale * k,
             full.height * full.scale * k,
           )
-        } else p.contain(splash, place.left, place.top, 2200, 1100)
+          p.image(splash, r.x, r.y, r.width, r.height)
+        } else p.contain(splash, frame.x, frame.y, frame.width, frame.height)
       }
-      if (full) p.dropShadow(shadow, draw)
-      else p.clipped(place.left, place.top, 2200, 1100, 0, () => p.dropShadow(shadow, draw))
+      if (full || art.splash) p.dropShadow(shadow, draw)
+      else
+        p.clipped(frame.x, frame.y, frame.width, frame.height, 0, () => p.dropShadow(shadow, draw))
     } else if (portrait) {
       // SplashArt's fallback: the portrait on its rarity cell, centred in the box.
       const x = place.left + 1100 - 64

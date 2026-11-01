@@ -34,5 +34,23 @@
     "weaponAndStats": "Senjata dan stat",
     "pieceBonus": "Bonus {n} bagian",
     "rvTitle": "Roll value: setiap roll substat sebagai % dari roll tertingginya, dijumlahkan"
+  },
+  "art": {
+    "title": "Gambar kartu",
+    "splash": "Gambar karakter",
+    "background": "Latar",
+    "upload": "Unggah gambar",
+    "useGame": "Pakai gambar game",
+    "place": "Posisi",
+    "up": "Geser ke atas",
+    "down": "Geser ke bawah",
+    "left": "Geser ke kiri",
+    "right": "Geser ke kanan",
+    "smaller": "Perkecil",
+    "bigger": "Perbesar",
+    "reset": "Atur ulang posisi",
+    "local": "Gambarmu tetap di browser ini dan tidak pernah diunggah.",
+    "tooBig": "Gambar maksimal 20 MB",
+    "notImage": "Bukan gambar yang bisa ditampilkan browser ini"
   }
 }

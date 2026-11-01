@@ -34,5 +34,23 @@
     "weaponAndStats": "Weapon and stats",
     "pieceBonus": "{n}-piece bonus",
     "rvTitle": "Roll value: every substat roll as a % of its highest roll, added up"
+  },
+  "art": {
+    "title": "Card art",
+    "splash": "Character art",
+    "background": "Background",
+    "upload": "Upload picture",
+    "useGame": "Use the game's",
+    "place": "Position",
+    "up": "Move up",
+    "down": "Move down",
+    "left": "Move left",
+    "right": "Move right",
+    "smaller": "Smaller",
+    "bigger": "Bigger",
+    "reset": "Reset position",
+    "local": "Your pictures stay in this browser and are never uploaded.",
+    "tooBig": "Pictures up to 20 MB",
+    "notImage": "Not a picture this browser can show"
   }
 }

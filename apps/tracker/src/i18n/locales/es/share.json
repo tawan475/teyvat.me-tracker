@@ -34,5 +34,23 @@
     "weaponAndStats": "Arma y atributos",
     "pieceBonus": "Bonificación de {n} piezas",
     "rvTitle": "Valor de mejoras: cada mejora de atributo secundario como % de su mejora más alta, sumadas"
+  },
+  "art": {
+    "title": "Arte de la tarjeta",
+    "splash": "Arte del personaje",
+    "background": "Fondo",
+    "upload": "Subir imagen",
+    "useGame": "Usar el del juego",
+    "place": "Posición",
+    "up": "Mover arriba",
+    "down": "Mover abajo",
+    "left": "Mover a la izquierda",
+    "right": "Mover a la derecha",
+    "smaller": "Más pequeño",
+    "bigger": "Más grande",
+    "reset": "Restablecer posición",
+    "local": "Tus imágenes se quedan en este navegador y nunca se suben.",
+    "tooBig": "Imágenes de hasta 20 MB",
+    "notImage": "No es una imagen que este navegador pueda mostrar"
   }
 }

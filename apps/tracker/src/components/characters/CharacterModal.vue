@@ -22,6 +22,8 @@ import ShareMenu from '@/components/share/ShareMenu.vue'
 import CharacterDetail from './CharacterDetail.vue'
 import FavoriteStar from './FavoriteStar.vue'
 import { CARD_SCALE, type CardOwner } from './share-card'
+import { useCardArt } from './card-art'
+import CardArtButton from './CardArtButton.vue'
 import { drawShareCard } from './share-card-canvas'
 import { expShare } from './share-card-model'
 import { useConstellationBoosts, useCrownIcon } from './use-boosts'
@@ -110,6 +112,9 @@ const talents = computed(() =>
 // Drawn on a canvas on demand (pointing at the actions starts it) and kept until
 // something on the card changes (lib/use-card-export).
 
+// The player's own card art for this character (this browser only).
+const cardArt = useCardArt(() => c.value?.key ?? null)
+
 const expNeed = useExpNeed()
 const crown = useCrownIcon()
 const exporter = useCardExport({
@@ -134,6 +139,7 @@ const exporter = useCardExport({
           character.friendship === null
             ? null
             : expShare(character.friendshipExp, expNeed.value?.friendship(character.friendship)),
+        art: cardArt.art.value,
       },
       CARD_SCALE,
     )
@@ -148,6 +154,7 @@ const exporter = useCardExport({
     boosts.value,
     locale.value,
     crown.value,
+    cardArt.art.value,
     expNeed.value,
   ],
   filename: () => {
@@ -189,6 +196,7 @@ const exporter = useCardExport({
           @toggle="toggleFavorite(character.key)"
         />
       </div>
+      <CardArtButton v-if="showcase && character" :control="cardArt" />
       <ShareActions
         v-if="showcase"
         v-model:theme="theme"
@@ -218,6 +226,7 @@ const exporter = useCardExport({
       :builds="builds.data.value ?? null"
       :viewing="past ? viewing : null"
       :past="past ? { at: past.at, capture: past.capture } : null"
+      :art="cardArt.art.value"
       @view="(id) => (viewing = id)"
     />
   </UiModal>

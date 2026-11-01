@@ -34,5 +34,23 @@
     "weaponAndStats": "무기와 스탯",
     "pieceBonus": "{n}세트 효과",
     "rvTitle": "롤 밸류: 모든 부 옵션 수치를 최대 수치 대비 %로 합산"
+  },
+  "art": {
+    "title": "카드 이미지",
+    "splash": "캐릭터 이미지",
+    "background": "배경",
+    "upload": "이미지 업로드",
+    "useGame": "게임 이미지 사용",
+    "place": "위치",
+    "up": "위로",
+    "down": "아래로",
+    "left": "왼쪽으로",
+    "right": "오른쪽으로",
+    "smaller": "작게",
+    "bigger": "크게",
+    "reset": "위치 초기화",
+    "local": "이미지는 이 브라우저에만 저장되며 업로드되지 않습니다.",
+    "tooBig": "20MB 이하 이미지",
+    "notImage": "이 브라우저에서 표시할 수 없는 이미지입니다"
   }
 }

@@ -34,5 +34,23 @@
     "weaponAndStats": "Silah ve nitelikler",
     "pieceBonus": "{n} parça bonusu",
     "rvTitle": "Artış değeri: her alt özellik artışı, en yüksek artışın yüzdesi olarak toplanır"
+  },
+  "art": {
+    "title": "Kart görseli",
+    "splash": "Karakter görseli",
+    "background": "Arka plan",
+    "upload": "Görsel yükle",
+    "useGame": "Oyunun görselini kullan",
+    "place": "Konum",
+    "up": "Yukarı",
+    "down": "Aşağı",
+    "left": "Sola",
+    "right": "Sağa",
+    "smaller": "Küçült",
+    "bigger": "Büyüt",
+    "reset": "Konumu sıfırla",
+    "local": "Görsellerin bu tarayıcıda kalır, hiçbir yere yüklenmez.",
+    "tooBig": "En fazla 20 MB'lık görseller",
+    "notImage": "Bu tarayıcının gösterebileceği bir görsel değil"
   }
 }

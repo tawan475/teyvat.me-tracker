@@ -34,5 +34,23 @@
     "weaponAndStats": "武器與屬性",
     "pieceBonus": "{n}件套效果",
     "rvTitle": "詞條價值：每次副屬性強化佔該屬性最高檔的百分比之和"
+  },
+  "art": {
+    "title": "卡片圖片",
+    "splash": "角色圖片",
+    "background": "背景",
+    "upload": "上傳圖片",
+    "useGame": "使用遊戲圖片",
+    "place": "位置",
+    "up": "上移",
+    "down": "下移",
+    "left": "左移",
+    "right": "右移",
+    "smaller": "縮小",
+    "bigger": "放大",
+    "reset": "重設位置",
+    "local": "圖片只保存在此瀏覽器中，不會上傳。",
+    "tooBig": "圖片不超過 20 MB",
+    "notImage": "此瀏覽器無法顯示該圖片"
   }
 }

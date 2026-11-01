@@ -41,6 +41,7 @@ import GameStars from './GameStars.vue'
 import NamecardBackdrop from './NamecardBackdrop.vue'
 import PastBuildStrip from './PastBuildStrip.vue'
 import SetBonuses from './SetBonuses.vue'
+import type { CardArt } from './card-art-place'
 import ShareCard from './ShareCard.vue'
 import SplashArt from './SplashArt.vue'
 import TalentLevels from './TalentLevels.vue'
@@ -78,6 +79,8 @@ const props = defineProps<{
   /** The past capture on screen, null for now. */
   viewing: number | null
   past: { at: number; capture: GiCapture | null } | null
+  /** The player's own card art (card-art.ts). */
+  art?: CardArt
 }>()
 const emit = defineEmits<{ view: [snapshotId: number | null] }>()
 
@@ -189,6 +192,7 @@ watch(
             :owner="owner"
             :taken-at="takenAt"
             :past="past !== null"
+            :art="art"
           />
         </div>
       </div>

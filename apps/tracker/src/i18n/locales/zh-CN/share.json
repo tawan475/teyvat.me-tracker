@@ -34,5 +34,23 @@
     "weaponAndStats": "武器与属性",
     "pieceBonus": "{n}件套效果",
     "rvTitle": "词条价值：每次副属性强化占该属性最高档的百分比之和"
+  },
+  "art": {
+    "title": "卡片图片",
+    "splash": "角色图片",
+    "background": "背景",
+    "upload": "上传图片",
+    "useGame": "使用游戏图片",
+    "place": "位置",
+    "up": "上移",
+    "down": "下移",
+    "left": "左移",
+    "right": "右移",
+    "smaller": "缩小",
+    "bigger": "放大",
+    "reset": "重置位置",
+    "local": "图片只保存在此浏览器中，不会上传。",
+    "tooBig": "图片不超过 20 MB",
+    "notImage": "此浏览器无法显示该图片"
   }
 }

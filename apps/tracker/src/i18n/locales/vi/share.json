@@ -34,5 +34,23 @@
     "weaponAndStats": "Vũ khí và chỉ số",
     "pieceBonus": "Hiệu ứng bộ {n} món",
     "rvTitle": "Roll value: tổng phần trăm của mỗi lượt tăng thuộc tính thêm so với mức tăng cao nhất của nó"
+  },
+  "art": {
+    "title": "Ảnh thẻ",
+    "splash": "Ảnh nhân vật",
+    "background": "Nền",
+    "upload": "Tải ảnh lên",
+    "useGame": "Dùng ảnh trong game",
+    "place": "Vị trí",
+    "up": "Lên",
+    "down": "Xuống",
+    "left": "Sang trái",
+    "right": "Sang phải",
+    "smaller": "Nhỏ hơn",
+    "bigger": "Lớn hơn",
+    "reset": "Đặt lại vị trí",
+    "local": "Ảnh của bạn chỉ ở trong trình duyệt này và không bao giờ được tải lên.",
+    "tooBig": "Ảnh tối đa 20 MB",
+    "notImage": "Không phải ảnh mà trình duyệt này hiển thị được"
   }
 }

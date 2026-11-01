@@ -34,5 +34,23 @@
     "weaponAndStats": "Arma e atributos",
     "pieceBonus": "Bônus de {n} peças",
     "rvTitle": "Valor de rolagem: cada rolagem de atributo secundário como % da maior rolagem possível, somadas"
+  },
+  "art": {
+    "title": "Arte do cartão",
+    "splash": "Arte do personagem",
+    "background": "Fundo",
+    "upload": "Enviar imagem",
+    "useGame": "Usar a do jogo",
+    "place": "Posição",
+    "up": "Mover para cima",
+    "down": "Mover para baixo",
+    "left": "Mover para a esquerda",
+    "right": "Mover para a direita",
+    "smaller": "Menor",
+    "bigger": "Maior",
+    "reset": "Redefinir posição",
+    "local": "Suas imagens ficam neste navegador e nunca são enviadas.",
+    "tooBig": "Imagens de até 20 MB",
+    "notImage": "Não é uma imagem que este navegador consiga mostrar"
   }
 }

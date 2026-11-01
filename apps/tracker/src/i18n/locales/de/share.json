@@ -34,5 +34,23 @@
     "weaponAndStats": "Waffe und Werte",
     "pieceBonus": "{n}-teiliger Bonus",
     "rvTitle": "Roll Value: jeder Nebenattribut-Roll als % seines höchsten Rolls, addiert"
+  },
+  "art": {
+    "title": "Kartenbild",
+    "splash": "Figurenbild",
+    "background": "Hintergrund",
+    "upload": "Bild hochladen",
+    "useGame": "Spielbild verwenden",
+    "place": "Position",
+    "up": "Nach oben",
+    "down": "Nach unten",
+    "left": "Nach links",
+    "right": "Nach rechts",
+    "smaller": "Kleiner",
+    "bigger": "Größer",
+    "reset": "Position zurücksetzen",
+    "local": "Deine Bilder bleiben in diesem Browser und werden nie hochgeladen.",
+    "tooBig": "Bilder bis 20 MB",
+    "notImage": "Kein Bild, das dieser Browser anzeigen kann"
   }
 }

@@ -1,13 +1,13 @@
 <p align="center">
   <a href="https://teyvat.me">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.475.dev/readme/trk-banner-dark.webp">
-      <img alt="Teyvat.me: your Genshin account, over time. Snapshots, planner, wish history, achievements." src="https://gi-cdn.475.dev/readme/trk-banner-light.webp" width="100%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.ley-courier.workers.dev/readme/trk-banner-dark.webp">
+      <img alt="Teyvat.me: your Genshin account, over time. Snapshots, planner, wish history, achievements." src="https://gi-cdn.ley-courier.workers.dev/readme/trk-banner-light.webp" width="100%">
     </picture>
   </a>
 </p>
 
-# <img alt="" src="https://gi-cdn.475.dev/readme/icon.webp" width="36" align="top"> Teyvat.me Tracker
+# <img alt="" src="https://gi-cdn.ley-courier.workers.dev/readme/icon.webp" width="36" align="top"> Teyvat.me Tracker
 
 <p align="center">
   <a href="https://github.com/tawan475/teyvat.me-tracker/actions/workflows/deploy.yml"><img alt="Deploy" src="https://img.shields.io/github/actions/workflow/status/tawan475/teyvat.me-tracker/deploy.yml?branch=main&label=deploy"></a>
@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://teyvat.me"><img alt="Open teyvat.me" src="https://gi-cdn.475.dev/readme/btn-open-teyvatme.webp" height="44"></a>&nbsp;
-  <a href="https://github.com/tawan475/teyvat.me-capture/releases/latest"><img alt="Get the capture app" src="https://gi-cdn.475.dev/readme/btn-get-capture.webp" height="44"></a>
+  <a href="https://teyvat.me"><img alt="Open teyvat.me" src="https://gi-cdn.ley-courier.workers.dev/readme/btn-open-teyvatme.webp" height="44"></a>&nbsp;
+  <a href="https://github.com/tawan475/teyvat.me-capture/releases/latest"><img alt="Get the capture app" src="https://gi-cdn.ley-courier.workers.dev/readme/btn-get-capture.webp" height="44"></a>
 </p>
 
 > [!NOTE]
@@ -31,23 +31,23 @@ Cloudflare Worker serves the Vue dashboard as static assets and the API under
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.475.dev/readme/trk-app-dark.webp">
-    <img alt="teyvat.me: an account over time, with counts, Mora and Primogems per snapshot" src="https://gi-cdn.475.dev/readme/trk-app-light.webp" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.ley-courier.workers.dev/readme/trk-app-dark.webp">
+    <img alt="teyvat.me: an account over time, with counts, Mora and Primogems per snapshot" src="https://gi-cdn.ley-courier.workers.dev/readme/trk-app-light.webp" width="100%">
   </picture>
 </p>
 
 ## How it fits together
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.475.dev/readme/trk-flow-dark.webp">
-  <img alt="Teyvat.me Capture sends captures by live sync, or you import a Leyline or GOOD JSON, paimon.moe, UIGF or Seelie file; teyvat.me keeps snapshots, progression, planner, wishes and achievements." src="https://gi-cdn.475.dev/readme/trk-flow-light.webp" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.ley-courier.workers.dev/readme/trk-flow-dark.webp">
+  <img alt="Teyvat.me Capture sends captures by live sync, or you import a Leyline or GOOD JSON, paimon.moe, UIGF or Seelie file; teyvat.me keeps snapshots, progression, planner, wishes and achievements." src="https://gi-cdn.ley-courier.workers.dev/readme/trk-flow-light.webp" width="100%">
 </picture>
 
 ## What it does
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.475.dev/readme/trk-features-dark.webp">
-  <img alt="Snapshots · Progression · Planner · Wish history · Achievements · Share cards · Share an account · Every language the game ships" src="https://gi-cdn.475.dev/readme/trk-features-light.webp" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://gi-cdn.ley-courier.workers.dev/readme/trk-features-dark.webp">
+  <img alt="Snapshots · Progression · Planner · Wish history · Achievements · Share cards · Share an account · Every language the game ships" src="https://gi-cdn.ley-courier.workers.dev/readme/trk-features-light.webp" width="100%">
 </picture>
 
 ## Docs
@@ -974,7 +974,7 @@ pnpm --filter @gdt/tracker icons     # regenerate PWA icons + manifest
 `src/pwa/sw-template.js` is emitted as `/sw.js` by a Vite plugin with the
 build's precache list: one cache per build, network-first navigation with the
 app shell offline, `/api` never cached, and game images (from
-static.nanoka.cc, and gi-cdn.475.dev for the few it lacks; both hosts are the
+static.nanoka.cc, and gi-cdn.ley-courier.workers.dev for the few it lacks; both hosts are the
 game data's `IMAGE_HOST` / `GI_CDN_HOST`, which the plugin writes into it)
 cache-first in one bounded cache that keeps only image responses. A new build
 waits until the user accepts the "new version" banner. `public/_headers` keeps
@@ -1015,8 +1015,8 @@ pnpm --filter @gdt/tracker db:migrate:live:remote
 pnpm --filter @gdt/tracker run deploy                    # type-check + build + wrangler deploy
 ```
 
-The few icons static.nanoka.cc lacks load from gi-cdn.475.dev (the private
-gi-cdn repo, which serves them to this site only). Deploy gi-cdn before a
+The few icons static.nanoka.cc lacks load from gi-cdn.ley-courier.workers.dev (the private
+gi-cdn repo's static files). Deploy gi-cdn before a
 tracker whose game data adds `hosted` names, or those show initials until it
 is.
 
@@ -1053,7 +1053,7 @@ start at the primary and their few reads may lag a replica by a moment.
 Game data, text and images © HoYoverse. Game data and every image name come
 from Dimbreath's dump (https://gitlab.com/Dimbreath/animegamedata2), through
 genshin-game-data. Game images are loaded from static.nanoka.cc; the few it
-lacks from gi-cdn.475.dev (our extraction from the game client, private).
+lacks from gi-cdn.ley-courier.workers.dev (our extraction from the game client, private).
 See genshin-game-data's README for the rest (stardb.gg, the Genshin Impact
 Wiki, yatta and Genshin Optimizer as cross-checks). Wish banner dates,
 featured items and item names are adapted from paimon.moe

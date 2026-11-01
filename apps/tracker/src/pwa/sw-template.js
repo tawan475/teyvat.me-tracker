@@ -12,12 +12,11 @@
  *   back to the cached app shell offline.
  * - /api is never cached: account data on a shared device is readable by the
  *   next person who opens it.
- * - Game images come from static.nanoka.cc, or from gi-cdn.475.dev for the
- *   names that host lacks (src/lib/assets.ts; the hosts are the game data's
- *   IMAGE_HOST and GI_CDN_HOST), and are kept cache-first in their own
- *   bounded cache across builds. They are fetched in CORS mode (nanoka allows
- *   any origin; gi-cdn allows this site's origin, which a CORS fetch sends),
- *   so only real image responses are kept, never an error page or an opaque
+ * - Game images come from static.nanoka.cc, or from gi-cdn (workers.dev) for
+ *   the names that host lacks (src/lib/assets.ts; the hosts are the game
+ *   data's IMAGE_HOST and GI_CDN_HOST), and are kept cache-first in their own
+ *   bounded cache across builds. They are fetched in CORS mode (both allow
+ *   any origin), so only real image responses are kept, never an error page or an opaque
  *   response (which would also count megabytes against the storage quota).
  *   Bump IMAGES' version to drop them.
  * - Notifications (the planner's resin alerts) are shown by the open page

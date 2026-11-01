@@ -1,9 +1,9 @@
 /**
  * Game images. They load from static.nanoka.cc (`<name>.webp`, CORS open,
  * behind Cloudflare), except the names that host lacks: of those, the ones
- * gi-cdn.475.dev serves (`ui/<name>.webp`, extracted from the game client by
- * the private gi-cdn repo; it answers only this site's pages and service
- * worker) load from there, and the rest return '', so GameIcon shows
+ * gi-cdn.ley-courier.workers.dev serves (`ui/<name>.webp`, extracted from the
+ * game client by the private gi-cdn repo; static files, CORS open) load from
+ * there, and the rest return '', so GameIcon shows
  * initials. Both hosts and both lists come from the game data
  * (`@gdt/game-data/image-url`, data/missing-images.json); the service worker
  * keeps either kind cache-first. The names come only from our own game data

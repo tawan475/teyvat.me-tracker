@@ -48,12 +48,14 @@ const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
 
-const lineup = (level: number, actLevel: number) =>
-  (props.data.data.theaterLevels.get(level) ?? []).map((e) => {
+/** A lineup's enemies; `hp` is the act's HP of that lineup (the hardest difficulty only). */
+const lineup = (level: number, actLevel: number, hp: number[] = []) =>
+  (props.data.data.theaterLevels.get(level) ?? []).map((e, k) => {
     const at = e.level || actLevel
     return {
       ...e,
       level: at,
+      hp: hp[k] ?? 0,
       monster: props.data.data.monsters.get(e.monster),
       name: text.value.get(`monster.${e.monster}`),
     }
@@ -68,7 +70,7 @@ const row = (act: TheaterAct, extra: boolean) => {
     named,
     title: named ? text.value.get(`theater.${act.levels[0]}.name`) : '',
     desc: named ? text.value.get(`theater.${act.levels[0]}.desc`) : '',
-    lineups: act.levels.map((l) => lineup(l, act.level)),
+    lineups: act.levels.map((l, j) => lineup(l, act.level, act.hp[j])),
   }
 }
 const acts = computed(() =>
@@ -211,6 +213,7 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
               :monster="e.monster"
               :name="e.name"
               :level="e.level"
+              :hp="e.hp"
               size="lg"
               class="shrink-0"
               @open="(codex, level) => $emit('enemy', codex, level)"
@@ -247,6 +250,7 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                   :monster="e.monster"
                   :name="e.name"
                   :level="e.level"
+                  :hp="e.hp"
                   @open="(codex, level) => $emit('enemy', codex, level)"
                 />
               </li>

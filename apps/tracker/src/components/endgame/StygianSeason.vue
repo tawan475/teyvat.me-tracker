@@ -9,7 +9,7 @@ import type { EndgameData } from '@/data/endgame'
 import { gameIcon } from '@/lib/assets'
 
 /**
- * A Stygian Onslaught season: what it does, then per difficulty the monster
+ * A Stygian Onslaught season: per difficulty the monster
  * level and its three opponents (picture, name, description, mechanics and
  * the characters the game recommends).
  */
@@ -45,14 +45,8 @@ const range = (n: number) => Array.from({ length: n }, (_, i) => i)
 
 <template>
   <div class="flex flex-col gap-4">
-    <UiPanel v-if="text.get(`stygian.${season.id}.desc`)">
-      <GameText
-        :text="text.get(`stygian.${season.id}.desc`)"
-        :sprites="data.data.sprites"
-        :sprite-name="sprite"
-        class="text-sm leading-relaxed"
-      />
-    </UiPanel>
+    <!-- The season's own text ("The following characters will have…") is left out: the
+         data has no list of those characters, so it would point at nothing. -->
 
     <div class="flex flex-wrap items-center gap-3">
       <span class="text-sm font-semibold text-text-secondary">{{

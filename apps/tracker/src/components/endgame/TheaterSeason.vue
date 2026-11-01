@@ -32,7 +32,9 @@ watch(
 const options = computed(() =>
   props.season.difficulties.map((d) => ({
     value: d.difficulty,
-    label: t('endgame.theater.difficultyN', { n: d.difficulty }),
+    label:
+      text.value.get(`theaterDifficulty.${d.difficulty}`) ||
+      t('endgame.theater.difficultyN', { n: d.difficulty }),
     title: t('endgame.theater.acts', { n: d.acts.length + d.extra.length }),
   })),
 )
@@ -88,11 +90,13 @@ const actKey = (act: TheaterAct) => `${act.act}-${act.levels.join(',')}`
       <span class="text-sm font-semibold text-text-secondary">{{
         $t('endgame.theater.difficulty')
       }}</span>
-      <UiSegmented
-        v-model="difficulty"
-        :options="options"
-        :label="$t('endgame.theater.difficulty')"
-      />
+      <div class="scroll-hide scroll-fade-x -mx-4 min-w-0 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <UiSegmented
+          v-model="difficulty"
+          :options="options"
+          :label="$t('endgame.theater.difficulty')"
+        />
+      </div>
     </div>
 
     <UiPanel v-for="section in sections" :key="section.key" flush>

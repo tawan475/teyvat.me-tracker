@@ -196,12 +196,31 @@
       "common": "Vật phẩm kẻ địch",
       "boss": "Vật phẩm thủ lĩnh",
       "local": "Đặc sản",
-      "weekly": "Thủ lĩnh tuần"
+      "weekly": "Thủ lĩnh tuần",
+      "ascension": "Nguyên Liệu Đột Phá Vũ Khí",
+      "elite": "Vật phẩm tinh anh"
     },
     "name": "Tên",
     "rarity": "Độ Hiếm",
     "weaponType": "Loại Vũ Khí",
-    "element": "Nguyên Tố"
+    "element": "Nguyên Tố",
+    "image": "Hình ảnh (địa chỉ https)",
+    "character": "Nhân Vật",
+    "weapon": "Vũ Khí",
+    "newWeapon": "Vũ khí tùy chỉnh",
+    "share": {
+      "paste": "Dán thiết lập",
+      "placeholder": "Dán thiết lập vào đây, hoặc mở tệp của nó",
+      "file": "Mở tệp",
+      "characters": "{n} nhân vật",
+      "weapons": "{n} vũ khí",
+      "invalid": "Không phải thiết lập",
+      "unknown": "Đã bỏ qua {n} nguyên liệu phiên bản này không có",
+      "copy": "Sao chép thiết lập",
+      "save": "Lưu tệp",
+      "copied": "Đã sao chép thiết lập",
+      "copyFailed": "Không sao chép được thiết lập"
+    }
   },
   "done": {
     "taken": "Lấy từ túi",

@@ -28,6 +28,7 @@ import {
 import { t } from '@/i18n'
 import { formatCompact, formatNumber } from '@/lib/format'
 import { formatSetName } from '@/utils/artifact-stats'
+import { plannerWeaponIcon } from './custom-registry'
 import { characterParts, weaponPart, type DonePart } from './done'
 import { ARTIFACTS_LEFT, GOAL_UNSET, READINESS } from './farm-format'
 import GoalPortrait from './GoalPortrait.vue'
@@ -219,7 +220,7 @@ const portrait = computed(() => {
   const ch = c.value
   if (ch)
     return {
-      src: ch.custom ? '' : characterIcon(ch.key),
+      src: ch.custom ? (ch.custom.image ?? '') : characterIcon(ch.key),
       name: ch.name,
       rarity: ch.rarity,
       element: ch.element,
@@ -229,7 +230,7 @@ const portrait = computed(() => {
     }
   const w = props.entry.weapons[0]!
   return {
-    src: weaponIcon(w.key, w.target.ascension),
+    src: plannerWeaponIcon(w.key, w.target.ascension),
     name: w.name,
     rarity: w.rarity,
     element: null,
@@ -437,7 +438,7 @@ const activeLabel = computed(() =>
       >
         <GameIcon
           v-if="row.weapon"
-          :src="weaponIcon(row.weapon.key, Math.max(row.weapon.current.ascension, 2))"
+          :src="plannerWeaponIcon(row.weapon.key, Math.max(row.weapon.current.ascension, 2))"
           :name="row.weapon.name"
           :rarity="row.weapon.rarity ?? undefined"
           size="xs"

@@ -196,12 +196,31 @@
       "common": "Drop de inimigo",
       "boss": "Drop de chefe",
       "local": "Especialidade",
-      "weekly": "Chefe Semanal"
+      "weekly": "Chefe Semanal",
+      "ascension": "Material de Ascensão de Armas",
+      "elite": "Drop de elite"
     },
     "name": "Nome",
     "rarity": "Raridade",
     "weaponType": "Tipo de Arma",
-    "element": "Elemento"
+    "element": "Elemento",
+    "image": "Imagem (endereço https)",
+    "character": "Personagem",
+    "weapon": "Arma",
+    "newWeapon": "Arma personalizada",
+    "share": {
+      "paste": "Colar predefinição",
+      "placeholder": "Cole uma predefinição aqui ou abra o arquivo dela",
+      "file": "Abrir arquivo",
+      "characters": "{n} personagem | {n} personagens",
+      "weapons": "{n} arma | {n} armas",
+      "invalid": "Não é uma predefinição",
+      "unknown": "{n} material que esta versão não conhece foi omitido | {n} materiais que esta versão não conhece foram omitidos",
+      "copy": "Copiar predefinição",
+      "save": "Salvar arquivo",
+      "copied": "Predefinição copiada",
+      "copyFailed": "Não foi possível copiar a predefinição"
+    }
   },
   "done": {
     "taken": "Retirado do inventário",

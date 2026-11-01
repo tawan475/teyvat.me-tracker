@@ -7,6 +7,7 @@ import { PencilLine, RotateCcw, X } from 'lucide-vue-next'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import { t } from '@/i18n'
 import { weaponIcon } from '@/lib/assets'
+import { plannerWeaponIcon } from './custom-registry'
 import LevelGrid from './LevelGrid.vue'
 import { weaponGoalAtLeast, type LevelStep } from './level-grid'
 import { levelLabel, type WeaponGoalView } from './model'
@@ -67,7 +68,7 @@ const arNeed = computed(() => {
   >
     <div class="flex items-center gap-2.5">
       <GameIcon
-        :src="weaponIcon(weapon.key, Math.max(2, weapon.current.ascension))"
+        :src="plannerWeaponIcon(weapon.key, Math.max(2, weapon.current.ascension))"
         :name="weapon.name"
         :rarity="weapon.rarity ?? undefined"
         size="sm"

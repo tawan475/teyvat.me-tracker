@@ -8,8 +8,9 @@
  * out here (achievements, furnishings, sync state…) stay as they are there.
  * What Seelie can't hold is left out: weapon refinement goals of weapons it
  * doesn't forge are still written as `craft` (it ignores them), hand ticks on
- * single artifact slots, paused item needs, and built-in tasks it has no
- * counterpart for (Battle Pass, reputation, Parametric Transformer).
+ * single artifact slots, paused item needs, custom weapons, and built-in
+ * tasks it has no counterpart for (Battle Pass, reputation, Parametric
+ * Transformer).
  * `import(export(x))` gives back x otherwise (see the tests).
  */
 
@@ -140,7 +141,8 @@ export function buildSeelieExport(input: SeelieExportInput): SeelieExport {
   }
 
   for (const t of targets) {
-    if (t.kind !== 'weapon') continue
+    // Seelie has no custom weapons.
+    if (t.kind !== 'weapon' || t.target.custom) continue
     const now = input.weaponNow({ id: t.id, key: t.key, owner: t.owner })
     const g = goal({
       type: 'weapon',

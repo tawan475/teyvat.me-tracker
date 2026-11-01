@@ -196,12 +196,31 @@
       "common": "Drop dei nemici",
       "boss": "Drop del boss",
       "local": "Specialità",
-      "weekly": "Boss settimanale"
+      "weekly": "Boss settimanale",
+      "ascension": "Materiale d'ascensione armi",
+      "elite": "Drop d'élite"
     },
     "name": "Nome",
     "rarity": "Rarità",
     "weaponType": "Tipo di arma",
-    "element": "Elemento"
+    "element": "Elemento",
+    "image": "Immagine (indirizzo https)",
+    "character": "Personaggio",
+    "weapon": "Arma",
+    "newWeapon": "Arma personalizzata",
+    "share": {
+      "paste": "Incolla modello",
+      "placeholder": "Incolla qui un modello o apri il suo file",
+      "file": "Apri file",
+      "characters": "{n} personaggio | {n} personaggi",
+      "weapons": "{n} arma | {n} armi",
+      "invalid": "Non è un modello",
+      "unknown": "{n} materiale sconosciuto a questa versione è stato omesso | {n} materiali sconosciuti a questa versione sono stati omessi",
+      "copy": "Copia modello",
+      "save": "Salva file",
+      "copied": "Modello copiato",
+      "copyFailed": "Impossibile copiare il modello"
+    }
   },
   "done": {
     "taken": "Preso dall'inventario",

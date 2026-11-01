@@ -196,12 +196,31 @@
       "common": "Butin d'ennemi",
       "boss": "Butin de boss",
       "local": "Spécialité",
-      "weekly": "Boss hebdo"
+      "weekly": "Boss hebdo",
+      "ascension": "Matériau d'élévation d'arme",
+      "elite": "Butin d'élite"
     },
     "name": "Nom",
     "rarity": "Rareté",
     "weaponType": "Type d'arme",
-    "element": "Élément"
+    "element": "Élément",
+    "image": "Image (adresse https)",
+    "character": "Personnage",
+    "weapon": "Arme",
+    "newWeapon": "Arme personnalisée",
+    "share": {
+      "paste": "Coller un modèle",
+      "placeholder": "Collez un modèle ici ou ouvrez son fichier",
+      "file": "Ouvrir un fichier",
+      "characters": "{n} personnage | {n} personnages",
+      "weapons": "{n} arme | {n} armes",
+      "invalid": "Ce n'est pas un modèle",
+      "unknown": "{n} matériau inconnu de cette version a été ignoré | {n} matériaux inconnus de cette version ont été ignorés",
+      "copy": "Copier le modèle",
+      "save": "Enregistrer le fichier",
+      "copied": "Modèle copié",
+      "copyFailed": "Impossible de copier le modèle"
+    }
   },
   "done": {
     "taken": "Pris dans le sac",

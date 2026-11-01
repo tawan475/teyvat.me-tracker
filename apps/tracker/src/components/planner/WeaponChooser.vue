@@ -3,7 +3,7 @@ import { compareText } from '@/lib/search'
 import type { PlannerData, WeaponType } from '@gdt/game-data'
 import type { Good } from '@gdt/shared'
 import { computed, ref } from 'vue'
-import { Search } from 'lucide-vue-next'
+import { Plus, Search } from 'lucide-vue-next'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import UiInput from '@/components/ui/UiInput.vue'
 import { normalizeSearch } from '@/data/characters'
@@ -14,7 +14,8 @@ import { characterName, weaponName } from './model'
  * Picks a weapon: every one of `type` (all types without it), the copies in
  * the capture first (the one `holder` has on top, each with who holds it),
  * then the rest as new copies. The same weapon can be picked again: each
- * pick is its own goal.
+ * pick is its own goal. With `custom`, a first row starts a custom weapon
+ * (custom-weapon.ts) instead.
  */
 const props = defineProps<{
   planner: PlannerData
@@ -24,8 +25,10 @@ const props = defineProps<{
   holder?: string
   /** Names for custom characters' ids (they hold no copies, but goals may name them). */
   names?: ReadonlyMap<string, string>
+  /** Offer a custom weapon first. */
+  custom?: boolean
 }>()
-const emit = defineEmits<{ pick: [key: string, owner: string] }>()
+const emit = defineEmits<{ pick: [key: string, owner: string]; custom: [] }>()
 const query = ref('')
 
 interface Row {
@@ -107,6 +110,20 @@ const ownerName = (key: string) => props.names?.get(key) ?? characterName(key)
       class="flex max-h-80 flex-col gap-0.5 overflow-y-auto"
       :aria-label="$t('planner.picker.weapons')"
     >
+      <li v-if="custom">
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-surface-overlay"
+          @click="emit('custom')"
+        >
+          <span
+            class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-border-strong text-text-muted"
+          >
+            <Plus class="size-4" aria-hidden="true" />
+          </span>
+          <span class="min-w-0 flex-1 truncate text-sm">{{ $t('planner.custom.newWeapon') }}</span>
+        </button>
+      </li>
       <li v-for="row in rows" :key="row.id">
         <button
           type="button"

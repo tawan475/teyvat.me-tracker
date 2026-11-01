@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { materialName } from '@/utils/materials'
 import type { MaterialKind, PlannerData } from '@gdt/game-data'
-import type { CustomCharacter, Good } from '@gdt/shared'
+import type { CustomCharacter, CustomPreset, CustomWeapon, Good } from '@gdt/shared'
 import { computed, reactive, ref, watch } from 'vue'
-import { Plus, Search } from 'lucide-vue-next'
+import { ClipboardPaste, FileUp, Plus, Search } from 'lucide-vue-next'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -16,6 +16,8 @@ import { t } from '@/i18n'
 import { formatCompact, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import CustomForm from './CustomForm.vue'
+import { PresetError, readPreset } from './custom-preset'
+import CustomWeaponForm from './CustomWeaponForm.vue'
 import { materialSoft } from './material-soft'
 import { characterGoalId, itemGoalId } from './model'
 import { DEFAULT_PRESET, PRESETS, presetById, type PresetId } from './presets'
@@ -27,8 +29,9 @@ type Mode = 'character' | 'weapon' | 'item' | 'custom'
 /**
  * Adds goals: several characters at once with one preset (the roster, owned
  * first, with filters), a weapon (any, owned or not; the same one again is
- * another goal), a material for an extra need, or a custom character (one
- * the game data doesn't have yet). Characters and items that have a goal
+ * another goal), a material for an extra need, or a custom character or
+ * weapon (one the game data doesn't have yet), typed in or pasted as a
+ * preset (custom-preset.ts; text or a file). Characters and items that have a goal
  * are left out.
  */
 const props = defineProps<{
@@ -48,6 +51,8 @@ const emit = defineEmits<{
   weapon: [key: string, owner: string]
   item: [key: string]
   custom: [profile: CustomCharacter, preset: PresetId]
+  customWeapon: [profile: CustomWeapon]
+  preset: [preset: CustomPreset, goalPreset: PresetId]
 }>()
 
 const mode = ref<Mode>('character')
@@ -57,7 +62,46 @@ const savedPreset = readStorage('planner:preset')
 const preset = ref<PresetId>(presetById(savedPreset ?? '')?.id ?? DEFAULT_PRESET)
 watch(preset, (value) => writeStorage('planner:preset', value))
 const blank = (): CustomCharacter => ({ name: '', rarity: 5, element: 'Pyro', weapon: 'sword' })
-const custom = reactive<{ profile: CustomCharacter }>({ profile: blank() })
+const blankWeapon = (): CustomWeapon => ({ name: '', rarity: 5, type: 'sword' })
+const custom = reactive<{ profile: CustomCharacter; weapon: CustomWeapon }>({
+  profile: blank(),
+  weapon: blankWeapon(),
+})
+type CustomKind = 'character' | 'weapon' | 'paste'
+const customKind = ref<CustomKind>('character')
+const CUSTOM_KINDS = computed(() => [
+  { value: 'character' as const, label: t('planner.custom.character') },
+  { value: 'weapon' as const, label: t('planner.custom.weapon') },
+  { value: 'paste' as const, label: t('planner.custom.share.paste') },
+])
+
+// A pasted (or opened) preset, read as it is typed.
+const pasted = ref('')
+const reading = computed(() => {
+  const text = pasted.value.trim()
+  if (!text) return null
+  try {
+    return { ...readPreset(text, props.planner), error: '' }
+  } catch (cause) {
+    return { preset: null, unknown: 0, error: cause instanceof PresetError ? cause.message : '' }
+  }
+})
+/** "1 character, 2 weapons": what a preset holds (a part it doesn't have left out). */
+function presetCounts(preset: CustomPreset): string {
+  const count = (key: string, n: number) =>
+    n ? [t(`planner.custom.share.${key}`, { n: formatNumber(n) }, n)] : []
+  return [
+    ...count('characters', preset.characters.length),
+    ...count('weapons', preset.weapons.length),
+  ].join(t('farm.craft.listSeparator'))
+}
+const fileInput = ref<HTMLInputElement>()
+async function openFile(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (fileInput.value) fileInput.value.value = ''
+  // A preset is a few KB; anything far bigger isn't one.
+  if (file && file.size <= 512 * 1024) pasted.value = await file.text()
+}
 
 watch(
   () => props.open,
@@ -66,6 +110,8 @@ watch(
     query.value = ''
     selected.value = new Set()
     custom.profile = blank()
+    custom.weapon = blankWeapon()
+    pasted.value = ''
     if (props.start) mode.value = props.start
   },
 )
@@ -135,9 +181,24 @@ function addCharacters() {
   if (selected.value.size) emit('characters', [...selected.value], preset.value)
 }
 function addCustom() {
+  if (customKind.value === 'paste') {
+    const read = reading.value
+    if (read?.preset) emit('preset', read.preset, preset.value)
+    return
+  }
+  if (customKind.value === 'weapon') {
+    const name = custom.weapon.name.trim()
+    if (name) emit('customWeapon', { ...custom.weapon, name })
+    return
+  }
   const name = custom.profile.name.trim()
   if (name) emit('custom', { ...custom.profile, name }, preset.value)
 }
+const canAddCustom = computed(() =>
+  customKind.value === 'paste'
+    ? !!reading.value?.preset
+    : (customKind.value === 'weapon' ? custom.weapon.name : custom.profile.name).trim() !== '',
+)
 </script>
 
 <template>
@@ -164,13 +225,65 @@ function addCustom() {
         @pick="(key, owner) => emit('weapon', key, owner)"
       />
 
-      <CustomForm
-        v-else-if="mode === 'custom'"
-        :planner="planner"
-        :profile="custom.profile"
-        live
-        @change="(p) => (custom.profile = p)"
-      />
+      <div v-else-if="mode === 'custom'" class="flex flex-col gap-4">
+        <UiSegmented
+          v-model="customKind"
+          :options="CUSTOM_KINDS"
+          :label="$t('planner.card.custom')"
+          class="self-start"
+        />
+        <CustomForm
+          v-if="customKind === 'character'"
+          :planner="planner"
+          :profile="custom.profile"
+          live
+          @change="(p) => (custom.profile = p)"
+        />
+        <CustomWeaponForm
+          v-else-if="customKind === 'weapon'"
+          :planner="planner"
+          :profile="custom.weapon"
+          live
+          @change="(p) => (custom.weapon = p)"
+        />
+        <div v-else class="flex flex-col gap-2">
+          <textarea
+            v-model="pasted"
+            rows="8"
+            spellcheck="false"
+            class="min-h-40 w-full rounded-md border border-border-strong bg-surface-raised p-3 font-code text-xs text-text-primary shadow-sm focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
+            :aria-label="$t('planner.custom.share.paste')"
+            :placeholder="$t('planner.custom.share.placeholder')"
+          />
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <UiButton size="sm" @click="fileInput?.click()">
+              <FileUp class="size-4" aria-hidden="true" />
+              {{ $t('planner.custom.share.file') }}
+            </UiButton>
+            <input
+              ref="fileInput"
+              type="file"
+              accept=".json,application/json,text/plain"
+              class="hidden"
+              @change="openFile"
+            />
+            <span v-if="reading?.preset" class="text-success-text">
+              <ClipboardPaste class="inline size-4 align-text-bottom" aria-hidden="true" />
+              {{ presetCounts(reading.preset) }}
+            </span>
+            <span v-else-if="reading" class="text-danger-text">{{
+              $t('planner.custom.share.invalid')
+            }}</span>
+            <span v-if="reading?.unknown" class="text-text-muted">{{
+              $t(
+                'planner.custom.share.unknown',
+                { n: formatNumber(reading.unknown) },
+                reading.unknown,
+              )
+            }}</span>
+          </div>
+        </div>
+      </div>
 
       <template v-else>
         <label class="relative">
@@ -217,6 +330,7 @@ function addCustom() {
 
     <template v-if="mode === 'character' || mode === 'custom'" #footer>
       <UiSelect
+        v-if="mode === 'character' || customKind !== 'weapon'"
         v-model="preset"
         :options="presetOptions"
         class="mr-auto w-36 sm:w-40"
@@ -243,7 +357,7 @@ function addCustom() {
       <UiButton
         v-else
         variant="primary"
-        :disabled="custom.profile.name.trim() === ''"
+        :disabled="!canAddCustom"
         :loading="saving"
         @click="addCustom"
       >

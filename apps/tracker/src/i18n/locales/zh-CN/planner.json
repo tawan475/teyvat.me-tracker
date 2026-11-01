@@ -196,12 +196,31 @@
       "common": "敌人掉落",
       "boss": "首领掉落",
       "local": "区域特产",
-      "weekly": "周本"
+      "weekly": "周本",
+      "ascension": "武器突破素材",
+      "elite": "精英掉落"
     },
     "name": "名称",
     "rarity": "稀有度",
     "weaponType": "武器类型",
-    "element": "元素"
+    "element": "元素",
+    "image": "图片（https 地址）",
+    "character": "角色",
+    "weapon": "武器",
+    "newWeapon": "自定义武器",
+    "share": {
+      "paste": "粘贴预设",
+      "placeholder": "在此粘贴预设，或打开预设文件",
+      "file": "打开文件",
+      "characters": "{n} 个角色",
+      "weapons": "{n} 把武器",
+      "invalid": "不是预设",
+      "unknown": "已略过此版本未知的 {n} 种素材",
+      "copy": "复制预设",
+      "save": "保存文件",
+      "copied": "预设已复制",
+      "copyFailed": "无法复制预设"
+    }
   },
   "done": {
     "taken": "从背包扣除",

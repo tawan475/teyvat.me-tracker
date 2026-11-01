@@ -196,12 +196,31 @@
       "common": "敵素材",
       "boss": "ボス素材",
       "local": "特産品",
-      "weekly": "週ボス"
+      "weekly": "週ボス",
+      "ascension": "武器突破素材",
+      "elite": "精鋭素材"
     },
     "name": "名前",
     "rarity": "レア度",
     "weaponType": "武器タイプ",
-    "element": "元素"
+    "element": "元素",
+    "image": "画像（https アドレス）",
+    "character": "キャラクター",
+    "weapon": "武器",
+    "newWeapon": "カスタム武器",
+    "share": {
+      "paste": "プリセットを貼り付け",
+      "placeholder": "ここにプリセットを貼り付けるか、ファイルを開いてください",
+      "file": "ファイルを開く",
+      "characters": "キャラクター {n}",
+      "weapons": "武器 {n}",
+      "invalid": "プリセットではありません",
+      "unknown": "このバージョンにない素材 {n} 件を除外しました",
+      "copy": "プリセットをコピー",
+      "save": "ファイルに保存",
+      "copied": "プリセットをコピーしました",
+      "copyFailed": "プリセットをコピーできませんでした"
+    }
   },
   "done": {
     "taken": "バッグから消費",

@@ -2,7 +2,7 @@ import { loadPlanner } from '@gdt/game-data'
 import { loadDropRates } from '@gdt/game-data/drops'
 import { loadFarming } from '@gdt/game-data/farming'
 import { createRequirementCache, planTotals, type PlanOptions } from '@gdt/game-data/planner-math'
-import type { AccountResponse, CustomCharacter, Good } from '@gdt/shared'
+import type { AccountResponse, CustomCharacter, CustomWeapon, Good } from '@gdt/shared'
 import { computed, onBeforeUnmount, ref, watch, type ComputedRef } from 'vue'
 import { NO_PLAYER } from '@/data/account-player'
 import { clockReading, liveReading } from './resin'
@@ -19,6 +19,8 @@ import { useAccounts } from '@/stores/accounts'
 import { preloadMaterialRarities } from '@/utils/materials'
 import { countChange, effectiveInventory, replacedAdjustments } from './hand-edits'
 import { withCustomCharacters } from './custom-character'
+import { setCustomProfiles } from './custom-registry'
+import { withCustomWeapons } from './custom-weapon'
 import { keepUnchanged } from './keep-unchanged'
 import { buildBoard, withoutGems, type Board } from './model'
 import { usePlannerState } from './use-planner-state'
@@ -113,19 +115,31 @@ export function usePlannerModel(
   const store = usePlannerTargets(accountId)
   onBeforeUnmount(() => void store.flush())
 
-  /** Custom characters as text: the planner below changes only when one does. */
-  const customs = computed(() =>
-    JSON.stringify(
-      (store.targets.value ?? []).flatMap((t) =>
-        t.kind === 'custom' ? [[t.key, t.target.custom]] : [],
-      ),
-    ),
+  /** Custom characters and weapons as text: the planner below changes only when one does. */
+  watch(
+    () => store.targets.value,
+    (targets) => setCustomProfiles(targets ?? []),
+    {
+      immediate: true,
+    },
   )
+  const customs = computed(() => {
+    const targets = store.targets.value ?? []
+    return JSON.stringify({
+      characters: targets.flatMap((t) => (t.kind === 'custom' ? [[t.key, t.target.custom]] : [])),
+      weapons: targets.flatMap((t) =>
+        t.kind === 'weapon' && t.target.custom ? [[t.key, t.target.custom]] : [],
+      ),
+    })
+  })
   const planner = computed(() => {
     const p = basePlanner.value
-    return p
-      ? withCustomCharacters(p, JSON.parse(customs.value) as [string, CustomCharacter][])
-      : null
+    if (!p) return null
+    const { characters, weapons } = JSON.parse(customs.value) as {
+      characters: [string, CustomCharacter][]
+      weapons: [string, CustomWeapon][]
+    }
+    return withCustomWeapons(withCustomCharacters(p, characters), weapons)
   })
 
   const state = usePlannerState(

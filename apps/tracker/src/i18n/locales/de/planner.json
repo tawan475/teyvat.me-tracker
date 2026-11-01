@@ -196,12 +196,31 @@
       "common": "Gegner-Drop",
       "boss": "Boss-Drop",
       "local": "Besonderheit",
-      "weekly": "Wochenboss"
+      "weekly": "Wochenboss",
+      "ascension": "Waffenaufstiegsmaterial",
+      "elite": "Elite-Drop"
     },
     "name": "Name",
     "rarity": "Seltenheit",
     "weaponType": "Waffentyp",
-    "element": "Element"
+    "element": "Element",
+    "image": "Bild (https-Adresse)",
+    "character": "Figur",
+    "weapon": "Waffe",
+    "newWeapon": "Eigene Waffe",
+    "share": {
+      "paste": "Vorlage einfügen",
+      "placeholder": "Vorlage hier einfügen oder ihre Datei öffnen",
+      "file": "Datei öffnen",
+      "characters": "{n} Figur | {n} Figuren",
+      "weapons": "{n} Waffe | {n} Waffen",
+      "invalid": "Keine Vorlage",
+      "unknown": "{n} Material, das diese Version nicht kennt, wurde weggelassen | {n} Materialien, die diese Version nicht kennt, wurden weggelassen",
+      "copy": "Vorlage kopieren",
+      "save": "Datei speichern",
+      "copied": "Vorlage kopiert",
+      "copyFailed": "Vorlage konnte nicht kopiert werden"
+    }
   },
   "done": {
     "taken": "Aus dem Inventar genommen",

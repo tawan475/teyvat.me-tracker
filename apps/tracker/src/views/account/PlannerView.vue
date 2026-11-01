@@ -15,6 +15,8 @@ import type {
   CharacterCurrent,
   CharacterTarget,
   CustomCharacter,
+  CustomPreset,
+  CustomWeapon,
   PlannerTarget,
   WeaponCurrent,
   WeaponTarget,
@@ -1464,6 +1466,50 @@ function addCustom(custom: CustomCharacter, presetId: PresetId) {
   void addGoals([upsert({ kind: 'custom', key, target })], customGoalId(key), '')
 }
 
+/** A custom weapon goal (its own id as the key), from Lv. 1 to 90 at R1. */
+function customWeaponGoal(custom: CustomWeapon, owner: string) {
+  const id = newGoalId()
+  const key = newCustomKey()
+  const target = { level: 90, ascension: 6, refinement: 1, active: true, custom }
+  return { id, key, owner, op: upsert({ kind: 'weapon', id, key, owner, target }) }
+}
+
+function addCustomWeapon(custom: CustomWeapon, owner = '') {
+  const goal = customWeaponGoal(custom, owner)
+  void addGoals([goal.op], owner ? null : weaponGoalId(goal.key, '', goal.id), '')
+}
+
+/** The custom weapon a character's Weapon tab adds, named "Custom weapon" until renamed. */
+function addCustomWeaponGoal() {
+  const c = editorEntry.value?.character
+  if (!c) return
+  const type = c.weapon ?? 'sword'
+  store.change([
+    customWeaponGoal({ name: t('planner.custom.newWeapon'), rarity: 5, type }, c.key).op,
+  ])
+}
+
+/** A pasted preset: each character with the goal preset, each weapon for its character (or spare). */
+function addPreset(preset: CustomPreset, presetId: PresetId) {
+  const goalPreset = presetById(presetId)
+  if (!goalPreset) return
+  const ops: Ops = []
+  const owners = new Map<number, string>()
+  for (const { signature, ...custom } of preset.characters) {
+    const key = newCustomKey()
+    if (signature !== undefined) owners.set(signature, key)
+    ops.push(
+      upsert({
+        kind: 'custom',
+        key,
+        target: { ...applyPreset(goalPreset, NEW_CHARACTER), custom },
+      }),
+    )
+  }
+  preset.weapons.forEach((custom, i) => ops.push(customWeaponGoal(custom, owners.get(i) ?? '').op))
+  void addGoals(ops, null, t('planner.view.added', { n: formatNumber(ops.length) }))
+}
+
 function addItem(key: string) {
   pickerOpen.value = false
   openEditor(itemGoalId(key))
@@ -1964,6 +2010,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       @weapon="writeWeapon"
       @weapon-now="writeWeaponNow"
       @add-weapon="addWeaponGoal"
+      @add-custom-weapon="addCustomWeaponGoal"
       @remove-weapon="removeWeaponGoal"
       @toggle="editorEntry && toggleActive(editorEntry)"
       @favorite="editorEntry && toggleFavorite(editorEntry)"
@@ -1995,6 +2042,8 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       @weapon="addWeapon"
       @item="addItem"
       @custom="addCustom"
+      @custom-weapon="addCustomWeapon"
+      @preset="addPreset"
     />
     <SeelieImport
       v-if="seelieShown"

@@ -196,12 +196,31 @@
       "common": "Enemy drop",
       "boss": "Boss drop",
       "local": "Specialty",
-      "weekly": "Weekly boss"
+      "weekly": "Weekly boss",
+      "ascension": "Weapon material",
+      "elite": "Elite drop"
     },
     "name": "Name",
     "rarity": "Rarity",
     "weaponType": "Weapon type",
-    "element": "Element"
+    "element": "Element",
+    "image": "Picture (https address)",
+    "character": "Character",
+    "weapon": "Weapon",
+    "newWeapon": "Custom weapon",
+    "share": {
+      "paste": "Paste preset",
+      "placeholder": "Paste a preset here, or open its file",
+      "file": "Open file",
+      "characters": "{n} character | {n} characters",
+      "weapons": "{n} weapon | {n} weapons",
+      "invalid": "Not a preset",
+      "unknown": "{n} material this version doesn't know was left out | {n} materials this version doesn't know were left out",
+      "copy": "Copy preset",
+      "save": "Save file",
+      "copied": "Preset copied",
+      "copyFailed": "Couldn't copy the preset"
+    }
   },
   "done": {
     "taken": "Taken from the bag",

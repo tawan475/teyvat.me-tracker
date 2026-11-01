@@ -71,6 +71,7 @@ import { characterGoalId, customGoalId, itemGoalId, targetId, weaponGoalId } fro
 import { characterNow, weaponNow } from './hand-edits'
 import { assignWeaponCopies, type WeaponCopy } from './weapon-copies'
 import { compareText } from '@/lib/search'
+import { customProfile } from './custom-registry'
 
 export type TargetInput = z.input<typeof plannerTargetInput>
 export type TargetsPatch = z.input<typeof plannerTargetsPatch>
@@ -218,12 +219,14 @@ export interface Board {
   weaponGoals: Map<string, WeaponGoalView>
 }
 
+/** A character's name (a custom one's own, custom-registry.ts). */
 export function characterName(key: string): string {
-  return gameCharacterName(key)
+  return customProfile(key)?.name ?? gameCharacterName(key)
 }
 
+/** A weapon's name (a custom one's own, custom-registry.ts). */
 export function weaponName(key: string): string {
-  return itemName(key)
+  return customProfile(key)?.name ?? itemName(key)
 }
 
 interface WornIndex {

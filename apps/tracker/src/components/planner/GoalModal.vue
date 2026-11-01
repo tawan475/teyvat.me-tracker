@@ -17,12 +17,15 @@ import type {
   ArtifactGoal,
   CharacterTarget,
   CustomCharacter,
+  CustomWeapon,
   Good,
   WeaponTarget,
 } from '@gdt/shared'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import {
   CircleAlert,
+  Copy,
+  Download,
   Eye,
   EyeOff,
   NotebookPen,
@@ -43,10 +46,15 @@ import UiSegmented from '@/components/ui/UiSegmented.vue'
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { t } from '@/i18n'
 import { formatCompact, formatNumber } from '@/lib/format'
+import { downloadBlob } from '@/lib/share-image'
 import { readStorage, writeStorage } from '@/lib/storage'
+import { useFeedback } from '@/stores/feedback'
 import ArtifactGoalBlock from './ArtifactGoalBlock.vue'
 import CostList from './CostList.vue'
+import { plannerWeaponIcon } from './custom-registry'
 import CustomForm from './CustomForm.vue'
+import { makePreset, presetText } from './custom-preset'
+import CustomWeaponForm from './CustomWeaponForm.vue'
 import { daysText, weeksText } from './farm-format'
 import { resinDays } from './farm-today'
 import LevelGrid from './LevelGrid.vue'
@@ -116,6 +124,8 @@ const emit = defineEmits<{
   weapon: [weapon: WeaponGoalView, target: WeaponTarget]
   weaponNow: [weapon: WeaponGoalView, state: WeaponState | null]
   addWeapon: [key: string]
+  /** A custom weapon for this card's character (named "Custom weapon" until renamed). */
+  addCustomWeapon: []
   removeWeapon: [weapon: WeaponGoalView]
   toggle: []
   favorite: []
@@ -123,8 +133,11 @@ const emit = defineEmits<{
   replace: [real: string]
 }>()
 
+const feedback = useFeedback()
 const c = computed(() => props.entry?.character ?? null)
 const lone = computed(() => (c.value ? null : (props.entry?.weapons[0] ?? null)))
+/** The card's custom weapon goals (custom-weapon.ts). */
+const customWeapons = computed(() => props.entry?.weapons.filter((w) => w.target.custom) ?? [])
 const stored = computed(() => c.value?.stored ?? null)
 const phases = computed(() =>
   c.value ? (props.planner.characters.get(c.value.key)?.ascension ?? null) : null,
@@ -146,7 +159,9 @@ const tabs = computed(() => {
     },
     { value: 'artifacts', label: t('planner.artifacts.title') },
   ]
-  if (c.value?.custom) list.push({ value: 'custom', label: t('planner.card.custom') })
+  if (c.value?.custom || customWeapons.value.length) {
+    list.push({ value: 'custom', label: t('planner.card.custom') })
+  }
   return list
 })
 
@@ -166,7 +181,9 @@ watch(
       noteOpen.value = !!props.entry?.note
       note.value = props.entry?.note ?? ''
       if (props.startTab && TABS_SAVED.includes(props.startTab)) tab.value = props.startTab as Tab
-      if (tab.value === 'custom' && !c.value?.custom) tab.value = 'level'
+      if (tab.value === 'custom' && !c.value?.custom && !customWeapons.value.length) {
+        tab.value = 'level'
+      }
     }
   },
   { immediate: true },
@@ -372,10 +389,11 @@ const estimate = computed(() => {
 const title = computed(() => props.entry?.name ?? '')
 const portrait = computed(() => {
   const ch = c.value
-  if (ch) return { src: ch.custom ? '' : characterIcon(ch.key), rarity: ch.rarity }
+  if (ch)
+    return { src: ch.custom ? (ch.custom.image ?? '') : characterIcon(ch.key), rarity: ch.rarity }
   const w = lone.value
   return w
-    ? { src: weaponIcon(w.key, w.target.ascension), rarity: w.rarity }
+    ? { src: plannerWeaponIcon(w.key, w.target.ascension), rarity: w.rarity }
     : { src: '', rarity: null }
 })
 const holderName = (key: string) => props.names.get(key) ?? characterName(key)
@@ -383,6 +401,44 @@ const holderName = (key: string) => props.names.get(key) ?? characterName(key)
 function pickWeapon(key: string) {
   adding.value = false
   emit('addWeapon', key)
+}
+
+function pickCustomWeapon() {
+  adding.value = false
+  emit('addCustomWeapon')
+}
+
+function setCustomWeapon(w: WeaponGoalView, custom: CustomWeapon) {
+  emit('weapon', w, { ...w.target, custom })
+}
+
+/** The card's custom character and weapons as a preset (custom-preset.ts). */
+function cardPreset() {
+  const ch = c.value
+  return makePreset(
+    ch?.custom ? [{ key: ch.key, custom: ch.custom }] : [],
+    customWeapons.value.map((w) => ({ owner: w.owner, custom: w.target.custom! })),
+  )
+}
+
+/** The preset as a file, named after its first entry. */
+function savePreset() {
+  const preset = cardPreset()
+  const name = (preset.characters[0]?.name ?? preset.weapons[0]?.name ?? 'preset')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-|-$/g, '')
+  const blob = new Blob([presetText(preset)], { type: 'application/json' })
+  downloadBlob(blob, `${name || 'preset'}.teyvatme.json`)
+}
+
+/** The preset onto the clipboard. */
+async function copyPreset() {
+  try {
+    await navigator.clipboard.writeText(presetText(cardPreset()))
+    feedback.toast({ tone: 'success', title: t('planner.custom.share.copied') })
+  } catch (cause) {
+    feedback.error(t('planner.custom.share.copyFailed'), cause)
+  }
 }
 
 function confirmReplace() {
@@ -532,6 +588,27 @@ const replaceSelected = computed<ReadonlySet<string>>(
           @target="emit('weapon', lone, $event)"
           @now="emit('weaponNow', lone, $event)"
         />
+        <section
+          v-if="lone?.target.custom"
+          class="flex flex-col gap-4 border-t border-border-subtle pt-3"
+          :aria-label="$t('planner.custom.weapon')"
+        >
+          <CustomWeaponForm
+            :planner="basePlanner"
+            :profile="lone.target.custom"
+            @change="(custom) => setCustomWeapon(lone!, custom)"
+          />
+          <div class="flex flex-wrap gap-2">
+            <UiButton @click="copyPreset">
+              <Copy class="size-4" aria-hidden="true" />
+              {{ $t('planner.custom.share.copy') }}
+            </UiButton>
+            <UiButton @click="savePreset">
+              <Download class="size-4" aria-hidden="true" />
+              {{ $t('planner.custom.share.save') }}
+            </UiButton>
+          </div>
+        </section>
 
         <template v-if="c && stored && phases">
           <UiSegmented
@@ -680,7 +757,9 @@ const replaceSelected = computed<ReadonlySet<string>>(
               :type="c.weapon"
               :holder="c.key"
               :names="names"
+              custom
               @pick="pickWeapon"
+              @custom="pickCustomWeapon"
             />
             <div class="flex gap-2">
               <UiButton v-if="!adding" @click="adding = true">
@@ -704,16 +783,41 @@ const replaceSelected = computed<ReadonlySet<string>>(
 
           <!-- Custom -->
           <section
-            v-else-if="tab === 'custom' && c.custom"
+            v-else-if="tab === 'custom' && (c.custom || customWeapons.length)"
             class="flex flex-col gap-4"
             :aria-label="$t('planner.editor.customCharacter')"
           >
             <CustomForm
+              v-if="c.custom"
               :planner="basePlanner"
               :profile="c.custom"
               @change="(custom) => setCharacter({ ...stored!, custom })"
             />
-            <div class="flex flex-col gap-3 border-t border-border-subtle pt-3">
+            <section
+              v-for="w in customWeapons"
+              :key="w.goalId"
+              class="flex flex-col gap-3"
+              :class="c.custom ? 'border-t border-border-subtle pt-3' : ''"
+              :aria-label="w.name"
+            >
+              <h3 class="text-sm font-semibold">{{ w.name }}</h3>
+              <CustomWeaponForm
+                :planner="basePlanner"
+                :profile="w.target.custom!"
+                @change="(custom) => setCustomWeapon(w, custom)"
+              />
+            </section>
+            <div class="flex flex-wrap gap-2">
+              <UiButton @click="copyPreset">
+                <Copy class="size-4" aria-hidden="true" />
+                {{ $t('planner.custom.share.copy') }}
+              </UiButton>
+              <UiButton @click="savePreset">
+                <Download class="size-4" aria-hidden="true" />
+                {{ $t('planner.custom.share.save') }}
+              </UiButton>
+            </div>
+            <div v-if="c.custom" class="flex flex-col gap-3 border-t border-border-subtle pt-3">
               <div class="flex flex-wrap items-center gap-2">
                 <UiButton v-if="!replacing" @click="replacing = true">
                   <Replace class="size-4" aria-hidden="true" />

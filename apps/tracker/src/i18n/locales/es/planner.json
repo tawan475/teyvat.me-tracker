@@ -196,12 +196,31 @@
       "common": "Botín de enemigo",
       "boss": "Botín de jefe",
       "local": "Especialidad",
-      "weekly": "Jefe semanal"
+      "weekly": "Jefe semanal",
+      "ascension": "Material de ascensión de arma",
+      "elite": "Botín de élite"
     },
     "name": "Nombre",
     "rarity": "Rareza",
     "weaponType": "Tipo de arma",
-    "element": "Elemento"
+    "element": "Elemento",
+    "image": "Imagen (dirección https)",
+    "character": "Personaje",
+    "weapon": "Arma",
+    "newWeapon": "Arma personalizada",
+    "share": {
+      "paste": "Pegar plantilla",
+      "placeholder": "Pega aquí una plantilla o abre su archivo",
+      "file": "Abrir archivo",
+      "characters": "{n} personaje | {n} personajes",
+      "weapons": "{n} arma | {n} armas",
+      "invalid": "No es una plantilla",
+      "unknown": "Se omitió {n} material que esta versión no conoce | Se omitieron {n} materiales que esta versión no conoce",
+      "copy": "Copiar plantilla",
+      "save": "Guardar archivo",
+      "copied": "Plantilla copiada",
+      "copyFailed": "No se pudo copiar la plantilla"
+    }
   },
   "done": {
     "taken": "Tomado del inventario",

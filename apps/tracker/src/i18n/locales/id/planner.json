@@ -196,12 +196,31 @@
       "common": "Drop musuh",
       "boss": "Drop boss",
       "local": "Produk khas",
-      "weekly": "Boss mingguan"
+      "weekly": "Boss mingguan",
+      "ascension": "Material Ascension Senjata",
+      "elite": "Drop Elite"
     },
     "name": "Nama",
     "rarity": "Kelangkaan",
     "weaponType": "Tipe senjata",
-    "element": "Elemen"
+    "element": "Elemen",
+    "image": "Gambar (alamat https)",
+    "character": "Karakter",
+    "weapon": "Senjata",
+    "newWeapon": "Senjata kustom",
+    "share": {
+      "paste": "Tempel preset",
+      "placeholder": "Tempel preset di sini, atau buka filenya",
+      "file": "Buka file",
+      "characters": "{n} karakter",
+      "weapons": "{n} senjata",
+      "invalid": "Bukan preset",
+      "unknown": "{n} material yang tidak dikenal versi ini dilewati",
+      "copy": "Salin preset",
+      "save": "Simpan file",
+      "copied": "Preset disalin",
+      "copyFailed": "Preset gagal disalin"
+    }
   },
   "done": {
     "taken": "Diambil dari tas",

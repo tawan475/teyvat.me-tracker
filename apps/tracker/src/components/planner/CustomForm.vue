@@ -13,11 +13,13 @@ import { toElement } from '@/data/game-meta'
 import { t } from '@/i18n'
 import { gameIcon } from '@/lib/assets'
 import { customChoices, familyName } from './custom-character'
+import CustomImageInput from './CustomImageInput.vue'
 import { materialSoft } from './material-soft'
 
 /**
- * What a custom character is: name, rarity, element, weapon type and its
- * materials, each picked from the game's lists (newest first; "–" until
+ * What a custom character is: name, rarity, element, weapon type, picture
+ * (an https address) and its materials, each picked from the game's lists
+ * (newest first; "–" until
  * known, which leaves it out of the cost). Every change is emitted at once
  * but the name's, which goes when the field is left (or on Enter); `live`
  * sends it as typed (a form that is saved by a button).
@@ -112,6 +114,11 @@ const weaponOptions = computed(() =>
         @update:model-value="set('weapon', $event)"
       />
     </div>
+    <CustomImageInput
+      :model-value="profile.image"
+      :live="live"
+      @update:model-value="set('image', $event)"
+    />
     <div
       class="scroll-hide scroll-fade-x -mx-1 flex gap-1.5 overflow-x-auto px-1"
       role="radiogroup"

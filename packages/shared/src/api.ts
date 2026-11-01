@@ -326,6 +326,40 @@ export const characterTarget = z.object({
   unset: z.literal(true).optional(),
 })
 
+export const ELEMENT_KEYS = ['Anemo', 'Geo', 'Electro', 'Dendro', 'Hydro', 'Pyro', 'Cryo'] as const
+export const WEAPON_TYPE_KEYS = ['sword', 'claymore', 'polearm', 'catalyst', 'bow'] as const
+
+/**
+ * A custom character's or weapon's picture: an https address the browser
+ * shows as an image (never fetched by the server, never in a share card's
+ * PNG unless that host allows it).
+ */
+export const customImage = z
+  .string()
+  .trim()
+  .max(500)
+  .url()
+  .refine((url) => url.startsWith('https://'), { message: 'Not an https address' })
+
+/**
+ * A weapon the game data doesn't have yet: what the planner needs to cost
+ * it (every weapon of a rarity levels and ascends with the same counts).
+ * Materials are GOOD keys of a family's lowest tier; one not set yet is left
+ * out of the cost.
+ */
+export const customWeapon = z.object({
+  name: z.string().trim().min(1).max(40),
+  rarity: z.union([z.literal(3), z.literal(4), z.literal(5)]),
+  type: z.enum(WEAPON_TYPE_KEYS),
+  /** Weapon ascension material family (the domain's). */
+  ascension: goodKeySchema.optional(),
+  /** Elite enemy drop family. */
+  elite: goodKeySchema.optional(),
+  /** Common enemy drop family. */
+  common: goodKeySchema.optional(),
+  image: customImage.optional(),
+})
+
 /** Planner goal for a weapon (several may be the same weapon: each has its own id). */
 export const weaponTarget = z.object({
   level: z.number().int().min(1).max(90),
@@ -335,6 +369,8 @@ export const weaponTarget = z.object({
   note: goalNote.optional(),
   /** A weapon goal on its own card (no character goal holds it); see `goalPriority`. */
   priority: goalPriority.optional(),
+  /** A custom weapon (the goal's key is its own id, lowercase first): what it is. */
+  custom: customWeapon.optional(),
 })
 
 /**
@@ -346,9 +382,6 @@ export const plannerGoalIdSchema = z.string().regex(/^[a-z0-9]{6,32}$/, 'Not a g
 
 /** A custom character's id: lowercase first, so never a GOOD key. */
 export const customKeySchema = z.string().regex(/^[a-z][a-z0-9]{5,31}$/, 'Not a custom id')
-
-export const ELEMENT_KEYS = ['Anemo', 'Geo', 'Electro', 'Dendro', 'Hydro', 'Pyro', 'Cryo'] as const
-export const WEAPON_TYPE_KEYS = ['sword', 'claymore', 'polearm', 'catalyst', 'bow'] as const
 
 /**
  * A character the game data doesn't have yet (unreleased, or newer than
@@ -370,10 +403,26 @@ export const customCharacter = z.object({
   local: goodKeySchema.optional(),
   /** Weekly boss drop. */
   weekly: goodKeySchema.optional(),
+  image: customImage.optional(),
 })
 
 /** Planner goal for a custom character: a character goal plus what it is. */
 export const customTarget = characterTarget.extend({ custom: customCharacter })
+
+/**
+ * A preset file of custom characters and weapons, to copy, paste or share
+ * as a file: `{"format": "teyvatme-preset", "version": 1, ...}`. A
+ * character may name its signature weapon by its place in `weapons`.
+ */
+export const customPreset = z.object({
+  format: z.literal('teyvatme-preset'),
+  version: z.literal(1),
+  characters: z
+    .array(customCharacter.extend({ signature: z.number().int().min(0).max(49).optional() }))
+    .max(50)
+    .default([]),
+  weapons: z.array(customWeapon).max(50).default([]),
+})
 
 /** Extra need for one material on top of every goal (Seelie's custom items). */
 export const itemTarget = z.object({
@@ -1027,6 +1076,8 @@ export type CharacterTarget = z.infer<typeof characterTarget>
 export type WeaponTarget = z.infer<typeof weaponTarget>
 export type ItemTarget = z.infer<typeof itemTarget>
 export type CustomCharacter = z.infer<typeof customCharacter>
+export type CustomWeapon = z.infer<typeof customWeapon>
+export type CustomPreset = z.infer<typeof customPreset>
 export type CustomTarget = z.infer<typeof customTarget>
 export type ArtifactGoal = z.infer<typeof artifactGoal>
 export type ArtifactSlotKey = (typeof ARTIFACT_SLOT_KEYS)[number]

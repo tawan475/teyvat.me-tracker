@@ -196,12 +196,31 @@
       "common": "몬스터 드롭",
       "boss": "보스 드롭",
       "local": "특산물",
-      "weekly": "주간 보스"
+      "weekly": "주간 보스",
+      "ascension": "무기 돌파 소재",
+      "elite": "정예 드롭"
     },
     "name": "이름",
     "rarity": "희귀도",
     "weaponType": "무기 종류",
-    "element": "원소"
+    "element": "원소",
+    "image": "이미지 (https 주소)",
+    "character": "캐릭터",
+    "weapon": "무기",
+    "newWeapon": "사용자 지정 무기",
+    "share": {
+      "paste": "프리셋 붙여넣기",
+      "placeholder": "여기에 프리셋을 붙여넣거나 파일을 여세요",
+      "file": "파일 열기",
+      "characters": "캐릭터 {n}",
+      "weapons": "무기 {n}",
+      "invalid": "프리셋이 아닙니다",
+      "unknown": "이 버전에 없는 소재 {n}개를 제외했습니다",
+      "copy": "프리셋 복사",
+      "save": "파일로 저장",
+      "copied": "프리셋을 복사했습니다",
+      "copyFailed": "프리셋을 복사하지 못했습니다"
+    }
   },
   "done": {
     "taken": "배낭에서 차감",

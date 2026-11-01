@@ -196,12 +196,31 @@
       "common": "Düşman düşüşü",
       "boss": "Patron düşüşü",
       "local": "Yöresel ürün",
-      "weekly": "Haftalık patron"
+      "weekly": "Haftalık patron",
+      "ascension": "Silah Yükseltme Malzemesi",
+      "elite": "Seçkin düşüşü"
     },
     "name": "Ad",
     "rarity": "Nadirlik",
     "weaponType": "Silah türü",
-    "element": "Element"
+    "element": "Element",
+    "image": "Resim (https adresi)",
+    "character": "Karakter",
+    "weapon": "Silah",
+    "newWeapon": "Özel silah",
+    "share": {
+      "paste": "Ön ayarı yapıştır",
+      "placeholder": "Ön ayarı buraya yapıştırın veya dosyasını açın",
+      "file": "Dosya aç",
+      "characters": "{n} karakter",
+      "weapons": "{n} silah",
+      "invalid": "Ön ayar değil",
+      "unknown": "Bu sürümün bilmediği {n} malzeme atlandı",
+      "copy": "Ön ayarı kopyala",
+      "save": "Dosyaya kaydet",
+      "copied": "Ön ayar kopyalandı",
+      "copyFailed": "Ön ayar kopyalanamadı"
+    }
   },
   "done": {
     "taken": "Çantadan alındı",

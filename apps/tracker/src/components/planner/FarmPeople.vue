@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { characterMeta, weaponMeta } from '@/data/game-meta'
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { t } from '@/i18n'
+import { plannerCharacterIcon, plannerWeaponIcon } from './custom-registry'
 import type { FarmPerson } from './farm-groups'
 import { useGoalActions } from './goal-actions'
 import { characterName, weaponName } from './model'
@@ -32,12 +33,11 @@ const shown = computed(() => {
     // `c:<character>` or `w:<weapon>`.
     const kind = p.slot.slice(0, 1)
     const key = p.slot.slice(2)
-    const custom = kind === 'c' && !!customs?.has(key)
     const name = kind === 'w' ? weaponName(key) : (customs?.get(key) ?? characterName(key))
     return {
       slot: p.slot,
       name,
-      src: custom ? '' : kind === 'w' ? weaponIcon(key, 2) : characterIcon(key),
+      src: kind === 'w' ? plannerWeaponIcon(key, 2) : plannerCharacterIcon(key),
       rarity: (kind === 'w' ? weaponMeta(key) : characterMeta(key))?.[0] ?? null,
     }
   })

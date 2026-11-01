@@ -4,6 +4,7 @@ import { Plus } from 'lucide-vue-next'
 import { characterMeta, weaponMeta } from '@/data/game-meta'
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { t } from '@/i18n'
+import { plannerCharacterIcon, plannerWeaponIcon } from './custom-registry'
 import { longPress, useGoalActions } from './goal-actions'
 import { characterName, weaponName } from './model'
 
@@ -44,7 +45,7 @@ const people = computed<Person[]>(() => {
   const favorites = actions?.favorites.value
   const customs = actions?.names.value
   const nameOf = (key: string) => customs?.get(key) ?? characterName(key)
-  const iconOf = (key: string) => (customs?.has(key) ? '' : characterIcon(key))
+  const iconOf = (key: string) => plannerCharacterIcon(key)
   const byKey = new Map<
     string,
     { id: string; src: string; names: string[]; who: string; rarity: number | null }
@@ -77,7 +78,7 @@ const people = computed<Person[]>(() => {
     }
     byKey.set(slot, {
       id,
-      src: who ? iconOf(who) : weaponIcon(key, 2),
+      src: who ? iconOf(who) : plannerWeaponIcon(key, 2),
       names: who && !own ? [nameOf(who), name] : [name],
       who,
       rarity: (who ? characterMeta(who) : weaponMeta(key))?.[0] ?? null,

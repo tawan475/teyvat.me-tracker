@@ -326,7 +326,7 @@ describe('Capture presence and commands', () => {
         platform: 'windows',
       })
     ).json()) as PresenceResponse
-    expect(first).toEqual({ next: 60, commands: [], alerts: null })
+    expect(first).toEqual({ next: 120, commands: [], alerts: null })
 
     const shown = await client.json<PresenceResponseForAccount>(
       `/api/accounts/${account.id}/presence`,
@@ -361,6 +361,35 @@ describe('Capture presence and commands', () => {
       json: { kind: 'wishes' },
     })
     expect(refused.status).toBe(409)
+  })
+
+  it('beats sooner only while a page is in view', async () => {
+    const { client, me, importKey } = await setup()
+    const beat = async () =>
+      (
+        (await (
+          await presence(importKey, { state: 'decoding', uid: 812345678 })
+        ).json()) as PresenceResponse
+      ).next
+    expect(await beat()).toBe(120)
+
+    const response = await client.fetch('/api/live', {
+      headers: { upgrade: 'websocket', origin: ORIGIN },
+    })
+    expect(response.status).toBe(101)
+    const socket = response.webSocket!
+    socket.accept()
+    // Just connected: in view.
+    expect(await beat()).toBe(30)
+
+    // Connected long ago and never pinged since: a hidden tab.
+    await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {
+      for (const ws of state.getWebSockets()) {
+        ws.serializeAttachment({ ...ws.deserializeAttachment(), at: Date.now() - 7 * 60_000 })
+      }
+    })
+    expect(await beat()).toBe(120)
+    socket.close()
   })
 
   it('refuses a bad heartbeat', async () => {

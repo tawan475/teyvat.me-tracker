@@ -1,7 +1,7 @@
 /**
  * Teyvat.me Capture playing an account now (docs/plans/capture-link.md): what
  * `GET /api/accounts/:id/presence` and the live `presence` event say, kept per
- * account for the pages that show it. A heartbeat older than 3 minutes counts
+ * account for the pages that show it. A heartbeat older than 5 minutes counts
  * as gone (Capture closed without saying so).
  */
 
@@ -9,7 +9,7 @@ import type { CaptureCommandKind, PresenceResponseForAccount } from '@gdt/shared
 import { shallowReactive } from 'vue'
 import { api } from '@/api'
 
-export const PRESENCE_TTL_MS = 3 * 60_000
+export const PRESENCE_TTL_MS = 5 * 60_000
 
 const byAccount = shallowReactive(new Map<number, PresenceResponseForAccount>())
 const loading = new Map<number, Promise<void>>()

@@ -72,7 +72,23 @@ interface Attachment {
   ver: number
   /** Its session row (`user_sessions.id`); null for a token from before rows. */
   sid?: number | null
+  /** When it connected (ms); sockets from before this field count as connected long ago. */
+  at?: number
 }
+
+/**
+ * Capture's heartbeat interval (s): short while a page is in view, so a
+ * command from the site is picked up soon; long otherwise (most of the day a
+ * tab sits in the background: every 15 s was 6,000 requests a day per PC).
+ */
+export const WATCHED_NEXT_S = 30
+export const IDLE_NEXT_S = 120
+/**
+ * A socket counts as in view while it connected or pinged this recently: a
+ * visible tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden
+ * one never.
+ */
+const IN_VIEW_MS = 6 * 60_000
 
 /** One user who can see an account (its owner or a member), as a write's batch read them. */
 export interface Listener {
@@ -163,7 +179,12 @@ export class LiveHub extends DurableObject<Env> {
       const pair = new WebSocketPair()
       const [client, server] = [pair[0], pair[1]]
       this.ctx.acceptWebSocket(server)
-      server.serializeAttachment({ userId, ver: ver ?? current, sid } satisfies Attachment)
+      server.serializeAttachment({
+        userId,
+        ver: ver ?? current,
+        sid,
+        at: Date.now(),
+      } satisfies Attachment)
       const bookmark = readBookmark(db.getBookmark())
       const hello: LiveEvent = {
         type: 'hello',
@@ -317,7 +338,7 @@ export class LiveHub extends DurableObject<Env> {
   /**
    * A Capture's heartbeat: kept, and the commands waiting for it handed
    * over. Pages showing an account whose presence changed are told.
-   * `next`: seconds to its next heartbeat (sooner while a page is open).
+   * `next`: seconds to its next heartbeat (sooner while a page is in view).
    */
   async presence(
     userId: number,
@@ -327,7 +348,7 @@ export class LiveHub extends DurableObject<Env> {
     for (const accountId of changed) await this.tellPresence(userId, accountId)
     return {
       commands: commands.map(({ id, kind }) => ({ id, kind })),
-      next: this.open().length > 0 ? 15 : 60,
+      next: this.inView() ? WATCHED_NEXT_S : IDLE_NEXT_S,
     }
   }
 
@@ -381,6 +402,15 @@ export class LiveHub extends DurableObject<Env> {
       // Already closed.
     }
     await this.release(attachment(socket).userId, socket)
+  }
+
+  /** Whether some page of the user's is in view (connected or pinged lately). */
+  private inView(): boolean {
+    const since = Date.now() - IN_VIEW_MS
+    return this.open().some((ws) => {
+      const pinged = this.ctx.getWebSocketAutoResponseTimestamp(ws)?.getTime() ?? 0
+      return Math.max(attachment(ws).at ?? 0, pinged) > since
+    })
   }
 
   private open(except?: WebSocket): WebSocket[] {

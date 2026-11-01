@@ -105,6 +105,9 @@ interface Row {
   need: number
   missing: number
   crafted: number
+  /** Covered by a Dream Solvent swap from the boss's other materials, or given to one. */
+  converted: number
+  convertedAway: number
   /** The game's crafting slider maximum when this tier's turn comes (craft-slider.ts). */
   slider: number | null
   mine: number
@@ -122,6 +125,8 @@ const rows = computed<Row[]>(() => {
       need: isMora ? (mora?.need ?? 0) : (line?.need ?? 0),
       missing: isMora ? (mora?.missing ?? 0) : (line?.missing ?? 0),
       crafted: line?.crafted ?? 0,
+      converted: line?.converted ?? 0,
+      convertedAway: line?.convertedAway ?? 0,
       slider: null as number | null,
       mine: isMora
         ? (props.context?.requirement.mora ?? 0)
@@ -345,6 +350,12 @@ const keysHint = '↑ / W +1 · ↓ / S −1 · Shift ±10'
                     })
               }}</span
             >
+            <span v-if="row.converted" class="text-text-secondary">{{
+              $t('planner.cell.converted', { n: formatNumber(row.converted) })
+            }}</span>
+            <span v-if="row.convertedAway" class="text-text-secondary">{{
+              $t('planner.cell.convertedAway', { n: formatNumber(row.convertedAway) })
+            }}</span>
             <span
               v-if="row.have !== row.captured"
               class="inline-flex items-center gap-1 text-accent-text"

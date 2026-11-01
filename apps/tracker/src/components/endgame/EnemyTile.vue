@@ -22,7 +22,7 @@ const props = withDefaults(
   }>(),
   { size: 'md' },
 )
-defineEmits<{ open: [codex: number, level: number] }>()
+defineEmits<{ open: [codex: number, level: number, hp: number] }>()
 
 const hpTip = computed(() =>
   props.hp ? `${t('endgame.hpAt', { n: props.level })}: ${formatNumber(props.hp)}` : '',
@@ -39,7 +39,7 @@ const hpTip = computed(() =>
       monster?.codex && 'transition-colors hover:bg-surface-overlay',
     ]"
     :title="monster?.codex ? name : `${name}\n${t('endgame.noEntry')}`"
-    @click="monster?.codex && $emit('open', monster.codex, level)"
+    @click="monster?.codex && $emit('open', monster.codex, level, hp ?? 0)"
   >
     <GameIcon
       :src="gameIcon(monster?.icon ?? '')"

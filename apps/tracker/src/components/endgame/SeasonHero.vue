@@ -38,7 +38,10 @@ const props = defineProps<{
   left: number
   to: RouteLocationRaw
 }>()
-defineEmits<{ enemy: [codex: number, level: number] }>()
+defineEmits<{
+  /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
+  enemy: [codex: number, level: number, hp: number, before?: boolean]
+}>()
 
 const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
@@ -56,11 +59,13 @@ const topEnemies = computed(() => {
   const floor = season.floors.at(-1)
   return abyssTopEnemies(season).map((id) => {
     const chamber = floor?.chambers.find((c) => c.halves.flat().some((e) => e.monster === id))
+    const first = chamber?.halves.flat().find((e) => e.monster === id)
     return {
       id,
       monster: monster(id),
       name: text.value.get(`monster.${id}`),
-      level: chamber?.level ?? 0,
+      level: first?.level || chamber?.level || 0,
+      hp: first?.hp ?? 0,
     }
   })
 })
@@ -101,15 +106,12 @@ const art = computed(() => {
     class="relative grid min-w-0 overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm transition-colors hover:border-border-strong lg:grid-cols-[minmax(0,620px)_minmax(0,1fr)]"
   >
     <div
-      class="relative isolate min-h-52 overflow-hidden bg-surface-sunken sm:min-h-72"
-      :class="stygian && STYGIAN_GROUND"
+      class="relative isolate overflow-hidden bg-surface-sunken"
+      :class="stygian ? STYGIAN_GROUND : 'min-h-52 sm:min-h-72'"
     >
       <img v-if="art" :src="art" alt="" class="absolute inset-0 size-full object-cover" />
-      <!-- The bosses side by side, a little overlapped like the game's lineup. -->
-      <div
-        v-if="stygian"
-        class="absolute inset-0 flex items-center justify-center overflow-hidden px-2"
-      >
+      <!-- The bosses side by side, a little overlapped like the game's lineup; the row sets the height. -->
+      <div v-if="stygian" class="flex items-center justify-center overflow-hidden px-2">
         <BossPicture
           v-for="(b, i) in bosses"
           :key="b.boss.id"
@@ -165,7 +167,7 @@ const art = computed(() => {
               :type="e.monster?.codex ? 'button' : undefined"
               :title="e.name"
               class="relative z-20 rounded-lg"
-              @click="e.monster?.codex && $emit('enemy', e.monster.codex, e.level)"
+              @click="e.monster?.codex && $emit('enemy', e.monster.codex, e.level, e.hp)"
             >
               <GameIcon :src="gameIcon(e.monster?.icon ?? '')" :name="e.name" size="md" />
             </component>
@@ -212,7 +214,7 @@ const art = computed(() => {
             class="relative z-20 flex w-full min-w-0 items-center gap-3 rounded-lg p-1 text-left"
             :class="b.codex && 'transition-colors hover:bg-surface-overlay'"
             :title="b.full"
-            @click="b.codex && $emit('enemy', b.codex, b.level)"
+            @click="b.codex && $emit('enemy', b.codex, b.level, b.hp, b.before)"
           >
             <GameIcon :src="gameIcon(b.boss.icon)" :name="b.full" size="sm" />
             <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ b.short }}</span>

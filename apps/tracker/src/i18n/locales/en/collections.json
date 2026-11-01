@@ -319,6 +319,9 @@
     },
     "noDefeats": "Needs a capture with defeat counts",
     "foldAll": "Fold every category",
-    "unfoldAll": "Unfold every category"
+    "unfoldAll": "Unfold every category",
+    "openWorld": "Open world",
+    "version": "Version",
+    "thisFight": "HP in this fight"
   }
 }

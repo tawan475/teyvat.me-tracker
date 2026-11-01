@@ -319,6 +319,9 @@
     },
     "noDefeats": "Perlu tangkapan dengan jumlah musuh yang dikalahkan",
     "foldAll": "Lipat semua kategori",
-    "unfoldAll": "Buka semua kategori"
+    "unfoldAll": "Buka semua kategori",
+    "openWorld": "Dunia terbuka",
+    "version": "Versi",
+    "thisFight": "HP di pertarungan ini"
   }
 }

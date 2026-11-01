@@ -319,6 +319,9 @@
     },
     "noDefeats": "需要包含擊敗次數的擷取資料",
     "foldAll": "摺疊所有類別",
-    "unfoldAll": "展開所有類別"
+    "unfoldAll": "展開所有類別",
+    "openWorld": "開放世界",
+    "version": "版本",
+    "thisFight": "本場戰鬥生命值"
   }
 }

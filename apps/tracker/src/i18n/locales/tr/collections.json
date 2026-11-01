@@ -319,6 +319,9 @@
     },
     "noDefeats": "Yenilgi sayılarını içeren bir yakalama gerekir",
     "foldAll": "Tüm kategorileri daralt",
-    "unfoldAll": "Tüm kategorileri genişlet"
+    "unfoldAll": "Tüm kategorileri genişlet",
+    "openWorld": "Açık dünya",
+    "version": "Sürüm",
+    "thisFight": "Bu dövüşteki Can"
   }
 }

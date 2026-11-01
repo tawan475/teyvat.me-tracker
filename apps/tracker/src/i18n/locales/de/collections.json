@@ -319,6 +319,9 @@
     },
     "noDefeats": "Benötigt eine Erfassung mit Besiegt-Zählern",
     "foldAll": "Alle Kategorien einklappen",
-    "unfoldAll": "Alle Kategorien aufklappen"
+    "unfoldAll": "Alle Kategorien aufklappen",
+    "openWorld": "Offene Welt",
+    "version": "Version",
+    "thisFight": "LP in diesem Kampf"
   }
 }

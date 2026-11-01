@@ -319,6 +319,9 @@
     },
     "noDefeats": "需要包含击败次数的捕获数据",
     "foldAll": "折叠所有类别",
-    "unfoldAll": "展开所有类别"
+    "unfoldAll": "展开所有类别",
+    "openWorld": "开放世界",
+    "version": "版本",
+    "thisFight": "本场战斗生命值"
   }
 }

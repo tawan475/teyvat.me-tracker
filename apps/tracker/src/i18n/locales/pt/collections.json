@@ -319,6 +319,9 @@
     },
     "noDefeats": "Requer uma captura com contagem de derrotas",
     "foldAll": "Recolher todas as categorias",
-    "unfoldAll": "Expandir todas as categorias"
+    "unfoldAll": "Expandir todas as categorias",
+    "openWorld": "Mundo aberto",
+    "version": "Versão",
+    "thisFight": "Vida nesta luta"
   }
 }

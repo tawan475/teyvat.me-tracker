@@ -7,6 +7,7 @@ import GameIcon from '@/components/ui/GameIcon.vue'
 import ItemTile from '@/components/ui/ItemTile.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiModal from '@/components/ui/UiModal.vue'
+import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import type { EnemyData, Enemy } from '@/data/enemies'
 import { useResource } from '@/data/use-resource'
@@ -21,23 +22,48 @@ import { t } from '@/i18n'
  * picture, category, name and archive text; the monster's stats at a level
  * (1-200: HP with 1-4 players, ATK, DEF, EM), its RES, special names, what
  * the Adventurer Handbook says it drops, and its variants at the same level.
+ * Its versions switch the stats: the open world's, what the Spiral Abyss (and
+ * the Theater) and the Stygian Onslaught spawn. Opened from an endgame fight,
+ * it starts on that mode's version and shows the HP there (with its bonus).
  */
 const props = defineProps<{
   enemy: Enemy | null
   data: EnemyData
   /** The level to open at (the chamber, act or difficulty it was clicked in); 90 without one. */
   level?: number
+  /** The version to open on (an endgame mode's); the open world's without one. */
+  version?: Version
+  /** The HP in the fight it was opened from (`before`: before the difficulty's bonus). */
+  fight?: { hp: number; before: boolean } | null
 }>()
 defineEmits<{ close: [] }>()
 
+type Version = 'world' | 'abyss' | 'stygian'
 const level = ref(90)
+const version = ref<Version>('world')
+const has = (v: Version) => v === 'world' || !!props.enemy?.[v]
 watch(
-  () => [props.enemy?.id, props.level] as const,
+  () => [props.enemy?.id, props.level, props.version] as const,
   ([id]) => {
-    if (id) level.value = Math.min(Math.max(props.level ?? 90, 1), MAX_ENEMY_LEVEL)
+    if (!id) return
+    level.value = Math.min(Math.max(props.level ?? 90, 1), MAX_ENEMY_LEVEL)
+    version.value = props.version && has(props.version) ? props.version : 'world'
   },
   { immediate: true },
 )
+const versions = computed(() =>
+  (['world', 'abyss', 'stygian'] as const).filter(has).map((value) => ({
+    value,
+    label: value === 'world' ? t('collections.enemies.openWorld') : t(`endgame.modes.${value}`),
+    title:
+      value === 'abyss' ? `${t('endgame.modes.abyss')} · ${t('endgame.modes.theater')}` : undefined,
+  })),
+)
+/** The chosen version's stats (the open world's when the entry has no such version). */
+const current = computed(() => {
+  const e = props.enemy
+  return (version.value !== 'world' ? e?.[version.value] : null) ?? e?.stats ?? null
+})
 const name = computed(() => (props.enemy ? props.data.names.name(props.enemy.id) : ''))
 const special = computed(() => (props.enemy ? props.data.names.special(props.enemy.id) : []))
 const description = useResource(
@@ -58,7 +84,7 @@ watch(
 )
 
 const stats = computed(() => {
-  const s = props.enemy?.stats
+  const s = current.value
   return s ? props.data.enemies.statsAt(s, level.value) : null
 })
 const variants = computed(() =>
@@ -108,6 +134,25 @@ const RES_LABEL = (key: (typeof RES_ELEMENTS)[number]) =>
       <section class="flex min-w-0 flex-col gap-5">
         <template v-if="stats">
           <div class="flex flex-col gap-2">
+            <UiSegmented
+              v-if="versions.length > 1"
+              v-model="version"
+              :options="versions"
+              :label="$t('collections.enemies.version')"
+              class="self-start"
+            />
+            <p
+              v-if="fight?.hp"
+              class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-danger-border bg-danger-surface px-3 py-2 text-sm"
+            >
+              <span class="text-text-secondary">{{ $t('collections.enemies.thisFight') }}</span>
+              <span class="tabular ml-auto font-mono font-semibold text-danger-text"
+                >♥ {{ whole(fight.hp) }}</span
+              >
+              <UiBadge v-if="fight.before" :title="$t('endgame.beforeBonusTip')">{{
+                $t('endgame.beforeBonus')
+              }}</UiBadge>
+            </p>
             <div class="flex items-center justify-between gap-3">
               <h4 class="text-base font-semibold">{{ $t('collections.enemies.baseStats') }}</h4>
               <label class="flex items-center gap-2 text-sm text-text-secondary">
@@ -167,7 +212,7 @@ const RES_LABEL = (key: (typeof RES_ELEMENTS)[number]) =>
                   >PHY</span
                 >
                 <span class="min-w-0 flex-1 truncate">{{ RES_LABEL(key) }}</span>
-                <span class="tabular font-mono">{{ percent(enemy.stats!.res[i] ?? 0) }}</span>
+                <span class="tabular font-mono">{{ percent(current?.res[i] ?? 0) }}</span>
               </li>
             </ul>
           </div>

@@ -24,7 +24,10 @@ const props = defineProps<{
   period: string
   left: number
 }>()
-defineEmits<{ enemy: [codex: number, level: number] }>()
+defineEmits<{
+  /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
+  enemy: [codex: number, level: number, hp: number, before?: boolean]
+}>()
 
 const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
@@ -216,7 +219,7 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
               :hp="e.hp"
               size="lg"
               class="shrink-0"
-              @open="(codex, level) => $emit('enemy', codex, level)"
+              @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
             />
             <GameText
               :text="a.desc"
@@ -251,7 +254,7 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                   :name="e.name"
                   :level="e.level"
                   :hp="e.hp"
-                  @open="(codex, level) => $emit('enemy', codex, level)"
+                  @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
                 />
               </li>
             </ul>

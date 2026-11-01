@@ -24,7 +24,10 @@ const props = defineProps<{
   period: string
   left: number
 }>()
-defineEmits<{ enemy: [codex: number, level: number] }>()
+defineEmits<{
+  /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
+  enemy: [codex: number, level: number, hp: number, before?: boolean]
+}>()
 
 const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
@@ -115,7 +118,7 @@ const bosses = computed(() => {
           class="group flex flex-col text-left"
           :class="b.codex && 'transition-colors hover:bg-surface-overlay'"
           :title="b.codex ? b.full : `${b.full}\n${$t('endgame.noEntry')}`"
-          @click="b.codex && $emit('enemy', b.codex, b.level)"
+          @click="b.codex && $emit('enemy', b.codex, b.level, b.hp, b.before)"
         >
           <span class="flex h-48 items-end justify-center overflow-hidden" :class="STYGIAN_GROUND">
             <BossPicture

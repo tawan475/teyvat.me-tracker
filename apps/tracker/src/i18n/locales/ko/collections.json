@@ -319,6 +319,9 @@
     },
     "noDefeats": "처치 횟수가 담긴 캡처가 필요합니다",
     "foldAll": "모든 분류 접기",
-    "unfoldAll": "모든 분류 펼치기"
+    "unfoldAll": "모든 분류 펼치기",
+    "openWorld": "필드",
+    "version": "버전",
+    "thisFight": "이 전투의 HP"
   }
 }

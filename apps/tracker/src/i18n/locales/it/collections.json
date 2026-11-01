@@ -319,6 +319,9 @@
     },
     "noDefeats": "Serve una cattura con i conteggi delle sconfitte",
     "foldAll": "Comprimi tutte le categorie",
-    "unfoldAll": "Espandi tutte le categorie"
+    "unfoldAll": "Espandi tutte le categorie",
+    "openWorld": "Mondo aperto",
+    "version": "Versione",
+    "thisFight": "PS in questo scontro"
   }
 }

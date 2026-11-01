@@ -319,6 +319,9 @@
     },
     "noDefeats": "撃破数を含むキャプチャが必要です",
     "foldAll": "すべての分類を折りたたむ",
-    "unfoldAll": "すべての分類を展開"
+    "unfoldAll": "すべての分類を展開",
+    "openWorld": "フィールド",
+    "version": "バージョン",
+    "thisFight": "この戦闘でのHP"
   }
 }

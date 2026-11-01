@@ -319,6 +319,9 @@
     },
     "noDefeats": "Cần bản ghi có số lần đánh bại",
     "foldAll": "Thu gọn mọi nhóm",
-    "unfoldAll": "Mở rộng mọi nhóm"
+    "unfoldAll": "Mở rộng mọi nhóm",
+    "openWorld": "Thế giới mở",
+    "version": "Phiên bản",
+    "thisFight": "HP trong trận này"
   }
 }

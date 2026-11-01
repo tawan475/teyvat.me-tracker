@@ -306,6 +306,19 @@
     "wildlife": "La fauna no tiene atributos de combate",
     "loadFailed": "No se pudo cargar esta entrada",
     "close": "Cerrar",
-    "open": "Abrir {name}"
+    "open": "Abrir {name}",
+    "groupBy": "Agrupar por",
+    "groups": {
+      "type": "Tipo",
+      "none": "Ninguno"
+    },
+    "sort": "Ordenar",
+    "sorts": {
+      "order": "Predeterminado",
+      "defeated": "Derrotados"
+    },
+    "noDefeats": "Requiere una captura con recuentos de derrotas",
+    "foldAll": "Contraer todas las categorías",
+    "unfoldAll": "Expandir todas las categorías"
   }
 }

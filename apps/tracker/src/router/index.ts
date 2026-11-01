@@ -1,6 +1,11 @@
 import type { InspectView, PermissionNode } from '@gdt/shared'
 import { nextTick } from 'vue'
-import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalized,
+  type RouteMeta,
+} from 'vue-router'
 import { loadSignInOptions } from '@/components/oauth/oauth'
 import { pageTitle, type PageKey } from '@/components/shell/nav'
 import { onLocaleChange, t } from '@/i18n'
@@ -26,6 +31,12 @@ declare module 'vue-router' {
     staff?: boolean
     /** Inspect: which page of someone's account (logged when opened). */
     inspect?: InspectView
+    /**
+     * A page whose content runs long (lists, grids, history): the shell leaves about 30% of the
+     * screen empty after it, so its last row can be scrolled up to mid-screen. `'param'`: only
+     * when the route has a param of that name (Collections' tabs, not its hub).
+     */
+    long?: true | { param: string }
   }
 }
 
@@ -36,11 +47,17 @@ const WISH_BANNER_PATTERN = 'character|weapon|standard|chronicled|beginners'
 // data/endgame.ts ENDGAME_MODES (kept here: the router is startup code, the data module isn't).
 const ENDGAME_MODE_PATTERN = 'abyss|theater|stygian'
 
-const account = (path: string, name: string, title: PageKey, load: () => Promise<unknown>) => ({
+const account = (
+  path: string,
+  name: string,
+  title: PageKey,
+  load: () => Promise<unknown>,
+  long?: RouteMeta['long'],
+) => ({
   path,
   name,
   component: load,
-  meta: { auth: true, title },
+  meta: { auth: true, title, long },
 })
 
 const staffPage = (
@@ -50,6 +67,15 @@ const staffPage = (
   permission: PermissionNode,
   load: () => Promise<unknown>,
 ) => ({ path, name, component: load, meta: { auth: true, staff: true, title, permission } })
+
+/** Inspect's pages that are the owner's long pages (RouteMeta `long`). */
+const LONG_INSPECT = new Set<InspectView>([
+  'characters',
+  'weapons',
+  'artifacts',
+  'materials',
+  'snapshots',
+])
 
 /** Someone's account page, read-only, under Inspect (the owner's views, reused). */
 const inspectPage = (
@@ -67,6 +93,7 @@ const inspectPage = (
     title,
     permission: 'data.inspect' as const,
     inspect: view,
+    long: LONG_INSPECT.has(view) ? (true as const) : undefined,
   },
 })
 
@@ -309,30 +336,35 @@ const router = createRouter({
               'account-characters',
               'characters',
               () => import('@/views/account/CharactersView.vue'),
+              true,
             ),
             account(
               'weapons',
               'account-weapons',
               'weapons',
               () => import('@/views/account/WeaponsView.vue'),
+              true,
             ),
             account(
               'artifacts',
               'account-artifacts',
               'artifacts',
               () => import('@/views/account/ArtifactsView.vue'),
+              true,
             ),
             account(
               'materials',
               'account-materials',
               'materials',
               () => import('@/views/account/MaterialsView.vue'),
+              true,
             ),
             account(
               'planner',
               'account-planner',
               'planner',
               () => import('@/views/account/PlannerView.vue'),
+              true,
             ),
             // A tab of Collections now (2026-10-27), with the others' back button.
             {
@@ -360,30 +392,35 @@ const router = createRouter({
               'account-collections',
               'collections',
               () => import('@/views/account/CollectionsView.vue'),
+              { param: 'tab' },
             ),
             account(
               `endgame/:mode(${ENDGAME_MODE_PATTERN})?/:season(\\d+)?`,
               'account-endgame',
               'endgame',
               () => import('@/views/account/EndgameView.vue'),
+              true,
             ),
             account(
               'wishes',
               'account-wishes',
               'wishHistory',
               () => import('@/views/account/WishesView.vue'),
+              true,
             ),
             account(
               `wishes/:banner(${WISH_BANNER_PATTERN})`,
               'account-wishes-banner',
               'wishHistory',
               () => import('@/views/account/WishBannerView.vue'),
+              true,
             ),
             account(
               'snapshots',
               'account-snapshots',
               'snapshots',
               () => import('@/views/account/SnapshotsView.vue'),
+              true,
             ),
             { path: 'export', redirect: { name: 'account-snapshots' } },
             account(

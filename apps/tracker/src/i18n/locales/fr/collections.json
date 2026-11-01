@@ -306,6 +306,19 @@
     "wildlife": "La faune n’a pas de stats de combat",
     "loadFailed": "Impossible de charger cette entrée",
     "close": "Fermer",
-    "open": "Ouvrir {name}"
+    "open": "Ouvrir {name}",
+    "groupBy": "Grouper par",
+    "groups": {
+      "type": "Type",
+      "none": "Aucun"
+    },
+    "sort": "Tri",
+    "sorts": {
+      "order": "Par défaut",
+      "defeated": "Éliminés"
+    },
+    "noDefeats": "Nécessite une capture avec le nombre de victoires",
+    "foldAll": "Replier toutes les catégories",
+    "unfoldAll": "Déplier toutes les catégories"
   }
 }

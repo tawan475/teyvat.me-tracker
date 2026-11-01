@@ -306,6 +306,19 @@
     "wildlife": "Wildlife has no combat stats",
     "loadFailed": "Couldn't load the enemy",
     "close": "Close",
-    "open": "Open {name}"
+    "open": "Open {name}",
+    "groupBy": "Group by",
+    "groups": {
+      "type": "Type",
+      "none": "None"
+    },
+    "sort": "Sort",
+    "sorts": {
+      "order": "Default",
+      "defeated": "Defeated"
+    },
+    "noDefeats": "Needs a capture with defeat counts",
+    "foldAll": "Fold every category",
+    "unfoldAll": "Unfold every category"
   }
 }

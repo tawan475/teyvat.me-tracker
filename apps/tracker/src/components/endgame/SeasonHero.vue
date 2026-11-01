@@ -6,10 +6,8 @@ import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import BossPicture from './BossPicture.vue'
-import UiButton from '@/components/ui/UiButton.vue'
 import {
   abyssTopEnemies,
-  monsterHp,
   stygianBossPicture,
   stygianTop,
   type AnySeason,
@@ -28,7 +26,7 @@ import { STYGIAN_GROUND } from './modes'
  * blessing, the first Opening Character's namecard, the three Stygian
  * bosses), then its name, dates and what it holds (the blessing and Floor 12,
  * the cast, the bosses with their HP at the hardest difficulty). Enemies open
- * their Living Beings entry (`enemy`).
+ * their Living Beings entry (`enemy`); the rest of the card opens the season (`to`).
  */
 const props = defineProps<{
   mode: EndgameMode
@@ -71,11 +69,11 @@ const bosses = computed(() => {
   const season = stygian.value
   const top = season && stygianTop(season)
   if (!top) return []
-  return top.bosses.flatMap((id) => {
+  return top.bosses.flatMap((id, i) => {
     const boss = props.data.data.stygianBosses.get(id)
     if (!boss) return []
     const full = text.value.get(`stygianBoss.${id}.name`)
-    const hp = monsterHp(props.data.data, props.data.enemies, boss.monster, top.level)
+    const hp = top.hp[i] ?? 0
     return [
       {
         boss,
@@ -84,9 +82,7 @@ const bosses = computed(() => {
         codex: monster(boss.monster)?.codex ?? 0,
         level: top.level,
         hp,
-        hpTip: hp
-          ? `${t('endgame.hpAt', { n: top.level })}\n${hp.map((v, i) => `${i + 1}P ${formatNumber(Math.round(v))}`).join(' · ')}`
-          : t('endgame.noEntry'),
+        hpTip: hp ? `${t('endgame.hpAt', { n: top.level })}: ${formatNumber(hp)}` : '',
       },
     ]
   })
@@ -100,10 +96,10 @@ const art = computed(() => {
 
 <template>
   <section
-    class="grid min-w-0 overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm lg:grid-cols-[minmax(0,620px)_minmax(0,1fr)]"
+    class="relative grid min-w-0 overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm transition-colors hover:border-border-strong lg:grid-cols-[minmax(0,620px)_minmax(0,1fr)]"
   >
     <div
-      class="relative min-h-52 overflow-hidden bg-surface-sunken sm:min-h-72"
+      class="relative isolate min-h-52 overflow-hidden bg-surface-sunken sm:min-h-72"
       :class="stygian && STYGIAN_GROUND"
     >
       <img v-if="art" :src="art" alt="" class="absolute inset-0 size-full object-cover" />
@@ -166,7 +162,7 @@ const art = computed(() => {
               :key="e.id"
               :type="e.monster?.codex ? 'button' : undefined"
               :title="e.name"
-              class="rounded-lg"
+              class="relative z-20 rounded-lg"
               @click="e.monster?.codex && $emit('enemy', e.monster.codex, e.level)"
             >
               <GameIcon :src="gameIcon(e.monster?.icon ?? '')" :name="e.name" size="md" />
@@ -211,7 +207,7 @@ const art = computed(() => {
           <component
             :is="b.codex ? 'button' : 'div'"
             :type="b.codex ? 'button' : undefined"
-            class="flex w-full min-w-0 items-center gap-3 rounded-lg p-1 text-left"
+            class="relative z-20 flex w-full min-w-0 items-center gap-3 rounded-lg p-1 text-left"
             :class="b.codex && 'transition-colors hover:bg-surface-overlay'"
             :title="b.full"
             @click="b.codex && $emit('enemy', b.codex, b.level)"
@@ -222,15 +218,17 @@ const art = computed(() => {
               class="tabular shrink-0 font-mono text-sm font-semibold"
               :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
               :title="b.hpTip"
-              >♥ {{ b.hp ? formatShort(b.hp[0]!) : '—' }}</span
+              >♥ {{ b.hp ? formatShort(b.hp) : '—' }}</span
             >
           </component>
         </li>
       </ul>
-
-      <UiButton :to="to" variant="primary" class="mt-auto self-start">{{
-        $t('endgame.openSeason')
-      }}</UiButton>
     </div>
+    <!-- The whole card opens the season; the enemies above it open their entry. -->
+    <RouterLink
+      :to="to"
+      :aria-label="name"
+      class="absolute inset-0 z-10 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    />
   </section>
 </template>

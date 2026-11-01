@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "Recent",
-    "all": "All",
     "allTitle": "All {n} snapshots",
     "size": "{raw} bytes uploaded, {stored} bytes stored",
     "unchanged": "Totals unchanged",

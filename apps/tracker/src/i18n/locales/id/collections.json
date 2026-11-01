@@ -306,6 +306,19 @@
     "wildlife": "Satwa liar tidak punya stats bertarung",
     "loadFailed": "Gagal memuat entri ini",
     "close": "Tutup",
-    "open": "Buka {name}"
+    "open": "Buka {name}",
+    "groupBy": "Kelompokkan",
+    "groups": {
+      "type": "Tipe",
+      "none": "Tidak ada"
+    },
+    "sort": "Urutkan",
+    "sorts": {
+      "order": "Bawaan",
+      "defeated": "Dikalahkan"
+    },
+    "noDefeats": "Perlu tangkapan dengan jumlah musuh yang dikalahkan",
+    "foldAll": "Lipat semua kategori",
+    "unfoldAll": "Buka semua kategori"
   }
 }

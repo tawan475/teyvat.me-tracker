@@ -306,6 +306,19 @@
     "wildlife": "A vida selvagem não tem atributos de combate",
     "loadFailed": "Não foi possível carregar este registro",
     "close": "Fechar",
-    "open": "Abrir {name}"
+    "open": "Abrir {name}",
+    "groupBy": "Agrupar por",
+    "groups": {
+      "type": "Tipo",
+      "none": "Nenhum"
+    },
+    "sort": "Ordenar",
+    "sorts": {
+      "order": "Padrão",
+      "defeated": "Derrotados"
+    },
+    "noDefeats": "Requer uma captura com contagem de derrotas",
+    "foldAll": "Recolher todas as categorias",
+    "unfoldAll": "Expandir todas as categorias"
   }
 }

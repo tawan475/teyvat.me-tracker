@@ -306,6 +306,19 @@
     "wildlife": "La fauna non ha statistiche di combattimento",
     "loadFailed": "Impossibile caricare questa voce",
     "close": "Chiudi",
-    "open": "Apri {name}"
+    "open": "Apri {name}",
+    "groupBy": "Raggruppa per",
+    "groups": {
+      "type": "Tipo",
+      "none": "Nessuno"
+    },
+    "sort": "Ordina",
+    "sorts": {
+      "order": "Predefinito",
+      "defeated": "Sconfitti"
+    },
+    "noDefeats": "Serve una cattura con i conteggi delle sconfitte",
+    "foldAll": "Comprimi tutte le categorie",
+    "unfoldAll": "Espandi tutte le categorie"
   }
 }

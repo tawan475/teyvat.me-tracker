@@ -306,6 +306,19 @@
     "wildlife": "야생 생물에는 전투 능력치가 없습니다",
     "loadFailed": "이 항목을 불러오지 못했습니다",
     "close": "닫기",
-    "open": "{name} 열기"
+    "open": "{name} 열기",
+    "groupBy": "묶음 단위",
+    "groups": {
+      "type": "종류",
+      "none": "없음"
+    },
+    "sort": "정렬",
+    "sorts": {
+      "order": "기본",
+      "defeated": "처치"
+    },
+    "noDefeats": "처치 횟수가 담긴 캡처가 필요합니다",
+    "foldAll": "모든 분류 접기",
+    "unfoldAll": "모든 분류 펼치기"
   }
 }

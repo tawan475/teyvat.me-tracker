@@ -306,6 +306,19 @@
     "wildlife": "野生生物沒有戰鬥屬性",
     "loadFailed": "無法載入此條目",
     "close": "關閉",
-    "open": "開啟 {name}"
+    "open": "開啟 {name}",
+    "groupBy": "分組方式",
+    "groups": {
+      "type": "類型",
+      "none": "無"
+    },
+    "sort": "排序",
+    "sorts": {
+      "order": "預設",
+      "defeated": "擊倒"
+    },
+    "noDefeats": "需要包含擊敗次數的擷取資料",
+    "foldAll": "摺疊所有類別",
+    "unfoldAll": "展開所有類別"
   }
 }

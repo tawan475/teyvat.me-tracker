@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "Neueste",
-    "all": "Alle",
     "allTitle": "Alle {n} Snapshots",
     "size": "{raw} Bytes hochgeladen, {stored} Bytes gespeichert",
     "unchanged": "Summen unverändert",

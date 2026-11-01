@@ -306,6 +306,19 @@
     "wildlife": "野生生物には戦闘ステータスがありません",
     "loadFailed": "この項目を読み込めませんでした",
     "close": "閉じる",
-    "open": "{name}を開く"
+    "open": "{name}を開く",
+    "groupBy": "集計単位",
+    "groups": {
+      "type": "タイプ",
+      "none": "なし"
+    },
+    "sort": "並べ替え",
+    "sorts": {
+      "order": "標準",
+      "defeated": "討伐"
+    },
+    "noDefeats": "撃破数を含むキャプチャが必要です",
+    "foldAll": "すべての分類を折りたたむ",
+    "unfoldAll": "すべての分類を展開"
   }
 }

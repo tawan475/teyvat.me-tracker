@@ -306,6 +306,19 @@
     "wildlife": "野生生物没有战斗属性",
     "loadFailed": "无法加载该条目",
     "close": "关闭",
-    "open": "打开 {name}"
+    "open": "打开 {name}",
+    "groupBy": "分组方式",
+    "groups": {
+      "type": "类型",
+      "none": "无"
+    },
+    "sort": "排序",
+    "sorts": {
+      "order": "默认",
+      "defeated": "击倒"
+    },
+    "noDefeats": "需要包含击败次数的捕获数据",
+    "foldAll": "折叠所有类别",
+    "unfoldAll": "展开所有类别"
   }
 }

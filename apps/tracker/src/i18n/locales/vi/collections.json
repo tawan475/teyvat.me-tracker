@@ -306,6 +306,19 @@
     "wildlife": "Sinh vật hoang dã không có chỉ số chiến đấu",
     "loadFailed": "Không tải được mục này",
     "close": "Đóng",
-    "open": "Mở {name}"
+    "open": "Mở {name}",
+    "groupBy": "Nhóm theo",
+    "groups": {
+      "type": "Loại",
+      "none": "Không có"
+    },
+    "sort": "Thứ Tự",
+    "sorts": {
+      "order": "Mặc định",
+      "defeated": "Đánh Bại"
+    },
+    "noDefeats": "Cần bản ghi có số lần đánh bại",
+    "foldAll": "Thu gọn mọi nhóm",
+    "unfoldAll": "Mở rộng mọi nhóm"
   }
 }

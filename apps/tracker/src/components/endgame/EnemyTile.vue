@@ -7,8 +7,8 @@ import { gameIcon } from '@/lib/assets'
 import { t } from '@/i18n'
 
 /**
- * One enemy of a lineup: picture, name and HP at its level (1 player; the
- * tooltip has 1-4). With a Living Beings entry the whole tile opens it at
+ * One enemy of a lineup: picture, name and HP at its level (1 player, from
+ * the game data's endgame table; the tooltip has the exact figure). With a Living Beings entry the whole tile opens it at
  * that level (`open`).
  */
 const props = withDefaults(
@@ -16,7 +16,8 @@ const props = withDefaults(
     monster: EndgameMonster | undefined
     name: string
     level: number
-    hp: number[] | null
+    /** HP at that level (1 player); 0 or absent = not shown. */
+    hp?: number
     size?: 'md' | 'lg'
   }>(),
   { size: 'md' },
@@ -24,11 +25,7 @@ const props = withDefaults(
 defineEmits<{ open: [codex: number, level: number] }>()
 
 const hpTip = computed(() =>
-  props.hp
-    ? `${t('endgame.hpAt', { n: props.level })}\n${props.hp
-        .map((v, i) => `${i + 1}P ${formatNumber(Math.round(v))}`)
-        .join(' · ')}`
-    : '',
+  props.hp ? `${t('endgame.hpAt', { n: props.level })}: ${formatNumber(props.hp)}` : '',
 )
 </script>
 
@@ -54,7 +51,7 @@ const hpTip = computed(() =>
       name
     }}</span>
     <span v-if="hp" class="tabular font-mono text-xs font-semibold text-danger-text" :title="hpTip"
-      >♥ {{ formatShort(hp[0]!) }}</span
+      >♥ {{ formatShort(hp) }}</span
     >
   </component>
 </template>

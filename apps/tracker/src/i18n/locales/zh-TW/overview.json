@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "最近",
-    "all": "全部",
     "allTitle": "全部 {n} 個快照",
     "size": "上傳 {raw} 位元組，儲存 {stored} 位元組",
     "unchanged": "總數未變",

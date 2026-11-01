@@ -306,6 +306,19 @@
     "wildlife": "Wildtiere haben keine Kampfwerte",
     "loadFailed": "Der Eintrag konnte nicht geladen werden",
     "close": "Schließen",
-    "open": "{name} öffnen"
+    "open": "{name} öffnen",
+    "groupBy": "Gruppieren nach",
+    "groups": {
+      "type": "Typ",
+      "none": "Keine"
+    },
+    "sort": "Sortieren",
+    "sorts": {
+      "order": "Standard",
+      "defeated": "Besiegt"
+    },
+    "noDefeats": "Benötigt eine Erfassung mit Besiegt-Zählern",
+    "foldAll": "Alle Kategorien einklappen",
+    "unfoldAll": "Alle Kategorien aufklappen"
   }
 }

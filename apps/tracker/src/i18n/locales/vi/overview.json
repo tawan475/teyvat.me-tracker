@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "Gần đây",
-    "all": "Tất cả",
     "allTitle": "Tất cả {n} bản chụp",
     "size": "Tải lên {raw} byte, lưu {stored} byte",
     "unchanged": "Tổng không đổi",

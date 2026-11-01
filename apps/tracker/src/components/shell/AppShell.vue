@@ -147,6 +147,15 @@ async function signOut() {
   await router.push({ name: 'login' })
 }
 
+/**
+ * A long page (RouteMeta `long`): about 30% of the screen stays empty after its content, so the
+ * last row can be scrolled up to mid-screen instead of sitting on the bottom edge.
+ */
+const longPage = computed(() => {
+  const long = route.meta.long
+  return long === true || (!!long && !!route.params[long.param])
+})
+
 const routeSection = computed(() => {
   const name = String(route.name ?? '')
   return NAV_PARENT[name] ?? name
@@ -426,7 +435,10 @@ const footButton =
       <main
         class="min-w-0 flex-1 overflow-x-clip pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
       >
-        <div class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8 lg:py-8">
+        <div
+          class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8 lg:py-8"
+          :class="longPage && 'pb-[30vh] lg:pb-[30vh]'"
+        >
           <slot />
         </div>
       </main>

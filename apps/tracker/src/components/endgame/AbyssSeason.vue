@@ -4,7 +4,7 @@ import type { AbyssPeriod } from '@gdt/game-data/endgame'
 import { Zap } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
-import { monsterHp, type EndgameData } from '@/data/endgame'
+import type { EndgameData } from '@/data/endgame'
 import { gameIcon } from '@/lib/assets'
 import { t } from '@/i18n'
 import EnemyTile from './EnemyTile.vue'
@@ -53,7 +53,6 @@ const chambers = computed(() =>
           level,
           monster: props.data.data.monsters.get(e.monster),
           name: text.value.get(`monster.${e.monster}`),
-          hp: monsterHp(props.data.data, props.data.enemies, e.monster, level),
         }
       }),
     ),

@@ -64,3 +64,35 @@ export function factionCounts(list: readonly Enemy[]): Record<EnemyFaction, numb
   for (const e of list) counts[e.faction]++
   return counts
 }
+
+export type EnemyGroup = 'type' | 'none'
+export type EnemySort = 'order' | 'defeated'
+export const ENEMY_GROUPS: readonly EnemyGroup[] = ['type', 'none']
+export const ENEMY_SORTS: readonly EnemySort[] = ['order', 'defeated']
+
+export interface EnemySection {
+  /** The category, or null for the one list of Group by None. */
+  faction: EnemyFaction | null
+  enemies: Enemy[]
+}
+
+/**
+ * The list as the page shows it (the user's four cases): grouped by the
+ * game's categories (in its order) or one list, each in the game's order or
+ * most defeated first (ties and entries without a count keep the game's
+ * order). Empty categories are left out.
+ */
+export function enemySections(
+  list: readonly Enemy[],
+  group: EnemyGroup,
+  sort: EnemySort,
+  defeated: (id: number) => number,
+): EnemySection[] {
+  const sorted = (enemies: Enemy[]) =>
+    sort === 'defeated' ? enemies.sort((a, b) => defeated(b.id) - defeated(a.id)) : enemies
+  if (group === 'none') return list.length ? [{ faction: null, enemies: sorted([...list]) }] : []
+  return ENEMY_FACTIONS.flatMap((faction) => {
+    const enemies = list.filter((e) => e.faction === faction)
+    return enemies.length ? [{ faction, enemies: sorted(enemies) }] : []
+  })
+}

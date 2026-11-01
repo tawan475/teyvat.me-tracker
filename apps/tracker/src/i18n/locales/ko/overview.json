@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "최근",
-    "all": "전체",
     "allTitle": "스냅샷 {n}개 전체",
     "size": "업로드 {raw}바이트, 저장 {stored}바이트",
     "unchanged": "합계 변화 없음",

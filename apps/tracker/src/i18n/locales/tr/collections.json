@@ -306,6 +306,19 @@
     "wildlife": "Yaban hayatının dövüş istatistikleri yok",
     "loadFailed": "Bu kayıt yüklenemedi",
     "close": "Kapat",
-    "open": "{name} aç"
+    "open": "{name} aç",
+    "groupBy": "Grupla",
+    "groups": {
+      "type": "Tür",
+      "none": "Yok"
+    },
+    "sort": "Sırala",
+    "sorts": {
+      "order": "Varsayılan",
+      "defeated": "Yenilen"
+    },
+    "noDefeats": "Yenilgi sayılarını içeren bir yakalama gerekir",
+    "foldAll": "Tüm kategorileri daralt",
+    "unfoldAll": "Tüm kategorileri genişlet"
   }
 }

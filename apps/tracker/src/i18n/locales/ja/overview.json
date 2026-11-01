@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "最近",
-    "all": "すべて",
     "allTitle": "全スナップショット（{n}件）",
     "size": "アップロード {raw} バイト、保存 {stored} バイト",
     "unchanged": "合計に変化なし",

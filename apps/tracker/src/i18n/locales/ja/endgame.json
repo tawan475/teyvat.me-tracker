@@ -14,7 +14,6 @@
   "activeLeft": "開催中 · 残り{n}日",
   "period": "{start} – {end}",
   "earlier": "過去の開催",
-  "openSeason": "詳細を見る",
   "olderSeason": "前の期間",
   "newerSeason": "次の期間",
   "empty": "まだありません",

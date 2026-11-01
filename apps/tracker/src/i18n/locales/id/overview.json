@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "Terbaru",
-    "all": "Semua",
     "allTitle": "Semua {n} snapshot",
     "size": "{raw} byte diunggah, {stored} byte disimpan",
     "unchanged": "Total tidak berubah",

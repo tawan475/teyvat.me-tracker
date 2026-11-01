@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "Recientes",
-    "all": "Todas",
     "allTitle": "Las {n} capturas",
     "size": "{raw} bytes subidos, {stored} bytes guardados",
     "unchanged": "Totales sin cambios",

@@ -20,7 +20,6 @@ import {
   type TheaterSeason,
   type SERVER_OFFSETS,
 } from '@gdt/game-data/endgame'
-import { loadEnemies, type Enemies } from '@gdt/game-data/enemies'
 import type { GenshinServer } from '@gdt/shared'
 import type { Locale } from '@/i18n/locale'
 
@@ -36,8 +35,6 @@ export type SeasonStatus = 'upcoming' | 'active' | 'ended'
 export interface EndgameData {
   data: Endgame
   text: EndgameText
-  /** The Living Beings stats (the lineups' HP). */
-  enemies: Enemies
 }
 
 const cache = new Map<Locale, Promise<EndgameData>>()
@@ -46,9 +43,10 @@ const cache = new Map<Locale, Promise<EndgameData>>()
 export function loadEndgameData(lang: Locale): Promise<EndgameData> {
   let found = cache.get(lang)
   if (!found) {
-    found = Promise.all([loadEndgame(), loadEndgameText(lang), loadEnemies()]).then(
-      ([data, text, enemies]) => ({ data, text, enemies }),
-    )
+    found = Promise.all([loadEndgame(), loadEndgameText(lang)]).then(([data, text]) => ({
+      data,
+      text,
+    }))
     found.catch(() => cache.delete(lang))
     cache.set(lang, found)
   }
@@ -123,22 +121,6 @@ export function elapsedPercent(
   const end = seasonTime(season.end, server)
   if (!(end > start)) return 100
   return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-}
-
-/**
- * A lineup monster's HP with 1-4 players at a level, from its Living Beings
- * entry (the encyclopedia's figure: the endgame may scale it further); null
- * when it has no entry (Battle-Hardened variants) or no stats.
- */
-export function monsterHp(
-  data: Endgame,
-  enemies: Enemies,
-  monster: number,
-  level: number,
-): number[] | null {
-  const codex = data.monsters.get(monster)?.codex
-  const stats = codex ? enemies.byId.get(codex)?.stats : null
-  return stats && level ? enemies.statsAt(stats, level).hp : null
 }
 
 /**

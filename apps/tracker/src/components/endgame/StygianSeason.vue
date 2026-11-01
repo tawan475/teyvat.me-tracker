@@ -4,7 +4,7 @@ import type { StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import BossPicture from './BossPicture.vue'
-import { monsterHp, stygianBossPicture, type EndgameData } from '@/data/endgame'
+import { stygianBossPicture, type EndgameData } from '@/data/endgame'
 import { formatNumber, formatShort } from '@/lib/format'
 import { gameIcon } from '@/lib/assets'
 import { t } from '@/i18n'
@@ -40,12 +40,12 @@ const chosen = computed(
 const range = (n: number) => Array.from({ length: n }, (_, i) => i)
 const bosses = computed(() => {
   const level = chosen.value?.level ?? 0
-  return (chosen.value?.bosses ?? []).flatMap((id) => {
+  return (chosen.value?.bosses ?? []).flatMap((id, i) => {
     const boss = props.data.data.stygianBosses.get(id)
     if (!boss) return []
     const full = text.value.get(`stygianBoss.${id}.name`)
     const [short, ...title] = full.split(':')
-    const hp = monsterHp(props.data.data, props.data.enemies, boss.monster, level)
+    const hp = chosen.value?.hp[i] ?? 0
     return [
       {
         boss,
@@ -55,9 +55,7 @@ const bosses = computed(() => {
         codex: props.data.data.monsters.get(boss.monster)?.codex ?? 0,
         level,
         hp,
-        hpTip: hp
-          ? `${t('endgame.hpAt', { n: level })}\n${hp.map((v, i) => `${i + 1}P ${formatNumber(Math.round(v))}`).join(' · ')}`
-          : t('endgame.noEntry'),
+        hpTip: hp ? `${t('endgame.hpAt', { n: level })}: ${formatNumber(hp)}` : '',
       },
     ]
   })
@@ -133,7 +131,7 @@ const bosses = computed(() => {
               class="tabular mt-1 font-mono text-sm font-semibold"
               :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
               :title="b.hpTip"
-              >♥ {{ b.hp ? formatShort(b.hp[0]!) : '—' }}</span
+              >♥ {{ b.hp ? formatShort(b.hp) : '—' }}</span
             >
             <span v-if="b.boss.recommendations" class="mt-1.5 flex flex-wrap gap-1.5">
               <GameText

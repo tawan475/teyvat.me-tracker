@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
-import { monsterHp, type EndgameData } from '@/data/endgame'
+import type { EndgameData } from '@/data/endgame'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { characterBanner, characterIcon } from '@/lib/assets'
@@ -56,7 +56,6 @@ const lineup = (level: number, actLevel: number) =>
       level: at,
       monster: props.data.data.monsters.get(e.monster),
       name: text.value.get(`monster.${e.monster}`),
-      hp: monsterHp(props.data.data, props.data.enemies, e.monster, at),
     }
   })
 const row = (act: TheaterAct, extra: boolean) => {
@@ -212,7 +211,6 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
               :monster="e.monster"
               :name="e.name"
               :level="e.level"
-              :hp="e.hp"
               size="lg"
               class="shrink-0"
               @open="(codex, level) => $emit('enemy', codex, level)"
@@ -249,7 +247,6 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                   :monster="e.monster"
                   :name="e.name"
                   :level="e.level"
-                  :hp="e.hp"
                   @open="(codex, level) => $emit('enemy', codex, level)"
                 />
               </li>

@@ -63,7 +63,6 @@
   },
   "recent": {
     "title": "最近",
-    "all": "全部",
     "allTitle": "全部 {n} 个快照",
     "size": "上传 {raw} 字节，存储 {stored} 字节",
     "unchanged": "总数未变",

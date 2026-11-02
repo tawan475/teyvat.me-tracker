@@ -294,5 +294,15 @@
     "skipped": "No wishes on this banner",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Share this banner",
+    "button": "Share",
+    "wishes": "Wishes",
+    "worth": "Worth",
+    "total": "Total",
+    "share": "Share",
+    "avgPity": "Avg pity",
+    "radiance": "Radiance"
   }
 }

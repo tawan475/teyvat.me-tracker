@@ -153,7 +153,14 @@ const views = computed(() => [
         :label="$t('wishes.history.view')"
         class="mb-4"
       />
-      <WishBannerHistory v-if="view === 'banners'" :history="history" :stats="stats" />
+      <WishBannerHistory
+        v-if="view === 'banners'"
+        :history="history"
+        :stats="stats"
+        :account="account"
+        :player-uid="capture.data.value?.good.gi_player?.uid ?? null"
+        :ar="capture.data.value?.good.gi_player?.ar ?? null"
+      />
       <UiPanel v-else-if="history.total === 0" flush>
         <div :title="$t('wishes.overview.syncHelp')">
           <UiEmpty :title="$t('wishes.overview.empty')" :body="$t('wishes.overview.emptyBody')">

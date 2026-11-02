@@ -1,0 +1,138 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { Share2 } from 'lucide-vue-next'
+import type { EventBanner, PullRow } from '@/data/wish-history'
+import { t } from '@/i18n'
+import { formatNumber } from '@/lib/format'
+import { bannerArt, bannerCardNumbers } from './banner-card'
+import { OUTCOME_STYLE, outcomeLabel } from './wish-labels'
+
+/**
+ * An opened banner's numbers (paimon.moe's banner popup, the user's ask):
+ * the banner's official art (both banners of a double run), the wishes made
+ * on it and what they were worth, the rarity table (5★, 4★ by characters
+ * and weapons: count, share of the run, average pity), the 5★ 50/50s, and
+ * the way to share it as a card.
+ */
+const props = defineProps<{
+  banner: EventBanner
+  pulls: readonly PullRow[]
+  rolls: ReadonlyMap<PullRow, number>
+  canShare: boolean
+}>()
+defineEmits<{ share: [] }>()
+
+const numbers = computed(() => bannerCardNumbers(props.pulls, props.rolls))
+const arts = computed(() => {
+  const b = props.banner
+  const second = b.kind === 'character' && b.name400
+  return [
+    { src: bannerArt(b), alt: b.kind === 'weapon' ? t('wishes.banners.weapon.title') : b.name },
+    ...(second ? [{ src: bannerArt(b, true), alt: b.name400 }] : []),
+  ]
+})
+/** Art that failed to load (a banner the CDN doesn't have yet) is left out. */
+const failed = ref<ReadonlySet<string>>(new Set())
+const fail = (src: string) => (failed.value = new Set([...failed.value, src]))
+
+const pct = (share: number) => `${(share * 100).toFixed(1)}%`
+const avg = (n: number, count: number) => (count ? n.toFixed(1) : '—')
+const rows = computed(() => {
+  const n = numbers.value
+  return [
+    { label: '5★', class: 'font-semibold text-rarity-5', row: n.five, sub: false },
+    { label: '4★', class: 'font-semibold text-rarity-4', row: n.four, sub: false },
+    {
+      label: t('wishes.table.character'),
+      class: 'text-text-secondary',
+      row: n.fourCharacter,
+      sub: true,
+    },
+    { label: t('wishes.table.weapon'), class: 'text-text-secondary', row: n.fourWeapon, sub: true },
+  ]
+})
+const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
+</script>
+
+<template>
+  <div class="flex flex-wrap gap-4">
+    <div class="flex min-w-0 flex-[1_1_22rem] flex-wrap gap-3">
+      <template v-for="art in arts" :key="art.src">
+        <img
+          v-if="!failed.has(art.src)"
+          :src="art.src"
+          :alt="art.alt"
+          class="aspect-[16/9] min-w-0 flex-[1_1_16rem] rounded-xl object-cover shadow-sm"
+          @error="fail(art.src)"
+        />
+      </template>
+    </div>
+    <div class="flex min-w-0 flex-[1_1_20rem] flex-col gap-3">
+      <div class="flex flex-wrap items-end gap-x-6 gap-y-2">
+        <span class="flex flex-col">
+          <span class="text-xs text-text-muted">{{ $t('wishes.share.wishes') }}</span>
+          <span class="tabular font-mono text-2xl font-bold">{{
+            formatNumber(numbers.wishes)
+          }}</span>
+        </span>
+        <span class="flex flex-col">
+          <span class="text-xs text-text-muted">{{ $t('wishes.share.worth') }}</span>
+          <span class="tabular font-mono text-2xl font-bold"
+            >{{ formatNumber(numbers.wishes * 160)
+            }}<span class="ml-1 text-base text-rarity-4" aria-hidden="true">✦</span></span
+          >
+        </span>
+        <button
+          v-if="canShare"
+          type="button"
+          class="ml-auto inline-flex min-h-10 items-center gap-2 rounded-lg border border-border-default bg-surface-raised px-3 text-sm font-medium transition-colors hover:bg-surface-overlay"
+          @click="$emit('share')"
+        >
+          <Share2 class="size-4" aria-hidden="true" />
+          {{ $t('wishes.share.button') }}
+        </button>
+      </div>
+      <table class="tabular w-full font-mono text-sm">
+        <thead>
+          <tr class="text-left text-xs text-text-muted">
+            <th scope="col" class="py-1 font-sans font-medium">{{ $t('wishes.rarity') }}</th>
+            <th scope="col" class="py-1 text-right font-sans font-medium">
+              {{ $t('wishes.share.total') }}
+            </th>
+            <th scope="col" class="py-1 text-right font-sans font-medium">
+              {{ $t('wishes.share.share') }}
+            </th>
+            <th scope="col" class="py-1 text-right font-sans font-medium">
+              {{ $t('wishes.share.avgPity') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="r in rows" :key="r.label" class="border-t border-border-default">
+            <td class="py-1.5 font-sans" :class="[r.class, r.sub ? 'pl-4 text-xs' : '']">
+              <span v-if="r.sub" aria-hidden="true">└ </span>{{ r.label }}
+            </td>
+            <td class="py-1.5 text-right" :class="r.sub ? 'text-text-secondary' : r.class">
+              {{ formatNumber(r.row.count) }}
+            </td>
+            <td class="py-1.5 text-right" :class="r.sub ? 'text-text-secondary' : ''">
+              {{ pct(r.row.share) }}
+            </td>
+            <td class="py-1.5 text-right" :class="r.sub ? 'text-text-secondary' : ''">
+              {{ avg(r.row.avgPity, r.row.count) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div
+        v-if="OUTCOMES.some((o) => numbers.outcomes[o])"
+        class="tabular flex flex-wrap gap-x-4 gap-y-1 font-mono text-sm"
+      >
+        <span v-for="o in OUTCOMES" :key="o" :class="OUTCOME_STYLE[o].text" :title="outcomeLabel(o)"
+          >{{ OUTCOME_STYLE[o].mark }} {{ numbers.outcomes[o] }}
+          <span class="font-sans text-xs text-text-secondary">{{ outcomeLabel(o) }}</span></span
+        >
+      </div>
+    </div>
+  </div>
+</template>

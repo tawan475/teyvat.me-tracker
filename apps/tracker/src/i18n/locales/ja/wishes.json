@@ -294,5 +294,15 @@
     "skipped": "この祈願は引いていません",
     "fives": "★5 ×{n}",
     "fourCount": "★4 ×{n}"
+  },
+  "share": {
+    "title": "このピックアップを共有",
+    "button": "共有",
+    "wishes": "祈願",
+    "worth": "価値",
+    "total": "合計",
+    "share": "割合",
+    "avgPity": "平均天井",
+    "radiance": "明光"
   }
 }

@@ -294,5 +294,15 @@
     "skipped": "Nessun desiderio su questo banner",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Condividi questo banner",
+    "button": "Condividi",
+    "wishes": "Desideri",
+    "worth": "Valore",
+    "total": "Totale",
+    "share": "Quota",
+    "avgPity": "Pity medio",
+    "radiance": "Splendore"
   }
 }

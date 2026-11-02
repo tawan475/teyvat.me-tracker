@@ -294,5 +294,15 @@
     "skipped": "Không cầu nguyện ở banner này",
     "fives": "5★ ×{n}",
     "fourCount": "4★ ×{n}"
+  },
+  "share": {
+    "title": "Chia sẻ banner này",
+    "button": "Chia sẻ",
+    "wishes": "Cầu nguyện",
+    "worth": "Giá trị",
+    "total": "Tổng",
+    "share": "Tỷ lệ",
+    "avgPity": "Bảo hiểm TB",
+    "radiance": "Ánh Sáng"
   }
 }

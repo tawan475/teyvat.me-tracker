@@ -294,5 +294,15 @@
     "skipped": "Nenhuma oração neste banner",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Compartilhar este banner",
+    "button": "Compartilhar",
+    "wishes": "Orações",
+    "worth": "Valor",
+    "total": "Total",
+    "share": "Proporção",
+    "avgPity": "Pity médio",
+    "radiance": "Esplendor"
   }
 }

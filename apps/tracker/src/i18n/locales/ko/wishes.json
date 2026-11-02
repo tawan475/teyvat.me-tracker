@@ -294,5 +294,15 @@
     "skipped": "이 배너에서 기원하지 않음",
     "fives": "5★ ×{n}",
     "fourCount": "4★ ×{n}"
+  },
+  "share": {
+    "title": "이 배너 공유",
+    "button": "공유",
+    "wishes": "기원",
+    "worth": "가치",
+    "total": "합계",
+    "share": "비율",
+    "avgPity": "평균 천장",
+    "radiance": "별빛"
   }
 }

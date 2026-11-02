@@ -294,5 +294,15 @@
     "skipped": "Sin deseos en este gachapón",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Compartir este gachapón",
+    "button": "Compartir",
+    "wishes": "Deseos",
+    "worth": "Valor",
+    "total": "Total",
+    "share": "Porcentaje",
+    "avgPity": "Pity medio",
+    "radiance": "Resplandor"
   }
 }

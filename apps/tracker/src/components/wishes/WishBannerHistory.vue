@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { ChevronDown, Search, SearchX } from 'lucide-vue-next'
+import { computed, ref, shallowRef, watch } from 'vue'
+import { ChevronDown, Search, SearchX, Share2 } from 'lucide-vue-next'
 import { characterInfo, weaponInfo } from '@gdt/game-data/catalog'
-import type { UigfGachaType } from '@gdt/shared'
+import type { AccountResponse, UigfGachaType } from '@gdt/shared'
 import FilterChip from '@/components/ui/FilterChip.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -18,6 +18,7 @@ import {
 } from '@/data/wish-banner-history'
 import {
   eventBanners,
+  runPullNumbers,
   type BannerStats,
   type EventBanner,
   type EventKind,
@@ -30,6 +31,8 @@ import { characterIcon, weaponIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { normalizeSearch } from '@/lib/search'
 import { readStorage, writeStorage } from '@/lib/storage'
+import BannerRunStats from './BannerRunStats.vue'
+import BannerShareModal from './BannerShareModal.vue'
 import { loadBannerFile } from './use-wish-stats'
 import { OUTCOME_STYLE, outcomeLabel, runDates } from './wish-labels'
 import WishTable from './WishTable.vue'
@@ -38,13 +41,19 @@ import WishTable from './WishTable.vue'
  * Banner history: every event banner that has opened, by version, newest
  * first — its featured 5★ and 4★, and the account's own run on it as a
  * summary (wishes, 5★ and 4★ counts, 50/50s won and lost) that opens into
+ * the run's numbers (BannerRunStats: its art, wishes, the rarity table) over
  * every pull of that run (the banner page's table, 5★/4★/3★ chips), or
- * that it was skipped. Character, Weapon and Chronicled; a name search and
- * "only banners I wished on".
+ * that it was skipped; a run can be shared as a card (BannerShareModal).
+ * Character, Weapon and Chronicled; a name search and "only banners I
+ * wished on".
  */
 const props = defineProps<{
   history: WishHistory
   stats: ReadonlyMap<UigfGachaType, BannerStats>
+  /** For the share card's owner (none: no sharing). */
+  account?: AccountResponse
+  playerUid?: number | null
+  ar?: number | null
 }>()
 
 const file = useResource(() => 0, loadBannerFile)
@@ -111,6 +120,11 @@ const runRows = computed(() => {
 })
 const pullsOf = (row: BannerHistoryRow) =>
   row.run ? (runRows.value.get(row.run.banner) ?? []) : []
+/** Each pull's number on its run (the pull table's #). */
+const rolls = computed(() => runPullNumbers(props.stats.get(banner.value)?.rows ?? []))
+/** The run being shared as a card. */
+// shallowRef: the row's banner objects key the run lookups (a deep ref would wrap them in proxies).
+const sharing = shallowRef<BannerHistoryRow | null>(null)
 const foursOf = (row: BannerHistoryRow) =>
   pullsOf(row).filter((pull) => pull.pull.item.rank === 4).length
 
@@ -258,15 +272,16 @@ const outcomes = (row: BannerHistoryRow) => {
             class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
             :aria-expanded="expanded.has(rowKey(row))"
           >
-            <!-- Line 1: how many (wishes, 5★, 4★); line 2: how the 5★ went. -->
-            <span class="flex min-w-0 flex-1 flex-col gap-1">
-              <span class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs">
-                <span class="flex items-baseline gap-1.5"
-                  ><span class="tabular font-mono text-base font-semibold text-text-primary">{{
-                    formatNumber(row.run.pulls)
-                  }}</span
-                  ><span class="text-text-muted">{{ $t('wishes.history.wishes') }}</span></span
-                >
+            <!-- The wishes at full size, the split, then the 5★ / 4★ over how the 5★ went. -->
+            <span class="flex shrink-0 items-baseline gap-1.5">
+              <span class="tabular font-mono text-lg font-semibold">{{
+                formatNumber(row.run.pulls)
+              }}</span>
+              <span class="text-xs text-text-muted">{{ $t('wishes.history.wishes') }}</span>
+            </span>
+            <span class="h-8 w-px shrink-0 bg-border-default" aria-hidden="true" />
+            <span class="flex min-w-0 flex-1 flex-col gap-0.5 text-xs">
+              <span class="flex min-w-0 flex-wrap items-baseline gap-x-3">
                 <span class="font-semibold text-rarity-5">{{
                   $t('wishes.history.fives', { n: row.run.fives.length })
                 }}</span>
@@ -276,7 +291,7 @@ const outcomes = (row: BannerHistoryRow) => {
               </span>
               <span
                 v-if="OUTCOMES.some((o) => outcomes(row)[o])"
-                class="tabular flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-xs"
+                class="tabular flex min-w-0 flex-wrap items-center gap-x-3 font-mono"
               >
                 <template v-for="o in OUTCOMES" :key="o">
                   <span
@@ -302,14 +317,32 @@ const outcomes = (row: BannerHistoryRow) => {
           </div>
         </div>
 
-        <WishTable
-          v-if="row.run && expanded.has(rowKey(row))"
-          :rows="pullsOf(row)"
-          :banner="banner"
-          embedded
-          class="m-3"
-        />
+        <template v-if="row.run && expanded.has(rowKey(row))">
+          <BannerRunStats
+            :banner="row.banner"
+            :pulls="pullsOf(row)"
+            :rolls="rolls"
+            :can-share="!!account"
+            class="px-4 pt-4"
+            @share="sharing = row"
+          />
+          <WishTable :rows="pullsOf(row)" :banner="banner" embedded class="m-3" />
+        </template>
       </article>
     </section>
+
+    <BannerShareModal
+      v-if="account"
+      :open="!!sharing"
+      :banner="sharing?.banner ?? null"
+      :type="banner"
+      :phase="sharing?.phase ?? 1"
+      :pulls="sharing ? pullsOf(sharing) : []"
+      :rolls="rolls"
+      :account="account"
+      :player-uid="playerUid ?? null"
+      :ar="ar ?? null"
+      @close="sharing = null"
+    />
   </div>
 </template>

@@ -294,5 +294,15 @@
     "skipped": "Keine Gebete auf diesem Banner",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Dieses Banner teilen",
+    "button": "Teilen",
+    "wishes": "Gebete",
+    "worth": "Wert",
+    "total": "Gesamt",
+    "share": "Anteil",
+    "avgPity": "Ø Pity",
+    "radiance": "Strahlender Fang"
   }
 }

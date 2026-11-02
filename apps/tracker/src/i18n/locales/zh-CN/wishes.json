@@ -294,5 +294,15 @@
     "skipped": "未在此卡池祈愿",
     "fives": "5★ ×{n}",
     "fourCount": "4★ ×{n}"
+  },
+  "share": {
+    "title": "分享卡池",
+    "button": "分享",
+    "wishes": "祈愿",
+    "worth": "价值",
+    "total": "总数",
+    "share": "占比",
+    "avgPity": "平均保底",
+    "radiance": "明光"
   }
 }

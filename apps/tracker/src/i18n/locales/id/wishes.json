@@ -294,5 +294,15 @@
     "skipped": "Tidak ada wish di banner ini",
     "fives": "5★ ×{n}",
     "fourCount": "4★ ×{n}"
+  },
+  "share": {
+    "title": "Bagikan banner ini",
+    "button": "Bagikan",
+    "wishes": "Permohonan",
+    "worth": "Nilai",
+    "total": "Total",
+    "share": "Persentase",
+    "avgPity": "Rata-rata pity",
+    "radiance": "Radiance"
   }
 }

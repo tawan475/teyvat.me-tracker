@@ -294,5 +294,15 @@
     "skipped": "Bu afişte dilek yok",
     "fives": "{n}× 5★",
     "fourCount": "{n}× 4★"
+  },
+  "share": {
+    "title": "Bu afişi paylaş",
+    "button": "Paylaş",
+    "wishes": "Dilekler",
+    "worth": "Değer",
+    "total": "Toplam",
+    "share": "Oran",
+    "avgPity": "Ort. pity",
+    "radiance": "Işık"
   }
 }

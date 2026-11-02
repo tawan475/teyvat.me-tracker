@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Legenda Lokal",
-    "defeated": "Dikalahkan",
-    "goalsTip": "Pencapaian yang selesai",
     "worldLevel": "Level Dunia",
     "wlN": "Level Dunia {n}",
     "wlYours": "Level Dunia {n} (milikmu)",
     "hpTip": "HP sendirian di Lv. {n}: musuh Level Dunia {wl} adalah Lv. {base}, Legenda Lokal 3 level lebih tinggi",
     "search": "Cari Legenda Lokal",
     "searchPlaceholder": "Nama atau gelar",
-    "hideDefeated": "Sembunyikan yang dikalahkan",
     "member": "Musuh yang dilawan",
     "memberN": "Musuh {n}"
   },

@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Yerel Efsane",
-    "defeated": "Yenildi",
-    "goalsTip": "Tamamlanan başarımlar",
     "worldLevel": "Dünya Seviyesi",
     "wlN": "Dünya Seviyesi {n}",
     "wlYours": "Dünya Seviyesi {n} (seninki)",
     "hpTip": "Sv. {n}'de tek oyunculu HP: Dünya Seviyesi {wl} düşmanları Sv. {base}, Yerel Efsaneler 3 seviye yukarıda",
     "search": "Yerel Efsane ara",
     "searchPlaceholder": "Ad veya unvan",
-    "hideDefeated": "Yenilenleri gizle",
     "member": "Karşılaşılan düşman",
     "memberN": "Düşman {n}"
   },

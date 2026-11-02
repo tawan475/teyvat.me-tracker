@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "地方伝説",
-    "defeated": "撃破済み",
-    "goalsTip": "達成したアチーブメント",
     "worldLevel": "世界ランク",
     "wlN": "世界ランク{n}",
     "wlYours": "世界ランク{n}（あなた）",
     "hpTip": "Lv.{n}の1人時HP：世界ランク{wl}の敵はLv.{base}、地方伝説はその3レベル上",
     "search": "地方伝説を検索",
     "searchPlaceholder": "名前または称号",
-    "hideDefeated": "撃破済みを隠す",
     "member": "戦う敵",
     "memberN": "敵{n}"
   },

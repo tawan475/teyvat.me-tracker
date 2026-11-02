@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Lokallegende",
-    "defeated": "Besiegt",
-    "goalsTip": "Erreichte Erfolge",
     "worldLevel": "Weltstufe",
     "wlN": "Weltstufe {n}",
     "wlYours": "Weltstufe {n} (deine)",
     "hpTip": "LP allein auf Stufe {n}: Gegner der Weltstufe {wl} sind Stufe {base}, Lokallegenden kämpfen 3 Stufen höher",
     "search": "Lokallegenden suchen",
     "searchPlaceholder": "Name oder Titel",
-    "hideDefeated": "Besiegte ausblenden",
     "member": "Gegner",
     "memberN": "Gegner {n}"
   },

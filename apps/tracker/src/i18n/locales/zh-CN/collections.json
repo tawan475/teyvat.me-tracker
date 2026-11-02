@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "地方传奇",
-    "defeated": "已击败",
-    "goalsTip": "已完成的成就",
     "worldLevel": "世界等级",
     "wlN": "世界等级{n}",
     "wlYours": "世界等级{n}（你的）",
     "hpTip": "{n}级单人生命值：世界等级{wl}的敌人为{base}级，地方传奇高3级",
     "search": "搜索地方传奇",
     "searchPlaceholder": "名称或称号",
-    "hideDefeated": "隐藏已击败",
     "member": "对战的敌人",
     "memberN": "敌人{n}"
   },

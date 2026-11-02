@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "地方傳奇",
-    "defeated": "已擊敗",
-    "goalsTip": "已完成的成就",
     "worldLevel": "世界等級",
     "wlN": "世界等級{n}",
     "wlYours": "世界等級{n}（你的）",
     "hpTip": "{n}級單人生命值：世界等級{wl}的敵人為{base}級，地方傳奇高3級",
     "search": "搜尋地方傳奇",
     "searchPlaceholder": "名稱或稱號",
-    "hideDefeated": "隱藏已擊敗",
     "member": "對戰的敵人",
     "memberN": "敵人{n}"
   },

@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "지방 전설",
-    "defeated": "처치함",
-    "goalsTip": "달성한 업적",
     "worldLevel": "월드 레벨",
     "wlN": "월드 레벨 {n}",
     "wlYours": "월드 레벨 {n} (내 레벨)",
     "hpTip": "Lv.{n} 1인 HP: 월드 레벨 {wl}의 적은 Lv.{base}, 지방 전설은 3레벨 높음",
     "search": "지방 전설 검색",
     "searchPlaceholder": "이름 또는 칭호",
-    "hideDefeated": "처치한 항목 숨기기",
     "member": "상대하는 적",
     "memberN": "적 {n}"
   },

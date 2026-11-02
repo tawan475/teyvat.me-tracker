@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Leggenda locale",
-    "defeated": "Sconfitte",
-    "goalsTip": "Obiettivi completati",
     "worldLevel": "Livello del mondo",
     "wlN": "Livello del mondo {n}",
     "wlYours": "Livello del mondo {n} (il tuo)",
     "hpTip": "PS in solitaria al liv. {n}: i nemici del livello del mondo {wl} sono liv. {base}, le Leggende locali combattono 3 livelli sopra",
     "search": "Cerca Leggende locali",
     "searchPlaceholder": "Nome o titolo",
-    "hideDefeated": "Nascondi sconfitte",
     "member": "Nemico affrontato",
     "memberN": "Nemico {n}"
   },

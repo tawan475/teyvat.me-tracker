@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Huyền Thoại Địa Phương",
-    "defeated": "Đã đánh bại",
-    "goalsTip": "Thành tựu đã đạt",
     "worldLevel": "Cấp Thế Giới",
     "wlN": "Cấp Thế Giới {n}",
     "wlYours": "Cấp Thế Giới {n} (của bạn)",
     "hpTip": "HP khi chơi một mình ở Lv. {n}: kẻ địch Cấp Thế Giới {wl} là Lv. {base}, Huyền Thoại Địa Phương cao hơn 3 cấp",
     "search": "Tìm Huyền Thoại Địa Phương",
     "searchPlaceholder": "Tên hoặc danh hiệu",
-    "hideDefeated": "Ẩn đã đánh bại",
     "member": "Kẻ địch",
     "memberN": "Kẻ địch {n}"
   },

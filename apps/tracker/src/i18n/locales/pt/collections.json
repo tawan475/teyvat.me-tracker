@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Lenda Local",
-    "defeated": "Derrotadas",
-    "goalsTip": "Conquistas concluídas",
     "worldLevel": "Nível do Mundo",
     "wlN": "Nível do Mundo {n}",
     "wlYours": "Nível do Mundo {n} (o seu)",
     "hpTip": "Vida sozinho no nv. {n}: inimigos do Nível do Mundo {wl} são nv. {base}, Lendas Locais lutam 3 níveis acima",
     "search": "Buscar Lendas Locais",
     "searchPlaceholder": "Nome ou título",
-    "hideDefeated": "Ocultar derrotadas",
     "member": "Inimigo enfrentado",
     "memberN": "Inimigo {n}"
   },

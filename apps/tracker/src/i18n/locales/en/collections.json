@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Local Legend",
-    "defeated": "Defeated",
-    "goalsTip": "Its achievements done",
     "worldLevel": "World Level",
     "wlN": "World Level {n}",
     "wlYours": "World Level {n} (yours)",
     "hpTip": "HP alone at Lv. {n}: World Level {wl}'s enemies are Lv. {base}, Local Legends fight 3 levels higher",
     "search": "Search Local Legends",
     "searchPlaceholder": "Name or title",
-    "hideDefeated": "Hide defeated",
     "member": "Enemy fought",
     "memberN": "Enemy {n}"
   },

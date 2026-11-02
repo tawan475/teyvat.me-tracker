@@ -50,15 +50,12 @@
   },
   "legends": {
     "mark": "Légende locale",
-    "defeated": "Vaincues",
-    "goalsTip": "Ses succès accomplis",
     "worldLevel": "Niv. du monde",
     "wlN": "Niv. du monde {n}",
     "wlYours": "Niv. du monde {n} (le vôtre)",
     "hpTip": "PV en solo au niv. {n} : les ennemis du niv. du monde {wl} sont niv. {base}, les Légendes locales combattent 3 niveaux au-dessus",
     "search": "Rechercher une Légende locale",
     "searchPlaceholder": "Nom ou titre",
-    "hideDefeated": "Masquer les vaincues",
     "member": "Ennemi affronté",
     "memberN": "Ennemi {n}"
   },

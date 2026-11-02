@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Check, Search } from 'lucide-vue-next'
+import { Search } from 'lucide-vue-next'
 import { localLegendLevel } from '@gdt/game-data/enemies'
 import EnemyDialog from './EnemyDialog.vue'
 import { useCollectionCatalog } from './use-catalog'
-import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
-import FilterChip from '@/components/ui/FilterChip.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
-import UiBadge from '@/components/ui/UiBadge.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiInput from '@/components/ui/UiInput.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiToolbar from '@/components/ui/UiToolbar.vue'
-import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achievement-capture'
-import { isDone } from '@/data/achievement-progress'
 import { loadAccountPlayer } from '@/data/account-data'
 import { nameOf } from '@/data/collection-names'
 import { loadEnemyData } from '@/data/enemies'
@@ -25,7 +20,6 @@ import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { formatNumber, formatShort } from '@/lib/format'
 import { gameIcon, loadGameIcons } from '@/lib/assets'
-import { readStorage, writeStorage } from '@/lib/storage'
 import { useAccount } from '@/views/account/context'
 import { t } from '@/i18n'
 
@@ -34,9 +28,7 @@ import { t } from '@/i18n'
  * its picture(s), name, subtitle and HP where it fights. They fight at the
  * World Level's monster level + 3 (Lv. 103 at World Level 9), so the HP
  * follows the account's World Level from its captures (World Level 9 without
- * one); the picker tries the others. Defeated (and the Natlan ones' extra
- * goals) come from the defeat achievements: captured or marked by hand. A
- * card opens the enemy dialog at that level (`?legend=<id>`).
+ * one); the picker tries the others. A card opens the enemy dialog at that level (`?legend=<id>`).
  */
 const route = useRoute()
 const router = useRouter()
@@ -54,19 +46,6 @@ const player = useResource(
   () => account.value,
   (a) => loadAccountPlayer(a),
 )
-const achievements = useResource(
-  () => account.value,
-  async (a) => ({
-    accountId: a.id,
-    captured: a.latest ? await loadCapturedAchievements(a) : NO_CAPTURED_ACHIEVEMENTS,
-  }),
-)
-const marks = useAchievementMarks(() => account.value.id)
-const done = (id: number) => {
-  const value = achievements.data.value
-  if (!value || value.accountId !== account.value.id) return false
-  return isDone({ captured: value.captured.ids, marked: marks.marked.value }, id)
-}
 
 /** The highest World Level (WorldLevel's rows; 9 at 7.1). */
 const MAX_WL = computed(() => resource.data.value?.enemies.worldLevels.length || 9)
@@ -100,24 +79,19 @@ const wlOptions = computed(() =>
   }),
 )
 
-const HIDE_KEY = 'collections:legends:hide-defeated'
-const hideDefeated = ref(readStorage(HIDE_KEY) === '1')
-watch(hideDefeated, (value) => writeStorage(HIDE_KEY, value ? '1' : null))
 const query = ref('')
 
 const sections = computed(() => {
   const data = resource.data.value
   if (!data) return []
-  return legendSections(data.enemies.legends, data.names, data.enemies.statsAt, level.value, done)
+  return legendSections(data.enemies.legends, data.names, data.enemies.statsAt, level.value)
 })
 const rows = computed(() => sections.value.flatMap((s) => s.rows))
 const shown = computed(() =>
   sections.value
     .map((s) => ({
       ...s,
-      rows: s.rows.filter(
-        (r) => matchesLegend(r, query.value) && !(hideDefeated.value && r.defeated),
-      ),
+      rows: s.rows.filter((r) => matchesLegend(r, query.value)),
     }))
     .filter((s) => s.rows.length),
 )
@@ -188,9 +162,6 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
           :aria-label="$t('collections.legends.worldLevel')"
           :title="hpTip"
         />
-        <FilterChip :pressed="hideDefeated" @toggle="hideDefeated = !hideDefeated">
-          {{ $t('collections.legends.hideDefeated') }}
-        </FilterChip>
       </div>
     </UiToolbar>
 
@@ -230,19 +201,6 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
               :aria-label="$t('collections.enemies.open', { name: row.name })"
               @click="show(row.legend.id)"
             >
-              <span
-                v-if="row.defeated"
-                class="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-surface-base/85 text-success-text ring-1 ring-current"
-                :title="$t('collections.legends.defeated')"
-              >
-                <Check class="size-4" aria-hidden="true" />
-              </span>
-              <UiBadge
-                v-else-if="row.goals && row.goals.total > 1 && row.goals.done"
-                class="absolute top-2 right-2"
-                :title="$t('collections.legends.goalsTip')"
-                >{{ row.goals.done }}/{{ row.goals.total }}</UiBadge
-              >
               <span
                 class="flex h-20 w-full items-end sm:h-24 justify-center gap-1 rounded-lg bg-linear-to-b from-surface-overlay to-surface-sunken"
               >

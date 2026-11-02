@@ -82,7 +82,7 @@ const avgPity = computed(() => {
       diff: `${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${formatPity(Math.abs(diff))}`,
       expected,
     }),
-    tone: diff > 0 ? 'text-warning-text' : diff < 0 ? 'text-success-text' : 'text-text-muted',
+    tone: diff > 0 ? 'text-warning-text' : diff < 0 ? 'text-accent-text' : 'text-text-muted',
   }
 })
 

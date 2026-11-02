@@ -21,7 +21,6 @@ import {
   pityBand,
   type BannerStats,
   type EventKind,
-  type Outcome,
   type PullRow,
   type WishHistory,
 } from '@/data/wish-history'
@@ -99,7 +98,6 @@ const shownKeys = (keys: readonly string[], max: number) => ({
 const dates = (row: BannerHistoryRow) =>
   runDates({ banner: row.banner, pulls: 0, fives: [] }, isOpen(row))
 
-const OUTCOME_MARK: Record<Outcome, string> = { won: '▲', lost: '▼', guaranteed: '●' }
 const chipTitle = (row: PullRow) =>
   [
     t('wishes.five.pity', { name: wishItemName(row.pull.item), pity: row.pity }),
@@ -248,9 +246,6 @@ const chipTitle = (row: PullRow) =>
                   :style="{ color: BAND_COLOR[pityBand(five.pity, banner)] }"
                   >{{ five.pity }}</span
                 >
-                <span v-if="five.outcome" class="shrink-0 text-text-muted" aria-hidden="true">{{
-                  OUTCOME_MARK[five.outcome]
-                }}</span>
               </span>
               <span v-if="!row.run.fives.length" class="text-xs text-text-muted">{{
                 $t('wishes.runs.no5')

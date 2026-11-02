@@ -4,7 +4,7 @@ import { EXPECTED_PITY, type BannerStats, type RateLine } from '@/data/wish-hist
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import WishSplitBar from './WishSplitBar.vue'
-import { formatPercent, formatPity, oddsOf } from './wish-labels'
+import { OUTCOME_STYLE, formatPercent, formatPity, oddsOf } from './wish-labels'
 
 /**
  * A banner's numbers, as paimon.moe counts them: 5★ and 4★ (count, share
@@ -39,15 +39,15 @@ const flip = computed(() => {
     label: `5★ ${oddsOf(s.value.banner)}`,
     left: {
       count: r.won,
-      label: t('wishes.legend.won'),
-      text: 'text-success-text',
-      bar: 'bg-success-text',
+      label: `${OUTCOME_STYLE.won.mark} ${t('wishes.legend.won')}`,
+      text: OUTCOME_STYLE.won.text,
+      bar: OUTCOME_STYLE.won.bar,
     },
     right: {
       count: r.lost,
-      label: t('wishes.legend.lost'),
-      text: 'text-danger-text',
-      bar: 'bg-danger-text',
+      label: `${OUTCOME_STYLE.lost.mark} ${t('wishes.legend.lost')}`,
+      text: OUTCOME_STYLE.lost.text,
+      bar: OUTCOME_STYLE.lost.bar,
     },
     rate: share(r),
     note: t('wishes.numbers.streak', {
@@ -142,7 +142,7 @@ const split = computed(() => {
           >{{ avgLine(s.five)
           }}<span
             v-if="s.five.count"
-            :class="diff > 0 ? 'text-warning-text' : diff < 0 ? 'text-success-text' : ''"
+            :class="diff > 0 ? 'text-warning-text' : diff < 0 ? 'text-accent-text' : ''"
             :title="$t('wishes.numbers.expectedAbout', { n: expected })"
           >
             ({{ diff > 0 ? '+' : diff < 0 ? '−' : '±' }}{{ formatPity(Math.abs(diff)) }})</span

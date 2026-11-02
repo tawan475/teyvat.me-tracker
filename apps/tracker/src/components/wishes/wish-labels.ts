@@ -128,13 +128,49 @@ export function runDates(run: BannerRun, open: boolean, year = thisYear()): stri
   return t('wishes.date.range', { from, to: wishDay(end, year) })
 }
 
-/** A 5★ pity band's colour, from the theme's tokens (green, gold, orange, red). */
+/**
+ * A 5★ pity band's colour, from the theme's tokens (blue, gold, orange,
+ * red; never green against red: the site is colour-blind friendly, and the
+ * number itself is always shown).
+ */
 export const BAND_COLOR: Record<PityBand, string> = {
-  early: 'var(--success-text)',
+  early: 'var(--accent-text)',
   mid: 'var(--rarity-5)',
   soft: 'var(--pity-soft)',
   late: 'var(--danger-text)',
 }
+
+/**
+ * How a 50/50 outcome looks everywhere (colour-blind friendly: a mark and a
+ * line style as well as a colour, blue against orange, never green/red):
+ * ▲ won (blue, solid ring), ▼ lost (orange, dashed), ● guaranteed (grey, dotted).
+ */
+export const OUTCOME_STYLE = {
+  won: {
+    mark: '▲',
+    text: 'text-accent-text',
+    ring: 'outline-accent-text outline-solid',
+    bar: 'bg-accent-text',
+    tone: 'accent',
+  },
+  lost: {
+    mark: '▼',
+    text: 'text-warning-text',
+    ring: 'outline-warning-text outline-dashed',
+    bar: 'bg-[repeating-linear-gradient(45deg,var(--color-warning-text)_0_5px,color-mix(in_srgb,var(--color-warning-text)_50%,transparent)_5px_10px)]',
+    tone: 'warning',
+  },
+  guaranteed: {
+    mark: '●',
+    text: 'text-text-secondary',
+    ring: 'outline-text-secondary outline-dotted',
+    bar: 'bg-text-secondary',
+    tone: 'neutral',
+  },
+} as const satisfies Record<
+  Outcome,
+  { mark: string; text: string; ring: string; bar: string; tone: string }
+>
 
 /** An outcome's badge text ("Won", "Lost", "Guaranteed"), in the language on screen. */
 export const outcomeLabel = (outcome: Outcome): string => t(`wishes.outcomes.${outcome}`)
@@ -162,14 +198,14 @@ export const RARITY_TEXT: Record<number, string> = {
 }
 
 /**
- * A pity's colour as paimon.moe draws it: green when early, through amber,
- * to red at hard pity (`hard`: 90 / 80 for a 5★, 10 for a 4★). Mixed from
+ * A pity's colour: blue when early, through amber, to red at hard pity (as
+ * paimon.moe draws it, with blue for its green: colour-blind friendly) (`hard`: 90 / 80 for a 5★, 10 for a 4★). Mixed from
  * the theme's tokens, so it reads in both themes.
  */
 export function pityColor(pity: number, hard: number): string {
   const x = Math.min(1, Math.max(0, (pity - 1) / Math.max(1, hard - 1)))
   return x < 0.5
-    ? `color-mix(in oklab, var(--warning-text) ${Math.round(x * 200)}%, var(--success-text))`
+    ? `color-mix(in oklab, var(--warning-text) ${Math.round(x * 200)}%, var(--accent-text))`
     : `color-mix(in oklab, var(--danger-text) ${Math.round((x - 0.5) * 200)}%, var(--warning-text))`
 }
 

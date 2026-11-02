@@ -16,6 +16,7 @@ import { useStickyToolbar } from '@/lib/sticky-stack'
 import { readStorage, writeStorage } from '@/lib/storage'
 import {
   BAND_COLOR,
+  OUTCOME_STYLE,
   RARITY_TEXT,
   outcomeLabel,
   outcomeTitle,
@@ -87,7 +88,6 @@ const TINT: Record<number, string> = {
   5: 'bg-linear-to-r from-rarity-5/15 to-transparent to-55%',
   4: 'bg-linear-to-r from-rarity-4/10 to-transparent to-45%',
 }
-const OUTCOME_TONE = { won: 'success', lost: 'danger', guaranteed: 'accent' } as const
 
 function pity(row: PullRow): { color: string; width: string } | null {
   const rank = row.pull.item.rank
@@ -260,9 +260,10 @@ useStickyToolbar(filters, () => true, { always: true })
             <td v-if="rated" class="py-2 pr-3 pl-2 sm:pr-2">
               <UiBadge
                 v-if="row.outcome"
-                :tone="OUTCOME_TONE[row.outcome]"
+                :tone="OUTCOME_STYLE[row.outcome].tone"
                 :title="outcomeTitle(row.outcome, banner, row.pull.item.rank)"
-                >{{ outcomeLabel(row.outcome) }}</UiBadge
+                ><span aria-hidden="true">{{ OUTCOME_STYLE[row.outcome].mark }}</span>
+                {{ outcomeLabel(row.outcome) }}</UiBadge
               >
               <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
             </td>

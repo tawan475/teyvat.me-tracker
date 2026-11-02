@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Tingkat Kesulitan",
     "mechanics": "Mekanik",
-    "recommended": "Rekomendasi"
+    "recommended": "Rekomendasi",
+    "clears": "Clear komunitas",
+    "clearsTip": "Clear {boss} di stygian.moe (situs penggemar)",
+    "siteTip": "Clear dan panduan di stygian.moe (situs penggemar)"
   }
 }

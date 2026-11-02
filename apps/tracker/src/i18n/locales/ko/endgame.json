@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "난이도",
     "mechanics": "기믹",
-    "recommended": "추천"
+    "recommended": "추천",
+    "clears": "커뮤니티 클리어",
+    "clearsTip": "stygian.moe의 {boss} 클리어 기록 (팬 사이트)",
+    "siteTip": "stygian.moe의 클리어 기록과 공략 (팬 사이트)"
   }
 }

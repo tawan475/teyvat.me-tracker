@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Difficulté",
     "mechanics": "Mécaniques",
-    "recommended": "Recommandé"
+    "recommended": "Recommandé",
+    "clears": "Victoires de la communauté",
+    "clearsTip": "Victoires contre {boss} sur stygian.moe (site de fans)",
+    "siteTip": "Victoires et guides sur stygian.moe (site de fans)"
   }
 }

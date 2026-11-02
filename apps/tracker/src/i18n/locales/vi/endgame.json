@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Độ Khó",
     "mechanics": "Cơ chế",
-    "recommended": "Đề Xuất"
+    "recommended": "Đề Xuất",
+    "clears": "Lượt vượt ải cộng đồng",
+    "clearsTip": "Lượt vượt ải {boss} trên stygian.moe (trang người hâm mộ)",
+    "siteTip": "Lượt vượt ải và hướng dẫn trên stygian.moe (trang người hâm mộ)"
   }
 }

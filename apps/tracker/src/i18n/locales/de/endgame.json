@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Schwierigkeitsgrad",
     "mechanics": "Mechaniken",
-    "recommended": "Empfohlen"
+    "recommended": "Empfohlen",
+    "clears": "Community-Abschlüsse",
+    "clearsTip": "Abschlüsse gegen {boss} auf stygian.moe (Fanseite)",
+    "siteTip": "Abschlüsse und Guides auf stygian.moe (Fanseite)"
   }
 }

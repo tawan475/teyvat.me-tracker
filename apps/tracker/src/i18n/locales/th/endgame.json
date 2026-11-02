@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "ระดับความยาก",
     "mechanics": "กลไก",
-    "recommended": "แนะนำ"
+    "recommended": "แนะนำ",
+    "clears": "เคลียร์จากชุมชน",
+    "clearsTip": "บันทึกการเคลียร์ {boss} บน stygian.moe (เว็บแฟนคลับ)",
+    "siteTip": "บันทึกการเคลียร์และคู่มือบน stygian.moe (เว็บแฟนคลับ)"
   }
 }

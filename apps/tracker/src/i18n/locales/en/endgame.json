@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Difficulty",
     "mechanics": "Mechanics",
-    "recommended": "Recommended"
+    "recommended": "Recommended",
+    "clears": "Community clears",
+    "clearsTip": "Clears of {boss} on stygian.moe (fan site)",
+    "siteTip": "Clears and guides on stygian.moe (fan site)"
   }
 }

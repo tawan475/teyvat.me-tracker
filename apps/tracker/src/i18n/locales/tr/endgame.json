@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Zorluk",
     "mechanics": "Mekanikler",
-    "recommended": "Önerilen"
+    "recommended": "Önerilen",
+    "clears": "Topluluk temizlemeleri",
+    "clearsTip": "stygian.moe'da {boss} temizlemeleri (hayran sitesi)",
+    "siteTip": "stygian.moe'da temizlemeler ve rehberler (hayran sitesi)"
   }
 }

@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "Сложность",
     "mechanics": "Механики",
-    "recommended": "Рекомендовано"
+    "recommended": "Рекомендовано",
+    "clears": "Прохождения сообщества",
+    "clearsTip": "Прохождения: {boss} на stygian.moe (фан-сайт)",
+    "siteTip": "Прохождения и гайды на stygian.moe (фан-сайт)"
   }
 }

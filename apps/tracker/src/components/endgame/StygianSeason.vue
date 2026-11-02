@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import type { StygianSeason } from '@gdt/game-data/endgame'
+import { computed, ref, shallowRef, watch } from 'vue'
+import { ExternalLink } from 'lucide-vue-next'
+import type { EndgameText, StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import BossPicture from './BossPicture.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
-import { stygianBossPicture, stygianHpTip as hpTip, type EndgameData } from '@/data/endgame'
+import UiButton from '@/components/ui/UiButton.vue'
+import {
+  loadEndgameData,
+  stygianBossPicture,
+  stygianHpTip as hpTip,
+  type EndgameData,
+} from '@/data/endgame'
 import { formatShort } from '@/lib/format'
 import { gameIcon } from '@/lib/assets'
 import { STYGIAN_GROUND } from './modes'
@@ -15,7 +22,9 @@ import { STYGIAN_GROUND } from './modes'
  * monster level; the hardest first chosen), then the three opponents. A
  * card's top (picture, name, HP at the chosen level, the characters the game
  * recommends, centred) is one button that opens the boss's Living Beings entry;
- * below it, its mechanics, numbered.
+ * below it, its mechanics, numbered, and a link to the boss's community
+ * clears on stygian.moe (a fan site, the users' ask; the header links the
+ * site itself).
  */
 const props = defineProps<{
   season: StygianSeason
@@ -41,6 +50,23 @@ const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
 const range = (n: number) => Array.from({ length: n }, (_, i) => i)
+
+const STYGIAN_MOE = 'https://www.stygian.moe/'
+/** The English names: stygian.moe files clears under them, whatever the page's language. */
+const english = shallowRef<EndgameText | null>(null)
+loadEndgameData('en').then(
+  (en) => (english.value = en.text),
+  () => undefined,
+)
+/**
+ * A boss's clears on stygian.moe, by position: the site keeps the hardest
+ * difficulty's version of each boss (`?boss=` its English "Name: Title").
+ */
+function clearsUrl(index: number): string | null {
+  const id = props.season.difficulties.at(-1)?.bosses[index]
+  const name = id !== undefined ? english.value?.get(`stygianBoss.${id}.name`) : ''
+  return name ? `${STYGIAN_MOE}clears?${new URLSearchParams({ boss: name })}` : null
+}
 const bosses = computed(() => {
   const level = chosen.value?.level ?? 0
   return (chosen.value?.bosses ?? []).flatMap((id, i) => {
@@ -60,6 +86,7 @@ const bosses = computed(() => {
         hp,
         before: !!chosen.value?.beforeBonus[i],
         hpTip: hpTip(hp, level, !!chosen.value?.beforeBonus[i]),
+        clears: clearsUrl(i),
       },
     ]
   })
@@ -68,14 +95,20 @@ const bosses = computed(() => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex flex-col gap-1">
-      <h2 class="text-2xl font-bold sm:text-3xl">{{ name }}</h2>
-      <span class="flex flex-wrap gap-x-3 text-sm">
-        <span class="tabular font-mono text-text-muted">{{ period }}</span>
-        <span v-if="left > 0" class="font-semibold text-success-text">{{
-          $t('endgame.activeLeft', { n: left }, left)
-        }}</span>
-      </span>
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex min-w-0 flex-col gap-1">
+        <h2 class="text-2xl font-bold sm:text-3xl">{{ name }}</h2>
+        <span class="flex flex-wrap gap-x-3 text-sm">
+          <span class="tabular font-mono text-text-muted">{{ period }}</span>
+          <span v-if="left > 0" class="font-semibold text-success-text">{{
+            $t('endgame.activeLeft', { n: left }, left)
+          }}</span>
+        </span>
+      </div>
+      <UiButton :href="STYGIAN_MOE" size="sm" :title="$t('endgame.stygian.siteTip')">
+        stygian.moe
+        <ExternalLink class="size-3.5" aria-hidden="true" />
+      </UiButton>
     </div>
 
     <div
@@ -176,6 +209,17 @@ const bosses = computed(() => {
             </div>
           </li>
         </ol>
+        <a
+          v-if="b.clears"
+          :href="b.clears"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-center gap-1.5 border-t border-border-default px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-overlay hover:text-text-primary"
+          :title="$t('endgame.stygian.clearsTip', { boss: b.full })"
+        >
+          {{ $t('endgame.stygian.clears') }}
+          <ExternalLink class="size-3.5" aria-hidden="true" />
+        </a>
       </article>
     </div>
   </div>

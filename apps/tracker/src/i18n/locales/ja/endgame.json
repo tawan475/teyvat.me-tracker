@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "難易度",
     "mechanics": "ギミック",
-    "recommended": "オススメ"
+    "recommended": "オススメ",
+    "clears": "みんなのクリア",
+    "clearsTip": "stygian.moe の {boss} のクリア記録（ファンサイト）",
+    "siteTip": "stygian.moe のクリア記録と攻略（ファンサイト）"
   }
 }

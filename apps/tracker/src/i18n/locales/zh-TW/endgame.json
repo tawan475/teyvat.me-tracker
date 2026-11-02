@@ -49,6 +49,9 @@
   "stygian": {
     "difficulty": "難度",
     "mechanics": "機制",
-    "recommended": "推薦"
+    "recommended": "推薦",
+    "clears": "社群通關",
+    "clearsTip": "stygian.moe 上 {boss} 的通關紀錄（粉絲網站）",
+    "siteTip": "stygian.moe 上的通關紀錄與攻略（粉絲網站）"
   }
 }

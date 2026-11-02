@@ -123,11 +123,13 @@ function toggle(row: BannerHistoryRow) {
   expanded.value = next
 }
 watch([kind, mine, needle], () => (expanded.value = new Set()))
+const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
 const outcomes = (row: BannerHistoryRow) => {
   const fives = row.run?.fives ?? []
   return {
     won: fives.filter((f) => f.outcome === 'won').length,
     lost: fives.filter((f) => f.outcome === 'lost').length,
+    guaranteed: fives.filter((f) => f.outcome === 'guaranteed').length,
     radiance: fives.filter((f) => f.outcome === 'radiance').length,
   }
 }
@@ -186,14 +188,18 @@ const outcomes = (row: BannerHistoryRow) => {
         :key="row.banner.start + row.banner.name"
         class="rounded-xl border border-border-default bg-surface-raised shadow-sm"
       >
-        <!-- An open banner's row stays under the app bar while its pulls scroll past. -->
+        <!-- An open banner's row stays under the app bar while its pulls scroll past.
+             The whole row opens it (the summary button inside is the keyboard's way in;
+             its click bubbles up here). -->
         <div
           class="flex flex-wrap items-center gap-x-5 gap-y-3 bg-surface-raised px-4 py-3"
-          :class="
+          :class="[
             expanded.has(rowKey(row))
               ? 'sticky top-16 z-[5] rounded-t-[11px] border-b border-border-default'
-              : 'rounded-[11px]'
-          "
+              : 'rounded-[11px]',
+            row.run?.pulls ? 'cursor-pointer transition-colors hover:bg-surface-overlay/40' : '',
+          ]"
+          @click="row.run?.pulls && toggle(row)"
         >
           <div class="flex w-36 shrink-0 flex-col">
             <span class="text-sm font-medium">{{
@@ -251,40 +257,36 @@ const outcomes = (row: BannerHistoryRow) => {
             type="button"
             class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
             :aria-expanded="expanded.has(rowKey(row))"
-            @click="toggle(row)"
           >
-            <span class="flex shrink-0 items-baseline gap-1.5">
-              <span class="tabular font-mono text-lg font-semibold">{{
-                formatNumber(row.run.pulls)
-              }}</span>
-              <span class="text-xs text-text-muted">{{ $t('wishes.history.wishes') }}</span>
-            </span>
-            <span class="h-6 w-px shrink-0 bg-border-default" aria-hidden="true" />
-            <span class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-              <span class="font-semibold text-rarity-5">{{
-                $t('wishes.history.fives', { n: row.run.fives.length })
-              }}</span>
-              <span v-if="foursOf(row)" class="font-semibold text-rarity-4">{{
-                $t('wishes.history.fourCount', { n: foursOf(row) })
-              }}</span>
+            <!-- Line 1: how many (wishes, 5★, 4★); line 2: how the 5★ went. -->
+            <span class="flex min-w-0 flex-1 flex-col gap-1">
+              <span class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs">
+                <span class="flex items-baseline gap-1.5"
+                  ><span class="tabular font-mono text-base font-semibold text-text-primary">{{
+                    formatNumber(row.run.pulls)
+                  }}</span
+                  ><span class="text-text-muted">{{ $t('wishes.history.wishes') }}</span></span
+                >
+                <span class="font-semibold text-rarity-5">{{
+                  $t('wishes.history.fives', { n: row.run.fives.length })
+                }}</span>
+                <span v-if="foursOf(row)" class="font-semibold text-rarity-4">{{
+                  $t('wishes.history.fourCount', { n: foursOf(row) })
+                }}</span>
+              </span>
               <span
-                v-if="outcomes(row).won"
-                :class="OUTCOME_STYLE.won.text"
-                :title="outcomeLabel('won')"
-                >{{ OUTCOME_STYLE.won.mark }} {{ outcomes(row).won }}</span
+                v-if="OUTCOMES.some((o) => outcomes(row)[o])"
+                class="tabular flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-xs"
               >
-              <span
-                v-if="outcomes(row).lost"
-                :class="OUTCOME_STYLE.lost.text"
-                :title="outcomeLabel('lost')"
-                >{{ OUTCOME_STYLE.lost.mark }} {{ outcomes(row).lost }}</span
-              >
-              <span
-                v-if="outcomes(row).radiance"
-                :class="OUTCOME_STYLE.radiance.text"
-                :title="outcomeLabel('radiance')"
-                >{{ OUTCOME_STYLE.radiance.mark }} {{ outcomes(row).radiance }}</span
-              >
+                <template v-for="o in OUTCOMES" :key="o">
+                  <span
+                    v-if="outcomes(row)[o]"
+                    :class="OUTCOME_STYLE[o].text"
+                    :title="outcomeLabel(o)"
+                    >{{ OUTCOME_STYLE[o].mark }} {{ outcomes(row)[o] }}</span
+                  >
+                </template>
+              </span>
             </span>
             <ChevronDown
               class="size-4 shrink-0 text-text-muted transition-transform"

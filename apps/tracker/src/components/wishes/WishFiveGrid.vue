@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { BannerStats } from '@/data/wish-history'
+import { runPullNumbers, type BannerStats } from '@/data/wish-history'
 import { fiveGroups, type FiveGroup } from '@/data/wish-five-groups'
 import { itemName } from '@/data/weapons'
 import { t } from '@/i18n'
@@ -12,8 +12,8 @@ import { OUTCOME_STYLE, runDates, wishMonth } from './wish-labels'
  * Every 5★ of a banner, newest first, in a box that scrolls (its height from
  * `boxClass`): grouped by the banner run it came from (by month where the
  * banner has no runs) under a heading that stays at the box's top, each tile
- * numbered among all of them so the order reads at a glance (the user's
- * pick, design E). The 50/50 legend where the banner has one; `dated` adds
+ * numbered by its pull in the run (the pull table's #) so the order reads at
+ * a glance (the user's pick, design E). The 50/50 legend where the banner has one; `dated` adds
  * each one's day (the banner page).
  */
 const props = defineProps<{ stats: BannerStats; boxClass?: string; dated?: boolean }>()
@@ -26,7 +26,9 @@ const LEGEND = [
 ] as const
 const legendLabel = (key: (typeof LEGEND)[number]['key']) => t(`wishes.legend.${key}`)
 
-const groups = computed(() => fiveGroups(props.stats.fives, props.stats.runs))
+const groups = computed(() =>
+  fiveGroups(props.stats.fives, props.stats.runs, runPullNumbers(props.stats.rows)),
+)
 const now = Date.now() / 1000
 
 /** A run's banner by name: the weapons it features (one name for every run), else its title(s). */

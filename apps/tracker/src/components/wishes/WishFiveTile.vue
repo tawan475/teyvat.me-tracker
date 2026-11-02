@@ -9,7 +9,7 @@ import WishItemIcon from './WishItemIcon.vue'
 import { BAND_COLOR, oddsOf, outcomeLabel, runName, wishDay, wishMinute } from './wish-labels'
 
 /**
- * One 5★: its number among all of the banner's (newest highest) and
+ * One 5★: its pull's number in the banner run (the pull table's #) and
  * (`dated`) its day on top, then its icon ringed by the 50/50, the name and
  * the pity in its band's colour, over a bar against hard pity.
  */

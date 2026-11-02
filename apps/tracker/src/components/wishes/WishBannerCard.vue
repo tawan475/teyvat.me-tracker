@@ -104,9 +104,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative min-w-0" :class="open ? 'z-10' : ''">
+  <div class="relative flex min-w-0 flex-col" :class="open ? 'z-10' : ''">
     <section
-      class="flex min-w-0 flex-col gap-2 border bg-surface-raised px-3.5 pt-3.5 pb-1 shadow-sm sm:px-4 sm:pt-4"
+      class="flex min-w-0 flex-1 flex-col gap-2 border bg-surface-raised px-3.5 pt-3.5 pb-1 shadow-sm sm:px-4 sm:pt-4"
       :class="
         open
           ? 'rounded-t-xl border-border-default border-b-transparent'
@@ -206,7 +206,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex h-8 w-11 items-center justify-center self-center rounded-md text-text-muted hover:bg-surface-overlay hover:text-text-primary"
+        class="mt-auto flex h-8 w-11 shrink-0 items-center justify-center self-center rounded-md text-text-muted hover:bg-surface-overlay hover:text-text-primary"
         :aria-expanded="open"
         :aria-controls="panelId"
         :aria-label="open ? $t('wishes.card.hideLatest') : $t('wishes.card.showLatest')"

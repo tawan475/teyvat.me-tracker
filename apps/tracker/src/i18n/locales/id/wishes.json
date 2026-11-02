@@ -289,6 +289,7 @@
     "fours": "4★ unggulan",
     "wishes": "wish",
     "skipped": "Tidak ada wish di banner ini",
-    "fives": "5★ ×{n}"
+    "fives": "5★ ×{n}",
+    "fourCount": "4★ ×{n}"
   }
 }

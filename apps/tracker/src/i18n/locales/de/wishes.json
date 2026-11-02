@@ -289,6 +289,7 @@
     "fours": "Vorgestellte 4★",
     "wishes": "Gebete",
     "skipped": "Keine Gebete auf diesem Banner",
-    "fives": "{n}× 5★"
+    "fives": "{n}× 5★",
+    "fourCount": "{n}× 4★"
   }
 }

@@ -289,6 +289,7 @@
     "fours": "4★ em destaque",
     "wishes": "orações",
     "skipped": "Nenhuma oração neste banner",
-    "fives": "{n}× 5★"
+    "fives": "{n}× 5★",
+    "fourCount": "{n}× 4★"
   }
 }

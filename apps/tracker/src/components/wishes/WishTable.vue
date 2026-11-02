@@ -34,14 +34,20 @@ import {
  * it to flip the order). 4★ and 5★ rows carry their rarity's tint. Rarity
  * chips (3★ off until asked for) are remembered per device; search by name.
  * Phones keep item, pity and result, with the time under the name.
+ * `embedded`: one banner run's pulls inside Banner history — nothing
+ * sticks, no banner column, and its own rarity chips (all on at first).
  */
-const props = defineProps<{ rows: readonly PullRow[]; banner: UigfGachaType }>()
+const props = defineProps<{
+  rows: readonly PullRow[]
+  banner: UigfGachaType
+  embedded?: boolean
+}>()
 
 const PAGE_SIZE = 50
 const page = ref(1)
 const query = ref('')
-const RANKS_KEY = 'wishes:ranks'
-const stored = readStorage(RANKS_KEY) ?? '54'
+const RANKS_KEY = props.embedded ? 'wishes:run-ranks' : 'wishes:ranks'
+const stored = readStorage(RANKS_KEY) ?? (props.embedded ? '543' : '54')
 const ranks = reactive<Record<3 | 4 | 5, boolean>>({
   5: stored.includes('5'),
   4: stored.includes('4'),
@@ -109,17 +115,19 @@ const kind = (row: PullRow) =>
 
 /** The filter bar stays under the app bar; the column header under it, the pager at the foot. */
 const filters = useTemplateRef<HTMLElement>('filters')
-useStickyToolbar(filters, () => true, { always: true })
+useStickyToolbar(filters, () => !props.embedded, { always: true })
 </script>
 
 <template>
   <section
     :aria-label="$t('wishes.table.label')"
-    class="min-w-0 rounded-xl border border-border-default bg-surface-raised shadow-sm"
+    class="min-w-0 rounded-xl border border-border-default bg-surface-raised"
+    :class="embedded ? '' : 'shadow-sm'"
   >
     <div
       ref="filters"
-      class="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 data-[stuck]:rounded-none data-[stuck]:shadow-md sm:px-4"
+      class="flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
+      :class="embedded ? '' : 'sticky top-16 z-10 data-[stuck]:rounded-none data-[stuck]:shadow-md'"
     >
       <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
         <FilterChip
@@ -154,7 +162,7 @@ useStickyToolbar(filters, () => true, { always: true })
     </p>
     <div v-else class="overflow-x-auto">
       <table class="tabular w-full font-mono text-sm">
-        <thead v-sticky-head>
+        <thead v-sticky-head="embedded ? false : undefined">
           <tr class="text-left text-xs text-text-muted">
             <th
               scope="col"
@@ -176,7 +184,11 @@ useStickyToolbar(filters, () => true, { always: true })
             <th v-if="rated" scope="col" class="py-2.5 pr-3 pl-2 font-medium sm:pr-2">
               {{ $t('wishes.table.result') }}
             </th>
-            <th v-if="runs" scope="col" class="hidden px-2 py-2.5 font-medium lg:table-cell">
+            <th
+              v-if="runs && !embedded"
+              scope="col"
+              class="hidden px-2 py-2.5 font-medium lg:table-cell"
+            >
               {{ $t('wishes.banner') }}
             </th>
             <th scope="col" class="hidden py-2.5 pr-4 pl-2 text-right font-medium sm:table-cell">
@@ -267,7 +279,7 @@ useStickyToolbar(filters, () => true, { always: true })
               >
               <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
             </td>
-            <td v-if="runs" class="hidden px-2 py-2 text-text-secondary lg:table-cell">
+            <td v-if="runs && !embedded" class="hidden px-2 py-2 text-text-secondary lg:table-cell">
               <span
                 class="block max-w-48 truncate font-sans 2xl:max-w-64"
                 :title="row.on ? `${runName(row)} · ${row.on.version}` : undefined"
@@ -286,7 +298,10 @@ useStickyToolbar(filters, () => true, { always: true })
     </div>
     <div
       v-if="pageCount > 1"
-      class="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 rounded-b-xl border-t border-border-default bg-surface-raised px-4 py-3 lg:bottom-0"
+      class="rounded-b-xl border-t border-border-default bg-surface-raised px-4 py-3"
+      :class="
+        embedded ? '' : 'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 lg:bottom-0'
+      "
     >
       <UiPager
         v-model="page"

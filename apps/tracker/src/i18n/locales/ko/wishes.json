@@ -289,6 +289,7 @@
     "fours": "픽업 4★",
     "wishes": "회",
     "skipped": "이 배너에서 기원하지 않음",
-    "fives": "5★ ×{n}"
+    "fives": "5★ ×{n}",
+    "fourCount": "4★ ×{n}"
   }
 }

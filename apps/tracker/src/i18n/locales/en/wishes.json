@@ -289,6 +289,7 @@
     "fours": "Featured 4★",
     "wishes": "wishes",
     "skipped": "No wishes on this banner",
-    "fives": "{n}× 5★"
+    "fives": "{n}× 5★",
+    "fourCount": "{n}× 4★"
   }
 }

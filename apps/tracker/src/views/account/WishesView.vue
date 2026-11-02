@@ -174,10 +174,10 @@ const views = computed(() => [
       />
 
       <div v-if="view === 'mine' && history.total > 0" class="flex flex-col gap-4">
-        <!-- items-start: an open card's list hangs below it, never stretching its row. -->
+        <!-- Cards stretch to the row's tallest; an open card's list hangs below it (absolute). -->
         <section
           :aria-label="$t('wishes.overview.banners')"
-          class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14.5rem),1fr))] items-start gap-3 sm:gap-3.5"
+          class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14.5rem),1fr))] gap-3 sm:gap-3.5"
         >
           <WishBannerCard
             v-for="b in shown"

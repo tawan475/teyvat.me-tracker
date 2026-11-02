@@ -8,7 +8,8 @@ import { OUTCOME_STYLE, outcomeLabel, wishIcon } from './wish-labels'
 /**
  * A pulled item's icon with the 50/50 as a ring inside its edge and a mark
  * in its corner (OUTCOME_STYLE: ▲ won blue solid, ▼ lost orange dashed,
- * ● guaranteed grey dotted); none on banners without one.
+ * ● guaranteed grey dotted, ✦ Capturing Radiance blue double); none on banners
+ * without one.
  */
 withDefaults(
   defineProps<{ item: WishItem; outcome?: Outcome | null; size?: 'sm' | 'md' | 'lg' }>(),

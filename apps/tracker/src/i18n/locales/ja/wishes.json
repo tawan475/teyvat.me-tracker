@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "勝ち",
     "lost": "すり抜け",
-    "guaranteed": "確定"
+    "guaranteed": "確定",
+    "radiance": "掴みし明光"
   },
   "outcomeTitles": {
     "won": "{odds} に勝ち",
     "lost": "{odds} ですり抜け：次はピックアップ確定",
-    "guaranteed": "ピックアップ（{odds} のすり抜け後の確定）"
+    "guaranteed": "ピックアップ（{odds} のすり抜け後の確定）",
+    "radiance": "掴みし明光：{odds} を2回すり抜けた後、ピックアップが確定（履歴から推定）"
   },
   "legend": {
     "won": "勝ち",
     "lost": "すり抜け",
-    "guaranteed": "確定"
+    "guaranteed": "確定",
+    "radiance": "掴みし明光"
   },
   "overview": {
     "newestPull": "最新の祈願（ゲーム内時刻）",

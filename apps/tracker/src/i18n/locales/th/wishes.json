@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "ชนะ",
     "lost": "แพ้",
-    "guaranteed": "การันตี"
+    "guaranteed": "การันตี",
+    "radiance": "คว้าแสงดาว"
   },
   "outcomeTitles": {
     "won": "ชนะ {odds}",
     "lost": "แพ้ {odds}: ครั้งถัดไปได้ตัวเรทอัป",
-    "guaranteed": "ตัวเรทอัป จากการันตีหลังแพ้ {odds}"
+    "guaranteed": "ตัวเรทอัป จากการันตีหลังแพ้ {odds}",
+    "radiance": "คว้าแสงดาว: หลังหลุด {odds} สองครั้ง ได้ตัวละคร UP แน่นอน (คำนวณจากประวัติ)"
   },
   "legend": {
     "won": "ชนะ",
     "lost": "แพ้",
-    "guaranteed": "การันตี"
+    "guaranteed": "การันตี",
+    "radiance": "คว้าแสงดาว"
   },
   "overview": {
     "newestPull": "การสุ่มล่าสุด ตามเวลาในเกม",

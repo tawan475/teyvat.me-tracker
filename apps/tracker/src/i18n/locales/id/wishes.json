@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Menang",
     "lost": "Kalah",
-    "guaranteed": "Dijamin"
+    "guaranteed": "Dijamin",
+    "radiance": "Capturing Radiance"
   },
   "outcomeTitles": {
     "won": "Menang {odds}",
     "lost": "Kalah {odds}: berikutnya pasti featured",
-    "guaranteed": "Featured, dijamin setelah kalah {odds}"
+    "guaranteed": "Featured, dijamin setelah kalah {odds}",
+    "radiance": "Capturing Radiance: setelah kalah {odds} dua kali, Karakter UP pasti didapat (dihitung dari riwayat)"
   },
   "legend": {
     "won": "menang",
     "lost": "kalah",
-    "guaranteed": "dijamin"
+    "guaranteed": "dijamin",
+    "radiance": "Capturing Radiance"
   },
   "overview": {
     "newestPull": "Pull terbaru, jam game",

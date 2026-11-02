@@ -150,7 +150,23 @@ export function bannerAt(banners: readonly EventBanner[], utc: number): EventBan
 
 // ---------------------------------------------------------------- pity
 
-export type Outcome = 'won' | 'lost' | 'guaranteed'
+/**
+ * `radiance`: a 50/50 the game had to give the featured 5★ (Capturing
+ * Radiance), told only where it is certain — see `RADIANCE_FROM`.
+ */
+export type Outcome = 'won' | 'lost' | 'guaranteed' | 'radiance'
+
+/**
+ * Capturing Radiance (character event banners, since 5.0; never shown in the
+ * history, so it is worked out): a counter 0-3 that every account started
+ * at 1 on 5.0's first day. A lost 50/50 adds one, a won one takes one off;
+ * at 3 the next 50/50 is always the featured 5★ (that pull is the
+ * radiance), and the counter goes back to 1. A win at 2 may also be one
+ * (odds unknown, about half): not marked. Community analysis of ~4M pulls
+ * (OneBST, 2024-12); the game publishes no rule.
+ */
+export const RADIANCE_FROM = parseWishTime('2024-08-28 06:00:00')!
+const RADIANCE_MAX = 3
 
 export interface PullRow {
   pull: WishPull
@@ -176,6 +192,8 @@ export interface RarityLine {
 export interface RateLine {
   won: number
   lost: number
+  /** Of `won`, the ones that were certainly Capturing Radiance (character banner). */
+  radiance: number
   /** won / (won + lost), null before the first. */
   rate: number | null
   /** Wins (or losses) in a row: now, and the longest. */
@@ -274,6 +292,7 @@ function newRate(): RateLine {
   return {
     won: 0,
     lost: 0,
+    radiance: 0,
     rate: null,
     winStreak: 0,
     maxWinStreak: 0,
@@ -283,8 +302,9 @@ function newRate(): RateLine {
 }
 
 function tally(rate: RateLine, outcome: Outcome | null): void {
-  if (outcome === 'won') {
+  if (outcome === 'won' || outcome === 'radiance') {
     rate.won++
+    if (outcome === 'radiance') rate.radiance++
     rate.winStreak++
     rate.loseStreak = 0
     rate.maxWinStreak = Math.max(rate.maxWinStreak, rate.winStreak)
@@ -321,6 +341,8 @@ export function bannerStats(
   let guaranteed4: boolean | null = rated ? false : null
   const rate5 = newRate()
   const rate4 = newRate()
+  // Capturing Radiance's counter: null before 5.0, -1 once the chain is unknown.
+  let radiance: number | null = null
   const rows: PullRow[] = []
   const months = new Map<string, MonthCount>()
   const runs = new Map<EventBanner, BannerRun>()
@@ -345,6 +367,17 @@ export function bannerStats(
         } else {
           outcome = 'lost'
           after = true
+        }
+        if (rank === 5 && banner === 301 && pull.time >= RADIANCE_FROM && radiance !== -1) {
+          if (before === null || after === null) radiance = -1
+          else if (!before) {
+            radiance ??= 1
+            if (outcome === 'lost') radiance = Math.min(radiance + 1, RADIANCE_MAX)
+            else if (radiance === RADIANCE_MAX) {
+              outcome = 'radiance'
+              radiance = 1
+            } else radiance = Math.max(radiance - 1, 0)
+          }
         }
         if (rank === 5) {
           guaranteed5 = after

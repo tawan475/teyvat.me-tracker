@@ -12,7 +12,12 @@ import { OUTCOME_STYLE } from './wish-labels'
  */
 defineProps<{ stats: BannerStats; boxClass?: string; dated?: boolean }>()
 
-const LEGEND = [{ key: 'won' }, { key: 'lost' }, { key: 'guaranteed' }] as const
+const LEGEND = [
+  { key: 'won' },
+  { key: 'lost' },
+  { key: 'guaranteed' },
+  { key: 'radiance' },
+] as const
 const legendLabel = (key: (typeof LEGEND)[number]['key']) => t(`wishes.legend.${key}`)
 </script>
 

@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Kazandı",
     "lost": "Kaybetti",
-    "guaranteed": "Garantili"
+    "guaranteed": "Garantili",
+    "radiance": "Işığı Yakala"
   },
   "outcomeTitles": {
     "won": "{odds} kazanıldı",
     "lost": "{odds} kaybedildi: sonraki öne çıkan olacak",
-    "guaranteed": "Öne çıkan, kaybedilen bir {odds} sonrası garantili"
+    "guaranteed": "Öne çıkan, kaybedilen bir {odds} sonrası garantili",
+    "radiance": "Işığı Yakala: iki {odds} kaybından sonra öne çıkan karakter kesindi (geçmişten hesaplandı)"
   },
   "legend": {
     "won": "kazanıldı",
     "lost": "kaybedildi",
-    "guaranteed": "garantili"
+    "guaranteed": "garantili",
+    "radiance": "Işığı Yakala"
   },
   "overview": {
     "newestPull": "En yeni dilek, oyun saati",

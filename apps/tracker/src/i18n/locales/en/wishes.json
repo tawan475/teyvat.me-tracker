@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Won",
     "lost": "Lost",
-    "guaranteed": "Guaranteed"
+    "guaranteed": "Guaranteed",
+    "radiance": "Capturing Radiance"
   },
   "outcomeTitles": {
     "won": "Won the {odds}",
     "lost": "Lost the {odds}: the next one is featured",
-    "guaranteed": "Featured, guaranteed after a lost {odds}"
+    "guaranteed": "Featured, guaranteed after a lost {odds}",
+    "radiance": "Capturing Radiance: after two lost {odds}s the featured one was certain (worked out from the history)"
   },
   "legend": {
     "won": "won",
     "lost": "lost",
-    "guaranteed": "guaranteed"
+    "guaranteed": "guaranteed",
+    "radiance": "Capturing Radiance"
   },
   "overview": {
     "newestPull": "Newest pull, game clock",

@@ -50,15 +50,23 @@ const flip = computed(() => {
       bar: OUTCOME_STYLE.lost.bar,
     },
     rate: share(r),
-    note: t('wishes.numbers.streak', {
-      current: r.winStreak
-        ? t('wishes.numbers.streakWon', { n: r.winStreak })
-        : r.loseStreak
-          ? t('wishes.numbers.streakLost', { n: r.loseStreak })
-          : 0,
-      best: r.maxWinStreak,
-      worst: r.maxLoseStreak,
-    }),
+    // Capturing Radiance is counted among the wins; how many of them it was follows the streaks.
+    note: [
+      t('wishes.numbers.streak', {
+        current: r.winStreak
+          ? t('wishes.numbers.streakWon', { n: r.winStreak })
+          : r.loseStreak
+            ? t('wishes.numbers.streakLost', { n: r.loseStreak })
+            : 0,
+        best: r.maxWinStreak,
+        worst: r.maxLoseStreak,
+      }),
+      r.radiance
+        ? `${OUTCOME_STYLE.radiance.mark} ${formatNumber(r.radiance)} ${t('wishes.legend.radiance')}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' · '),
     title: t('wishes.numbers.flipTitle', { odds: oddsOf(s.value.banner) }),
   }
 })

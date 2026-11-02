@@ -128,6 +128,7 @@ const outcomes = (row: BannerHistoryRow) => {
   return {
     won: fives.filter((f) => f.outcome === 'won').length,
     lost: fives.filter((f) => f.outcome === 'lost').length,
+    radiance: fives.filter((f) => f.outcome === 'radiance').length,
   }
 }
 </script>
@@ -277,6 +278,12 @@ const outcomes = (row: BannerHistoryRow) => {
                 :class="OUTCOME_STYLE.lost.text"
                 :title="outcomeLabel('lost')"
                 >{{ OUTCOME_STYLE.lost.mark }} {{ outcomes(row).lost }}</span
+              >
+              <span
+                v-if="outcomes(row).radiance"
+                :class="OUTCOME_STYLE.radiance.text"
+                :title="outcomeLabel('radiance')"
+                >{{ OUTCOME_STYLE.radiance.mark }} {{ outcomes(row).radiance }}</span
               >
             </span>
             <ChevronDown

@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Ganhou",
     "lost": "Perdeu",
-    "guaranteed": "Garantido"
+    "guaranteed": "Garantido",
+    "radiance": "Captura de Esplendor"
   },
   "outcomeTitles": {
     "won": "Ganhou o {odds}",
     "lost": "Perdeu o {odds}: o próximo é o destaque",
-    "guaranteed": "Destaque, garantido após perder o {odds}"
+    "guaranteed": "Destaque, garantido após perder o {odds}",
+    "radiance": "Captura de Esplendor: depois de perder dois {odds}, o promocional era certo (calculado pelo histórico)"
   },
   "legend": {
     "won": "ganhou",
     "lost": "perdeu",
-    "guaranteed": "garantido"
+    "guaranteed": "garantido",
+    "radiance": "Captura de Esplendor"
   },
   "overview": {
     "newestPull": "Oração mais recente, relógio do jogo",

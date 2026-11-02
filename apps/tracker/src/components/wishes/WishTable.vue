@@ -165,6 +165,13 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
         <thead v-sticky-head="embedded ? false : undefined">
           <tr class="text-left text-xs text-text-muted">
             <th
+              v-if="runs && !embedded"
+              scope="col"
+              class="hidden w-52 py-2.5 pr-2 pl-4 font-medium lg:table-cell"
+            >
+              {{ $t('wishes.banner') }}
+            </th>
+            <th
               scope="col"
               class="hidden w-16 py-2.5 pr-2 pl-4 text-right font-medium sm:table-cell"
               :title="runs ? $t('wishes.table.rollRun') : $t('wishes.table.roll')"
@@ -176,20 +183,13 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
             </th>
             <th
               scope="col"
-              class="px-2 py-2.5 font-medium sm:w-36"
+              class="px-2 py-2.5 font-medium sm:w-56"
               :class="rated ? '' : 'pr-3 sm:pr-2'"
             >
               {{ $t('wishes.table.pity') }}
             </th>
             <th v-if="rated" scope="col" class="py-2.5 pr-3 pl-2 font-medium sm:pr-2">
               {{ $t('wishes.table.result') }}
-            </th>
-            <th
-              v-if="runs && !embedded"
-              scope="col"
-              class="hidden px-2 py-2.5 font-medium lg:table-cell"
-            >
-              {{ $t('wishes.banner') }}
             </th>
             <th scope="col" class="hidden py-2.5 pr-4 pl-2 text-right font-medium sm:table-cell">
               <button
@@ -220,6 +220,16 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
             class="border-t border-border-default"
             :class="TINT[row.pull.item.rank] ?? ''"
           >
+            <td
+              v-if="runs && !embedded"
+              class="hidden max-w-52 py-2 pr-2 pl-4 text-text-secondary lg:table-cell"
+            >
+              <span
+                class="block truncate font-sans"
+                :title="row.on ? `${runName(row)} · ${row.on.version}` : undefined"
+                >{{ runName(row) }}</span
+              >
+            </td>
             <td class="hidden py-2 pr-2 pl-4 text-right text-text-muted sm:table-cell">
               {{ formatNumber(rolls.get(row) ?? row.number) }}
             </td>
@@ -259,7 +269,7 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
                   >{{ row.pity }}</span
                 >
                 <span
-                  class="hidden h-1.5 min-w-10 flex-1 rounded-full bg-surface-sunken sm:block"
+                  class="hidden h-2.5 min-w-16 flex-1 rounded-full bg-surface-sunken sm:block"
                   aria-hidden="true"
                 >
                   <span
@@ -278,13 +288,6 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
                 {{ outcomeLabel(row.outcome) }}</UiBadge
               >
               <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
-            </td>
-            <td v-if="runs && !embedded" class="hidden px-2 py-2 text-text-secondary lg:table-cell">
-              <span
-                class="block max-w-48 truncate font-sans 2xl:max-w-64"
-                :title="row.on ? `${runName(row)} · ${row.on.version}` : undefined"
-                >{{ runName(row) }}</span
-              >
             </td>
             <td
               class="hidden py-2 pr-4 pl-2 text-right whitespace-nowrap text-text-muted sm:table-cell"

@@ -126,6 +126,57 @@ describe('wish pity', () => {
     expect(stats.runs[0]!.fives.length).toBe(5)
   })
 
+  it('marks the 50/50 after two losses since 5.0 as Capturing Radiance', () => {
+    const fifty = (name: string) => [...filler(5), name]
+    const pulls = history(301, [
+      ...fifty('Diluc'), // lost: 1 → 2
+      ...fifty('Furina'), // guaranteed
+      ...fifty('Qiqi'), // lost: 2 → 3
+      ...fifty('Furina'), // guaranteed
+      ...fifty('Furina'), // radiance: 3 → 1
+      ...fifty('Furina'), // won: 1 → 0
+      ...fifty('Furina'), // won: stays 0
+      ...fifty('Mona'), // lost: 0 → 1
+      ...fifty('Furina'), // guaranteed
+      ...fifty('Furina'), // won: 1 → 0, never radiance
+    ])
+    const stats = bannerStats(301, pulls, {
+      timezone: 8,
+      banners: banners('character', ['Furina']),
+    })
+    expect(stats.fives.map((r) => r.outcome).reverse()).toEqual([
+      'lost',
+      'guaranteed',
+      'lost',
+      'guaranteed',
+      'radiance',
+      'won',
+      'won',
+      'lost',
+      'guaranteed',
+      'won',
+    ])
+    expect(stats.rate5).toMatchObject({ won: 4, lost: 3, radiance: 1 })
+  })
+
+  it('leaves Capturing Radiance out before 5.0 and on other banners', () => {
+    const names = ['Diluc', 'Furina', 'Qiqi', 'Furina', 'Furina'].flatMap((n) => [...filler(5), n])
+    const before = bannerStats(301, history(301, names, parseWishTime('2023-01-01 12:00:00')!), {
+      timezone: 8,
+      banners: banners('character', ['Furina']),
+    })
+    expect(before.fives.map((r) => r.outcome)).not.toContain('radiance')
+    const weapon = bannerStats(
+      302,
+      history(
+        302,
+        names.map((n) => (n === 'Furina' ? 'Absolution' : n === 'Slingshot' ? n : 'Skyward Harp')),
+      ),
+      { timezone: 8, banners: banners('weapon', ['Absolution'], []) },
+    )
+    expect(weapon.fives.map((r) => r.outcome)).not.toContain('radiance')
+  })
+
   it('tracks the 4★ guarantee from the featured three', () => {
     const pulls = history(301, [
       ...filler(9),

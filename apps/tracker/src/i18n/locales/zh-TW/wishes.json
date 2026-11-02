@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "不歪",
     "lost": "歪了",
-    "guaranteed": "大保底"
+    "guaranteed": "大保底",
+    "radiance": "捕獲明光"
   },
   "outcomeTitles": {
     "won": "{odds} 不歪",
     "lost": "{odds} 歪了：下一個必定是 UP",
-    "guaranteed": "UP，{odds} 歪了之後的大保底"
+    "guaranteed": "UP，{odds} 歪了之後的大保底",
+    "radiance": "捕獲明光：連續歪兩次 {odds} 後必定為UP角色（根據紀錄推算）"
   },
   "legend": {
     "won": "不歪",
     "lost": "歪了",
-    "guaranteed": "大保底"
+    "guaranteed": "大保底",
+    "radiance": "捕獲明光"
   },
   "overview": {
     "newestPull": "最新一抽（遊戲時間）",

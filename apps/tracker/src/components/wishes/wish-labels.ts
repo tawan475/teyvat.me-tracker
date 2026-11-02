@@ -143,7 +143,8 @@ export const BAND_COLOR: Record<PityBand, string> = {
 /**
  * How a 50/50 outcome looks everywhere (colour-blind friendly: a mark and a
  * line style as well as a colour, blue against orange, never green/red):
- * ▲ won (blue, solid ring), ▼ lost (orange, dashed), ● guaranteed (grey, dotted).
+ * ▲ won (blue, solid ring), ▼ lost (orange, dashed), ● guaranteed (grey, dotted),
+ * ✦ Capturing Radiance (blue like a win — it is one — with a double ring).
  */
 export const OUTCOME_STYLE = {
   won: {
@@ -166,6 +167,13 @@ export const OUTCOME_STYLE = {
     ring: 'outline-text-secondary outline-dotted',
     bar: 'bg-text-secondary',
     tone: 'neutral',
+  },
+  radiance: {
+    mark: '✦',
+    text: 'text-accent-text',
+    ring: 'outline-accent-text outline-double outline-3',
+    bar: 'bg-accent-text',
+    tone: 'accent',
   },
 } as const satisfies Record<
   Outcome,

@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "성공",
     "lost": "실패",
-    "guaranteed": "확정"
+    "guaranteed": "확정",
+    "radiance": "별빛 포착"
   },
   "outcomeTitles": {
     "won": "{odds} 성공",
     "lost": "{odds} 실패: 다음은 픽업 확정",
-    "guaranteed": "{odds} 실패 후 확정된 픽업"
+    "guaranteed": "{odds} 실패 후 확정된 픽업",
+    "radiance": "별빛 포착: {odds}에서 두 번 픽뚫 후 확률 UP 캐릭터 확정 (기록으로 추정)"
   },
   "legend": {
     "won": "성공",
     "lost": "실패",
-    "guaranteed": "확정"
+    "guaranteed": "확정",
+    "radiance": "별빛 포착"
   },
   "overview": {
     "newestPull": "최신 기원, 게임 시각",

@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Gagné",
     "lost": "Perdu",
-    "guaranteed": "Garanti"
+    "guaranteed": "Garanti",
+    "radiance": "Capture de brillance"
   },
   "outcomeTitles": {
     "won": "{odds} gagné",
     "lost": "{odds} perdu : le prochain est en vedette",
-    "guaranteed": "En vedette, garanti après un {odds} perdu"
+    "guaranteed": "En vedette, garanti après un {odds} perdu",
+    "radiance": "Capture de brillance : après deux {odds} perdus, le personnage à la une était assuré (déduit de l’historique)"
   },
   "legend": {
     "won": "gagné",
     "lost": "perdu",
-    "guaranteed": "garanti"
+    "guaranteed": "garanti",
+    "radiance": "Capture de brillance"
   },
   "overview": {
     "newestPull": "Vœu le plus récent, heure du jeu",

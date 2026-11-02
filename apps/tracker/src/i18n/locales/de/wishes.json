@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Gewonnen",
     "lost": "Verloren",
-    "guaranteed": "Garantiert"
+    "guaranteed": "Garantiert",
+    "radiance": "Strahlender Fang"
   },
   "outcomeTitles": {
     "won": "{odds} gewonnen",
     "lost": "{odds} verloren: das nächste ist die Banner-Figur",
-    "guaranteed": "Banner-5★, garantiert nach verlorenem {odds}"
+    "guaranteed": "Banner-5★, garantiert nach verlorenem {odds}",
+    "radiance": "Strahlender Fang: Nach zwei verlorenen {odds} war die Aktionsfigur sicher (aus dem Verlauf errechnet)"
   },
   "legend": {
     "won": "gewonnen",
     "lost": "verloren",
-    "guaranteed": "garantiert"
+    "guaranteed": "garantiert",
+    "radiance": "Strahlender Fang"
   },
   "overview": {
     "newestPull": "Neuestes Gebet, Spielzeit",

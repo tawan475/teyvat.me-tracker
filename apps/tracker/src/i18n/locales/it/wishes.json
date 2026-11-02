@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Vinto",
     "lost": "Perso",
-    "guaranteed": "Garantito"
+    "guaranteed": "Garantito",
+    "radiance": "Conquista dello splendore"
   },
   "outcomeTitles": {
     "won": "Vinto il {odds}",
     "lost": "Perso il {odds}: il prossimo è in evidenza",
-    "guaranteed": "In evidenza, garantito dopo un {odds} perso"
+    "guaranteed": "In evidenza, garantito dopo un {odds} perso",
+    "radiance": "Conquista dello splendore: dopo due {odds} persi, il promozionale era garantito (calcolato dalla cronologia)"
   },
   "legend": {
     "won": "vinto",
     "lost": "perso",
-    "guaranteed": "garantito"
+    "guaranteed": "garantito",
+    "radiance": "Conquista dello splendore"
   },
   "overview": {
     "newestPull": "Tiro più recente, ora del gioco",

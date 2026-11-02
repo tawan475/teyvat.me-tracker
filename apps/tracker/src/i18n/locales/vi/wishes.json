@@ -65,17 +65,20 @@
   "outcomes": {
     "won": "Thắng",
     "lost": "Thua",
-    "guaranteed": "Chắc chắn"
+    "guaranteed": "Chắc chắn",
+    "radiance": "Bắt Lấy Ánh Sáng"
   },
   "outcomeTitles": {
     "won": "Thắng {odds}",
     "lost": "Thua {odds}: lần sau chắc chắn là UP",
-    "guaranteed": "Nhận UP, chắc chắn sau khi thua {odds}"
+    "guaranteed": "Nhận UP, chắc chắn sau khi thua {odds}",
+    "radiance": "Bắt Lấy Ánh Sáng: sau hai lần thua {odds}, chắc chắn nhận nhân vật UP (suy ra từ lịch sử)"
   },
   "legend": {
     "won": "thắng",
     "lost": "thua",
-    "guaranteed": "chắc chắn"
+    "guaranteed": "chắc chắn",
+    "radiance": "Bắt Lấy Ánh Sáng"
   },
   "overview": {
     "newestPull": "Lượt mới nhất, theo giờ game",

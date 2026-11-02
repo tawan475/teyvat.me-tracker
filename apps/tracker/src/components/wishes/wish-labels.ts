@@ -118,6 +118,14 @@ export function monthName(month: string): string {
  * A banner run's dates on the data's clock (UTC+8): "Aug 12 – Sep 2", the
  * year once at the end when it isn't this one, "Sep 23 – now" while open.
  */
+/** A month of the game's clock ("2026-10" → "October 2026"), in the language on screen. */
+export function wishMonth(month: string): string {
+  const [year, index] = month.split('-').map(Number) as [number, number]
+  return dateFormat({ month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(year, index - 1, 1)),
+  )
+}
+
 export function runDates(run: BannerRun, open: boolean, year = thisYear()): string {
   const start = run.banner.start + 8 * 3600
   const end = run.banner.end + 8 * 3600

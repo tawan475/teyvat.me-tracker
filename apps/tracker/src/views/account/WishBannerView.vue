@@ -202,7 +202,7 @@ function retry() {
           :aria-label="$t('wishes.five.every')"
           class="min-w-0 rounded-xl border border-border-default bg-surface-raised px-4 pt-3.5 pb-4 shadow-sm sm:px-5"
         >
-          <WishFiveGrid :stats="stats" dated box-class="max-h-[20rem]" />
+          <WishFiveGrid :stats="stats" dated box-class="max-h-[30rem]" />
         </section>
 
         <WishTable :rows="stats.rows" :banner="stats.banner" />

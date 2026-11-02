@@ -36,7 +36,7 @@ const info = computed(() => bannerInfo(props.stats.banner))
         <WishNumbers :stats="stats" compact />
       </div>
       <div class="min-w-0 flex-[999_1_520px] bg-surface-raised px-4 pt-3.5 pb-4 sm:px-5">
-        <WishFiveGrid :stats="stats" box-class="max-h-[14.5rem]" />
+        <WishFiveGrid :stats="stats" box-class="max-h-[22rem]" />
       </div>
     </div>
   </section>

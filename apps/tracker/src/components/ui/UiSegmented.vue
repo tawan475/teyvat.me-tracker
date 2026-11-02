@@ -84,7 +84,7 @@ const hideLabel = (option: SegmentedOption<T>) =>
       :title="option.title ?? (iconOnly || (compact && option.icon) ? option.label : undefined)"
       :disabled="option.disabled"
       :tabindex="tabStop(index) ? 0 : -1"
-      class="inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+      class="inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] duration-150 disabled:opacity-50"
       :class="[
         size === 'md' ? 'min-h-10 min-w-10' : 'min-h-8 min-w-8',
         iconOnly ? 'px-0' : compact && option.icon ? 'px-2 sm:px-3' : 'px-3',

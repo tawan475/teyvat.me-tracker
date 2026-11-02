@@ -205,7 +205,7 @@ describe('sign in, upload, refresh, sign out', () => {
     const tokens = exchanged.body as unknown as IrminsulTokenResponse
     expect(tokens).toMatchObject({
       token_type: 'Bearer',
-      expires_in: 900,
+      expires_in: 7200,
       refresh_expires_in: 2_592_000,
       refresh_token: expect.stringMatching(/^gdt_irt_\d+_[A-Za-z0-9_-]{43}$/),
     })

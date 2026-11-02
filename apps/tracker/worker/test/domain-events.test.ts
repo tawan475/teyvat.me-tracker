@@ -140,6 +140,19 @@ describe('the game events sync', () => {
     expect(status.unparsed).toEqual(expect.arrayContaining([expect.stringContaining('9005')]))
     expect((await lastEventsSync(env.DB))?.at).toBe(status.at)
 
+    // Unchanged lists within a day: only the lists and the search are read, the rows stay.
+    asked = []
+    const again = await syncGameEvents(env.DB, status.at + 3_600_000, fake())
+    expect(asked).toHaveLength(5)
+    expect(again.fullAt).toBe(status.fullAt)
+    expect(again.counts).toEqual(status.counts)
+    expect((await lastEventsSync(env.DB))?.at).toBe(again.at)
+    // A day later the contents are read in full again.
+    asked = []
+    const daily = await syncGameEvents(env.DB, status.at + 25 * 3_600_000, fake())
+    expect(asked.length).toBeGreaterThan(5)
+    expect(daily.fullAt).toBe(daily.at)
+
     const asia = (await (
       await SELF.fetch(`${ORIGIN}/api/game-events?server=ASIA`)
     ).json()) as GameEventsResponse

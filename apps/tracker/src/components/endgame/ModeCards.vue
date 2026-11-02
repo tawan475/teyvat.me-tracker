@@ -31,7 +31,8 @@ import { MODE_BAR, MODE_CHOSEN, MODE_TEXT } from './modes'
 const props = defineProps<{
   data: EndgameData
   current: Record<EndgameMode, AnySeason | null>
-  mode: EndgameMode
+  /** The mode on screen (its card outlined); none on Overview. */
+  mode?: EndgameMode
   now: number
   server: GenshinServer | null | undefined
   nameOf: (mode: EndgameMode, season: AnySeason) => string

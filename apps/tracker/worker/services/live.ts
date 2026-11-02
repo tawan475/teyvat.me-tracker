@@ -79,10 +79,11 @@ interface Attachment {
 /**
  * Capture's heartbeat interval (s): short while a page is in view, so a
  * command from the site is picked up soon; long otherwise (most of the day a
- * tab sits in the background: every 15 s was 6,000 requests a day per PC).
+ * tab sits in the background: every 15 s was 6,000 requests a day per PC;
+ * 120 s idle was still ~40% of the Worker's requests, 2026-11-02).
  */
 export const WATCHED_NEXT_S = 30
-export const IDLE_NEXT_S = 120
+export const IDLE_NEXT_S = 300
 /**
  * A socket counts as in view while it connected or pinged this recently: a
  * visible tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden

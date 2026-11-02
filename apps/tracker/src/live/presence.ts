@@ -9,7 +9,7 @@ import type { CaptureCommandKind, PresenceResponseForAccount } from '@gdt/shared
 import { shallowReactive } from 'vue'
 import { api } from '@/api'
 
-export const PRESENCE_TTL_MS = 5 * 60_000
+export const PRESENCE_TTL_MS = 12 * 60_000
 
 const byAccount = shallowReactive(new Map<number, PresenceResponseForAccount>())
 const loading = new Map<number, Promise<void>>()

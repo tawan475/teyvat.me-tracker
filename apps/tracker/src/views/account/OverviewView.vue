@@ -8,6 +8,7 @@ import { History, Upload } from 'lucide-vue-next'
 import ChangeValue from '@/components/overview/ChangeValue.vue'
 import LowRarityStat from '@/components/overview/LowRarityStat.vue'
 import DetailedProgression from '@/components/progression/DetailedProgression.vue'
+import EndgameGlance from '@/components/overview/EndgameGlance.vue'
 import MonthlyAnalysisCard from '@/components/progression/MonthlyAnalysisCard.vue'
 import OverviewSkeleton from '@/components/overview/OverviewSkeleton.vue'
 import RecentSnapshots from '@/components/overview/RecentSnapshots.vue'
@@ -388,6 +389,7 @@ const importRoute = computed(() => ({
         :defaults="['mora', 'primogem']"
         default-group="snapshot"
       />
+      <EndgameGlance class="rise-in" />
       <!-- The monthly table is wide: side by side only where it fits whole. -->
       <div class="flex flex-wrap items-start gap-6">
         <MonthlyAnalysisCard :snapshots="list" class="min-w-0 flex-[999_1_52rem]" />

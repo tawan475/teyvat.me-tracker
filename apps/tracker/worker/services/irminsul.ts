@@ -20,12 +20,13 @@ import type { AppEnv } from '../env'
 import { randomToken, safeEqual, sha256Hex } from '../lib/crypto'
 import { pageOrigin } from '../lib/email'
 import {
+  IRMINSUL_ACCESS_TTL_S,
   mintAccessToken,
   newRefreshToken,
   readRefreshToken,
   type IrminsulClaims,
 } from '../lib/irminsul-auth'
-import { ACCESS_TTL_S, REFRESH_TTL_S, pruneSessionsStatement, requestOrigin } from '../lib/session'
+import { REFRESH_TTL_S, pruneSessionsStatement, requestOrigin } from '../lib/session'
 import { accessibleAccountsSql, editableBy, type KeyAccount, type KeyBlock } from './accounts'
 import { revokeLiveSession } from './live'
 
@@ -234,7 +235,7 @@ async function tokenAnswer(
   return {
     token_type: 'Bearer',
     access_token: await mintAccessToken(c, claims),
-    expires_in: ACCESS_TTL_S,
+    expires_in: IRMINSUL_ACCESS_TTL_S,
     refresh_token: refreshToken,
     refresh_expires_in: REFRESH_TTL_S,
     whoami: whoamiOf(pageOrigin(c.env, c.req.url), claims.sid, row),

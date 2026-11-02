@@ -76,6 +76,8 @@ const SERVERS = Object.keys(NOTICE_REGIONS) as NoticeServer[]
 export const EVENTS_SYNC_KEY = 'events.sync'
 /** Notices starting within this long are listed (as Seelie's Events tab). */
 const LEAD_MS = 14 * 86_400_000
+/** The contents are read in full at least this often, even when the lists look the same. */
+const FULL_EVERY_MS = 24 * 3_600_000
 /** Rows stay this long after they end. */
 const KEEP_MS = 7 * 86_400_000
 const TIMEOUT_MS = 15_000
@@ -231,9 +233,23 @@ export function hoyolabRows(data: Record<string, unknown>): NoticeRow[] {
   return rows
 }
 
+const settled = <T>(promise: Promise<T>): Promise<T | Error> =>
+  promise.catch((error: unknown) => (error instanceof Error ? error : new Error(String(error))))
+
+async function digest(text: string): Promise<string> {
+  const bytes = new Uint8Array(
+    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)),
+  )
+  return [...bytes.slice(0, 16)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 /**
  * Reads every source and stores what it found, in one batch. Never throws:
- * a source that failed is in the status's errors, its rows kept.
+ * a source that failed is in the status's errors, its rows kept. The four
+ * lists and the HoYoLAB search are read first (five small requests): when
+ * they match the last full read's and that was within a day, the notices'
+ * contents (the other 24 requests, and most of the CPU) are not read again
+ * and only the status is stored.
  */
 export async function syncGameEvents(
   d1: D1Database,
@@ -244,6 +260,46 @@ export async function syncGameEvents(
   const rows: NoticeRow[] = []
   const boardUrl = (region: string, endpoint: string, lang: string) =>
     `${BOARD}/${endpoint}?${BOARD_QUERY}&region=${region}&lang=${lang}`
+  const [lists, search, previous] = await Promise.all([
+    Promise.all(
+      SERVERS.map((server) =>
+        settled(getData(fetcher, boardUrl(NOTICE_REGIONS[server], 'getAnnList', 'en'))),
+      ),
+    ),
+    settled(getData(fetcher, HOYOLAB_SEARCH)),
+    lastEventsSync(d1),
+  ])
+  const signature = await digest(
+    JSON.stringify([
+      lists.map((list) =>
+        list instanceof Error
+          ? null
+          : listItems(list).map((i) => [i.ann_id, i.start_time, i.title, i.type_label, i.banner]),
+      ),
+      search instanceof Error ? null : search,
+    ]),
+  )
+  const readAll = lists.every((l) => !(l instanceof Error)) && !(search instanceof Error)
+  if (
+    readAll &&
+    previous?.ok &&
+    previous.signature === signature &&
+    previous.fullAt !== undefined &&
+    now - previous.fullAt < FULL_EVERY_MS
+  ) {
+    const kept: EventsSyncStatus = { ...previous, at: now }
+    await d1
+      .prepare(
+        `INSERT INTO site_settings (key, value, updated_at, updated_by) VALUES (?1, ?2, ?3, NULL)
+         ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at,
+           updated_by = NULL`,
+      )
+      .bind(EVENTS_SYNC_KEY, JSON.stringify(kept), now)
+      .run()
+    return kept
+  }
+  status.signature = signature
+  status.fullAt = now
   // Titles in the other languages: one server's board, shared; a language that fails is left out.
   const titleContents = Promise.all(
     TITLE_LANGUAGES.map((lang) =>
@@ -254,19 +310,20 @@ export async function syncGameEvents(
     ),
   ).then((read) => Object.fromEntries(read.filter((entry) => entry !== null)))
   await Promise.all(
-    SERVERS.map(async (server) => {
+    SERVERS.map(async (server, s) => {
       const region = NOTICE_REGIONS[server]
       const url = (endpoint: string, lang: string) => boardUrl(region, endpoint, lang)
       try {
-        const [list, ...contents] = await Promise.all([
-          getData(fetcher, url('getAnnList', 'en')),
-          ...LANGUAGES.map(([lang]) => getData(fetcher, url('getAnnContent', lang))),
-        ])
+        const list = lists[s]!
+        if (list instanceof Error) throw list
+        const contents = await Promise.all(
+          LANGUAGES.map(([lang]) => getData(fetcher, url('getAnnContent', lang))),
+        )
         const byLanguage = {
           ...(await titleContents),
           ...Object.fromEntries(LANGUAGES.map(([, ours], i) => [ours, contents[i]])),
         }
-        const read = boardRows(server, list!, byLanguage)
+        const read = boardRows(server, list, byLanguage)
         rows.push(...read.rows)
         status.unparsed.push(...read.unparsed)
         status.counts[`board:${server}`] = read.rows.length
@@ -279,7 +336,8 @@ export async function syncGameEvents(
     }),
   )
   try {
-    const found = hoyolabRows(await getData(fetcher, HOYOLAB_SEARCH))
+    if (search instanceof Error) throw search
+    const found = hoyolabRows(search)
     rows.push(...found)
     status.counts.hoyolab = found.length / SERVERS.length
   } catch (error) {

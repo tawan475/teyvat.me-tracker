@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import type { MonthCount } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
@@ -9,7 +9,8 @@ import { monthName } from './wish-labels'
  * Pulls per month of every banner, stacked by rarity (3★, 4★, 5★), every
  * month from the first pull on, labelled each January and July. The columns
  * keep a minimum width, so years of history scroll sideways; it opens on
- * the newest month.
+ * the newest month. Hovering (or tapping) a month lifts its column, dims the
+ * rest and shows its counts in a bubble above it.
  */
 const props = defineProps<{ months: MonthCount[] }>()
 
@@ -18,9 +19,19 @@ const pct = (n: number) => `${(n / peak.value) * 100}%`
 const labels = computed(() =>
   props.months.map((m) => (m.month.endsWith('-01') || m.month.endsWith('-07') ? m.month : '')),
 )
-const title = (m: MonthCount) =>
-  `${t('wishes.chart.month', { month: monthName(m.month), n: formatNumber(m.total) })}\n` +
-  `${formatNumber(m.five)} 5★ · ${formatNumber(m.four)} 4★ · ${formatNumber(m.total - m.five - m.four)} 3★`
+const hover = ref<number | null>(null)
+const tip = computed(() => {
+  const i = hover.value
+  const m = i === null ? undefined : props.months[i]
+  if (i === null || !m) return null
+  const at = (i + 0.5) / props.months.length
+  return {
+    m,
+    left: `${at * 100}%`,
+    // Near an edge the bubble opens inward instead of past the chart.
+    align: at < 0.12 ? '' : at > 0.88 ? '-translate-x-full' : '-translate-x-1/2',
+  }
+})
 
 const box = useTemplateRef<HTMLElement>('box')
 const toNewest = () => void nextTick(() => box.value?.scrollTo({ left: box.value.scrollWidth }))
@@ -53,12 +64,36 @@ const SERIES = [
         role="img"
         :aria-label="$t('wishes.chart.label', { n: months.length })"
       >
-        <div class="flex h-[10.5rem] items-end gap-[3px] border-b border-border-default">
+        <div
+          class="relative flex h-[13.5rem] items-end gap-[3px] border-b border-border-default pt-12"
+          @pointerleave="hover = null"
+        >
           <div
-            v-for="m in months"
+            v-if="tip"
+            class="pointer-events-none absolute top-0 z-10 rounded-lg border border-border-default bg-surface-overlay px-2.5 py-1.5 text-xs whitespace-nowrap shadow-lg"
+            :class="tip.align"
+            :style="{ left: tip.left }"
+          >
+            <p class="font-semibold text-text-primary">
+              {{
+                t('wishes.chart.month', {
+                  month: monthName(tip.m.month),
+                  n: formatNumber(tip.m.total),
+                })
+              }}
+            </p>
+            <p class="tabular flex gap-2 font-mono text-text-secondary">
+              <span class="text-rarity-5">{{ formatNumber(tip.m.five) }} 5★</span>
+              <span class="text-rarity-4">{{ formatNumber(tip.m.four) }} 4★</span>
+              <span>{{ formatNumber(tip.m.total - tip.m.five - tip.m.four) }} 3★</span>
+            </p>
+          </div>
+          <div
+            v-for="(m, i) in months"
             :key="m.month"
-            class="flex h-full flex-[1_0_7px] flex-col-reverse gap-px"
-            :title="title(m)"
+            class="flex h-full flex-[1_0_7px] flex-col-reverse gap-px rounded-t-[3px] transition-[opacity,background-color] duration-150"
+            :class="hover === null ? '' : hover === i ? 'bg-surface-overlay' : 'opacity-45'"
+            @pointerenter="hover = i"
           >
             <div
               v-if="m.total - m.five - m.four"

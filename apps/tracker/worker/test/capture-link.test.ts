@@ -326,7 +326,7 @@ describe('Capture presence and commands', () => {
         platform: 'windows',
       })
     ).json()) as PresenceResponse
-    expect(first).toEqual({ next: 120, commands: [], alerts: null })
+    expect(first).toEqual({ next: 300, commands: [], alerts: null })
 
     const shown = await client.json<PresenceResponseForAccount>(
       `/api/accounts/${account.id}/presence`,
@@ -371,7 +371,7 @@ describe('Capture presence and commands', () => {
           await presence(importKey, { state: 'decoding', uid: 812345678 })
         ).json()) as PresenceResponse
       ).next
-    expect(await beat()).toBe(120)
+    expect(await beat()).toBe(300)
 
     const response = await client.fetch('/api/live', {
       headers: { upgrade: 'websocket', origin: ORIGIN },
@@ -388,7 +388,7 @@ describe('Capture presence and commands', () => {
         ws.serializeAttachment({ ...ws.deserializeAttachment(), at: Date.now() - 7 * 60_000 })
       }
     })
-    expect(await beat()).toBe(120)
+    expect(await beat()).toBe(300)
     socket.close()
   })
 

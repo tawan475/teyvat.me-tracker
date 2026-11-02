@@ -42,7 +42,7 @@ import {
 } from './alerts'
 
 /** A heartbeat older than this: Capture (or the game) is gone (more than two idle beats). */
-export const PRESENCE_TTL_MS = 5 * 60_000
+export const PRESENCE_TTL_MS = 12 * 60_000
 /** Sent keys are forgotten after this. */
 const SENT_TTL_MS = 8 * 24 * 3_600_000
 

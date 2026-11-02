@@ -169,7 +169,8 @@ export const TAB_ART: Readonly<Record<CollectionTab, CardArt>> = {
   archive: { name: 'UI_ItemIcon_121036' },
   handbook: { name: 'UI_ItemIcon_100226' },
   'living-beings': { name: 'UI_ItemIcon_112007' },
-  'local-legends': { name: 'UI_MonsterIcon_HermitCrab_Mature_Elite' },
+  // Liam, the Fontaine Treasure Hoarder who stands for Local Legends (the user's pick).
+  'local-legends': { name: 'UI_MonsterIcon_Male_Standard_Rocky_001' },
   tcg: {
     name: 'UI_Gcg_CardBack_00',
     cdn: true,

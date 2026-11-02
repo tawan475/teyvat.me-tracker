@@ -21,7 +21,7 @@ import { sign, verify } from 'hono/jwt'
 import type { AppEnv } from '../env'
 import { randomToken, sha256Hex } from './crypto'
 import { ApiError } from './http'
-import { ACCESS_TTL_S, jwtSecret } from './session'
+import { jwtSecret } from './session'
 
 const AUDIENCE = 'irminsul'
 const TYP = 'irminsul'
@@ -48,7 +48,7 @@ export async function mintAccessToken(
       typ: TYP,
       aud: AUDIENCE,
       iat: now,
-      exp: now + ACCESS_TTL_S,
+      exp: now + IRMINSUL_ACCESS_TTL_S,
     },
     jwtSecret(c),
     'HS256',
@@ -112,6 +112,13 @@ export function bearerToken(c: Context<AppEnv>): string | null {
 }
 
 /** The session ended (signed out, revoked, expired): irminsul signs out. */
+/**
+ * An irminsul access token's life: longer than a browser's (15 min) because every irminsul
+ * route checks the session row in its own batch, so a sign-out or revoke still ends it at
+ * once; a refresh is then a request every 2 hours, not every 15 minutes.
+ */
+export const IRMINSUL_ACCESS_TTL_S = 2 * 3600
+
 export const irminsulSessionEnded = () =>
   new ApiError(401, 'session_revoked', 'Signed out, sign in again')
 

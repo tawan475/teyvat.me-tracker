@@ -18,7 +18,7 @@ defineEmits<{ toggle: [] }>()
     :role="radio ? 'radio' : undefined"
     :aria-pressed="radio ? undefined : pressed"
     :aria-checked="radio ? pressed : undefined"
-    class="group inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-colors"
+    class="group inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,scale] duration-150 active:scale-[0.97]"
     :class="[
       pressed
         ? 'border-accent-text bg-surface-overlay text-accent-text'

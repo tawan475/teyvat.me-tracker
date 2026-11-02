@@ -365,6 +365,10 @@ export interface EventsSyncStatus {
   /** Board events whose dates no rule read: `ASIA:21811 title`. */
   unparsed: string[]
   errors: string[]
+  /** A digest of the lists and the HoYoLAB search the last full read saw (appended 2026-11-02). */
+  signature?: string
+  /** When the notices' contents were last read in full (ms); a sync whose lists match skips them. */
+  fullAt?: number
 }
 
 /** `GET /api/game-events?server=ASIA`. */

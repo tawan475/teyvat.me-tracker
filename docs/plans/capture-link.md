@@ -84,8 +84,9 @@ every `next` seconds. Answer (200):
 ```
 
 - `next`: seconds to the next heartbeat: 30 while a page of the user's is in view (a socket that
-  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 120. Before 2026-11-01 it
-  was 15 while any socket was open, else 60 (a background tab made that ~6,000 beats a day).
+  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 300 (120 until 2026-11-02:
+  still ~40% of the Worker's requests). Before 2026-11-01 it was 15 while any socket was open, else 60
+  (a background tab made that ~6,000 beats a day).
 - `commands`: each delivered once. `wishes`: run the wish history sync now
   (skip when there is no wish key this login). `snapshot`: send a full
   snapshot now (reason `manual`), when there is data.
@@ -94,7 +95,7 @@ every `next` seconds. Answer (200):
   `alerts.resin` (and `resinFull`) when present, in place of its local amount,
   and shows "Set on teyvat.me" beside its setting.
 
-The presence expires 5 minutes after the last heartbeat (3 before 2026-11-01).
+The presence expires 12 minutes after the last heartbeat (5 until 2026-11-02, 3 before 2026-11-01).
 
 ## Website
 

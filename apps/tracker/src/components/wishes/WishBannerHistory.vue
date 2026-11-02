@@ -81,7 +81,7 @@ const versions = computed(() => {
     out = featuring(out, (key) => normalizeSearch(nameOf(key)).includes(needle.value))
   return out
 })
-/** Open now: marked like the banner page's current run. */
+/** Open now: its dates read "… – now · current" (no other mark). */
 const isOpen = (row: BannerHistoryRow) => row.banner.start <= now && now < row.banner.end
 
 /** A banner's name: the weapons it features (the game's own name is the same each time), else its title. */
@@ -183,18 +183,16 @@ const outcomes = (row: BannerHistoryRow) => {
       <article
         v-for="row in v.rows"
         :key="row.banner.start + row.banner.name"
-        class="rounded-xl border bg-surface-raised shadow-sm"
-        :class="isOpen(row) ? 'border-accent-text' : 'border-border-default'"
+        class="rounded-xl border border-border-default bg-surface-raised shadow-sm"
       >
         <!-- An open banner's row stays under the app bar while its pulls scroll past. -->
         <div
           class="flex flex-wrap items-center gap-x-5 gap-y-3 bg-surface-raised px-4 py-3"
-          :class="[
+          :class="
             expanded.has(rowKey(row))
               ? 'sticky top-16 z-[5] rounded-t-[11px] border-b border-border-default'
-              : 'rounded-[11px]',
-            isOpen(row) ? 'shadow-[inset_3px_0_0_var(--accent)]' : '',
-          ]"
+              : 'rounded-[11px]'
+          "
         >
           <div class="flex w-36 shrink-0 flex-col">
             <span class="text-sm font-medium">{{
@@ -205,7 +203,7 @@ const outcomes = (row: BannerHistoryRow) => {
             >
           </div>
 
-          <div class="flex max-w-md min-w-0 flex-[0_1_auto] items-center gap-4">
+          <div class="flex min-w-0 flex-[1_1_18rem] items-center gap-4">
             <div class="flex shrink-0 items-center gap-1.5">
               <GameIcon
                 v-for="key in shownKeys(row.banner.featured5, FEW.five).keys"
@@ -250,7 +248,7 @@ const outcomes = (row: BannerHistoryRow) => {
           <button
             v-if="row.run && row.run.pulls"
             type="button"
-            class="flex min-h-12 min-w-0 flex-[1_1_16rem] items-center gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
+            class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
             :aria-expanded="expanded.has(rowKey(row))"
             @click="toggle(row)"
           >
@@ -289,7 +287,7 @@ const outcomes = (row: BannerHistoryRow) => {
           </button>
           <div
             v-else
-            class="flex min-h-12 min-w-0 flex-[1_1_16rem] items-center rounded-lg border border-dashed border-border-default px-3 py-1.5 text-xs text-text-muted"
+            class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] rounded-lg border border-dashed border-border-default px-3 py-1.5 text-xs text-text-muted"
           >
             {{ $t('wishes.history.skipped') }}
           </div>

@@ -13,7 +13,6 @@ import WishFiveGrid from '@/components/wishes/WishFiveGrid.vue'
 import WishNumbers from '@/components/wishes/WishNumbers.vue'
 import WishOddsChip from '@/components/wishes/WishOddsChip.vue'
 import WishPityTrack from '@/components/wishes/WishPityTrack.vue'
-import WishRuns from '@/components/wishes/WishRuns.vue'
 import WishTable from '@/components/wishes/WishTable.vue'
 import { useWishHistory } from '@/components/wishes/use-wish-history'
 import { useWishStats } from '@/components/wishes/use-wish-stats'
@@ -205,8 +204,6 @@ function retry() {
         >
           <WishFiveGrid :stats="stats" dated box-class="max-h-[20rem]" />
         </section>
-
-        <WishRuns v-if="stats.runs.length" :stats="stats" />
 
         <WishTable :rows="stats.rows" :banner="stats.banner" />
       </div>

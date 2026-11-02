@@ -4,11 +4,18 @@ import { legendSections, matchesLegend } from '../local-legends'
 
 describe('legendSections', () => {
   it('groups the game data by region with HP where they fight and defeats from achievements', async () => {
-    const [{ legends, statsAt }, names] = await Promise.all([loadEnemies(), loadEnemyNames('en')])
+    const [{ legends, statsAt, worldLevels }, names] = await Promise.all([
+      loadEnemies(),
+      loadEnemyNames('en'),
+    ])
     const rilai = legends.find((l) => names.legend(l.id).name === 'Rilai')!
     const done = new Set([rilai.achievements[0]!, rilai.achievements[2]!])
-    const sections = legendSections(legends, names, statsAt, localLegendLevel(9), (id) =>
-      done.has(id),
+    const sections = legendSections(
+      legends,
+      names,
+      statsAt,
+      localLegendLevel(9, worldLevels),
+      (id) => done.has(id),
     )
 
     // Regions in the order they first appear, each once.
@@ -34,9 +41,13 @@ describe('legendSections', () => {
   })
 
   it('fights lower in a lower World Level', async () => {
-    const [{ legends, statsAt }, names] = await Promise.all([loadEnemies(), loadEnemyNames('en')])
+    const [{ legends, statsAt, worldLevels }, names] = await Promise.all([
+      loadEnemies(),
+      loadEnemyNames('en'),
+    ])
     const at = (wl: number) =>
-      legendSections(legends, names, statsAt, localLegendLevel(wl), () => false)[0]!.rows[0]!.hp[0]!
+      legendSections(legends, names, statsAt, localLegendLevel(wl, worldLevels), () => false)[0]!
+        .rows[0]!.hp[0]!
     expect(at(8)).toBeLessThan(at(9))
   })
 })

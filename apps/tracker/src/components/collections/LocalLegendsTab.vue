@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Check, Search } from 'lucide-vue-next'
-import { localLegendLevel, WORLD_LEVEL_MONSTER_LEVEL } from '@gdt/game-data/enemies'
+import { localLegendLevel } from '@gdt/game-data/enemies'
 import EnemyDialog from './EnemyDialog.vue'
 import { useCollectionCatalog } from './use-catalog'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
@@ -69,11 +69,12 @@ const done = (id: number) => {
   return isDone({ captured: value.captured.ids, marked: marks.marked.value }, id)
 }
 
-const MAX_WL = WORLD_LEVEL_MONSTER_LEVEL.length
+/** The highest World Level (WorldLevel's rows; 9 at 7.1). */
+const MAX_WL = computed(() => resource.data.value?.enemies.worldLevels.length || 9)
 /** The account's World Level (null: no capture says); the picker starts on it. */
 const accountWl = computed(() => {
   const wl = player.data.value?.wl
-  return wl == null ? null : Math.min(Math.max(wl, 1), MAX_WL)
+  return wl == null ? null : Math.min(Math.max(wl, 1), MAX_WL.value)
 })
 const picked = ref<number | null>(null)
 watch(
@@ -81,13 +82,15 @@ watch(
   () => (picked.value = null),
 )
 const wl = computed({
-  get: () => picked.value ?? accountWl.value ?? MAX_WL,
+  get: () => picked.value ?? accountWl.value ?? MAX_WL.value,
   set: (value) => (picked.value = value),
 })
-const level = computed(() => localLegendLevel(wl.value))
+const level = computed(() =>
+  localLegendLevel(wl.value, resource.data.value?.enemies.worldLevels ?? []),
+)
 const wlOptions = computed(() =>
-  Array.from({ length: MAX_WL }, (_, i) => {
-    const n = MAX_WL - i
+  Array.from({ length: MAX_WL.value }, (_, i) => {
+    const n = MAX_WL.value - i
     return {
       value: n,
       label:
@@ -123,7 +126,9 @@ const tally = computed(() => {
   const tracked = rows.value.filter((r) => r.defeated !== null)
   return { defeated: tracked.filter((r) => r.defeated).length, tracked: tracked.length }
 })
+/** A region's name; 0 (a Local Legend the data doesn't place yet) reads as Other. */
 const regionName = (city: number) => {
+  if (city === 0) return t('collections.archive.otherRegion')
   const value = catalog.data.value
   const name = value ? nameOf(value, 'cities', city) : ''
   return name && !name.startsWith('#') ? name : ''

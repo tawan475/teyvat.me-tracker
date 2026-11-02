@@ -6,7 +6,8 @@
  * flow around it, newest first, row by row, then fill whole rows under it.
  * Up to 12 5★ the tiles are sized so their rows end level with the panel
  * (about 3 tile columns for every 2 rows; one row is capped); past 12 (the
- * mega whale) the panel spans 4 rows beside 7 columns of smaller tiles and
+ * mega whale) the panel spans 4 rows of smaller tiles beside the fewest
+ * columns (7 at most) that hold them, the rest in full rows under it, and
  * the card grows taller. The card is as wide and as tall as the grid.
  */
 
@@ -66,8 +67,10 @@ export function bannerCardLayout(count: number): BannerCardLayout {
   } else {
     gap = 30
     rowGap = 18
-    tileCols = 7
     panelRows = 4
+    // The fewest columns (7 at most) whose rows beside the panel hold them all
+    // (the user's call: 20 5★ = 5 × 4, not 7 columns with the last row short).
+    tileCols = Math.min(7, Math.ceil(n / panelRows))
     const rowH = (PANEL_H - (panelRows - 1) * rowGap) / panelRows
     const w = ((rowH - label(140)) * 80) / 98
     cellW = ((rowH - label(w)) * 80) / 98

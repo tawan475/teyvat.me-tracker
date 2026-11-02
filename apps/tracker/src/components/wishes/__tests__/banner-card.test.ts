@@ -36,6 +36,14 @@ describe('banner share card layout', () => {
     expect(bannerCardLayout(40).height).toBeGreaterThan(bannerCardLayout(29).height)
   })
 
+  it('fills the rows beside the panel before adding columns (20 5★: 5 × 4)', () => {
+    const layout = bannerCardLayout(20)
+    const columns = new Set(layout.tiles.map((t) => t.x)).size
+    const rows = new Set(layout.tiles.map((t) => t.y)).size
+    expect([columns, rows]).toEqual([5, 4])
+    expect(bannerCardLayout(13).width).toBeLessThan(bannerCardLayout(20).width)
+  })
+
   it('is only as wide as its tiles need', () => {
     expect(bannerCardLayout(2).width).toBeLessThan(bannerCardLayout(6).width)
     expect(bannerCardLayout(2).width).toBeLessThan(1500)

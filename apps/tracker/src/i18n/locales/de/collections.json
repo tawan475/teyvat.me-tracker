@@ -322,6 +322,6 @@
     "unfoldAll": "Alle Kategorien aufklappen",
     "openWorld": "Offene Welt",
     "version": "Version",
-    "thisFight": "LP in diesem Kampf"
+    "fightBonusTip": "LP auf Stufe {n} in dieser Version × der LP-Bonus dieses Kampfes"
   }
 }

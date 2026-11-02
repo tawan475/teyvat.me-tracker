@@ -322,6 +322,6 @@
     "unfoldAll": "すべての分類を展開",
     "openWorld": "フィールド",
     "version": "バージョン",
-    "thisFight": "この戦闘でのHP"
+    "fightBonusTip": "このバージョンのLv.{n}のHP × この戦闘のHPボーナス"
   }
 }

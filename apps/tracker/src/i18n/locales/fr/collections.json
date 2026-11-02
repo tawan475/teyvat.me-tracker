@@ -322,6 +322,6 @@
     "unfoldAll": "Déplier toutes les catégories",
     "openWorld": "Monde ouvert",
     "version": "Version",
-    "thisFight": "PV dans ce combat"
+    "fightBonusTip": "PV au niv. {n} dans cette version × le bonus de PV de ce combat"
   }
 }

@@ -322,6 +322,6 @@
     "unfoldAll": "Espandi tutte le categorie",
     "openWorld": "Mondo aperto",
     "version": "Versione",
-    "thisFight": "PS in questo scontro"
+    "fightBonusTip": "PS al liv. {n} in questa versione × il bonus PS di questo scontro"
   }
 }

@@ -322,6 +322,6 @@
     "unfoldAll": "모든 분류 펼치기",
     "openWorld": "필드",
     "version": "버전",
-    "thisFight": "이 전투의 HP"
+    "fightBonusTip": "이 버전의 Lv.{n} HP × 이 전투의 HP 보너스"
   }
 }

@@ -24,7 +24,8 @@ import { t } from '@/i18n'
  * the Adventurer Handbook says it drops, and its variants at the same level.
  * Its versions switch the stats: the open world's, what the Spiral Abyss (and
  * the Theater) and the Stygian Onslaught spawn. Opened from an endgame fight,
- * it starts on that mode's version and shows the HP there (with its bonus).
+ * it starts on that mode's version and shows the HP there: the mode and level,
+ * the HP, and how it is made (the version's HP at that level × the bonus).
  */
 const props = defineProps<{
   enemy: Enemy | null
@@ -33,8 +34,8 @@ const props = defineProps<{
   level?: number
   /** The version to open on (an endgame mode's); the open world's without one. */
   version?: Version
-  /** The HP in the fight it was opened from (`before`: before the difficulty's bonus). */
-  fight?: { hp: number; before: boolean } | null
+  /** The fight it was opened from: its mode's name and HP (`before`: before the difficulty's bonus). */
+  fight?: { hp: number; before: boolean; where: string } | null
 }>()
 defineEmits<{ close: [] }>()
 
@@ -86,6 +87,17 @@ watch(
 const stats = computed(() => {
   const s = current.value
   return s ? props.data.enemies.statsAt(s, level.value) : null
+})
+/** The fight's level, the opened version's HP there and the bonus the fight adds on top. */
+const fightAt = computed(() => {
+  const f = props.fight
+  const e = props.enemy
+  if (!f?.hp || !e) return null
+  const at = Math.min(Math.max(props.level ?? 90, 1), MAX_ENEMY_LEVEL)
+  const s = (props.version && props.version !== 'world' ? e[props.version] : null) ?? e.stats
+  const base = s ? props.data.enemies.statsAt(s, at).hp[0]! : 0
+  const bonus = base ? Math.round((f.hp / base) * 100) / 100 : 0
+  return { level: at, base, bonus: !f.before && bonus > 1 ? bonus : 0 }
 })
 const variants = computed(() =>
   (props.enemy?.variants ?? []).map((v) => ({
@@ -141,18 +153,28 @@ const RES_LABEL = (key: (typeof RES_ELEMENTS)[number]) =>
               :label="$t('collections.enemies.version')"
               class="self-start"
             />
-            <p
-              v-if="fight?.hp"
-              class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-danger-border bg-danger-surface px-3 py-2 text-sm"
+            <div
+              v-if="fight?.hp && fightAt"
+              class="flex items-center gap-3 rounded-lg border border-danger-border bg-danger-surface px-3 py-2 text-sm"
             >
-              <span class="text-text-secondary">{{ $t('collections.enemies.thisFight') }}</span>
+              <span class="flex min-w-0 flex-col">
+                <span class="truncate text-text-secondary"
+                  >{{ fight.where }} · {{ $t('endgame.level', { n: fightAt.level }) }}</span
+                >
+                <span
+                  v-if="fightAt.bonus"
+                  class="tabular font-mono text-xs text-text-muted"
+                  :title="$t('collections.enemies.fightBonusTip', { n: fightAt.level })"
+                  >{{ whole(fightAt.base) }} × {{ fightAt.bonus }}</span
+                >
+              </span>
               <span class="tabular ml-auto font-mono font-semibold text-danger-text"
                 >♥ {{ whole(fight.hp) }}</span
               >
               <UiBadge v-if="fight.before" :title="$t('endgame.beforeBonusTip')">{{
                 $t('endgame.beforeBonus')
               }}</UiBadge>
-            </p>
+            </div>
             <div class="flex items-center justify-between gap-3">
               <h4 class="text-base font-semibold">{{ $t('collections.enemies.baseStats') }}</h4>
               <label class="flex items-center gap-2 text-sm text-text-secondary">

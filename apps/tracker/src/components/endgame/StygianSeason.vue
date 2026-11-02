@@ -14,7 +14,7 @@ import { STYGIAN_GROUND } from './modes'
  * A Stygian Onslaught season: its difficulties as a scale (each with its
  * monster level; the hardest first chosen), then the three opponents. A
  * card's top (picture, name, HP at the chosen level, the characters the game
- * recommends) is one button that opens the boss's Living Beings entry;
+ * recommends, centred) is one button that opens the boss's Living Beings entry;
  * below it, its mechanics, numbered.
  */
 const props = defineProps<{
@@ -115,7 +115,7 @@ const bosses = computed(() => {
         <component
           :is="b.codex ? 'button' : 'div'"
           :type="b.codex ? 'button' : undefined"
-          class="group flex flex-col text-left"
+          class="group flex flex-col text-center"
           :class="b.codex && 'transition-colors hover:bg-surface-overlay'"
           :title="b.codex ? b.full : `${b.full}\n${$t('endgame.noEntry')}`"
           @click="b.codex && $emit('enemy', b.codex, b.level, b.hp, b.before)"
@@ -128,10 +128,10 @@ const bosses = computed(() => {
               class="h-full w-full transition-transform group-hover:scale-[1.03]"
             />
           </span>
-          <span class="flex flex-col gap-1 px-4 pt-3.5 pb-3">
+          <span class="flex flex-col items-center gap-1 px-4 pt-3.5 pb-3">
             <span class="text-base leading-snug font-semibold">{{ b.short }}</span>
             <span v-if="b.title" class="text-sm text-warning-text">{{ b.title }}</span>
-            <span class="mt-1 flex items-center gap-1.5" :title="b.hpTip">
+            <span class="mt-1 flex items-center justify-center gap-1.5" :title="b.hpTip">
               <span
                 class="tabular font-mono text-sm font-semibold"
                 :class="b.hp ? 'text-danger-text' : 'text-text-muted'"
@@ -139,7 +139,10 @@ const bosses = computed(() => {
               >
               <UiBadge v-if="b.before">{{ $t('endgame.beforeBonus') }}</UiBadge>
             </span>
-            <span v-if="b.boss.recommendations" class="mt-1.5 flex flex-wrap gap-1.5">
+            <span
+              v-if="b.boss.recommendations"
+              class="mt-1.5 flex flex-wrap justify-center gap-1.5"
+            >
               <GameText
                 v-for="i in range(b.boss.recommendations)"
                 :key="i"

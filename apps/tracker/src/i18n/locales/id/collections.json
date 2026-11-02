@@ -322,6 +322,6 @@
     "unfoldAll": "Buka semua kategori",
     "openWorld": "Dunia terbuka",
     "version": "Versi",
-    "thisFight": "HP di pertarungan ini"
+    "fightBonusTip": "HP di Lv. {n} pada versi ini × bonus HP pertarungan ini"
   }
 }

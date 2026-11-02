@@ -322,6 +322,6 @@
     "unfoldAll": "Tüm kategorileri genişlet",
     "openWorld": "Açık dünya",
     "version": "Sürüm",
-    "thisFight": "Bu dövüşteki Can"
+    "fightBonusTip": "Bu sürümde Sv. {n} Canı × bu dövüşün Can bonusu"
   }
 }

@@ -115,12 +115,12 @@ const openEnemy = computed(() => enemies.data.value?.enemies.byId.get(enemyId.va
  * The fight an enemy was opened from: its HP there (with the mode's bonus) and the version the
  * mode spawns (the Abyss's for the Abyss and the Theater, the Stygian's); not kept in the URL.
  */
-const fight = ref<{ hp: number; before: boolean } | null>(null)
+const fight = ref<{ hp: number; before: boolean; where: string } | null>(null)
 const version = computed(() => (mode.value === 'stygian' ? 'stygian' : 'abyss'))
 function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
   const query = { ...route.query }
   delete query.lv
-  fight.value = id && hp ? { hp, before } : null
+  fight.value = id && hp ? { hp, before, where: t(`endgame.modes.${mode.value}`) } : null
   if (id) {
     query.enemy = String(id)
     if (level) query.lv = String(level)

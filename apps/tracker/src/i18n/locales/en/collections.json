@@ -322,6 +322,6 @@
     "unfoldAll": "Unfold every category",
     "openWorld": "Open world",
     "version": "Version",
-    "thisFight": "HP in this fight"
+    "fightBonusTip": "HP at Lv. {n} in this version × this fight's HP bonus"
   }
 }

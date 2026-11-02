@@ -322,6 +322,6 @@
     "unfoldAll": "展开所有类别",
     "openWorld": "开放世界",
     "version": "版本",
-    "thisFight": "本场战斗生命值"
+    "fightBonusTip": "此版本{n}级生命值 × 本场战斗的生命值加成"
   }
 }

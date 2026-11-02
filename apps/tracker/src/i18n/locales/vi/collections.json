@@ -322,6 +322,6 @@
     "unfoldAll": "Mở rộng mọi nhóm",
     "openWorld": "Thế giới mở",
     "version": "Phiên bản",
-    "thisFight": "HP trong trận này"
+    "fightBonusTip": "HP ở Lv. {n} trong phiên bản này × thưởng HP của trận này"
   }
 }

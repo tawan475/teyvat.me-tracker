@@ -322,6 +322,6 @@
     "unfoldAll": "Expandir todas las categorías",
     "openWorld": "Mundo abierto",
     "version": "Versión",
-    "thisFight": "Vida en este combate"
+    "fightBonusTip": "Vida al nivel {n} en esta versión × la bonificación de Vida de este combate"
   }
 }

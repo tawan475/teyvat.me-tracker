@@ -101,8 +101,14 @@ const notCaptured = computed(() => captured.value?.takenAt == null)
 
 // ------------------------------------------------------------------ filters
 
-const filters = reactive<AnecdoteFilters>({ ...DEFAULT_ANECDOTE_FILTERS })
-const filtered = computed(() => hasAnecdoteFilters(filters))
+/** The page opens on what is left to do (the user's pick); Clear goes back to it. */
+const START: AnecdoteFilters = { ...DEFAULT_ANECDOTE_FILTERS, completion: 'missing' }
+const filters = reactive<AnecdoteFilters>({ ...START })
+const filtered = computed(
+  () =>
+    hasAnecdoteFilters(filters) &&
+    !(filters.completion === START.completion && !filters.query.trim()),
+)
 
 /**
  * Done rows are soft-hidden in the All view: folded under each NPC, and NPCs
@@ -143,7 +149,7 @@ const empty = computed<'none' | 'unmet' | 'allDone' | 'noneDone' | null>(() => {
   return filters.completion === 'done' ? 'noneDone' : 'allDone'
 })
 function clearFilters() {
-  filters.completion = 'all'
+  filters.completion = START.completion
   filters.query = ''
 }
 

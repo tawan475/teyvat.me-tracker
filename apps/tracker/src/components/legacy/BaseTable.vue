@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import BasePagination, { type PaginationMeta } from './BasePagination.vue'
+import { vStickyHead } from '@/lib/sticky-head'
 
 export interface TableLabel {
   key: string
@@ -20,6 +21,11 @@ const props = defineProps<{
   meta?: PaginationMeta
   /** Extra classes for a row, e.g. to tint selected rows. */
   rowClass?: (item: any) => string | undefined
+  /**
+   * Keep the header under the app bar while the rows scroll past (lib/sticky-head);
+   * a number or function: more px to keep clear (a sticky bar above it).
+   */
+  stickyHead?: boolean | number | (() => number)
 }>()
 
 const emit = defineEmits<{
@@ -60,6 +66,7 @@ defineExpose({ scrollToTop })
       </div>
       <table class="w-full text-left text-sm text-text-secondary">
         <thead
+          v-sticky-head="stickyHead === true ? 0 : (stickyHead ?? false)"
           class="border-b border-border-default bg-surface-overlay/50 text-text-primary transition-colors"
         >
           <tr class="divide-x divide-border-default">

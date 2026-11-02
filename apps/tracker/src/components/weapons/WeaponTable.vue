@@ -14,6 +14,7 @@ import {
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { RARITY_TEXT } from '@/components/characters/tokens'
+import { vStickyHead } from '@/lib/sticky-head'
 
 /**
  * Every copy (identical spare copies stacked as ×N), one row each, with
@@ -42,7 +43,10 @@ function ariaSort(key: WeaponSort) {
 <template>
   <div class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm">
     <table class="w-full table-fixed text-sm">
-      <thead class="border-b border-border-default bg-surface-overlay/50 text-text-secondary">
+      <thead
+        v-sticky-head
+        class="border-b border-border-default bg-surface-overlay/50 text-text-secondary"
+      >
         <tr>
           <th scope="col" class="px-3 py-2 text-left" :aria-sort="ariaSort('name')">
             <SortHeader

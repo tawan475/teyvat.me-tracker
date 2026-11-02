@@ -24,7 +24,11 @@
     "notCaptured": "尚未擷取",
     "notCapturedBody": "Teyvat.me Capture 會在登入時讀取。仍為空？請更新應用程式。",
     "allCollected": "已全部收集",
-    "noneCollected": "尚未收集"
+    "noneCollected": "尚未收集",
+    "region": "地區",
+    "search": "編號或曲名",
+    "default": "預設",
+    "defaultTip": "每個塵歌壺初始擁有這首曲子"
   },
   "tabsLabel": "收藏",
   "summary": "概覽",

@@ -42,7 +42,7 @@ const completionOptions = computed(() =>
 </script>
 
 <template>
-  <UiToolbar :label="$t('anecdotes.toolbar.label')">
+  <UiToolbar :label="$t('anecdotes.toolbar.label')" sticky>
     <div class="flex flex-wrap items-center gap-2">
       <label class="relative min-w-0 basis-full sm:min-w-48 sm:basis-0 sm:flex-1">
         <span class="sr-only">{{ $t('anecdotes.toolbar.search') }}</span>

@@ -23,8 +23,24 @@ describe('collectionFigures', () => {
       },
       null,
       [
-        { id: 141_001, key: 'RadiantSpincrystal1', number: 1 },
-        { id: 141_002, key: 'RadiantSpincrystal2', number: 2 },
+        {
+          id: 101,
+          city: 1,
+          number: 1,
+          item: 141_001,
+          isDefault: false,
+          order: 2,
+          key: 'RadiantSpincrystal1',
+        },
+        {
+          id: 102,
+          city: 1,
+          number: 2,
+          item: 141_002,
+          isDefault: false,
+          order: 1,
+          key: 'RadiantSpincrystal2',
+        },
       ],
     )
     // As the page lists them: defeated, or captured only (a creature).

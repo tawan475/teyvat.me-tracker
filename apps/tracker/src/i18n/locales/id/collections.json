@@ -24,7 +24,11 @@
     "notCaptured": "Belum tertangkap",
     "notCapturedBody": "Teyvat.me Capture membacanya saat login. Masih kosong? Perbarui aplikasinya.",
     "allCollected": "Semua terkumpul",
-    "noneCollected": "Belum ada yang terkumpul"
+    "noneCollected": "Belum ada yang terkumpul",
+    "region": "Wilayah",
+    "search": "Nomor atau lagu",
+    "default": "Bawaan",
+    "defaultTip": "Setiap Serenitea Pot sudah punya lagu ini"
   },
   "tabsLabel": "Koleksi",
   "summary": "Ringkasan",

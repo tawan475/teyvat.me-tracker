@@ -121,11 +121,11 @@ function guide(id: number): string | undefined {
       </li>
     </ul>
 
-    <UiPanel flush>
+    <UiPanel flush sticky>
       <template #header>
         <h2 class="text-base font-semibold">{{ $t('collections.tabs.recipes') }}</h2>
       </template>
-      <div class="flex flex-col gap-3 p-3 sm:p-5">
+      <template #toolbar>
         <div
           class="scroll-hide scroll-fade-x -mx-3 flex max-w-full overflow-x-auto px-3 sm:mx-0 sm:px-0"
         >
@@ -135,6 +135,8 @@ function guide(id: number): string | undefined {
             :label="$t('collections.archive.show')"
           />
         </div>
+      </template>
+      <div class="flex flex-col gap-3 p-3 sm:p-5">
         <EntryGrid
           v-if="shown.length > 0"
           :entries="shown"

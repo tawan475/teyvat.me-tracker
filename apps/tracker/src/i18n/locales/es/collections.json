@@ -24,7 +24,11 @@
     "notCaptured": "Aún sin capturar",
     "notCapturedBody": "Teyvat.me Capture las lee al iniciar sesión. ¿Sigue vacío? Actualiza la app.",
     "allCollected": "Todos obtenidos",
-    "noneCollected": "Ninguno obtenido aún"
+    "noneCollected": "Ninguno obtenido aún",
+    "region": "Región",
+    "search": "Número o canción",
+    "default": "Predeterminada",
+    "defaultTip": "Toda Tetera Caelestis empieza con esta canción"
   },
   "tabsLabel": "Colección",
   "summary": "Resumen",

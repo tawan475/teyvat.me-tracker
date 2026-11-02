@@ -24,7 +24,11 @@
     "notCaptured": "Henüz taranmadı",
     "notCapturedBody": "Teyvat.me Capture bunları girişte okur. Hâlâ boş mu? Uygulamayı güncelle.",
     "allCollected": "Hepsi alındı",
-    "noneCollected": "Henüz hiç yok"
+    "noneCollected": "Henüz hiç yok",
+    "region": "Bölge",
+    "search": "Numara veya şarkı",
+    "default": "Varsayılan",
+    "defaultTip": "Her Huzur Çaydanlığı bu şarkıyla başlar"
   },
   "tabsLabel": "Koleksiyon",
   "summary": "Özet",

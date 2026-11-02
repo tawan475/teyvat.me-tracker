@@ -156,7 +156,7 @@ const cover = (icon: string) => (icon ? giCdnArt(`${icon}_S`) : '')
       </li>
     </ul>
 
-    <UiPanel :title="$t('collections.music.songs')" flush>
+    <UiPanel :title="$t('collections.music.songs')" flush sticky>
       <template #actions>
         <label class="relative min-w-0 basis-full sm:w-72 sm:basis-auto">
           <span class="sr-only">{{ $t('collections.music.search') }}</span>

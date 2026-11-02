@@ -347,7 +347,7 @@ const viewOptions = computed<SegmentedOption<View>[]>(() => [
 </script>
 
 <template>
-  <UiPanel flush>
+  <UiPanel flush sticky>
     <template #header>
       <h2 class="flex min-w-0 items-center gap-2 text-base font-semibold">
         <template v-if="heading">

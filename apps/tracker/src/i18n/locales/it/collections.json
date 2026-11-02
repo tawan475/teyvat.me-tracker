@@ -24,7 +24,11 @@
     "notCaptured": "Non ancora catturati",
     "notCapturedBody": "Teyvat.me Capture le legge all'accesso. Ancora vuoto? Aggiorna l'app.",
     "allCollected": "Tutti ottenuti",
-    "noneCollected": "Nessuno ottenuto"
+    "noneCollected": "Nessuno ottenuto",
+    "region": "Regione",
+    "search": "Numero o brano",
+    "default": "Predefinito",
+    "defaultTip": "Ogni Teiera della serenità parte con questo brano"
   },
   "tabsLabel": "Collezione",
   "summary": "Riepilogo",

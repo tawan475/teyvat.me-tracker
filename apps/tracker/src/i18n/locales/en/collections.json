@@ -24,7 +24,11 @@
     "notCaptured": "Not captured yet",
     "notCapturedBody": "Teyvat.me Capture reads them at login. Still empty? Update the app.",
     "allCollected": "All collected",
-    "noneCollected": "None collected yet"
+    "noneCollected": "None collected yet",
+    "region": "Region",
+    "search": "Number or song",
+    "default": "Default",
+    "defaultTip": "Every Serenitea Pot starts with this song"
   },
   "tabsLabel": "Collection",
   "summary": "Summary",

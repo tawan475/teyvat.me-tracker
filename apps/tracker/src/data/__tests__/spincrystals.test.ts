@@ -1,10 +1,12 @@
 import materialsJson from '@gdt/game-data/data/materials.json'
 import { describe, expect, it } from 'vitest'
+import { loadSpincrystals as loadSongs } from '@gdt/game-data/collections'
 import {
   filterSpincrystals,
   spincrystalGuide,
   spincrystalProgress,
   spincrystalsOf,
+  withKeys,
   type Spincrystal,
 } from '../spincrystals'
 
@@ -25,38 +27,68 @@ describe('spincrystalsOf', () => {
 })
 
 describe('spincrystalProgress', () => {
-  const sample: Spincrystal[] = [
-    { id: 141_001, key: 'RadiantSpincrystal1', number: 1 },
-    { id: 141_200, key: 'RadiantSpincrystal100', number: 100 },
-    { id: 141_002, key: 'RadiantSpincrystal2', number: 2 },
-    { id: 141_257, key: 'RadiantSpincrystalTheLongWayHomePartI', number: null },
-  ]
+  // Songs as the collections data gives them: region, number, unlocking item, starting song.
+  const song = (
+    id: number,
+    city: number,
+    number: number | null,
+    item: number | null,
+    isDefault = false,
+  ) => ({
+    id,
+    city,
+    number,
+    item,
+    isDefault,
+    order: 0,
+  })
+  const sample: Spincrystal[] = withKeys(
+    [
+      song(105, 1, null, null, true),
+      song(101, 1, 1, 141_001),
+      song(102, 1, 2, 141_002),
+      song(233, 2, null, 141_257),
+      song(502, 5, 100, 141_200),
+    ],
+    all,
+  )
 
-  it('marks what the capture has, numbered ones by number, and counts unknown ids apart', () => {
+  it('carries each item key, and a starting song has none', () => {
+    expect(sample.map((s) => s.key)).toEqual([
+      null,
+      'RadiantSpincrystal1',
+      'RadiantSpincrystal2',
+      'RadiantSpincrystalTheLongWayHomePartI',
+      'RadiantSpincrystal100',
+    ])
+  })
+
+  it('marks what the capture has by item; starting songs always count; unknown ids apart', () => {
     const p = spincrystalProgress(sample, [141_002, 141_257, 141_999])
-    expect(p.numbered.map((r) => [r.number, r.have])).toEqual([
-      [1, false],
-      [2, true],
-      [100, false],
+    expect(p.rows.map((r) => [r.id, r.have])).toEqual([
+      [105, true],
+      [101, false],
+      [102, true],
+      [233, true],
+      [502, false],
     ])
-    expect(p.named.map((r) => [r.key, r.have])).toEqual([
-      ['RadiantSpincrystalTheLongWayHomePartI', true],
-    ])
-    expect([p.have, p.total, p.unknown]).toEqual([2, 4, [141_999]])
+    expect([p.have, p.total, p.unknown]).toEqual([3, 5, [141_999]])
   })
 
   it('filters All / Missing / Have', () => {
-    const { numbered } = spincrystalProgress(sample, [141_002])
-    expect(filterSpincrystals(numbered, 'all')).toHaveLength(3)
-    expect(filterSpincrystals(numbered, 'have').map((r) => r.number)).toEqual([2])
-    expect(filterSpincrystals(numbered, 'missing').map((r) => r.number)).toEqual([1, 100])
+    const { rows } = spincrystalProgress(sample, [141_002])
+    expect(filterSpincrystals(rows, 'all')).toHaveLength(5)
+    expect(filterSpincrystals(rows, 'have').map((r) => r.id)).toEqual([105, 102])
+    expect(filterSpincrystals(rows, 'missing').map((r) => r.id)).toEqual([101, 233, 502])
   })
 
-  it('takes a real-scale capture: 120 of the 206', () => {
+  it('takes the real list: every item a song unlocks is a known Spincrystal', async () => {
+    const songs = await loadSongs()
+    const keyed = withKeys(songs, all)
+    expect(keyed.filter((s) => s.item !== null).every((s) => s.key !== null)).toBe(true)
     const owned = all.filter((_, i) => i % 7 < 4).map((s) => s.id)
-    const p = spincrystalProgress(all, owned)
-    expect(p.have).toBe(owned.length)
-    expect(p.numbered.length + p.named.length).toBe(all.length)
+    const p = spincrystalProgress(keyed, owned)
+    expect(p.have).toBe(owned.length + keyed.filter((s) => s.isDefault).length)
     expect(p.unknown).toEqual([])
   })
 })

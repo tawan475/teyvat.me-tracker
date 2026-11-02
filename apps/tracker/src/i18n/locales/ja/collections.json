@@ -24,7 +24,11 @@
     "notCaptured": "まだキャプチャされていません",
     "notCapturedBody": "Teyvat.me Capture がログイン時に読み取ります。空のままならアプリを更新してください。",
     "allCollected": "すべて収集済み",
-    "noneCollected": "まだ収集していません"
+    "noneCollected": "まだ収集していません",
+    "region": "地域",
+    "search": "番号または曲名",
+    "default": "デフォルト",
+    "defaultTip": "どの塵歌壺にも最初からある曲"
   },
   "tabsLabel": "コレクション",
   "summary": "概要",

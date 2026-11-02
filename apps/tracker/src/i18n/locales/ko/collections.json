@@ -24,7 +24,11 @@
     "notCaptured": "아직 캡처 없음",
     "notCapturedBody": "Teyvat.me Capture가 로그인할 때 읽습니다. 계속 비어 있으면 앱을 업데이트하세요.",
     "allCollected": "모두 수집 완료",
-    "noneCollected": "아직 수집한 것 없음"
+    "noneCollected": "아직 수집한 것 없음",
+    "region": "지역",
+    "search": "번호 또는 곡명",
+    "default": "기본",
+    "defaultTip": "모든 주전자에 처음부터 있는 곡"
   },
   "tabsLabel": "컬렉션",
   "summary": "요약",

@@ -24,7 +24,11 @@
     "notCaptured": "尚未捕获",
     "notCapturedBody": "Teyvat.me Capture 会在登录时读取。仍为空？请更新应用。",
     "allCollected": "已全部收集",
-    "noneCollected": "尚未收集"
+    "noneCollected": "尚未收集",
+    "region": "地区",
+    "search": "编号或曲名",
+    "default": "默认",
+    "defaultTip": "每个尘歌壶初始拥有这首曲子"
   },
   "tabsLabel": "收藏",
   "summary": "概览",

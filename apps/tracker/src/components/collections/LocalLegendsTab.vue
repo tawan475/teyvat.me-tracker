@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Search } from 'lucide-vue-next'
+import { ChevronDown, Search } from 'lucide-vue-next'
 import { localLegendLevel } from '@gdt/game-data/enemies'
 import EnemyDialog from './EnemyDialog.vue'
 import { useCollectionCatalog } from './use-catalog'
@@ -19,6 +19,7 @@ import { legendSections, matchesLegend, type LegendView } from '@/data/local-leg
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { formatNumber, formatShort } from '@/lib/format'
+import { readStorage, writeStorage } from '@/lib/storage'
 import { gameIcon, loadGameIcons, regionBackground } from '@/lib/assets'
 import { useAccount } from '@/views/account/context'
 import { t } from '@/i18n'
@@ -95,6 +96,16 @@ const shown = computed(() =>
     }))
     .filter((s) => s.rows.length),
 )
+/** Regions folded to their heading (per device, like Living Beings' categories). */
+const FOLDED_KEY = 'collections:legends:folded'
+const folded = ref(new Set((readStorage(FOLDED_KEY) ?? '').split(',').filter(Boolean).map(Number)))
+function toggleFold(region: number) {
+  const next = new Set(folded.value)
+  if (!next.delete(region)) next.add(region)
+  folded.value = next
+  writeStorage(FOLDED_KEY, next.size ? [...next].join(',') : null)
+}
+
 /** A region's name; 0 (a Local Legend the data doesn't place yet) reads as Other. */
 const regionName = (city: number) => {
   if (city === 0) return t('collections.archive.otherRegion')
@@ -140,7 +151,7 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
 
 <template>
   <div class="flex flex-col gap-4">
-    <UiToolbar :label="$t('collections.legends.search')">
+    <UiToolbar :label="$t('collections.legends.search')" sticky>
       <div class="flex flex-wrap items-center gap-2">
         <label class="relative block min-w-0 flex-[1_1_12rem]">
           <Search
@@ -181,14 +192,27 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
         :key="section.region"
         :aria-label="regionName(section.region) || undefined"
       >
-        <h3 class="mb-2 flex items-center gap-2 text-sm font-medium">
-          <span class="truncate">{{ regionName(section.region) }}</span>
-          <span class="tabular font-mono text-text-muted">{{
-            formatNumber(section.rows.length)
-          }}</span>
-          <span class="h-px min-w-4 flex-1 bg-border-default" aria-hidden="true" />
+        <h3 class="text-sm font-medium" :class="folded.has(section.region) ? '' : 'mb-2'">
+          <button
+            type="button"
+            class="-mx-1 flex min-h-8 w-[calc(100%+0.5rem)] items-center gap-2 rounded-md px-1 text-left transition-colors hover:bg-surface-overlay"
+            :aria-expanded="!folded.has(section.region)"
+            @click="toggleFold(section.region)"
+          >
+            <ChevronDown
+              class="size-4 shrink-0 text-text-muted transition-transform"
+              :class="folded.has(section.region) ? '-rotate-90' : ''"
+              aria-hidden="true"
+            />
+            <span class="truncate">{{ regionName(section.region) }}</span>
+            <span class="tabular font-mono text-text-muted">{{
+              formatNumber(section.rows.length)
+            }}</span>
+            <span class="h-px min-w-4 flex-1 bg-border-default" aria-hidden="true" />
+          </button>
         </h3>
-        <ul :class="GRID">
+        <!-- A folded region shows only its heading. -->
+        <ul v-if="!folded.has(section.region)" :class="GRID">
           <li
             v-for="(row, i) in section.rows"
             :key="row.legend.id"

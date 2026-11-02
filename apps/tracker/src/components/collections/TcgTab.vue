@@ -199,7 +199,7 @@ const decks = computed(() =>
       <UiEmpty v-else :title="$t('collections.tcg.noDecks')" />
     </UiPanel>
 
-    <UiPanel flush>
+    <UiPanel flush sticky>
       <template #header>
         <div
           class="flex flex-wrap items-center gap-2"
@@ -220,13 +220,15 @@ const decks = computed(() =>
           </FilterChip>
         </div>
       </template>
-      <div class="flex flex-col gap-3 p-3 sm:p-5">
+      <template #toolbar>
         <HaveFilter
           v-model="filter"
           :have="current.have"
           :total="current.entries.length"
           :label="$t('collections.archive.show')"
         />
+      </template>
+      <div class="flex flex-col gap-3 p-3 sm:p-5">
         <EntryGrid v-if="shown.length > 0" :entries="shown" :label="current.label" min="13rem" />
         <UiEmpty
           v-else-if="filter === 'missing'"

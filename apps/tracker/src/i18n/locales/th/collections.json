@@ -24,7 +24,11 @@
     "notCaptured": "ยังไม่ได้สแกน",
     "notCapturedBody": "Teyvat.me Capture จะอ่านตอนเข้าสู่ระบบ ยังว่างอยู่? อัปเดตแอป",
     "allCollected": "รวบรวมครบแล้ว",
-    "noneCollected": "ยังไม่ได้รวบรวม"
+    "noneCollected": "ยังไม่ได้รวบรวม",
+    "region": "ภูมิภาค",
+    "search": "หมายเลขหรือชื่อเพลง",
+    "default": "ค่าเริ่มต้น",
+    "defaultTip": "Serenitea Pot ทุกใบมีเพลงนี้ตั้งแต่แรก"
   },
   "tabsLabel": "คอลเลกชัน",
   "summary": "สรุป",

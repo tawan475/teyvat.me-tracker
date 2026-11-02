@@ -24,7 +24,11 @@
     "notCaptured": "Noch nicht erfasst",
     "notCapturedBody": "Teyvat.me Capture liest sie beim Einloggen. Noch leer? Aktualisiere die App.",
     "allCollected": "Alle gesammelt",
-    "noneCollected": "Noch keine gesammelt"
+    "noneCollected": "Noch keine gesammelt",
+    "region": "Region",
+    "search": "Nummer oder Lied",
+    "default": "Standard",
+    "defaultTip": "Jede Teekanne der Gelassenheit startet mit diesem Lied"
   },
   "tabsLabel": "Sammlung",
   "summary": "Zusammenfassung",

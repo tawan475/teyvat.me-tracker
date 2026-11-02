@@ -19,6 +19,7 @@ import { t } from '@/i18n'
 import FavoriteStar from './FavoriteStar.vue'
 import SortHeader from './SortHeader.vue'
 import TalentChips from './TalentChips.vue'
+import { vStickyHead } from '@/lib/sticky-head'
 
 /**
  * The roster as a dense list: one row per character, sortable headers. Rows
@@ -108,7 +109,7 @@ const isFavorite = (c: CharacterView) => props.favorites?.has(c.key) ?? false
   <div class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm">
     <div class="overflow-x-auto overscroll-x-contain">
       <table class="w-full table-fixed text-sm">
-        <thead class="border-b border-border-default text-text-secondary">
+        <thead v-sticky-head class="border-b border-border-default text-text-secondary">
           <tr>
             <th scope="col" class="pin w-8 py-2 pl-1">
               <span class="sr-only">{{ $t('characters.favorite.on') }}</span>

@@ -24,7 +24,11 @@
     "notCaptured": "Chưa ghi",
     "notCapturedBody": "Teyvat.me Capture đọc khi đăng nhập. Vẫn trống? Hãy cập nhật ứng dụng.",
     "allCollected": "Đã thu thập tất cả",
-    "noneCollected": "Chưa thu thập cái nào"
+    "noneCollected": "Chưa thu thập cái nào",
+    "region": "Khu vực",
+    "search": "Số hoặc tên bài",
+    "default": "Mặc định",
+    "defaultTip": "Mọi Ấm Trần Ca đều có sẵn bài này"
   },
   "tabsLabel": "Bộ sưu tập",
   "summary": "Tóm tắt",

@@ -109,7 +109,7 @@ const shown = computed<GridEntry[]>(() =>
       </li>
     </ul>
 
-    <UiPanel flush>
+    <UiPanel flush sticky>
       <template #header>
         <div
           class="scroll-hide scroll-fade-x -mx-5 flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:scroll-fade-none"
@@ -132,7 +132,7 @@ const shown = computed<GridEntry[]>(() =>
           </FilterChip>
         </div>
       </template>
-      <div class="flex flex-col gap-3 p-3 sm:p-5">
+      <template #toolbar>
         <div class="flex flex-wrap items-center gap-2">
           <label class="relative min-w-0 basis-full sm:w-72 sm:basis-auto">
             <span class="sr-only">{{ $t('materials.search') }}</span>
@@ -155,6 +155,8 @@ const shown = computed<GridEntry[]>(() =>
             :label="$t('collections.archive.show')"
           />
         </div>
+      </template>
+      <div class="flex flex-col gap-3 p-3 sm:p-5">
         <EntryGrid v-if="shown.length > 0" :entries="shown" :label="current.label" />
         <UiEmpty
           v-else-if="filter === 'missing' && !needle"

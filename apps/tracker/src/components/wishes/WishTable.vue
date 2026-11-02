@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { wishItemName } from './item-name'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, useTemplateRef, watch } from 'vue'
 import { ArrowDown, ArrowUp, Search } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
 import { HARD_PITY, pityBand, runPullNumbers, type PullRow } from '@/data/wish-history'
@@ -11,6 +11,7 @@ import UiInput from '@/components/ui/UiInput.vue'
 import UiPager from '@/components/ui/UiPager.vue'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
+import { vStickyHead } from '@/lib/sticky-head'
 import { readStorage, writeStorage } from '@/lib/storage'
 import {
   BAND_COLOR,
@@ -104,6 +105,10 @@ const kind = (row: PullRow) =>
     : row.pull.item.kind
       ? t('wishes.table.character')
       : ''
+
+/** The filter bar stays under the app bar; the column header under it, the pager at the foot. */
+const filters = useTemplateRef<HTMLElement>('filters')
+const filtersHeight = () => filters.value?.offsetHeight ?? 0
 </script>
 
 <template>
@@ -111,7 +116,10 @@ const kind = (row: PullRow) =>
     :aria-label="$t('wishes.table.label')"
     class="min-w-0 rounded-xl border border-border-default bg-surface-raised shadow-sm"
   >
-    <div class="flex flex-wrap items-center gap-2 border-b border-border-default px-3 py-3 sm:px-4">
+    <div
+      ref="filters"
+      class="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
+    >
       <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
         <FilterChip
           v-for="rank in [5, 4, 3] as const"
@@ -145,7 +153,7 @@ const kind = (row: PullRow) =>
     </p>
     <div v-else class="overflow-x-auto">
       <table class="tabular w-full font-mono text-sm">
-        <thead>
+        <thead v-sticky-head="filtersHeight">
           <tr class="text-left text-xs text-text-muted">
             <th
               scope="col"
@@ -274,7 +282,10 @@ const kind = (row: PullRow) =>
         </tbody>
       </table>
     </div>
-    <div v-if="pageCount > 1" class="border-t border-border-default px-4 py-3">
+    <div
+      v-if="pageCount > 1"
+      class="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 rounded-b-xl border-t border-border-default bg-surface-raised px-4 py-3 lg:bottom-0"
+    >
       <UiPager
         v-model="page"
         :page-count="pageCount"

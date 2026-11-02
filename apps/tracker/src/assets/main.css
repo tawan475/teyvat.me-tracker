@@ -576,3 +576,14 @@ dialog[open]::backdrop {
     filter: drop-shadow(0 0 2px currentColor);
   }
 }
+
+/* A table header slid under the app bar (lib/sticky-head): a solid ground and
+   an edge, so the rows it covers don't show through. */
+thead[data-stuck] tr {
+  background: color-mix(in srgb, var(--color-surface-overlay) 50%, var(--color-surface-raised));
+}
+thead[data-stuck] {
+  box-shadow:
+    0 1px 0 var(--color-border-default),
+    0 6px 10px -6px rgb(0 0 0 / 0.3);
+}

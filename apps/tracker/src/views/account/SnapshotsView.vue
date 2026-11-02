@@ -430,6 +430,12 @@ const handleBulkDelete = async () => {
   if (ids.length === 0) return
   await removeSnapshots(ids, true)
 }
+
+/** The table's header pins under the app bar, and under the selection bar while it shows (3.25rem). */
+function selectionClearance(): number {
+  if (selectedCount.value === 0 && !job.value) return 0
+  return 3.25 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+}
 </script>
 
 <template>
@@ -598,6 +604,7 @@ const handleBulkDelete = async () => {
       <BaseTable
         v-else
         ref="baseTableRef"
+        :sticky-head="selectionClearance"
         :labels="tableLabels"
         :data="rows"
         :row-class="(row) => (isSelected(row.id) ? 'bg-accent/10' : undefined)"

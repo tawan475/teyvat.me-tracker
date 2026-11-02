@@ -200,7 +200,7 @@ const GRID =
       </li>
     </ul>
 
-    <UiToolbar :label="$t('collections.enemies.search')">
+    <UiToolbar :label="$t('collections.enemies.search')" sticky>
       <!-- Phones: search and fold-all on one row, the two switches below; wider: one row. -->
       <div class="flex flex-wrap items-center gap-2">
         <label class="relative order-1 block min-w-0 flex-[1_1_12rem]">

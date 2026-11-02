@@ -18,6 +18,7 @@ import {
   formatStatValue,
 } from '@/utils/artifact-stats'
 import { slotIcon } from './styles'
+import { vStickyHead } from '@/lib/sticky-head'
 
 /**
  * The compact view: one row per artifact. Headers sort; the set name is the
@@ -60,7 +61,10 @@ const owner = (row: ArtifactRow) =>
 <template>
   <div class="overflow-x-auto rounded-xl border border-border-default bg-surface-raised shadow-sm">
     <table class="w-full text-sm">
-      <thead class="border-b border-border-default bg-surface-overlay/50 text-text-secondary">
+      <thead
+        v-sticky-head
+        class="border-b border-border-default bg-surface-overlay/50 text-text-secondary"
+      >
         <tr>
           <th
             v-for="column in COLUMNS"

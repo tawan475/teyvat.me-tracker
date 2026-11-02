@@ -24,7 +24,11 @@
     "notCaptured": "Ainda não capturado",
     "notCapturedBody": "O Teyvat.me Capture as lê ao entrar no jogo. Ainda vazio? Atualize o app.",
     "allCollected": "Todos coletados",
-    "noneCollected": "Nenhum coletado ainda"
+    "noneCollected": "Nenhum coletado ainda",
+    "region": "Região",
+    "search": "Número ou música",
+    "default": "Padrão",
+    "defaultTip": "Todo Bule de Chá começa com esta música"
   },
   "tabsLabel": "Coleção",
   "summary": "Resumo",

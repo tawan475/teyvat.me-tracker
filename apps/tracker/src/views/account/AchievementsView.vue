@@ -447,7 +447,7 @@ async function importIds(ids: number[]): Promise<boolean> {
       <div class="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-6">
         <aside class="hidden lg:block">
           <div
-            class="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto rounded-xl border border-border-default bg-surface-raised p-2 shadow-sm"
+            class="sticky top-[4.5rem] max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-xl border border-border-default bg-surface-raised p-2 shadow-sm"
           >
             <AchievementCategories
               v-model="filters.goal"

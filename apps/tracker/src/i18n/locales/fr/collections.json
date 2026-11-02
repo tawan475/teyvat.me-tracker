@@ -24,7 +24,11 @@
     "notCaptured": "Pas encore capturé",
     "notCapturedBody": "Teyvat.me Capture les lit à la connexion. Toujours vide ? Mettez l'appli à jour.",
     "allCollected": "Tous collectés",
-    "noneCollected": "Aucun collecté"
+    "noneCollected": "Aucun collecté",
+    "region": "Région",
+    "search": "Numéro ou morceau",
+    "default": "Par défaut",
+    "defaultTip": "Chaque Théière commence avec ce morceau"
   },
   "tabsLabel": "Collection",
   "summary": "Résumé",

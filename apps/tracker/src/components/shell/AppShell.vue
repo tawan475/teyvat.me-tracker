@@ -363,6 +363,7 @@ const footButton =
            everything scrolling under it on every frame, over 90% of a scroll
            frame's work on a long page (measured 2026-10-30). -->
       <header
+        data-app-bar
         class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border-default bg-surface-nav px-4 shadow-sm sm:px-8"
       >
         <UiIconButton :label="$t('shell.openMenu')" class="-ml-2 lg:hidden" @click="drawer = true">

@@ -215,7 +215,7 @@ const view = computed<View>({
       </li>
     </ul>
 
-    <UiPanel flush>
+    <UiPanel flush sticky>
       <template #header>
         <div
           class="scroll-hide scroll-fade-x -mx-3 flex max-w-full overflow-x-auto px-3 sm:mx-0 sm:px-0"
@@ -241,6 +241,15 @@ const view = computed<View>({
             {{ chip.label }}
           </FilterChip>
         </div>
+      </template>
+
+      <template v-if="view === 'blueprints'" #toolbar>
+        <HaveFilter
+          v-model="filter"
+          :have="have"
+          :total="total"
+          :label="$t('collections.archive.show')"
+        />
       </template>
 
       <!-- Realms: comfort of the mansion and the outdoor blocks -->
@@ -403,12 +412,6 @@ const view = computed<View>({
 
       <!-- Blueprints -->
       <div v-else class="flex flex-col gap-3 p-3 sm:p-5">
-        <HaveFilter
-          v-model="filter"
-          :have="have"
-          :total="total"
-          :label="$t('collections.archive.show')"
-        />
         <EntryGrid
           v-if="shown.length > 0"
           :entries="shown"

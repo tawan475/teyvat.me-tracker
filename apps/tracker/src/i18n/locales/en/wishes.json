@@ -288,6 +288,7 @@
     "phase": "Phase {n}",
     "fours": "Featured 4★",
     "wishes": "wishes",
-    "skipped": "No wishes on this banner"
+    "skipped": "No wishes on this banner",
+    "fives": "{n}× 5★"
   }
 }

@@ -178,7 +178,9 @@
     "none": "Không có"
   },
   "modal": {
-    "pngSize": "PNG {size}"
+    "pngSize": "PNG {size}",
+    "wiki": "Wiki",
+    "wikiTitle": "Mở nhân vật này trên wiki Fandom"
   },
   "roster": {
     "share": "Chia sẻ nhân vật",
@@ -223,33 +225,8 @@
     "talentInfo": "Giới Thiệu",
     "skillAttributes": "Chi Tiết"
   },
-  "profile": {
-    "tabs": {
-      "label": "Chế độ xem nhân vật",
-      "build": "Build",
-      "profile": "Tài Liệu"
-    },
-    "loadFailed": "Không tải được tài liệu",
-    "none": "Dữ liệu game chưa có tài liệu",
-    "info": "Thông tin",
-    "fields": {
-      "title": "Danh Hiệu",
-      "birthday": "Sinh nhật",
-      "affiliation": "Thuộc",
-      "vision": "Vision",
-      "constellation": "Cung Mệnh"
-    },
-    "voice": "Lồng Tiếng",
-    "voices": {
-      "en": "Tiếng Anh",
-      "zh": "Tiếng Trung",
-      "ja": "Tiếng Nhật",
-      "ko": "Tiếng Hàn"
-    },
-    "wiki": "Mở trên wiki",
-    "stories": "Câu Chuyện",
-    "unlocked": "Đã mở {n}/{total}",
-    "showLocked": "Hiện nội dung bị khóa",
-    "friendship": "Yêu Thích {n}"
+  "unowned": {
+    "title": "Chưa có",
+    "wiki": "Mở {name} trên wiki"
   }
 }

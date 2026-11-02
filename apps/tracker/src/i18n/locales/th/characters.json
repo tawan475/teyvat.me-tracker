@@ -178,7 +178,9 @@
     "none": "ไม่มี"
   },
   "modal": {
-    "pngSize": "PNG {size}"
+    "pngSize": "PNG {size}",
+    "wiki": "วิกิ",
+    "wikiTitle": "เปิดตัวละครนี้ในวิกิ Fandom"
   },
   "roster": {
     "share": "แชร์รายชื่อตัวละคร",
@@ -223,33 +225,8 @@
     "talentInfo": "ข้อมูลพรสวรรค์",
     "skillAttributes": "ค่าสถานะสกิล"
   },
-  "profile": {
-    "tabs": {
-      "label": "มุมมองตัวละคร",
-      "build": "บิลด์",
-      "profile": "ข้อมูลเฉพาะ"
-    },
-    "loadFailed": "โหลดข้อมูลเฉพาะไม่สำเร็จ",
-    "none": "ยังไม่มีข้อมูลเฉพาะในข้อมูลเกม",
-    "info": "ข้อมูล",
-    "fields": {
-      "title": "ฉายา",
-      "birthday": "วันเกิด",
-      "affiliation": "สังกัด",
-      "vision": "วิชั่น",
-      "constellation": "กลุ่มดาว"
-    },
-    "voice": "เสียงพากย์",
-    "voices": {
-      "en": "อังกฤษ",
-      "zh": "จีน",
-      "ja": "ญี่ปุ่น",
-      "ko": "เกาหลี"
-    },
-    "wiki": "เปิดในวิกิ",
-    "stories": "เนื้อเรื่อง",
-    "unlocked": "ปลดล็อกแล้ว {n} จาก {total}",
-    "showLocked": "แสดงข้อความที่ล็อกอยู่",
-    "friendship": "ความประทับใจ {n}"
+  "unowned": {
+    "title": "ยังไม่มี",
+    "wiki": "เปิด {name} ในวิกิ"
   }
 }

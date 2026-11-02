@@ -178,7 +178,9 @@
     "none": "Keine"
   },
   "modal": {
-    "pngSize": "PNG, {size}"
+    "pngSize": "PNG, {size}",
+    "wiki": "Wiki",
+    "wikiTitle": "Diese Figur im Fandom-Wiki öffnen"
   },
   "roster": {
     "share": "Figuren teilen",
@@ -223,33 +225,8 @@
     "talentInfo": "Beschreibung",
     "skillAttributes": "Attribute"
   },
-  "profile": {
-    "tabs": {
-      "label": "Figurenansicht",
-      "build": "Build",
-      "profile": "Daten"
-    },
-    "loadFailed": "Daten konnten nicht geladen werden",
-    "none": "Noch keine Daten in den Spieldaten",
-    "info": "Infos",
-    "fields": {
-      "title": "Titel",
-      "birthday": "Geburtstag",
-      "affiliation": "Zugehörigkeit",
-      "vision": "Göttliches Auge",
-      "constellation": "Sternbild"
-    },
-    "voice": "Audiosprache",
-    "voices": {
-      "en": "Englisch",
-      "zh": "Chinesisch",
-      "ja": "Japanisch",
-      "ko": "Koreanisch"
-    },
-    "wiki": "Im Wiki öffnen",
-    "stories": "Hintergrund",
-    "unlocked": "{n} von {total} freigeschaltet",
-    "showLocked": "Gesperrten Text zeigen",
-    "friendship": "Freundschaft {n}"
+  "unowned": {
+    "title": "Nicht im Besitz",
+    "wiki": "{name} im Wiki öffnen"
   }
 }

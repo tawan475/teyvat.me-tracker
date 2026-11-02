@@ -288,6 +288,7 @@
     "phase": "Fase {n}",
     "fours": "4★ em destaque",
     "wishes": "orações",
-    "skipped": "Nenhuma oração neste banner"
+    "skipped": "Nenhuma oração neste banner",
+    "fives": "{n}× 5★"
   }
 }

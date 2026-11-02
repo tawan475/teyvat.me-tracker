@@ -256,11 +256,11 @@ const optionId = (i: number) => `site-search-${i}`
 </script>
 
 <template>
-  <UiModal :open="open" :title="$t('shell.search.title')" bare @close="open = false">
+  <UiModal :open="open" :title="$t('shell.search.title')" size="wide" bare @close="open = false">
     <div class="flex flex-col">
       <div class="sticky top-0 z-10 border-b border-border-default bg-surface-raised">
-        <label class="flex h-14 items-center gap-3 px-4 text-text-muted">
-          <Search class="size-5 shrink-0" aria-hidden="true" />
+        <label class="flex h-16 items-center gap-3 px-5 text-text-muted">
+          <Search class="size-6 shrink-0" aria-hidden="true" />
           <span class="sr-only">{{ $t('shell.search.title') }}</span>
           <input
             ref="input"
@@ -274,7 +274,7 @@ const optionId = (i: number) => `site-search-${i}`
             :placeholder="$t('shell.search.placeholder')"
             autocomplete="off"
             spellcheck="false"
-            class="min-w-0 flex-1 bg-transparent text-base text-text-primary outline-none placeholder:text-text-muted"
+            class="min-w-0 flex-1 bg-transparent text-lg text-text-primary outline-none placeholder:text-text-muted"
             @keydown="onKey"
           />
           <kbd
@@ -304,7 +304,7 @@ const optionId = (i: number) => `site-search-${i}`
         id="site-search-list"
         ref="list"
         role="listbox"
-        class="min-h-48 px-2 py-2"
+        class="min-h-[min(30rem,55dvh)] px-3 py-2"
         :aria-label="$t('shell.search.title')"
       >
         <p
@@ -328,7 +328,7 @@ const optionId = (i: number) => `site-search-${i}`
             role="option"
             :aria-selected="active === offset(g) + i"
             :data-index="offset(g) + i"
-            class="flex min-h-12 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left"
+            class="flex min-h-14 w-full items-center gap-3.5 rounded-lg px-2.5 py-2 text-left"
             :class="
               active === offset(g) + i
                 ? 'bg-surface-overlay outline outline-1 outline-accent-text'
@@ -338,7 +338,7 @@ const optionId = (i: number) => `site-search-${i}`
             @click="choose(entry)"
           >
             <span
-              class="flex size-9 shrink-0 items-center justify-center overflow-hidden"
+              class="flex size-11 shrink-0 items-center justify-center overflow-hidden"
               :class="[
                 entry.kind === 'character' ? 'rounded-full' : 'rounded-lg',
                 RARITY_SOFT[entry.rarity] ?? 'bg-surface-sunken',
@@ -359,8 +359,8 @@ const optionId = (i: number) => `site-search-${i}`
               <Package v-else class="size-4 text-text-muted" aria-hidden="true" />
             </span>
             <span class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-sm font-medium">{{ entry.name }}</span>
-              <span class="truncate text-xs text-text-muted">{{ sub(entry) }}</span>
+              <span class="truncate text-base font-medium">{{ entry.name }}</span>
+              <span class="truncate text-sm text-text-muted">{{ sub(entry) }}</span>
             </span>
             <CornerDownLeft
               v-if="active === offset(g) + i"

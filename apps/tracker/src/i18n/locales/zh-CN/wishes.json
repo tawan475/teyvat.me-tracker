@@ -288,6 +288,7 @@
     "phase": "第 {n} 期",
     "fours": "UP 4★",
     "wishes": "次祈愿",
-    "skipped": "未在此卡池祈愿"
+    "skipped": "未在此卡池祈愿",
+    "fives": "5★ ×{n}"
   }
 }

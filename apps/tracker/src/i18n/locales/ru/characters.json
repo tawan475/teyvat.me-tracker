@@ -178,7 +178,9 @@
     "none": "Нет"
   },
   "modal": {
-    "pngSize": "PNG {size}"
+    "pngSize": "PNG {size}",
+    "wiki": "Вики",
+    "wikiTitle": "Открыть персонажа в вики Fandom"
   },
   "roster": {
     "share": "Поделиться персонажами",
@@ -223,33 +225,8 @@
     "talentInfo": "Описание",
     "skillAttributes": "Характеристики"
   },
-  "profile": {
-    "tabs": {
-      "label": "Вид персонажа",
-      "build": "Сборка",
-      "profile": "О персонаже"
-    },
-    "loadFailed": "Не удалось загрузить сведения",
-    "none": "В игровых данных пока нет сведений",
-    "info": "Сведения",
-    "fields": {
-      "title": "Титул",
-      "birthday": "День рождения",
-      "affiliation": "Группа",
-      "vision": "Глаз Бога",
-      "constellation": "Созвездие"
-    },
-    "voice": "Озвучивание",
-    "voices": {
-      "en": "Английский",
-      "zh": "Китайский",
-      "ja": "Японский",
-      "ko": "Корейский"
-    },
-    "wiki": "Открыть в вики",
-    "stories": "История",
-    "unlocked": "Открыто {n} из {total}",
-    "showLocked": "Показать закрытый текст",
-    "friendship": "Дружба {n}"
+  "unowned": {
+    "title": "Нет",
+    "wiki": "Открыть «{name}» в вики"
   }
 }

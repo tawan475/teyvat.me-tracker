@@ -178,7 +178,9 @@
     "none": "なし"
   },
   "modal": {
-    "pngSize": "{size} PNG"
+    "pngSize": "{size} PNG",
+    "wiki": "Wiki",
+    "wikiTitle": "Fandom Wiki でこのキャラクターを開く"
   },
   "roster": {
     "share": "キャラ一覧を共有",
@@ -223,33 +225,8 @@
     "talentInfo": "天賦紹介",
     "skillAttributes": "ステータス詳細"
   },
-  "profile": {
-    "tabs": {
-      "label": "キャラクター表示",
-      "build": "ビルド",
-      "profile": "プロフィール"
-    },
-    "loadFailed": "プロフィールを読み込めませんでした",
-    "none": "ゲームデータにまだプロフィールがありません",
-    "info": "情報",
-    "fields": {
-      "title": "称号",
-      "birthday": "誕生日",
-      "affiliation": "所属",
-      "vision": "神の目",
-      "constellation": "命ノ星座"
-    },
-    "voice": "ボイス",
-    "voices": {
-      "en": "英語",
-      "zh": "中国語",
-      "ja": "日本語",
-      "ko": "韓国語"
-    },
-    "wiki": "Wiki で開く",
-    "stories": "ストーリー",
-    "unlocked": "{total} 件中 {n} 件解放",
-    "showLocked": "ロック中の文章を表示",
-    "friendship": "好感度 {n}"
+  "unowned": {
+    "title": "未所持",
+    "wiki": "{name}を Wiki で開く"
   }
 }

@@ -288,6 +288,7 @@
     "phase": "Phase {n}",
     "fours": "Vorgestellte 4★",
     "wishes": "Gebete",
-    "skipped": "Keine Gebete auf diesem Banner"
+    "skipped": "Keine Gebete auf diesem Banner",
+    "fives": "{n}× 5★"
   }
 }

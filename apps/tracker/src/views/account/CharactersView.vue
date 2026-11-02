@@ -13,6 +13,7 @@ import PageHeader from '@/components/ui/PageHeader.vue'
 import SavedTeams from '@/components/characters/SavedTeams.vue'
 import { teamMembers } from '@/components/characters/team-card'
 import UiButton from '@/components/ui/UiButton.vue'
+import UnownedCharacters from '@/components/characters/UnownedCharacters.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
@@ -104,6 +105,7 @@ watch(
 const { favorites, toggle: toggleFavorite } = useFavoriteCharacters(() => account.value.id)
 
 const all = computed(() => roster.value?.characters ?? [])
+const ownedKeys = computed(() => all.value.map((c) => c.key))
 const shown = computed(() =>
   sortCharacters(
     filterCharacters(all.value, filters, undefined, favorites.value),
@@ -459,6 +461,7 @@ watch(
         @open="open"
         @favorite="toggleFavorite"
       />
+      <UnownedCharacters class="mt-4" :owned="ownedKeys" :filters="filters" />
     </template>
 
     <CharacterModal

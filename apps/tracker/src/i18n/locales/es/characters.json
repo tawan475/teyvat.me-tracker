@@ -178,7 +178,9 @@
     "none": "Ninguno"
   },
   "modal": {
-    "pngSize": "PNG {size}"
+    "pngSize": "PNG {size}",
+    "wiki": "Wiki",
+    "wikiTitle": "Abrir este personaje en la wiki de Fandom"
   },
   "roster": {
     "share": "Compartir personajes",
@@ -223,33 +225,8 @@
     "talentInfo": "Descripción",
     "skillAttributes": "Atributos"
   },
-  "profile": {
-    "tabs": {
-      "label": "Vista del personaje",
-      "build": "Build",
-      "profile": "Info"
-    },
-    "loadFailed": "No se cargó la info",
-    "none": "Aún no hay info en los datos del juego",
-    "info": "Información",
-    "fields": {
-      "title": "Título",
-      "birthday": "Cumpleaños",
-      "affiliation": "Afiliación",
-      "vision": "Visión",
-      "constellation": "Constelación"
-    },
-    "voice": "Voz",
-    "voices": {
-      "en": "Inglés",
-      "zh": "Chino",
-      "ja": "Japonés",
-      "ko": "Coreano"
-    },
-    "wiki": "Abrir en la wiki",
-    "stories": "Historia",
-    "unlocked": "{n} de {total} desbloqueadas",
-    "showLocked": "Mostrar texto bloqueado",
-    "friendship": "Amistad {n}"
+  "unowned": {
+    "title": "No tienes",
+    "wiki": "Abrir {name} en la wiki"
   }
 }

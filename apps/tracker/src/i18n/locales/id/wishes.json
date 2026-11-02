@@ -288,6 +288,7 @@
     "phase": "Fase {n}",
     "fours": "4★ unggulan",
     "wishes": "wish",
-    "skipped": "Tidak ada wish di banner ini"
+    "skipped": "Tidak ada wish di banner ini",
+    "fives": "5★ ×{n}"
   }
 }

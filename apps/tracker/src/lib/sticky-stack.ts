@@ -29,23 +29,25 @@ export function useStickyToolbar(
   let observer: ResizeObserver | null = null
   let active = false
 
+  // The whole box (borders too, fractions kept): a header under it starts exactly at its foot.
   const report = () => {
     const node = el.value
     const on = !!node && enabled() && (options.always || wide.matches)
     document.documentElement.style.setProperty(
       '--stick-toolbar',
-      on ? `${node!.offsetHeight}px` : '0px',
+      on ? `${node!.getBoundingClientRect().height}px` : '0px',
     )
-    mark()
   }
   const mark = () => {
     const node = el.value
     if (!node) return
     const on = enabled() && (options.always || wide.matches)
-    node.toggleAttribute(
-      'data-stuck',
-      on && node.getBoundingClientRect().top <= appBarBottom() + PINNED,
-    )
+    const stuck = on && node.getBoundingClientRect().top <= appBarBottom() + PINNED
+    // Pinning squares the box (its borders change): measure it again.
+    if (stuck !== node.hasAttribute('data-stuck')) {
+      node.toggleAttribute('data-stuck', stuck)
+      report()
+    }
   }
 
   function start() {
@@ -53,10 +55,11 @@ export function useStickyToolbar(
     active = true
     owners++
     observer = new ResizeObserver(report)
-    observer.observe(el.value)
+    observer.observe(el.value, { box: 'border-box' })
     window.addEventListener('scroll', mark, { passive: true })
     wide.addEventListener('change', report)
     report()
+    mark()
   }
   function stop() {
     if (!active) return

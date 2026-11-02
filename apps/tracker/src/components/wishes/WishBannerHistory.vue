@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Search, SearchX } from 'lucide-vue-next'
+import { ChevronDown, Search, SearchX } from 'lucide-vue-next'
 import { characterInfo, weaponInfo } from '@gdt/game-data/catalog'
 import type { UigfGachaType } from '@gdt/shared'
 import FilterChip from '@/components/ui/FilterChip.vue'
@@ -34,12 +34,13 @@ import { readStorage, writeStorage } from '@/lib/storage'
 import { wishItemName } from './item-name'
 import { loadBannerFile } from './use-wish-stats'
 import WishItemIcon from './WishItemIcon.vue'
-import { BAND_COLOR, outcomeLabel, runDates } from './wish-labels'
+import { BAND_COLOR, OUTCOME_STYLE, outcomeLabel, runDates } from './wish-labels'
 
 /**
  * Banner history: every event banner that has opened, by version, newest
- * first — its featured 5★ and 4★, and the account's own run on it (wishes,
- * each 5★ with its pity and 50/50) or that it was skipped. Character, Weapon
+ * first — its featured 5★ and 4★, and the account's own run on it as a
+ * summary (wishes, 5★ count, 50/50s won and lost) that opens into each 5★
+ * with its pity and 50/50, or that it was skipped. Character, Weapon
  * and Chronicled; a name search and "only banners I wished on".
  */
 const props = defineProps<{
@@ -97,6 +98,23 @@ const shownKeys = (keys: readonly string[], max: number) => ({
 })
 const dates = (row: BannerHistoryRow) =>
   runDates({ banner: row.banner, pulls: 0, fives: [] }, isOpen(row))
+
+/** Banners opened into their 5★ (until the kind or filters change). */
+const expanded = ref<ReadonlySet<string>>(new Set())
+const rowKey = (row: BannerHistoryRow) => `${row.banner.start}:${row.banner.name}`
+function toggle(row: BannerHistoryRow) {
+  const next = new Set(expanded.value)
+  if (!next.delete(rowKey(row))) next.add(rowKey(row))
+  expanded.value = next
+}
+watch([kind, mine, needle], () => (expanded.value = new Set()))
+const outcomes = (row: BannerHistoryRow) => {
+  const fives = row.run?.fives ?? []
+  return {
+    won: fives.filter((f) => f.outcome === 'won').length,
+    lost: fives.filter((f) => f.outcome === 'lost').length,
+  }
+}
 
 const chipTitle = (row: PullRow) =>
   [
@@ -216,43 +234,71 @@ const chipTitle = (row: PullRow) =>
           </div>
         </div>
 
-        <div
-          class="flex min-h-14 min-w-0 flex-[1_1_18rem] items-center gap-3 rounded-lg px-3 py-2"
-          :class="
-            row.run && row.run.pulls
-              ? 'border border-border-default bg-surface-sunken'
-              : 'border border-dashed border-border-default'
-          "
+        <button
+          v-if="row.run && row.run.pulls"
+          type="button"
+          class="flex min-h-12 min-w-0 flex-[1_1_16rem] items-center gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
+          :aria-expanded="expanded.has(rowKey(row))"
+          @click="toggle(row)"
         >
-          <template v-if="row.run && row.run.pulls">
-            <div class="flex shrink-0 flex-col">
-              <span class="tabular font-mono text-lg font-semibold">{{
-                formatNumber(row.run.pulls)
-              }}</span>
-              <span class="text-xs text-text-muted">{{ $t('wishes.history.wishes') }}</span>
-            </div>
-            <div class="h-8 w-px shrink-0 bg-border-default" />
-            <div class="flex min-w-0 flex-wrap gap-1.5">
-              <span
-                v-for="five in [...row.run.fives].reverse()"
-                :key="five.pull.id.toString()"
-                class="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg bg-surface-raised py-0.5 pr-2 pl-0.5 text-xs"
-                :title="chipTitle(five)"
-              >
-                <WishItemIcon :item="five.pull.item" :outcome="five.outcome" size="sm" />
-                <span class="truncate">{{ wishItemName(five.pull.item) }}</span>
-                <span
-                  class="tabular shrink-0 font-mono font-bold"
-                  :style="{ color: BAND_COLOR[pityBand(five.pity, banner)] }"
-                  >{{ five.pity }}</span
-                >
-              </span>
-              <span v-if="!row.run.fives.length" class="text-xs text-text-muted">{{
-                $t('wishes.runs.no5')
-              }}</span>
-            </div>
-          </template>
-          <span v-else class="text-xs text-text-muted">{{ $t('wishes.history.skipped') }}</span>
+          <span class="flex shrink-0 items-baseline gap-1.5">
+            <span class="tabular font-mono text-lg font-semibold">{{
+              formatNumber(row.run.pulls)
+            }}</span>
+            <span class="text-xs text-text-muted">{{ $t('wishes.history.wishes') }}</span>
+          </span>
+          <span class="h-6 w-px shrink-0 bg-border-default" aria-hidden="true" />
+          <span class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span class="font-semibold text-rarity-5">{{
+              $t('wishes.history.fives', { n: row.run.fives.length })
+            }}</span>
+            <span
+              v-if="outcomes(row).won"
+              :class="OUTCOME_STYLE.won.text"
+              :title="outcomeLabel('won')"
+              >{{ OUTCOME_STYLE.won.mark }} {{ outcomes(row).won }}</span
+            >
+            <span
+              v-if="outcomes(row).lost"
+              :class="OUTCOME_STYLE.lost.text"
+              :title="outcomeLabel('lost')"
+              >{{ OUTCOME_STYLE.lost.mark }} {{ outcomes(row).lost }}</span
+            >
+          </span>
+          <ChevronDown
+            class="size-4 shrink-0 text-text-muted transition-transform"
+            :class="expanded.has(rowKey(row)) ? 'rotate-180' : ''"
+            aria-hidden="true"
+          />
+        </button>
+        <div
+          v-else
+          class="flex min-h-12 min-w-0 flex-[1_1_16rem] items-center rounded-lg border border-dashed border-border-default px-3 py-1.5 text-xs text-text-muted"
+        >
+          {{ $t('wishes.history.skipped') }}
+        </div>
+
+        <div
+          v-if="row.run && expanded.has(rowKey(row))"
+          class="flex basis-full flex-wrap gap-1.5 border-t border-border-default pt-3"
+        >
+          <span
+            v-for="five in [...row.run.fives].reverse()"
+            :key="five.pull.id.toString()"
+            class="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg bg-surface-sunken py-0.5 pr-2 pl-0.5 text-xs"
+            :title="chipTitle(five)"
+          >
+            <WishItemIcon :item="five.pull.item" :outcome="five.outcome" size="sm" />
+            <span class="truncate">{{ wishItemName(five.pull.item) }}</span>
+            <span
+              class="tabular shrink-0 font-mono font-bold"
+              :style="{ color: BAND_COLOR[pityBand(five.pity, banner)] }"
+              >{{ five.pity }}</span
+            >
+          </span>
+          <span v-if="!row.run.fives.length" class="text-xs text-text-muted">{{
+            $t('wishes.runs.no5')
+          }}</span>
         </div>
       </article>
     </section>

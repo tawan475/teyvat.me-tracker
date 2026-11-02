@@ -288,6 +288,7 @@
     "phase": "Giai đoạn {n}",
     "fours": "4★ được tăng tỷ lệ",
     "wishes": "lần",
-    "skipped": "Không cầu nguyện ở banner này"
+    "skipped": "Không cầu nguyện ở banner này",
+    "fives": "5★ ×{n}"
   }
 }

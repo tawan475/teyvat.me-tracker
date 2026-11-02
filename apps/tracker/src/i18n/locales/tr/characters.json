@@ -178,7 +178,9 @@
     "none": "Yok"
   },
   "modal": {
-    "pngSize": "{size} PNG"
+    "pngSize": "{size} PNG",
+    "wiki": "Wiki",
+    "wikiTitle": "Bu karakteri Fandom wiki’de aç"
   },
   "roster": {
     "share": "Karakterleri paylaş",
@@ -223,33 +225,8 @@
     "talentInfo": "Yetenek Bilgisi",
     "skillAttributes": "Beceri Özellikleri"
   },
-  "profile": {
-    "tabs": {
-      "label": "Karakter görünümü",
-      "build": "Yapı",
-      "profile": "Profil"
-    },
-    "loadFailed": "Profil yüklenemedi",
-    "none": "Oyun verisinde henüz profil yok",
-    "info": "Bilgi",
-    "fields": {
-      "title": "Unvan",
-      "birthday": "Doğum Günü",
-      "affiliation": "İlişki",
-      "vision": "Önsezi",
-      "constellation": "Takımyıldız"
-    },
-    "voice": "Seslendirme",
-    "voices": {
-      "en": "İngilizce",
-      "zh": "Çince",
-      "ja": "Japonca",
-      "ko": "Korece"
-    },
-    "wiki": "Wiki’de aç",
-    "stories": "Hikaye",
-    "unlocked": "{total} içinden {n} açık",
-    "showLocked": "Kilitli metni göster",
-    "friendship": "Arkadaşlık {n}"
+  "unowned": {
+    "title": "Sahip değilsin",
+    "wiki": "{name} karakterini wiki’de aç"
   }
 }

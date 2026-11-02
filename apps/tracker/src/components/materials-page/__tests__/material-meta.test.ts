@@ -7,7 +7,9 @@ import { describe, expect, it } from 'vitest'
 import { materialItem } from '../material-items'
 import {
   bagTabs,
+  collectedElsewhere,
   compareInGame,
+  loadCatalogKeys,
   loadMaterialMeta,
   materialMeta,
   metaFor,
@@ -184,5 +186,24 @@ describe('the page loader', () => {
     expect(ore).toMatchObject({ tab: 'weapon', count: 12, wallet: false })
     expect(materialItem('IntertwinedFate', 3)).toMatchObject({ tab: 'precious', wallet: true })
     expect(materialItem('Mora', 1)).toMatchObject({ tab: 'other', wallet: true })
+  })
+})
+
+describe("Don't have", () => {
+  it('leaves out what Collections tracks: blueprints, recipes, diagrams, spincrystals', () => {
+    expect(collectedElsewhere('RadiantSpincrystal12', 141012)).toBe(true)
+    expect(collectedElsewhere('RecipeZharkoye', 109655)).toBe(true)
+    expect(collectedElsewhere('DiagramAnemoTreasureCompass', 221009)).toBe(true)
+    expect(collectedElsewhere('WineOClock', 350013)).toBe(true)
+    expect(collectedElsewhere('AlchemistsCraftingBench', 394306)).toBe(true)
+    expect(collectedElsewhere('SilkenFeather', 113061)).toBe(false)
+    expect(collectedElsewhere('IntertwinedFate', 223)).toBe(false)
+  })
+
+  it('lists the bag catalog without them', async () => {
+    const keys = await loadCatalogKeys()
+    expect(keys).toContain('SilkenFeather')
+    expect(keys.some((key) => key.startsWith('RadiantSpincrystal'))).toBe(false)
+    expect(keys.length).toBeLessThan(2500)
   })
 })

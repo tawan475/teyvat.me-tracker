@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import { ChevronLeft } from 'lucide-vue-next'
+import { BookOpen, ChevronLeft } from 'lucide-vue-next'
 import type { AccountResponse } from '@gdt/shared'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
@@ -11,6 +11,8 @@ import { useResource } from '@/data/use-resource'
 import { useFavoriteCharacters } from '@/data/favorite-characters'
 import type { CharacterView } from '@/data/characters'
 import { canvasPng } from '@/lib/card-canvas'
+import { keyToName } from '@/lib/format'
+import { wikiPage } from '@/lib/wiki'
 import { useExpNeed } from '@/lib/exp-need'
 import { readJson, writeJson } from '@/lib/storage'
 import { resolvedTheme } from '@/lib/theme'
@@ -169,6 +171,9 @@ const exporter = useCardExport({
   title: () => c.value?.name ?? t('share.export.buildTitle'),
   pngLabel: () => t('share.export.downloadSized', { size: '1920 × 1080' }),
 })
+
+/** The character's Fandom wiki page: its English name (the GOOD key's words; the twins share one page). */
+const wikiOf = (key: string) => wikiPage(key.startsWith('Traveler') ? 'Traveler' : keyToName(key))
 </script>
 
 <template>
@@ -196,6 +201,17 @@ const exporter = useCardExport({
           @toggle="toggleFavorite(character.key)"
         />
       </div>
+      <a
+        v-if="character"
+        :href="wikiOf(character.key)"
+        target="_blank"
+        rel="noopener"
+        class="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-overlay hover:text-text-primary"
+        :title="$t('characters.modal.wikiTitle')"
+      >
+        <BookOpen class="size-4" aria-hidden="true" />
+        <span class="max-sm:sr-only">{{ $t('characters.modal.wiki') }}</span>
+      </a>
       <CardArtButton v-if="showcase && character" :control="cardArt" />
       <ShareActions
         v-if="showcase"

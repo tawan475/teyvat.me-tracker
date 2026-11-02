@@ -178,7 +178,9 @@
     "none": "Tidak ada"
   },
   "modal": {
-    "pngSize": "PNG {size}"
+    "pngSize": "PNG {size}",
+    "wiki": "Wiki",
+    "wikiTitle": "Buka karakter ini di wiki Fandom"
   },
   "roster": {
     "share": "Bagikan karakter",
@@ -223,33 +225,8 @@
     "talentInfo": "Info Talenta",
     "skillAttributes": "Stats Skill"
   },
-  "profile": {
-    "tabs": {
-      "label": "Tampilan karakter",
-      "build": "Build",
-      "profile": "Biodata"
-    },
-    "loadFailed": "Biodata gagal dimuat",
-    "none": "Belum ada biodata di data game",
-    "info": "Info",
-    "fields": {
-      "title": "Gelar",
-      "birthday": "Ulang Tahun",
-      "affiliation": "Afiliasi",
-      "vision": "Vision",
-      "constellation": "Konstelasi"
-    },
-    "voice": "Suara",
-    "voices": {
-      "en": "Inggris",
-      "zh": "Mandarin",
-      "ja": "Jepang",
-      "ko": "Korea"
-    },
-    "wiki": "Buka di wiki",
-    "stories": "Kisah",
-    "unlocked": "{n} dari {total} terbuka",
-    "showLocked": "Tampilkan teks terkunci",
-    "friendship": "Persahabatan {n}"
+  "unowned": {
+    "title": "Belum dimiliki",
+    "wiki": "Buka {name} di wiki"
   }
 }

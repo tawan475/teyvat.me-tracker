@@ -113,5 +113,43 @@
     "none": "Chưa liên kết thiết bị Capture nào",
     "get": "Tải Teyvat.me Capture"
   },
-  "lastSync": "Đồng bộ {time}"
+  "lastSync": "Đồng bộ {time}",
+  "search": {
+    "button": "Tìm kiếm",
+    "hint": "Tìm mọi thứ (Ctrl+K)",
+    "title": "Tìm kiếm",
+    "placeholder": "Nhân vật, vật phẩm, kẻ địch, thành tựu, trang…",
+    "scope": "Tìm trong",
+    "recent": "Gần đây",
+    "start": "Nhập tên",
+    "loading": "Đang tải tên…",
+    "failed": "Không tải được tên",
+    "empty": "Không có kết quả cho “{query}”",
+    "more": "thêm {n}",
+    "open": "mở",
+    "move": "di chuyển",
+    "close": "đóng",
+    "notOwned": "chưa có",
+    "owned": "có {n}",
+    "held": "có {n}",
+    "noneHeld": "chưa có",
+    "level": "Cấp {level} · C{c}",
+    "kinds": {
+      "all": "Tất cả",
+      "character": "Nhân vật",
+      "weapon": "Vũ khí",
+      "item": "Vật phẩm",
+      "enemy": "Kẻ địch",
+      "achievement": "Thành tựu",
+      "page": "Trang"
+    },
+    "kind": {
+      "character": "Nhân vật",
+      "weapon": "Vũ khí",
+      "item": "Vật phẩm",
+      "enemy": "Kẻ địch",
+      "achievement": "Thành tựu",
+      "page": "Trang"
+    }
+  }
 }

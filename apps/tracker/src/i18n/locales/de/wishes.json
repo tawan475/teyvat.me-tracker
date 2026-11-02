@@ -275,5 +275,19 @@
     "each": "{cost} pro Stück",
     "afford": "Du kannst {n} kaufen",
     "hint": "Laut Shop im Spiel um {time}"
+  },
+  "history": {
+    "title": "Bannerverlauf",
+    "viewMine": "Meine Gebete",
+    "view": "Gebetsansicht",
+    "kind": "Bannertyp",
+    "search": "Figur oder Waffe",
+    "mine": "Nur Banner, auf denen ich gebetet habe",
+    "none": "Kein Banner passt",
+    "version": "Version {version}",
+    "phase": "Phase {n}",
+    "fours": "Vorgestellte 4★",
+    "wishes": "Gebete",
+    "skipped": "Keine Gebete auf diesem Banner"
   }
 }

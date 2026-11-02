@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name}で{mora}節約",
     "nothing": "消費なし",
-    "colours": "色分け"
+    "colours": "色分け",
+    "short": "{n} 不足",
+    "haveOf": "{have} / {need}",
+    "shortOf": "{total} 件中 {n} 件不足",
+    "estimate": "見込み"
   },
   "common": {
     "search": "検索",

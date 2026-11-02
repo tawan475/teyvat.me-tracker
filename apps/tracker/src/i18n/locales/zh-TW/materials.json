@@ -76,7 +76,10 @@
     "spent": "消耗",
     "spentTitle": "消耗（{hint}）",
     "tile": "{name}：{count}",
-    "handSet": " · 手動設為 {hand}（擷取 {capture}）"
+    "handSet": " · 手動設為 {hand}（擷取 {capture}）",
+    "missing": "未擁有",
+    "missingTitle": "此帳號從未持有過的道具",
+    "missingNote": "此帳號的任何紀錄中都沒有出現過。點開可查看取得途徑。"
   },
   "detail": {
     "history": "歷史",

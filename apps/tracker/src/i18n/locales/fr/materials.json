@@ -76,7 +76,10 @@
     "spent": "Dépensés",
     "spentTitle": "Dépensés {hint}",
     "tile": "{name} : {count}",
-    "handSet": " · fixé à la main {hand} (capture {capture})"
+    "handSet": " · fixé à la main {hand} (capture {capture})",
+    "missing": "Pas possédé",
+    "missingTitle": "Objets que ce compte n’a jamais possédés",
+    "missingNote": "Absents de toutes les captures de ce compte. Ouvrez-en un pour voir d’où il vient."
   },
   "detail": {
     "history": "Historique",

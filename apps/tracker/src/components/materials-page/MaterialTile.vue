@@ -23,6 +23,8 @@ defineProps<{
   tracked: boolean
   edited: boolean
   label: string
+  /** Not dimmed at 0 ("Don't have": every tile is). */
+  undimmed?: boolean
 }>()
 defineEmits<{ open: [event: MouseEvent] }>()
 </script>
@@ -34,7 +36,7 @@ defineEmits<{ open: [event: MouseEvent] }>()
     :rarity="rarity"
     :label="label"
     stars
-    :class="count === 0 ? 'opacity-50 grayscale' : ''"
+    :class="count === 0 && !undimmed ? 'opacity-50 grayscale' : ''"
     @open="$emit('open', $event)"
   >
     <template v-if="tracked" #top-left>

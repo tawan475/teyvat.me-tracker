@@ -113,5 +113,43 @@
     "none": "Aucun appareil Capture lié",
     "get": "Obtenir Teyvat.me Capture"
   },
-  "lastSync": "Synchronisé {time}"
+  "lastSync": "Synchronisé {time}",
+  "search": {
+    "button": "Rechercher",
+    "hint": "Tout rechercher (Ctrl+K)",
+    "title": "Rechercher",
+    "placeholder": "Personnages, objets, ennemis, succès, pages…",
+    "scope": "Rechercher dans",
+    "recent": "Récents",
+    "start": "Saisissez un nom",
+    "loading": "Chargement des noms…",
+    "failed": "Les noms ne se sont pas chargés",
+    "empty": "Aucun résultat pour « {query} »",
+    "more": "{n} de plus",
+    "open": "ouvrir",
+    "move": "déplacer",
+    "close": "fermer",
+    "notOwned": "non possédé",
+    "owned": "{n} possédé(s)",
+    "held": "{n} possédé(s)",
+    "noneHeld": "non possédé",
+    "level": "Niv. {level} · C{c}",
+    "kinds": {
+      "all": "Tout",
+      "character": "Personnages",
+      "weapon": "Armes",
+      "item": "Objets",
+      "enemy": "Ennemis",
+      "achievement": "Succès",
+      "page": "Pages"
+    },
+    "kind": {
+      "character": "Personnage",
+      "weapon": "Arme",
+      "item": "Objet",
+      "enemy": "Ennemi",
+      "achievement": "Succès",
+      "page": "Page"
+    }
+  }
 }

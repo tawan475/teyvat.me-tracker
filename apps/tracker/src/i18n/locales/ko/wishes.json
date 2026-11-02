@@ -275,5 +275,19 @@
     "each": "개당 {cost}",
     "afford": "{n}개 구매 가능",
     "hint": "게임에서 {time}에 표시된 상점"
+  },
+  "history": {
+    "title": "배너 기록",
+    "viewMine": "내 기원",
+    "view": "기원 보기",
+    "kind": "배너 종류",
+    "search": "캐릭터 또는 무기",
+    "mine": "내가 기원한 배너만",
+    "none": "일치하는 배너가 없습니다",
+    "version": "{version} 버전",
+    "phase": "{n}차",
+    "fours": "픽업 4★",
+    "wishes": "회",
+    "skipped": "이 배너에서 기원하지 않음"
   }
 }

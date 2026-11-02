@@ -275,5 +275,19 @@
     "each": "{cost} l'uno",
     "afford": "Puoi comprarne {n}",
     "hint": "Secondo il negozio mostrato dal gioco {time}"
+  },
+  "history": {
+    "title": "Cronologia dei banner",
+    "viewMine": "I miei desideri",
+    "view": "Vista desideri",
+    "kind": "Tipo di banner",
+    "search": "Personaggio o arma",
+    "mine": "Solo i banner su cui ho espresso desideri",
+    "none": "Nessun banner corrisponde",
+    "version": "Versione {version}",
+    "phase": "Fase {n}",
+    "fours": "4★ in evidenza",
+    "wishes": "desideri",
+    "skipped": "Nessun desiderio su questo banner"
   }
 }

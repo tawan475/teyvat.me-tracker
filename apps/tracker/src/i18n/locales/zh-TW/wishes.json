@@ -275,5 +275,19 @@
     "each": "每個 {cost}",
     "afford": "可購買 {n} 個",
     "hint": "遊戲於 {time} 顯示的商店"
+  },
+  "history": {
+    "title": "卡池歷史",
+    "viewMine": "我的祈願",
+    "view": "祈願檢視",
+    "kind": "卡池類型",
+    "search": "角色或武器",
+    "mine": "只看我祈願過的卡池",
+    "none": "沒有符合的卡池",
+    "version": "{version} 版本",
+    "phase": "第 {n} 期",
+    "fours": "UP 4★",
+    "wishes": "次祈願",
+    "skipped": "未在此卡池祈願"
   }
 }

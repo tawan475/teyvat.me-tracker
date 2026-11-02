@@ -76,7 +76,10 @@
     "spent": "Gastos",
     "spentTitle": "Gastos {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · definido à mão {hand} (captura {capture})"
+    "handSet": " · definido à mão {hand} (captura {capture})",
+    "missing": "Não possui",
+    "missingTitle": "Itens que esta conta nunca teve",
+    "missingNote": "Não aparecem em nenhuma captura desta conta. Abra para ver de onde vêm."
   },
   "detail": {
     "history": "Histórico",

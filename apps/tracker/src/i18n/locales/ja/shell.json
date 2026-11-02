@@ -113,5 +113,43 @@
     "none": "Capture の端末が未接続",
     "get": "Teyvat.me Capture を入手"
   },
-  "lastSync": "{time}に同期"
+  "lastSync": "{time}に同期",
+  "search": {
+    "button": "検索",
+    "hint": "すべてを検索（Ctrl+K）",
+    "title": "検索",
+    "placeholder": "キャラクター、アイテム、敵、アチーブメント、ページ…",
+    "scope": "検索対象",
+    "recent": "最近",
+    "start": "名前を入力",
+    "loading": "名前を読み込み中…",
+    "failed": "名前を読み込めませんでした",
+    "empty": "「{query}」に一致するものはありません",
+    "more": "ほか {n} 件",
+    "open": "開く",
+    "move": "移動",
+    "close": "閉じる",
+    "notOwned": "未所持",
+    "owned": "{n} 所持",
+    "held": "{n} 所持",
+    "noneHeld": "未所持",
+    "level": "Lv.{level} · {c}凸",
+    "kinds": {
+      "all": "すべて",
+      "character": "キャラクター",
+      "weapon": "武器",
+      "item": "アイテム",
+      "enemy": "敵",
+      "achievement": "アチーブメント",
+      "page": "ページ"
+    },
+    "kind": {
+      "character": "キャラクター",
+      "weapon": "武器",
+      "item": "アイテム",
+      "enemy": "敵",
+      "achievement": "アチーブメント",
+      "page": "ページ"
+    }
+  }
 }

@@ -349,6 +349,22 @@ export const anecdoteMarks = sqliteTable(
 )
 
 /**
+ * Quests marked done by hand (migration 0036): MainQuest ids, the same ids as
+ * the capture's `gi_collections.quests` (captured ones come from snapshots).
+ */
+export const questMarks = sqliteTable(
+  'quest_marks',
+  {
+    accountId: integer('account_id')
+      .notNull()
+      .references(() => genshinAccounts.id, { onDelete: 'cascade' }),
+    questId: integer('quest_id').notNull(),
+    updatedAt: timestamp('updated_at'),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.questId] })],
+)
+
+/**
  * An account's wish history (migration 0023): the clock its pull times are
  * on (hours from UTC, set by the first import) and a version that moves
  * with every change (the history's ETag, and what concurrent imports check

@@ -248,33 +248,46 @@ export function noticeShortTitle(title: string): string {
 
 // ------------------------------------------------------------- domain events
 
-/** Days every domain stays open after a new banner phase (the user's rule, 2026-10-14). */
+/** Days every domain stays open after a new version's banners (the user's rule, 2026-10-14). */
 export const BANNER_ABUNDANCE_DAYS = 7
 
+/** A version's second banners open at 18:00 server time; its first ones after the update. */
+const PHASE_TWO_TIME = 'T18:00'
+
 /**
- * One Overflowing Abundance window per distinct banner phase start: every
- * talent book and weapon material domain open from the banners' start to
- * 04:00 seven days later (the owner's observation since 7.1: "always
- * happening now, after a new banner drop, for 7 days").
+ * One Overflowing Abundance window per new version: every talent book and
+ * weapon material domain open for seven days (to 04:00) from the version's
+ * first banners (the owner's observation since 7.1; only the version's
+ * start, not its second phase: the user's call, 2026-11-02). The board
+ * lists the next version's banners before the running ones end, so a
+ * window opens only once those have.
  */
 export function bannerAbundance(
   wishes: readonly NoticeWindow[],
   version = '',
 ): DomainEventWindow[] {
   const starts = [...new Set(wishes.map((w) => w.start))].sort()
-  return starts.map((start) => {
-    const day = start.slice(0, 10)
-    const end = `${addMinutes(`${day}T04:00`, BANNER_ABUNDANCE_DAYS * 24 * 60)}`
-    return {
+  const out: DomainEventWindow[] = []
+  for (const start of starts) {
+    if (start.endsWith(PHASE_TWO_TIME)) continue
+    const running = wishes
+      .filter((w) => w.start < start && w.end && w.end > start)
+      .map((w) => w.end!)
+      .sort()
+      .at(-1)
+    const from = running ?? start
+    const end = addMinutes(`${from.slice(0, 10)}T04:00`, BANNER_ABUNDANCE_DAYS * 24 * 60)
+    out.push({
       kind: 'abundance',
-      start,
+      start: from,
       end,
       multiplier: 2,
       dailyClaims: 3,
       version,
       source: 'banner',
-    }
-  })
+    })
+  }
+  return out
 }
 
 const OVERFLOWING: readonly [RegExp, DomainEventKind][] = [

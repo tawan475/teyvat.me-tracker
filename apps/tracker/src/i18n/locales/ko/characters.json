@@ -222,5 +222,34 @@
   "tip": {
     "talentInfo": "특성 소개",
     "skillAttributes": "상세 속성"
+  },
+  "profile": {
+    "tabs": {
+      "label": "캐릭터 보기",
+      "build": "빌드",
+      "profile": "자료"
+    },
+    "loadFailed": "자료를 불러오지 못했습니다",
+    "none": "게임 데이터에 아직 자료가 없습니다",
+    "info": "정보",
+    "fields": {
+      "title": "호칭",
+      "birthday": "생일",
+      "affiliation": "소속",
+      "vision": "신의 눈",
+      "constellation": "운명의 자리"
+    },
+    "voice": "음성",
+    "voices": {
+      "en": "영어",
+      "zh": "중국어",
+      "ja": "일본어",
+      "ko": "한국어"
+    },
+    "wiki": "위키에서 열기",
+    "stories": "스토리",
+    "unlocked": "{total}개 중 {n}개 해금",
+    "showLocked": "잠긴 내용 보기",
+    "friendship": "호감도 {n}"
   }
 }

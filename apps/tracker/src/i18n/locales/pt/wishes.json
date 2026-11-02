@@ -275,5 +275,19 @@
     "each": "{cost} cada",
     "afford": "Pode comprar {n}",
     "hint": "Conforme a loja mostrada no jogo em {time}"
+  },
+  "history": {
+    "title": "Histórico de banners",
+    "viewMine": "Minhas orações",
+    "view": "Visualização de orações",
+    "kind": "Tipo de banner",
+    "search": "Personagem ou arma",
+    "mine": "Só banners em que orei",
+    "none": "Nenhum banner corresponde",
+    "version": "Versão {version}",
+    "phase": "Fase {n}",
+    "fours": "4★ em destaque",
+    "wishes": "orações",
+    "skipped": "Nenhuma oração neste banner"
   }
 }

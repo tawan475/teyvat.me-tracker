@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ArrowDownUp, Clock, Sparkles } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -8,8 +8,10 @@ import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiStat from '@/components/ui/UiStat.vue'
 import WishBannerCard from '@/components/wishes/WishBannerCard.vue'
+import WishBannerHistory from '@/components/wishes/WishBannerHistory.vue'
 import WishBannerSummary from '@/components/wishes/WishBannerSummary.vue'
 import WishBargains from '@/components/wishes/WishBargains.vue'
 import WishMonthChart from '@/components/wishes/WishMonthChart.vue'
@@ -21,6 +23,7 @@ import { WISH_BANNERS, bannerInfo, formatPity, wishMinute } from '@/components/w
 import { EXPECTED_PITY, PRIMOS_PER_PULL, monthlyPulls, type BannerStats } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
+import { readStorage, writeStorage } from '@/lib/storage'
 import { loadLatestInventory } from '@/data/account-data'
 import { useResource } from '@/data/use-resource'
 import { useAccount, useAccountRoute, useReadOnly } from './context'
@@ -100,6 +103,16 @@ function retry() {
 }
 
 const dialog = ref(false)
+
+/** My wishes, or every banner that has opened with the account's run on each (per device). */
+type View = 'mine' | 'banners'
+const VIEW_KEY = 'wishes:view'
+const view = ref<View>(readStorage(VIEW_KEY) === 'banners' ? 'banners' : 'mine')
+watch(view, (value) => writeStorage(VIEW_KEY, value === 'mine' ? null : value))
+const views = computed(() => [
+  { value: 'mine' as const, label: t('wishes.history.viewMine') },
+  { value: 'banners' as const, label: t('wishes.history.title') },
+])
 </script>
 
 <template>
@@ -134,7 +147,14 @@ const dialog = ref(false)
     />
 
     <template v-else-if="ready && history && stats">
-      <UiPanel v-if="history.total === 0" flush>
+      <UiSegmented
+        v-model="view"
+        :options="views"
+        :label="$t('wishes.history.view')"
+        class="mb-4"
+      />
+      <WishBannerHistory v-if="view === 'banners'" :history="history" :stats="stats" />
+      <UiPanel v-else-if="history.total === 0" flush>
         <div :title="$t('wishes.overview.syncHelp')">
           <UiEmpty :title="$t('wishes.overview.empty')" :body="$t('wishes.overview.emptyBody')">
             <template #icon><Sparkles aria-hidden="true" /></template>
@@ -145,7 +165,7 @@ const dialog = ref(false)
         </div>
       </UiPanel>
       <WishBargains
-        v-if="history.total === 0 && capture.data.value"
+        v-if="view === 'mine' && history.total === 0 && capture.data.value"
         class="mt-4"
         :bargains="bargains"
         :materials="bag"
@@ -153,7 +173,7 @@ const dialog = ref(false)
         :now="Date.now()"
       />
 
-      <div v-else class="flex flex-col gap-4">
+      <div v-if="view === 'mine' && history.total > 0" class="flex flex-col gap-4">
         <!-- items-start: an open card's list hangs below it, never stretching its row. -->
         <section
           :aria-label="$t('wishes.overview.banners')"

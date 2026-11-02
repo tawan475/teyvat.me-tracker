@@ -15,6 +15,7 @@ import type {
   AccountRole,
   InvitationResponse,
   AnecdoteMarksResponse,
+  QuestMarksResponse,
   BootstrapResponse,
   AccountResponse,
   AccountSettingsPatch,
@@ -331,6 +332,15 @@ export const api = {
   updateAnecdoteMarks: (id: number, body: { done?: number[]; undone?: number[] }) =>
     accountWrite(id, () =>
       requestJson<AnecdoteMarksResponse>(`/api/accounts/${id}/anecdote-marks`, {
+        method: 'PATCH',
+        json: body,
+      }),
+    ),
+  questMarks: (id: number) => requestJson<QuestMarksResponse>(accountRead(id, 'quest-marks')),
+  /** `done` is applied before `undone`. Answers with the full list. */
+  updateQuestMarks: (id: number, body: { done?: number[]; undone?: number[] }) =>
+    accountWrite(id, () =>
+      requestJson<QuestMarksResponse>(`/api/accounts/${id}/quest-marks`, {
         method: 'PATCH',
         json: body,
       }),

@@ -307,18 +307,12 @@
     },
     "noMatch": "Tidak ada yang cocok",
     "level": "Level",
-    "baseStats": "Stats Dasar",
     "hp": "HP",
-    "hpPlayers": "HP ({n} pemain)",
     "atk": "ATK",
     "def": "DEF",
     "em": "EM",
     "scaling": "Skala",
     "monsterId": "Monster {id}",
-    "scalingBase": "Dasar",
-    "scalingCurve": "Kurva di Lv. {n}",
-    "scalingValue": "Nilai",
-    "scalingCoop": "Bonus Co-op (2P / 3P / 4P):",
     "res": "RES Elemental",
     "resHigh": "Di atas 10% biasa: tahan terhadap ini",
     "resLow": "Di bawah 10% biasa: lemah terhadap ini",
@@ -346,6 +340,46 @@
     "unfoldAll": "Buka semua kategori",
     "openWorld": "Dunia terbuka",
     "version": "Versi",
-    "fightBonusTip": "HP di Lv. {n} pada versi ini × bonus HP pertarungan ini"
+    "fightBonusTip": "HP di Lv. {n} pada versi ini × bonus HP pertarungan ini",
+    "players": "Pemain",
+    "playersN": "{n}P",
+    "levelDown": "Turunkan level",
+    "levelUp": "Naikkan level",
+    "scalingWiki": "Cara stat musuh bertambah",
+    "baseLink": "Dasar",
+    "curveLink": "Pengali Lv. {n}",
+    "fight": "Pertarungan",
+    "hpAbove": "HP di atas",
+    "fightLink": "HP di {where}",
+    "coop": "Co-op",
+    "coopX": "{n}P ×{x}",
+    "hpMultipliers": "Pengali HP"
+  },
+  "quests": {
+    "kind": "Jenis quest",
+    "kinds": {
+      "archon": "Quest Archon",
+      "story": "Quest Story",
+      "world": "Quest Dunia"
+    },
+    "legend": "Penanda",
+    "states": {
+      "done": "Selesai",
+      "active": "Sedang berlangsung",
+      "none": "Belum dimulai"
+    },
+    "byHand": "Ditandai olehmu",
+    "fromCapture": "dari rekamanmu",
+    "mark": "tandai selesai",
+    "unmark": "hapus tandamu",
+    "chapters": "Bab",
+    "search": "Cari quest",
+    "filters": {
+      "all": "Semua",
+      "left": "Belum selesai",
+      "done": "Selesai"
+    },
+    "needsCapture": "Status selesai dan berlangsung berasal dari Teyvat.me Capture 1.16 atau lebih baru; sebelum itu, tandai quest secara manual.",
+    "notSaved": "Tanda quest tidak tersimpan"
   }
 }

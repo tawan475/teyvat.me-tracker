@@ -9,10 +9,12 @@ import {
   shallowRef,
   watch,
 } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { CheckCheck, FileUp, Info, SearchX } from 'lucide-vue-next'
 import { achievementText, loadAchievements } from '@gdt/game-data'
 import {
   DEFAULT_ACHIEVEMENT_FILTERS,
+  NO_ACHIEVEMENT_FILTERS,
   achievementVersions,
   countAchievements,
   filterAchievements,
@@ -197,6 +199,20 @@ watch(
     })
     if (known.goal !== filters.goal) filters.goal = known.goal
     if (known.version !== filters.version) filters.version = known.version
+  },
+  { immediate: true },
+)
+// `?q=<title>` (the site search): that search over every category and state, then the URL lets go.
+const route = useRoute()
+const router = useRouter()
+watch(
+  () => route.query.q,
+  (q) => {
+    if (typeof q !== 'string' || !q) return
+    Object.assign(filters, NO_ACHIEVEMENT_FILTERS, { query: q })
+    const query = { ...route.query }
+    delete query.q
+    void router.replace({ query })
   },
   { immediate: true },
 )

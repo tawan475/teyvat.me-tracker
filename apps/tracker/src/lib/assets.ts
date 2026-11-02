@@ -85,6 +85,11 @@ export function setTravelerGender(gender: TravelerGender): void {
   traveler.value = gender
 }
 
+/** Which twin the Traveler is (reactive). */
+export function travelerGender(): TravelerGender {
+  return traveler.value
+}
+
 const isTraveler = (key: string) => key.startsWith('Traveler')
 
 /** Square character portrait. */

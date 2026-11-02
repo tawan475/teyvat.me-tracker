@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} 節省 {mora}",
     "nothing": "無需消耗",
-    "colours": "顏色說明"
+    "colours": "顏色說明",
+    "short": "缺 {n}",
+    "haveOf": "{have} / {need}",
+    "shortOf": "{total} 項中缺 {n} 項",
+    "estimate": "預估"
   },
   "common": {
     "search": "搜尋",

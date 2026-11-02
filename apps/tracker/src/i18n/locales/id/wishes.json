@@ -275,5 +275,19 @@
     "each": "{cost} per buah",
     "afford": "Bisa membeli {n}",
     "hint": "Sesuai toko yang ditampilkan game pada {time}"
+  },
+  "history": {
+    "title": "Riwayat banner",
+    "viewMine": "Wish saya",
+    "view": "Tampilan wish",
+    "kind": "Jenis banner",
+    "search": "Karakter atau senjata",
+    "mine": "Hanya banner yang saya wish",
+    "none": "Tidak ada banner yang cocok",
+    "version": "Versi {version}",
+    "phase": "Fase {n}",
+    "fours": "4★ unggulan",
+    "wishes": "wish",
+    "skipped": "Tidak ada wish di banner ini"
   }
 }

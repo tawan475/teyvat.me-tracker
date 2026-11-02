@@ -76,7 +76,10 @@
     "spent": "ใช้ไป",
     "spentTitle": "ใช้ไป {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · ตั้งเอง {hand} (สแกน {capture})"
+    "handSet": " · ตั้งเอง {hand} (สแกน {capture})",
+    "missing": "ยังไม่มี",
+    "missingTitle": "ไอเทมที่บัญชีนี้ไม่เคยมี",
+    "missingNote": "ไม่เคยปรากฏในข้อมูลใดของบัญชีนี้ เปิดเพื่อดูวิธีได้รับ"
   },
   "detail": {
     "history": "ประวัติ",

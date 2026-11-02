@@ -275,5 +275,19 @@
     "each": "{cost} l'unité",
     "afford": "Vous pouvez en acheter {n}",
     "hint": "D'après la boutique affichée en jeu {time}"
+  },
+  "history": {
+    "title": "Historique des bannières",
+    "viewMine": "Mes vœux",
+    "view": "Vue des vœux",
+    "kind": "Type de bannière",
+    "search": "Personnage ou arme",
+    "mine": "Seulement les bannières où j’ai fait des vœux",
+    "none": "Aucune bannière ne correspond",
+    "version": "Version {version}",
+    "phase": "Phase {n}",
+    "fours": "4★ en vedette",
+    "wishes": "vœux",
+    "skipped": "Aucun vœu sur cette bannière"
   }
 }

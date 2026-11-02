@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} spart {mora}",
     "nothing": "Nichts auszugeben",
-    "colours": "Farben"
+    "colours": "Farben",
+    "short": "{n} fehlen",
+    "haveOf": "{have} von {need}",
+    "shortOf": "{n} von {total} fehlen",
+    "estimate": "Schätzung"
   },
   "common": {
     "search": "Suchen",

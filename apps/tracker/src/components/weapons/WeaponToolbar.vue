@@ -76,7 +76,7 @@ function toggleRarity(r: (typeof WEAPON_RARITIES)[number]) {
 </script>
 
 <template>
-  <UiToolbar :label="$t('weapons.toolbar.label')">
+  <UiToolbar :label="$t('weapons.toolbar.label')" sticky>
     <div class="flex flex-wrap items-center gap-2">
       <label class="relative min-w-0 basis-full sm:min-w-48 sm:basis-0 sm:flex-1">
         <span class="sr-only">{{ $t('characters.toolbar.search') }}</span>

@@ -76,7 +76,10 @@
     "spent": "소모",
     "spentTitle": "소모 {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · 직접 설정 {hand} (캡처 {capture})"
+    "handSet": " · 직접 설정 {hand} (캡처 {capture})",
+    "missing": "미보유",
+    "missingTitle": "이 계정이 한 번도 보유하지 않은 아이템",
+    "missingNote": "이 계정의 어떤 기록에도 없었던 아이템입니다. 열어서 획득 방법을 확인하세요."
   },
   "detail": {
     "history": "기록",

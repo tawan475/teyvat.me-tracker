@@ -222,5 +222,34 @@
   "tip": {
     "talentInfo": "天赋介绍",
     "skillAttributes": "详细属性"
+  },
+  "profile": {
+    "tabs": {
+      "label": "角色视图",
+      "build": "配置",
+      "profile": "资料"
+    },
+    "loadFailed": "资料加载失败",
+    "none": "游戏数据中暂无资料",
+    "info": "信息",
+    "fields": {
+      "title": "称号",
+      "birthday": "生日",
+      "affiliation": "所属",
+      "vision": "神之眼",
+      "constellation": "命之座"
+    },
+    "voice": "语音",
+    "voices": {
+      "en": "英语",
+      "zh": "汉语",
+      "ja": "日语",
+      "ko": "韩语"
+    },
+    "wiki": "在 Wiki 中打开",
+    "stories": "故事",
+    "unlocked": "已解锁 {n}/{total}",
+    "showLocked": "显示未解锁的内容",
+    "friendship": "好感 {n}"
   }
 }

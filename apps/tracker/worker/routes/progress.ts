@@ -24,6 +24,7 @@ import {
   plannerStatePatch,
   plannerTargetsPatch,
   plannerTasksPatch,
+  questMarksPatch,
   type AchievementMarksResponse,
   type AnecdoteMarksResponse,
   type CurrentOverride,
@@ -33,6 +34,7 @@ import {
   type PlannerTargetsResponse,
   type PlannerTask,
   type PlannerTasksResponse,
+  type QuestMarksResponse,
 } from '@gdt/shared'
 import { Hono } from 'hono'
 import { getDb } from '../db/client'
@@ -53,6 +55,9 @@ const SELECT_MARKS =
 
 const SELECT_ANECDOTE_MARKS =
   'SELECT anecdote_id AS id FROM anecdote_marks WHERE account_id = ?1 ORDER BY anecdote_id'
+
+const SELECT_QUEST_MARKS =
+  'SELECT quest_id AS id FROM quest_marks WHERE account_id = ?1 ORDER BY quest_id'
 
 /** Goals by kind and key; weapon goals in the order they were made (rowid). */
 const SELECT_TARGETS = `SELECT kind, NULL AS id, key, owner, target, updated_at AS updatedAt, 0 AS n
@@ -286,6 +291,57 @@ export const progress = new Hono<AppEnv>()
       c.get('userId'),
     )
     return c.json<AnecdoteMarksResponse>({ done: rows.map((r) => r.id) })
+  })
+
+  .get('/:id/quest-marks', async (c) => {
+    const id = idParam(c, 'id')
+    await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const rows = await c.env.DB.prepare(SELECT_QUEST_MARKS).bind(id).all<{ id: number }>()
+    return c.json<QuestMarksResponse>({ done: rows.results.map((r) => r.id) })
+  })
+
+  /** `done` is applied before `undone`, so an id in both ends up unmarked. */
+  .patch('/:id/quest-marks', async (c) => {
+    const id = idParam(c, 'id')
+    const body = await parseJson(c, questMarksPatch)
+    await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'edit')
+    const d1 = c.env.DB
+    const statements: D1PreparedStatement[] = []
+    if (body.done.length > 0) {
+      statements.push(
+        // `WHERE true` resolves SQLite's INSERT … SELECT … ON CONFLICT parse ambiguity.
+        d1
+          .prepare(
+            `INSERT INTO quest_marks (account_id, quest_id, updated_at)
+             SELECT ?1, value, ?2 FROM json_each(?3) WHERE true
+             ON CONFLICT (account_id, quest_id) DO UPDATE SET updated_at = excluded.updated_at`,
+          )
+          .bind(id, Date.now(), JSON.stringify(body.done)),
+      )
+    }
+    if (body.undone.length > 0) {
+      statements.push(
+        d1
+          .prepare(
+            `DELETE FROM quest_marks
+             WHERE account_id = ?1 AND quest_id IN (SELECT value FROM json_each(?2))`,
+          )
+          .bind(id, JSON.stringify(body.undone)),
+      )
+    }
+    const results = await d1.batch([
+      ...statements,
+      d1.prepare(SELECT_QUEST_MARKS).bind(id),
+      listenerStatement(d1, id),
+    ])
+    const rows = (results.at(-2)!.results ?? []) as { id: number }[]
+    notifyAccount(
+      c,
+      listenerOf(results.at(-1)),
+      { type: 'planner', accountId: id, ...senderTab(c) },
+      c.get('userId'),
+    )
+    return c.json<QuestMarksResponse>({ done: rows.map((r) => r.id) })
   })
 
   .get('/:id/planner-targets', async (c) => {

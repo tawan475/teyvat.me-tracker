@@ -113,5 +113,43 @@
     "none": "Nessun dispositivo Capture collegato",
     "get": "Scarica Teyvat.me Capture"
   },
-  "lastSync": "Sincronizzato {time}"
+  "lastSync": "Sincronizzato {time}",
+  "search": {
+    "button": "Cerca",
+    "hint": "Cerca ovunque (Ctrl+K)",
+    "title": "Cerca",
+    "placeholder": "Personaggi, oggetti, nemici, obiettivi, pagine…",
+    "scope": "Cerca in",
+    "recent": "Recenti",
+    "start": "Scrivi un nome",
+    "loading": "Caricamento dei nomi…",
+    "failed": "Nomi non caricati",
+    "empty": "Nessun risultato per “{query}”",
+    "more": "altri {n}",
+    "open": "apri",
+    "move": "sposta",
+    "close": "chiudi",
+    "notOwned": "non posseduto",
+    "owned": "{n} posseduti",
+    "held": "{n} posseduti",
+    "noneHeld": "non posseduto",
+    "level": "Liv. {level} · C{c}",
+    "kinds": {
+      "all": "Tutto",
+      "character": "Personaggi",
+      "weapon": "Armi",
+      "item": "Oggetti",
+      "enemy": "Nemici",
+      "achievement": "Obiettivi",
+      "page": "Pagine"
+    },
+    "kind": {
+      "character": "Personaggio",
+      "weapon": "Arma",
+      "item": "Oggetto",
+      "enemy": "Nemico",
+      "achievement": "Obiettivo",
+      "page": "Pagina"
+    }
+  }
 }

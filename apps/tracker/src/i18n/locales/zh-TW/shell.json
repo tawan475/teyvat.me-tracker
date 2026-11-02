@@ -113,5 +113,43 @@
     "none": "未連接 Capture 裝置",
     "get": "取得 Teyvat.me Capture"
   },
-  "lastSync": "同步於 {time}"
+  "lastSync": "同步於 {time}",
+  "search": {
+    "button": "搜尋",
+    "hint": "搜尋全部（Ctrl+K）",
+    "title": "搜尋",
+    "placeholder": "角色、道具、敵人、成就、頁面…",
+    "scope": "搜尋範圍",
+    "recent": "最近",
+    "start": "輸入名稱",
+    "loading": "正在載入名稱…",
+    "failed": "名稱載入失敗",
+    "empty": "沒有符合「{query}」的結果",
+    "more": "還有 {n} 個",
+    "open": "開啟",
+    "move": "移動",
+    "close": "關閉",
+    "notOwned": "未擁有",
+    "owned": "擁有 {n}",
+    "held": "持有 {n}",
+    "noneHeld": "未持有",
+    "level": "等級 {level} · {c}命",
+    "kinds": {
+      "all": "全部",
+      "character": "角色",
+      "weapon": "武器",
+      "item": "道具",
+      "enemy": "敵人",
+      "achievement": "成就",
+      "page": "頁面"
+    },
+    "kind": {
+      "character": "角色",
+      "weapon": "武器",
+      "item": "道具",
+      "enemy": "敵人",
+      "achievement": "成就",
+      "page": "頁面"
+    }
+  }
 }

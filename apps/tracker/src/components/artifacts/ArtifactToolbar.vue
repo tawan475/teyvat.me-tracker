@@ -384,7 +384,7 @@ function clearAll() {
 </script>
 
 <template>
-  <UiToolbar :label="$t('artifacts.toolbar.label')">
+  <UiToolbar :label="$t('artifacts.toolbar.label')" sticky>
     <div class="flex flex-wrap gap-2">
       <label class="relative min-w-0 flex-auto basis-56">
         <span class="sr-only">{{ $t('artifacts.toolbar.searchLabel') }}</span>

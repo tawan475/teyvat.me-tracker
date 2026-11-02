@@ -21,6 +21,7 @@ async function loadMaterials(
 
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Package, Upload } from 'lucide-vue-next'
 import { useChartRange } from '@/components/charts/use-chart-range'
 import MaterialDetail from '@/components/materials-page/MaterialDetail.vue'
@@ -39,6 +40,7 @@ import {
 } from '@/components/materials-page/material-items'
 import {
   bagTabs,
+  loadCatalogKeys,
   loadMaterialMeta,
   WALLET_KEYS,
   walletLabel,
@@ -133,6 +135,19 @@ const hint = computed(() =>
 const items = computed(() => (history.value ? buildItems(history.value) : []))
 const byKey = computed(() => new Map(items.value.map((item) => [item.key, item])))
 
+/** "Don't have": the Inventory's items no snapshot ever held (the list loads on its own). */
+const catalogKeys = shallowRef<string[] | null>(null)
+loadCatalogKeys().then(
+  (keys) => (catalogKeys.value = keys),
+  () => (catalogKeys.value = []),
+)
+const missing = computed(() => {
+  const keys = catalogKeys.value
+  if (!keys || !history.value) return null
+  const held = history.value.series
+  return keys.filter((key) => !held.has(key)).map((key) => materialItem(key, 0))
+})
+
 const wallet = computed<WalletItem[]>(() => {
   const list: WalletItem[] = []
   for (const key of WALLET_KEYS) {
@@ -203,6 +218,21 @@ const detailItem = computed<MaterialItem | null>(() => {
   return byKey.value.get(key) ?? materialItem(key, 0)
 })
 const pickerOpen = ref(false)
+
+// `?m=<key>` (the site search) opens that material's detail, then leaves the URL.
+const route = useRoute()
+const router = useRouter()
+watch(
+  () => route.query.m,
+  (key) => {
+    if (typeof key !== 'string' || !key) return
+    detailKey.value = key
+    const query = { ...route.query }
+    delete query.m
+    void router.replace({ query })
+  },
+  { immediate: true },
+)
 
 watch(
   () => account.value.id,
@@ -281,6 +311,7 @@ const importTo = computed(() => ({
       :icon="icon"
       :import-to="importTo"
       :edited="edited"
+      :missing="missing"
       @open="openTile"
     />
 

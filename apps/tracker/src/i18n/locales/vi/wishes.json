@@ -275,5 +275,19 @@
     "each": "{cost} mỗi cái",
     "afford": "Có thể mua {n}",
     "hint": "Theo cửa hàng game hiển thị lúc {time}"
+  },
+  "history": {
+    "title": "Lịch sử banner",
+    "viewMine": "Cầu nguyện của tôi",
+    "view": "Chế độ xem cầu nguyện",
+    "kind": "Loại banner",
+    "search": "Nhân vật hoặc vũ khí",
+    "mine": "Chỉ banner tôi đã cầu nguyện",
+    "none": "Không có banner phù hợp",
+    "version": "Phiên bản {version}",
+    "phase": "Giai đoạn {n}",
+    "fours": "4★ được tăng tỷ lệ",
+    "wishes": "lần",
+    "skipped": "Không cầu nguyện ở banner này"
   }
 }

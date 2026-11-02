@@ -307,18 +307,12 @@
     },
     "noMatch": "没有匹配的条目",
     "level": "等级",
-    "baseStats": "基础属性",
     "hp": "生命值",
-    "hpPlayers": "生命值（{n}人）",
     "atk": "攻击力",
     "def": "防御力",
     "em": "精通",
     "scaling": "成长",
     "monsterId": "怪物 {id}",
-    "scalingBase": "基础值",
-    "scalingCurve": "{n}级曲线倍率",
-    "scalingValue": "数值",
-    "scalingCoop": "联机加成（2人 / 3人 / 4人）：",
     "res": "元素抗性",
     "resHigh": "高于常见的10%：抗性较高",
     "resLow": "低于常见的10%：抗性较低",
@@ -346,6 +340,46 @@
     "unfoldAll": "展开所有类别",
     "openWorld": "开放世界",
     "version": "版本",
-    "fightBonusTip": "此版本{n}级生命值 × 本场战斗的生命值加成"
+    "fightBonusTip": "此版本{n}级生命值 × 本场战斗的生命值加成",
+    "players": "玩家人数",
+    "playersN": "{n}人",
+    "levelDown": "降低等级",
+    "levelUp": "提高等级",
+    "scalingWiki": "敌人属性如何成长",
+    "baseLink": "基础",
+    "curveLink": "Lv. {n} 倍率",
+    "fight": "战斗",
+    "hpAbove": "上方生命值",
+    "fightLink": "{where}生命值",
+    "coop": "联机",
+    "coopX": "{n}人 ×{x}",
+    "hpMultipliers": "生命值倍率"
+  },
+  "quests": {
+    "kind": "任务类型",
+    "kinds": {
+      "archon": "魔神任务",
+      "story": "传说任务",
+      "world": "世界任务"
+    },
+    "legend": "标记",
+    "states": {
+      "done": "已完成",
+      "active": "进行中",
+      "none": "未开始"
+    },
+    "byHand": "手动标记",
+    "fromCapture": "来自你的记录",
+    "mark": "标记为已完成",
+    "unmark": "取消你的标记",
+    "chapters": "章节",
+    "search": "搜索任务",
+    "filters": {
+      "all": "全部",
+      "left": "未完成",
+      "done": "已完成"
+    },
+    "needsCapture": "“已完成”和“进行中”来自 Teyvat.me Capture 1.16 或更高版本；在此之前可手动标记任务。",
+    "notSaved": "任务标记未保存"
   }
 }

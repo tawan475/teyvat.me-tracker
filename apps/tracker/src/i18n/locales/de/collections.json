@@ -307,18 +307,12 @@
     },
     "noMatch": "Keine Einträge gefunden",
     "level": "Stufe",
-    "baseStats": "Basisattribute",
     "hp": "LP",
-    "hpPlayers": "LP ({n} Sp.)",
     "atk": "ANG",
     "def": "VTD",
     "em": "EK",
     "scaling": "Skalierung",
     "monsterId": "Monster {id}",
-    "scalingBase": "Basis",
-    "scalingCurve": "Kurve auf Stufe {n}",
-    "scalingValue": "Wert",
-    "scalingCoop": "Koop-Bonus (2S / 3S / 4S):",
     "res": "Elementar-RES",
     "resHigh": "Über den üblichen 10 %: widersteht",
     "resLow": "Unter den üblichen 10 %: anfällig",
@@ -346,6 +340,46 @@
     "unfoldAll": "Alle Kategorien aufklappen",
     "openWorld": "Offene Welt",
     "version": "Version",
-    "fightBonusTip": "LP auf Stufe {n} in dieser Version × der LP-Bonus dieses Kampfes"
+    "fightBonusTip": "LP auf Stufe {n} in dieser Version × der LP-Bonus dieses Kampfes",
+    "players": "Spieler",
+    "playersN": "{n}S",
+    "levelDown": "Stufe senken",
+    "levelUp": "Stufe erhöhen",
+    "scalingWiki": "Wie Gegnerwerte skalieren",
+    "baseLink": "Basis",
+    "curveLink": "Multiplikator St. {n}",
+    "fight": "Kampf",
+    "hpAbove": "LP oben",
+    "fightLink": "LP in {where}",
+    "coop": "Koop",
+    "coopX": "{n}S ×{x}",
+    "hpMultipliers": "LP-Multiplikatoren"
+  },
+  "quests": {
+    "kind": "Auftragstyp",
+    "kinds": {
+      "archon": "Archontenaufträge",
+      "story": "Legendenaufträge",
+      "world": "Weltaufträge"
+    },
+    "legend": "Markierungen",
+    "states": {
+      "done": "Erledigt",
+      "active": "Im Gange",
+      "none": "Nicht begonnen"
+    },
+    "byHand": "Von dir markiert",
+    "fromCapture": "laut deiner Erfassung",
+    "mark": "als erledigt markieren",
+    "unmark": "deine Markierung entfernen",
+    "chapters": "Kapitel",
+    "search": "Aufträge suchen",
+    "filters": {
+      "all": "Alle",
+      "left": "Offen",
+      "done": "Erledigt"
+    },
+    "needsCapture": "Erledigt und im Gange kommen aus Teyvat.me Capture 1.16 oder neuer; bis dahin markiere Aufträge von Hand.",
+    "notSaved": "Auftragsmarkierungen nicht gespeichert"
   }
 }

@@ -76,7 +76,10 @@
     "spent": "Đã dùng",
     "spentTitle": "Đã dùng {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · đặt thủ công {hand} (bản ghi {capture})"
+    "handSet": " · đặt thủ công {hand} (bản ghi {capture})",
+    "missing": "Chưa có",
+    "missingTitle": "Vật phẩm tài khoản này chưa từng có",
+    "missingNote": "Chưa từng xuất hiện trong bản ghi nào của tài khoản này. Mở để xem nguồn nhận."
   },
   "detail": {
     "history": "Lịch Sử",

@@ -76,7 +76,10 @@
     "spent": "Spesi",
     "spentTitle": "Spesi {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · impostato a mano {hand} (cattura {capture})"
+    "handSet": " · impostato a mano {hand} (cattura {capture})",
+    "missing": "Non posseduto",
+    "missingTitle": "Oggetti che questo account non ha mai avuto",
+    "missingNote": "Mai presenti in nessuna acquisizione di questo account. Aprine uno per vedere da dove proviene."
   },
   "detail": {
     "history": "Cronologia",

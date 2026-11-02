@@ -66,7 +66,7 @@ function toggleRarity(r: 5 | 4) {
 </script>
 
 <template>
-  <UiToolbar :label="$t('characters.toolbar.label')">
+  <UiToolbar :label="$t('characters.toolbar.label')" sticky>
     <div class="flex flex-wrap items-center gap-2">
       <label class="relative min-w-0 basis-full sm:min-w-48 sm:basis-0 sm:flex-1">
         <span class="sr-only">{{ $t('characters.toolbar.search') }}</span>

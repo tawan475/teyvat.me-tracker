@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
+import { useStickyToolbar } from '@/lib/sticky-stack'
 
 const props = defineProps<{
   title?: string
@@ -15,6 +17,8 @@ const props = defineProps<{
   sticky?: boolean
 }>()
 const open = defineModel<boolean>('open', { default: true })
+const head = useTemplateRef<HTMLElement>('head')
+useStickyToolbar(head, () => !!props.sticky)
 
 /**
  * A collapsible panel's whole header folds it (the user's call: the chevron
@@ -32,9 +36,10 @@ function onHeader(event: MouseEvent) {
 <template>
   <section class="rounded-xl border border-border-default bg-surface-raised shadow-sm">
     <div
+      ref="head"
       :class="
         sticky
-          ? 'rounded-t-xl border-b border-border-default bg-surface-raised lg:sticky lg:top-16 lg:z-20'
+          ? 'rounded-t-xl border-b border-border-default bg-surface-raised lg:sticky lg:top-16 lg:z-20 data-[stuck]:rounded-none data-[stuck]:shadow-md'
           : ''
       "
     >

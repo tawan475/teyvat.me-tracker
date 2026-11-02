@@ -76,7 +76,10 @@
     "spent": "Verbraucht",
     "spentTitle": "Verbraucht {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · von Hand gesetzt {hand} (Erfassung {capture})"
+    "handSet": " · von Hand gesetzt {hand} (Erfassung {capture})",
+    "missing": "Nicht im Besitz",
+    "missingTitle": "Gegenstände, die dieses Konto nie besessen hat",
+    "missingNote": "In keiner Erfassung dieses Kontos enthalten. Öffne einen, um zu sehen, woher er kommt."
   },
   "detail": {
     "history": "Verlauf",

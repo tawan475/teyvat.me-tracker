@@ -307,18 +307,12 @@
     },
     "noMatch": "Không có mục phù hợp",
     "level": "Cấp",
-    "baseStats": "Thuộc Tính Căn Bản",
     "hp": "HP",
-    "hpPlayers": "HP ({n} người)",
     "atk": "Tấn Công",
     "def": "Phòng Ngự",
     "em": "EM",
     "scaling": "Tăng trưởng",
     "monsterId": "Quái {id}",
-    "scalingBase": "Cơ bản",
-    "scalingCurve": "Hệ số đường cong ở Lv. {n}",
-    "scalingValue": "Giá trị",
-    "scalingCoop": "Thưởng Co-op (2P / 3P / 4P):",
     "res": "Kháng nguyên tố",
     "resHigh": "Cao hơn mức 10% thông thường: kháng tốt",
     "resLow": "Thấp hơn mức 10% thông thường: yếu với loại này",
@@ -346,6 +340,46 @@
     "unfoldAll": "Mở rộng mọi nhóm",
     "openWorld": "Thế giới mở",
     "version": "Phiên bản",
-    "fightBonusTip": "HP ở Lv. {n} trong phiên bản này × thưởng HP của trận này"
+    "fightBonusTip": "HP ở Lv. {n} trong phiên bản này × thưởng HP của trận này",
+    "players": "Số người chơi",
+    "playersN": "{n}P",
+    "levelDown": "Giảm cấp",
+    "levelUp": "Tăng cấp",
+    "scalingWiki": "Chỉ số kẻ địch tăng thế nào",
+    "baseLink": "Cơ bản",
+    "curveLink": "Hệ số Cấp {n}",
+    "fight": "Trận đấu",
+    "hpAbove": "HP ở trên",
+    "fightLink": "HP ở {where}",
+    "coop": "Co-op",
+    "coopX": "{n}P ×{x}",
+    "hpMultipliers": "Hệ số HP"
+  },
+  "quests": {
+    "kind": "Loại nhiệm vụ",
+    "kinds": {
+      "archon": "Nhiệm Vụ Ma Thần",
+      "story": "Nhiệm Vụ Truyền Thuyết",
+      "world": "Nhiệm Vụ Thế Giới"
+    },
+    "legend": "Đánh dấu",
+    "states": {
+      "done": "Hoàn thành",
+      "active": "Đang tiến hành",
+      "none": "Chưa bắt đầu"
+    },
+    "byHand": "Bạn tự đánh dấu",
+    "fromCapture": "theo bản ghi của bạn",
+    "mark": "đánh dấu hoàn thành",
+    "unmark": "bỏ đánh dấu của bạn",
+    "chapters": "Chương",
+    "search": "Tìm nhiệm vụ",
+    "filters": {
+      "all": "Tất cả",
+      "left": "Chưa xong",
+      "done": "Hoàn thành"
+    },
+    "needsCapture": "Trạng thái hoàn thành và đang tiến hành lấy từ Teyvat.me Capture 1.16 trở lên; trước đó hãy tự đánh dấu.",
+    "notSaved": "Chưa lưu được đánh dấu nhiệm vụ"
   }
 }

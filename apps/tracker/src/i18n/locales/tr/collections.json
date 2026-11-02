@@ -307,18 +307,12 @@
     },
     "noMatch": "Eşleşen kayıt yok",
     "level": "Seviye",
-    "baseStats": "Temel İstatistikler",
     "hp": "Can",
-    "hpPlayers": "Can ({n} oyuncu)",
     "atk": "Saldırı",
     "def": "Savunma",
     "em": "EU",
     "scaling": "Ölçekleme",
     "monsterId": "Canavar {id}",
-    "scalingBase": "Temel",
-    "scalingCurve": "Sv. {n}'de eğri çarpanı",
-    "scalingValue": "Değer",
-    "scalingCoop": "Ortak oyun bonusu (2O / 3O / 4O):",
     "res": "Element DİR",
     "resHigh": "Olağan %10'un üstünde: dirençli",
     "resLow": "Olağan %10'un altında: zayıf",
@@ -346,6 +340,46 @@
     "unfoldAll": "Tüm kategorileri genişlet",
     "openWorld": "Açık dünya",
     "version": "Sürüm",
-    "fightBonusTip": "Bu sürümde Sv. {n} Canı × bu dövüşün Can bonusu"
+    "fightBonusTip": "Bu sürümde Sv. {n} Canı × bu dövüşün Can bonusu",
+    "players": "Oyuncu sayısı",
+    "playersN": "{n}O",
+    "levelDown": "Seviyeyi düşür",
+    "levelUp": "Seviyeyi yükselt",
+    "scalingWiki": "Düşman değerleri nasıl artar",
+    "baseLink": "Taban",
+    "curveLink": "Sv. {n} çarpanı",
+    "fight": "Savaş",
+    "hpAbove": "Yukarıdaki Can",
+    "fightLink": "{where} Can",
+    "coop": "Ortak oyun",
+    "coopX": "{n}O ×{x}",
+    "hpMultipliers": "Can çarpanları"
+  },
+  "quests": {
+    "kind": "Görev türü",
+    "kinds": {
+      "archon": "Hükümdar Görevleri",
+      "story": "Hikaye Görevleri",
+      "world": "Dünya Görevleri"
+    },
+    "legend": "İşaretler",
+    "states": {
+      "done": "Tamamlandı",
+      "active": "Devam ediyor",
+      "none": "Başlanmadı"
+    },
+    "byHand": "Senin işaretin",
+    "fromCapture": "kaydına göre",
+    "mark": "tamamlandı olarak işaretle",
+    "unmark": "işaretini kaldır",
+    "chapters": "Bölümler",
+    "search": "Görev ara",
+    "filters": {
+      "all": "Tümü",
+      "left": "Tamamlanmamış",
+      "done": "Tamamlanan"
+    },
+    "needsCapture": "Tamamlandı ve devam ediyor bilgisi Teyvat.me Capture 1.16 veya sonrasından gelir; o zamana kadar görevleri elle işaretle.",
+    "notSaved": "Görev işaretleri kaydedilmedi"
   }
 }

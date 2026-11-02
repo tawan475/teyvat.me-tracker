@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} 节省 {mora}",
     "nothing": "无需消耗",
-    "colours": "颜色说明"
+    "colours": "颜色说明",
+    "short": "缺 {n}",
+    "haveOf": "{have} / {need}",
+    "shortOf": "{total} 项中缺 {n} 项",
+    "estimate": "预计"
   },
   "common": {
     "search": "搜索",

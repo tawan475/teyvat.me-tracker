@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} экономит {mora}",
     "nothing": "Нечего тратить",
-    "colours": "Цвета"
+    "colours": "Цвета",
+    "short": "не хватает {n}",
+    "haveOf": "{have} из {need}",
+    "shortOf": "не хватает {n} из {total}",
+    "estimate": "Оценка"
   },
   "common": {
     "search": "Поиск",

@@ -307,18 +307,12 @@
     },
     "noMatch": "일치하는 항목이 없습니다",
     "level": "레벨",
-    "baseStats": "기초 속성",
     "hp": "HP",
-    "hpPlayers": "HP ({n}인)",
     "atk": "공격력",
     "def": "방어력",
     "em": "원마",
     "scaling": "성장",
     "monsterId": "몬스터 {id}",
-    "scalingBase": "기본값",
-    "scalingCurve": "Lv.{n} 곡선 배율",
-    "scalingValue": "수치",
-    "scalingCoop": "멀티 보너스 (2인 / 3인 / 4인):",
     "res": "원소 내성",
     "resHigh": "일반적인 10%보다 높음: 내성",
     "resLow": "일반적인 10%보다 낮음: 약점",
@@ -346,6 +340,46 @@
     "unfoldAll": "모든 분류 펼치기",
     "openWorld": "필드",
     "version": "버전",
-    "fightBonusTip": "이 버전의 Lv.{n} HP × 이 전투의 HP 보너스"
+    "fightBonusTip": "이 버전의 Lv.{n} HP × 이 전투의 HP 보너스",
+    "players": "플레이어 수",
+    "playersN": "{n}인",
+    "levelDown": "레벨 낮추기",
+    "levelUp": "레벨 올리기",
+    "scalingWiki": "적 능력치 성장 방식",
+    "baseLink": "기본",
+    "curveLink": "Lv. {n} 배율",
+    "fight": "전투",
+    "hpAbove": "위의 HP",
+    "fightLink": "{where} HP",
+    "coop": "멀티",
+    "coopX": "{n}인 ×{x}",
+    "hpMultipliers": "HP 배율"
+  },
+  "quests": {
+    "kind": "임무 종류",
+    "kinds": {
+      "archon": "마신 임무",
+      "story": "전설 임무",
+      "world": "월드 임무"
+    },
+    "legend": "표시",
+    "states": {
+      "done": "완료",
+      "active": "진행 중",
+      "none": "시작 전"
+    },
+    "byHand": "직접 표시함",
+    "fromCapture": "캡처 기준",
+    "mark": "완료로 표시",
+    "unmark": "내 표시 지우기",
+    "chapters": "챕터",
+    "search": "임무 검색",
+    "filters": {
+      "all": "전체",
+      "left": "미완료",
+      "done": "완료"
+    },
+    "needsCapture": "완료와 진행 중은 Teyvat.me Capture 1.16 이상에서 가져옵니다. 그 전에는 직접 표시하세요.",
+    "notSaved": "임무 표시를 저장하지 못했습니다"
   }
 }

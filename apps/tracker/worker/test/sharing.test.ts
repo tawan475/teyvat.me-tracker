@@ -183,6 +183,7 @@ describe('account sharing: what each role may do', () => {
     ['GET', '/latest/good'],
     ['GET', '/achievement-marks'],
     ['GET', '/anecdote-marks'],
+    ['GET', '/quest-marks'],
     ['GET', '/planner-targets'],
     ['GET', '/planner-state'],
     ['GET', '/planner-tasks'],
@@ -194,6 +195,7 @@ describe('account sharing: what each role may do', () => {
   const EDITS: [string, string, unknown][] = [
     ['PATCH', '/settings', { traveler: 'M' }],
     ['PATCH', '/achievement-marks', { done: [80001] }],
+    ['PATCH', '/quest-marks', { done: [352] }],
   ]
   const OWNER_ONLY: [string, string, unknown][] = [
     ['PATCH', '', { name: 'Renamed' }],

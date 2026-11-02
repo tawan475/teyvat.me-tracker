@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} {mora} tasarruf sağlar",
     "nothing": "Harcanacak bir şey yok",
-    "colours": "Renkler"
+    "colours": "Renkler",
+    "short": "{n} eksik",
+    "haveOf": "{have}/{need}",
+    "shortOf": "{total} içinden {n} eksik",
+    "estimate": "Tahmin"
   },
   "common": {
     "search": "Ara",

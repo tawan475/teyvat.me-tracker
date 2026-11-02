@@ -147,7 +147,7 @@ describe('which notices count', () => {
 })
 
 describe('domain events', () => {
-  it('opens every domain for 7 days from each banner phase (one window per start)', () => {
+  it("opens every domain for 7 days from a version's first banners, not its second phase", () => {
     const phase2 = { start: '2026-10-13T18:00', end: '2026-11-03T15:00' }
     expect(
       bannerAbundance(
@@ -160,13 +160,16 @@ describe('domain events', () => {
         start: '2026-09-23T06:00',
         end: '2026-09-30T04:00',
         source: 'banner',
-      }),
-      expect.objectContaining({
-        kind: 'abundance',
-        start: '2026-10-13T18:00',
-        end: '2026-10-20T04:00',
         version: '7.1',
       }),
+    ])
+  })
+
+  it('opens a next version early on the board only once the running banners end', () => {
+    const running = { start: '2026-10-13T18:00', end: '2026-11-03T15:00' }
+    const next = { start: '2026-11-02T12:00', end: '2026-11-24T18:00' }
+    expect(bannerAbundance([running, next, { ...next }])).toEqual([
+      expect.objectContaining({ start: '2026-11-03T15:00', end: '2026-11-10T04:00' }),
     ])
   })
 
@@ -192,7 +195,7 @@ describe('domain events', () => {
   it('an announced run wins over the banner rule; copies of a run go', () => {
     const run = (over: Partial<DomainEventWindow>): DomainEventWindow => ({
       kind: 'abundance',
-      start: '2026-10-13T18:00',
+      start: '2026-10-13T06:00',
       end: '2026-10-20T04:00',
       multiplier: 2,
       dailyClaims: 3,
@@ -200,7 +203,7 @@ describe('domain events', () => {
       source: 'staff',
       ...over,
     })
-    const banner = bannerAbundance([{ start: '2026-10-13T18:00', end: '2026-11-03T15:00' }])
+    const banner = bannerAbundance([{ start: '2026-10-13T06:00', end: '2026-11-03T15:00' }])
     expect(mergeDomainWindows([run({})], banner)).toEqual([run({})])
     const favor = run({ kind: 'favor', start: '2026-10-26T04:00', end: '2026-11-02T04:00' })
     expect(mergeDomainWindows([favor, favor], banner).map((w) => [w.kind, w.source])).toEqual([

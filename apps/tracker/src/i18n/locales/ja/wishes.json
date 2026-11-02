@@ -275,5 +275,19 @@
     "each": "1つ {cost}",
     "afford": "{n}個購入できます",
     "hint": "ゲームで{time}に表示されたショップ"
+  },
+  "history": {
+    "title": "祈願履歴（全イベント）",
+    "viewMine": "自分の祈願",
+    "view": "祈願の表示",
+    "kind": "祈願の種類",
+    "search": "キャラクターまたは武器",
+    "mine": "自分が祈願したものだけ",
+    "none": "該当する祈願はありません",
+    "version": "Ver.{version}",
+    "phase": "第{n}弾",
+    "fours": "ピックアップ★4",
+    "wishes": "回",
+    "skipped": "この祈願は引いていません"
   }
 }

@@ -579,8 +579,15 @@ dialog[open]::backdrop {
 
 /* A table header slid under the app bar (lib/sticky-head): a solid ground and
    an edge, so the rows it covers don't show through. */
-thead[data-stuck] tr {
-  background: color-mix(in srgb, var(--color-surface-overlay) 50%, var(--color-surface-raised));
+thead[data-stuck] tr,
+thead[data-stuck] th {
+  /* A solid ground under the tint: the stuck header never shows the rows it covers. */
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--color-surface-overlay) 50%, transparent),
+      color-mix(in srgb, var(--color-surface-overlay) 50%, transparent)
+    ),
+    var(--color-surface-raised);
 }
 thead[data-stuck] {
   box-shadow:

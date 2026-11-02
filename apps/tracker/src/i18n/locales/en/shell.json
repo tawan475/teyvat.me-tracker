@@ -113,5 +113,43 @@
     "none": "No Capture device linked",
     "get": "Get Teyvat.me Capture"
   },
-  "lastSync": "Synced {time}"
+  "lastSync": "Synced {time}",
+  "search": {
+    "button": "Search",
+    "hint": "Search everything (Ctrl+K)",
+    "title": "Search",
+    "placeholder": "Characters, items, enemies, achievements, pages…",
+    "scope": "Search in",
+    "recent": "Recent",
+    "start": "Type a name",
+    "loading": "Loading names…",
+    "failed": "Names didn't load",
+    "empty": "Nothing matches “{query}”",
+    "more": "{n} more",
+    "open": "open",
+    "move": "move",
+    "close": "close",
+    "notOwned": "not owned",
+    "owned": "{n} owned",
+    "held": "{n} held",
+    "noneHeld": "don't have",
+    "level": "Lv. {level} · C{c}",
+    "kinds": {
+      "all": "All",
+      "character": "Characters",
+      "weapon": "Weapons",
+      "item": "Items",
+      "enemy": "Enemies",
+      "achievement": "Achievements",
+      "page": "Pages"
+    },
+    "kind": {
+      "character": "Character",
+      "weapon": "Weapon",
+      "item": "Item",
+      "enemy": "Enemy",
+      "achievement": "Achievement",
+      "page": "Page"
+    }
+  }
 }

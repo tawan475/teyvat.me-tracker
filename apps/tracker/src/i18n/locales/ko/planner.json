@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name}(으)로 {mora} 절약",
     "nothing": "소모할 것 없음",
-    "colours": "색상"
+    "colours": "색상",
+    "short": "{n} 부족",
+    "haveOf": "{have} / {need}",
+    "shortOf": "{total}개 중 {n}개 부족",
+    "estimate": "예상"
   },
   "common": {
     "search": "검색",

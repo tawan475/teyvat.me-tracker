@@ -307,18 +307,12 @@
     },
     "noMatch": "No hay coincidencias",
     "level": "Nivel",
-    "baseStats": "Atributos básicos",
     "hp": "Vida",
-    "hpPlayers": "Vida ({n} j.)",
     "atk": "ATQ",
     "def": "DEF",
     "em": "ME",
     "scaling": "Escalado",
     "monsterId": "Monstruo {id}",
-    "scalingBase": "Base",
-    "scalingCurve": "Curva a nv. {n}",
-    "scalingValue": "Valor",
-    "scalingCoop": "Bonificación cooperativa (2J / 3J / 4J):",
     "res": "RES elemental",
     "resHigh": "Por encima del 10 % habitual: lo resiste",
     "resLow": "Por debajo del 10 % habitual: es débil a esto",
@@ -346,6 +340,46 @@
     "unfoldAll": "Expandir todas las categorías",
     "openWorld": "Mundo abierto",
     "version": "Versión",
-    "fightBonusTip": "Vida al nivel {n} en esta versión × la bonificación de Vida de este combate"
+    "fightBonusTip": "Vida al nivel {n} en esta versión × la bonificación de Vida de este combate",
+    "players": "Jugadores",
+    "playersN": "{n}J",
+    "levelDown": "Bajar nivel",
+    "levelUp": "Subir nivel",
+    "scalingWiki": "Cómo escalan los enemigos",
+    "baseLink": "Base",
+    "curveLink": "Multiplicador Niv. {n}",
+    "fight": "Combate",
+    "hpAbove": "Vida de arriba",
+    "fightLink": "Vida en {where}",
+    "coop": "Cooperativo",
+    "coopX": "{n}J ×{x}",
+    "hpMultipliers": "Multiplicadores de Vida"
+  },
+  "quests": {
+    "kind": "Tipo de misión",
+    "kinds": {
+      "archon": "Misiones de Arconte",
+      "story": "Misiones legendarias",
+      "world": "Misiones de mundo"
+    },
+    "legend": "Marcadores",
+    "states": {
+      "done": "Completada",
+      "active": "En curso",
+      "none": "Sin empezar"
+    },
+    "byHand": "Marcada por ti",
+    "fromCapture": "según tu captura",
+    "mark": "marcar como completada",
+    "unmark": "quitar tu marca",
+    "chapters": "Capítulos",
+    "search": "Buscar misiones",
+    "filters": {
+      "all": "Todas",
+      "left": "Sin completar",
+      "done": "Completadas"
+    },
+    "needsCapture": "Completada y en curso vienen de Teyvat.me Capture 1.16 o posterior; hasta entonces, márcalas a mano.",
+    "notSaved": "No se guardaron las marcas de misiones"
   }
 }

@@ -275,5 +275,19 @@
     "each": "Tanesi {cost}",
     "afford": "{n} tane alabilirsin",
     "hint": "Oyunun {time} tarihinde gösterdiği mağazaya göre"
+  },
+  "history": {
+    "title": "Afiş geçmişi",
+    "viewMine": "Dileklerim",
+    "view": "Dilek görünümü",
+    "kind": "Afiş türü",
+    "search": "Karakter veya silah",
+    "mine": "Yalnızca dilek tuttuğum afişler",
+    "none": "Eşleşen afiş yok",
+    "version": "Sürüm {version}",
+    "phase": "{n}. aşama",
+    "fours": "Öne çıkan 4★",
+    "wishes": "dilek",
+    "skipped": "Bu afişte dilek yok"
   }
 }

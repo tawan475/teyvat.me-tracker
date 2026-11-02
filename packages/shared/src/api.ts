@@ -259,6 +259,16 @@ export const anecdoteMarksPatch = z
   .object({ done: anecdoteIds.default([]), undone: anecdoteIds.default([]) })
   .refine((body) => body.done.length + body.undone.length > 0, { message: 'Nothing to change' })
 
+const questIds = z.array(z.number().int().min(1).max(99_999_999)).max(5000)
+
+/**
+ * Quests marked done by hand (captured ones come from snapshots): MainQuest
+ * ids, as `gi_collections.quests` sends them.
+ */
+export const questMarksPatch = z
+  .object({ done: questIds.default([]), undone: questIds.default([]) })
+  .refine((body) => body.done.length + body.undone.length > 0, { message: 'Nothing to change' })
+
 const talentLevel = z.number().int().min(1).max(10)
 
 /** Free text on a goal (plain text, shown as is). */
@@ -1071,6 +1081,11 @@ export interface AchievementMarksResponse {
 
 export interface AnecdoteMarksResponse {
   /** Anecdote ids marked done by hand, ascending. */
+  done: number[]
+}
+
+export interface QuestMarksResponse {
+  /** MainQuest ids marked done by hand, ascending. */
   done: number[]
 }
 

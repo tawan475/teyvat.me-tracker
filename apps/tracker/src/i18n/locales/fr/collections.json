@@ -307,18 +307,12 @@
     },
     "noMatch": "Aucune entrée ne correspond",
     "level": "Niv.",
-    "baseStats": "Stats de base",
     "hp": "PV",
-    "hpPlayers": "PV ({n} j.)",
     "atk": "ATQ",
     "def": "DÉF",
     "em": "ME",
     "scaling": "Progression",
     "monsterId": "Monstre {id}",
-    "scalingBase": "Base",
-    "scalingCurve": "Courbe au niv. {n}",
-    "scalingValue": "Valeur",
-    "scalingCoop": "Bonus en coop (2J / 3J / 4J) :",
     "res": "RÉS élémentaire",
     "resHigh": "Au-dessus des 10 % habituels : résiste",
     "resLow": "En dessous des 10 % habituels : vulnérable",
@@ -346,6 +340,46 @@
     "unfoldAll": "Déplier toutes les catégories",
     "openWorld": "Monde ouvert",
     "version": "Version",
-    "fightBonusTip": "PV au niv. {n} dans cette version × le bonus de PV de ce combat"
+    "fightBonusTip": "PV au niv. {n} dans cette version × le bonus de PV de ce combat",
+    "players": "Joueurs",
+    "playersN": "{n}J",
+    "levelDown": "Baisser le niveau",
+    "levelUp": "Monter le niveau",
+    "scalingWiki": "Évolution des stats ennemies",
+    "baseLink": "Base",
+    "curveLink": "Multiplicateur Niv. {n}",
+    "fight": "Combat",
+    "hpAbove": "PV ci-dessus",
+    "fightLink": "PV en {where}",
+    "coop": "Coop",
+    "coopX": "{n}J ×{x}",
+    "hpMultipliers": "Multiplicateurs de PV"
+  },
+  "quests": {
+    "kind": "Type de quête",
+    "kinds": {
+      "archon": "Quêtes d’Archons",
+      "story": "Quêtes d’histoire",
+      "world": "Quêtes du monde"
+    },
+    "legend": "Marqueurs",
+    "states": {
+      "done": "Terminée",
+      "active": "En cours",
+      "none": "Pas commencée"
+    },
+    "byHand": "Marquée par vous",
+    "fromCapture": "d’après votre capture",
+    "mark": "marquer comme terminée",
+    "unmark": "retirer votre marque",
+    "chapters": "Chapitres",
+    "search": "Rechercher des quêtes",
+    "filters": {
+      "all": "Toutes",
+      "left": "Non terminées",
+      "done": "Terminées"
+    },
+    "needsCapture": "Terminée et en cours viennent de Teyvat.me Capture 1.16 ou plus récent ; d’ici là, marquez les quêtes à la main.",
+    "notSaved": "Marques de quêtes non enregistrées"
   }
 }

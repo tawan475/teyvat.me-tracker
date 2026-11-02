@@ -222,5 +222,34 @@
   "tip": {
     "talentInfo": "Yetenek Bilgisi",
     "skillAttributes": "Beceri Özellikleri"
+  },
+  "profile": {
+    "tabs": {
+      "label": "Karakter görünümü",
+      "build": "Yapı",
+      "profile": "Profil"
+    },
+    "loadFailed": "Profil yüklenemedi",
+    "none": "Oyun verisinde henüz profil yok",
+    "info": "Bilgi",
+    "fields": {
+      "title": "Unvan",
+      "birthday": "Doğum Günü",
+      "affiliation": "İlişki",
+      "vision": "Önsezi",
+      "constellation": "Takımyıldız"
+    },
+    "voice": "Seslendirme",
+    "voices": {
+      "en": "İngilizce",
+      "zh": "Çince",
+      "ja": "Japonca",
+      "ko": "Korece"
+    },
+    "wiki": "Wiki’de aç",
+    "stories": "Hikaye",
+    "unlocked": "{total} içinden {n} açık",
+    "showLocked": "Kilitli metni göster",
+    "friendship": "Arkadaşlık {n}"
   }
 }

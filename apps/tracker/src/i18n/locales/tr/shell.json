@@ -113,5 +113,43 @@
     "none": "Bağlı Capture cihazı yok",
     "get": "Teyvat.me Capture’ı indir"
   },
-  "lastSync": "{time} senkronize edildi"
+  "lastSync": "{time} senkronize edildi",
+  "search": {
+    "button": "Ara",
+    "hint": "Her şeyde ara (Ctrl+K)",
+    "title": "Ara",
+    "placeholder": "Karakterler, eşyalar, düşmanlar, başarımlar, sayfalar…",
+    "scope": "Şurada ara",
+    "recent": "Son",
+    "start": "Bir ad yazın",
+    "loading": "Adlar yükleniyor…",
+    "failed": "Adlar yüklenemedi",
+    "empty": "“{query}” ile eşleşen bir şey yok",
+    "more": "{n} tane daha",
+    "open": "aç",
+    "move": "gez",
+    "close": "kapat",
+    "notOwned": "sahip değilsin",
+    "owned": "{n} adet",
+    "held": "{n} adet",
+    "noneHeld": "sahip değilsin",
+    "level": "Sv. {level} · C{c}",
+    "kinds": {
+      "all": "Tümü",
+      "character": "Karakterler",
+      "weapon": "Silahlar",
+      "item": "Eşyalar",
+      "enemy": "Düşmanlar",
+      "achievement": "Başarımlar",
+      "page": "Sayfalar"
+    },
+    "kind": {
+      "character": "Karakter",
+      "weapon": "Silah",
+      "item": "Eşya",
+      "enemy": "Düşman",
+      "achievement": "Başarım",
+      "page": "Sayfa"
+    }
+  }
 }

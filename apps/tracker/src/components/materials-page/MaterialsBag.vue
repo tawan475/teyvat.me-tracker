@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
+  CircleDashed,
   LayoutGrid,
   List,
   Package,
@@ -28,6 +29,7 @@ import UiInput from '@/components/ui/UiInput.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSegmented, { type SegmentedOption } from '@/components/ui/UiSegmented.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
+import UiSpinner from '@/components/ui/UiSpinner.vue'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
@@ -63,6 +65,8 @@ const props = defineProps<{
   importTo: RouteLocationRaw
   /** Counts set by hand on the Planner (where they differ from the capture's). */
   edited?: ReadonlyMap<string, number>
+  /** "Don't have": every Inventory item never in any snapshot (null while the list loads). */
+  missing?: MaterialItem[] | null
 }>()
 /** A tile was opened: the tile, and whether by touch (for the inventory editor). */
 const emit = defineEmits<{ open: [key: string, anchor: HTMLElement, touch: boolean] }>()
@@ -78,7 +82,7 @@ function open(key: string, event: MouseEvent) {
 
 // ------------------------------------------------------------------ controls
 
-type Show = 'owned' | 'gained' | 'spent'
+type Show = 'owned' | 'gained' | 'spent' | 'missing'
 type Sort = 'order' | 'count' | 'change' | 'name'
 type View = 'grid' | 'list'
 type Tab = TabKey | 'all'
@@ -155,7 +159,7 @@ const pools = computed(() => {
     if (change > 0) gained.push(item)
     else if (change < 0) spent.push(item)
   }
-  return { owned, gained, spent }
+  return { owned, gained, spent, missing: props.missing ?? [] }
 })
 
 /** After the name search, which also finds materials now at 0. */
@@ -165,12 +169,16 @@ const searched = computed(() => {
   const pool =
     show.value === 'owned'
       ? props.items
-      : props.items.filter((item) => (show.value === 'gained' ? 1 : -1) * changeOf(item.key) > 0)
+      : show.value === 'missing'
+        ? pools.value.missing
+        : props.items.filter((item) => (show.value === 'gained' ? 1 : -1) * changeOf(item.key) > 0)
   return pool.filter((item) => match(item.name) || match(item.key))
 })
 
 /** Tabs that hold anything this account ever had, in the game's order (Other last). */
-const tabKeys = computed(() => tabsHolding(props.tabs, props.items))
+const tabKeys = computed(() =>
+  tabsHolding(props.tabs, show.value === 'missing' ? pools.value.missing : props.items),
+)
 const activeTab = computed<Tab>(() =>
   tab.value !== 'all' && tabKeys.value.includes(tab.value) ? tab.value : 'all',
 )
@@ -201,8 +209,10 @@ const tabChips = computed(() => [
   }),
 ])
 
-/** Gained and spent always list the biggest moves first. */
-const sortBy = computed<Sort>(() => (show.value === 'owned' ? sort.value : 'change'))
+/** Gained and spent always list the biggest moves first; Don't have is in the game's order. */
+const sortBy = computed<Sort>(() =>
+  show.value === 'owned' ? sort.value : show.value === 'missing' ? 'order' : 'change',
+)
 
 const filtered = computed(() => {
   const list =
@@ -322,6 +332,17 @@ const showTabs = computed<SegmentedOption<Show>[]>(() => [
     iconClass: 'text-danger-text',
     disabled: !props.compared,
   },
+  ...(props.missing === undefined
+    ? []
+    : [
+        {
+          value: 'missing' as const,
+          label: t('materials.bag.missing'),
+          title: t('materials.bag.missingTitle'),
+          count: props.missing?.length,
+          icon: CircleDashed,
+        },
+      ]),
 ])
 
 /** The count shown: the hand-set one where the Planner has one. */
@@ -371,64 +392,76 @@ const viewOptions = computed<SegmentedOption<View>[]>(() => [
       </div>
     </template>
 
-    <div class="flex flex-col gap-3 border-b border-border-default px-4 py-3 sm:px-5">
-      <div
-        ref="tabRow"
-        class="scroll-hide scroll-fade-x -mx-4 flex scroll-px-4 gap-2 overflow-x-auto px-4 sm:mx-0 sm:scroll-fade-none sm:flex-wrap sm:px-0"
-        role="radiogroup"
-        :aria-label="$t('materials.bag.tabRow')"
-      >
-        <FilterChip
-          v-for="chip in tabChips"
-          :key="chip.key"
-          radio
-          :pressed="activeTab === chip.key"
-          :count="chip.count"
-          :title="chip.title"
-          @toggle="pickTab(chip.key)"
+    <!-- The tabs and search stay with the header while the bag scrolls (lg) -->
+    <template #toolbar>
+      <div class="flex flex-col gap-3">
+        <div
+          ref="tabRow"
+          class="scroll-hide scroll-fade-x -mx-3 flex scroll-px-3 gap-2 overflow-x-auto px-3 sm:mx-0 sm:scroll-fade-none sm:flex-wrap sm:px-0"
+          role="radiogroup"
+          :aria-label="$t('materials.bag.tabRow')"
         >
-          <component :is="chip.icon" v-if="chip.icon" class="size-4" aria-hidden="true" />
-          {{ chip.label }}
-        </FilterChip>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="relative min-w-0 flex-1 basis-20 sm:basis-32">
-          <Search
-            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted"
-            aria-hidden="true"
-          />
-          <UiInput
-            v-model="query"
-            type="search"
-            autocomplete="off"
-            spellcheck="false"
-            :placeholder="$t('materials.search')"
-            :aria-label="$t('materials.searchLabel')"
-            class="pl-9"
-          />
+          <FilterChip
+            v-for="chip in tabChips"
+            :key="chip.key"
+            radio
+            :pressed="activeTab === chip.key"
+            :count="chip.count"
+            :title="chip.title"
+            @toggle="pickTab(chip.key)"
+          >
+            <component :is="chip.icon" v-if="chip.icon" class="size-4" aria-hidden="true" />
+            {{ chip.label }}
+          </FilterChip>
         </div>
-        <UiSelect
-          v-if="show === 'owned'"
-          v-model="sort"
-          :options="sortOptions"
-          :aria-label="$t('materials.bag.sort')"
-          :title="$t('materials.bag.sort')"
-          class="w-28 sm:w-36"
-        />
-        <UiIconButton
-          v-if="grouped && tabKeys.length > 1"
-          :label="allFolded ? $t('materials.bag.unfoldAll') : $t('materials.bag.foldAll')"
-          @click="foldAll"
-        >
-          <ChevronsUpDown v-if="allFolded" class="size-5" aria-hidden="true" />
-          <ChevronsDownUp v-else class="size-5" aria-hidden="true" />
-        </UiIconButton>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative min-w-0 flex-1 basis-20 sm:basis-32">
+            <Search
+              class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted"
+              aria-hidden="true"
+            />
+            <UiInput
+              v-model="query"
+              type="search"
+              autocomplete="off"
+              spellcheck="false"
+              :placeholder="$t('materials.search')"
+              :aria-label="$t('materials.searchLabel')"
+              class="pl-9"
+            />
+          </div>
+          <UiSelect
+            v-if="show === 'owned'"
+            v-model="sort"
+            :options="sortOptions"
+            :aria-label="$t('materials.bag.sort')"
+            :title="$t('materials.bag.sort')"
+            class="w-28 sm:w-36"
+          />
+          <UiIconButton
+            v-if="grouped && tabKeys.length > 1"
+            :label="allFolded ? $t('materials.bag.unfoldAll') : $t('materials.bag.foldAll')"
+            @click="foldAll"
+          >
+            <ChevronsUpDown v-if="allFolded" class="size-5" aria-hidden="true" />
+            <ChevronsDownUp v-else class="size-5" aria-hidden="true" />
+          </UiIconButton>
+        </div>
       </div>
-    </div>
+    </template>
 
     <div class="p-3 sm:p-5">
-      <UiEmpty v-if="items.length === 0" :title="$t('materials.noMaterials')">
+      <p v-if="show === 'missing' && missing" class="mb-3 text-sm text-text-muted">
+        {{ $t('materials.bag.missingNote') }}
+      </p>
+      <div
+        v-if="show === 'missing' && !missing"
+        class="flex items-center justify-center gap-2 py-10 text-sm text-text-muted"
+      >
+        <UiSpinner class="size-4" />{{ $t('materials.loading') }}
+      </div>
+      <UiEmpty v-else-if="items.length === 0" :title="$t('materials.noMaterials')">
         <template #icon><Package aria-hidden="true" /></template>
         <UiButton variant="primary" :to="importTo">
           <Upload class="size-4" aria-hidden="true" />
@@ -492,6 +525,7 @@ const viewOptions = computed<SegmentedOption<View>[]>(() => [
                   :tracked="trackedSet.has(item.key)"
                   :edited="edited?.has(item.key) ?? false"
                   :label="tileTitle(item)"
+                  :undimmed="show === 'missing'"
                   @open="open(item.key, $event)"
                 />
               </li>
@@ -508,7 +542,7 @@ const viewOptions = computed<SegmentedOption<View>[]>(() => [
                 >
                   <span
                     class="relative size-10 shrink-0 rounded-lg bg-surface-overlay p-0.5 text-xs"
-                    :class="item.count === 0 ? 'opacity-40 grayscale' : ''"
+                    :class="item.count === 0 && show !== 'missing' ? 'opacity-40 grayscale' : ''"
                   >
                     <span class="absolute inset-0 overflow-hidden rounded-lg">
                       <ItemArt :rarity="item.rarity" small />

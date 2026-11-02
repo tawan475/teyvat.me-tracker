@@ -307,18 +307,12 @@
     },
     "noMatch": "沒有符合的條目",
     "level": "等級",
-    "baseStats": "基礎屬性",
     "hp": "生命值",
-    "hpPlayers": "生命值（{n}人）",
     "atk": "攻擊力",
     "def": "防禦力",
     "em": "精通",
     "scaling": "成長",
     "monsterId": "怪物 {id}",
-    "scalingBase": "基礎值",
-    "scalingCurve": "{n}級曲線倍率",
-    "scalingValue": "數值",
-    "scalingCoop": "連線加成（2人 / 3人 / 4人）：",
     "res": "元素抗性",
     "resHigh": "高於常見的10%：抗性較高",
     "resLow": "低於常見的10%：抗性較低",
@@ -346,6 +340,46 @@
     "unfoldAll": "展開所有類別",
     "openWorld": "開放世界",
     "version": "版本",
-    "fightBonusTip": "此版本{n}級生命值 × 本場戰鬥的生命值加成"
+    "fightBonusTip": "此版本{n}級生命值 × 本場戰鬥的生命值加成",
+    "players": "玩家人數",
+    "playersN": "{n}人",
+    "levelDown": "降低等級",
+    "levelUp": "提高等級",
+    "scalingWiki": "敵人屬性如何成長",
+    "baseLink": "基礎",
+    "curveLink": "Lv. {n} 倍率",
+    "fight": "戰鬥",
+    "hpAbove": "上方生命值",
+    "fightLink": "{where}生命值",
+    "coop": "連線",
+    "coopX": "{n}人 ×{x}",
+    "hpMultipliers": "生命值倍率"
+  },
+  "quests": {
+    "kind": "任務類型",
+    "kinds": {
+      "archon": "魔神任務",
+      "story": "傳說任務",
+      "world": "世界任務"
+    },
+    "legend": "標記",
+    "states": {
+      "done": "已完成",
+      "active": "進行中",
+      "none": "未開始"
+    },
+    "byHand": "手動標記",
+    "fromCapture": "來自你的紀錄",
+    "mark": "標記為已完成",
+    "unmark": "取消你的標記",
+    "chapters": "章節",
+    "search": "搜尋任務",
+    "filters": {
+      "all": "全部",
+      "left": "未完成",
+      "done": "已完成"
+    },
+    "needsCapture": "「已完成」與「進行中」來自 Teyvat.me Capture 1.16 或更新版本；在此之前可手動標記任務。",
+    "notSaved": "任務標記未儲存"
   }
 }

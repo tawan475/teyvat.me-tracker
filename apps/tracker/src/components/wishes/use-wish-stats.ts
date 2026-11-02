@@ -14,7 +14,7 @@ import { WISH_BANNERS } from './wish-labels'
 let bannerFile: Promise<BannerFile> | null = null
 
 /** Banner dates and featured items (paimon.moe's data, MIT) and the icon names: one cached load. */
-function loadBannerFile(): Promise<BannerFile> {
+export function loadBannerFile(): Promise<BannerFile> {
   bannerFile ??= Promise.all([
     import('@/data/wish-banners.json').then((m) => m.default as unknown as BannerFile),
     loadGameIcons(),

@@ -76,7 +76,10 @@
     "spent": "Spent",
     "spentTitle": "Spent {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · set by hand {hand} (capture {capture})"
+    "handSet": " · set by hand {hand} (capture {capture})",
+    "missing": "Don't have",
+    "missingTitle": "Items this account has never held",
+    "missingNote": "Never in any capture of this account. Open one to see where it comes from."
   },
   "detail": {
     "history": "History",

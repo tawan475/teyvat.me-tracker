@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} ประหยัด {mora}",
     "nothing": "ไม่มีอะไรต้องใช้",
-    "colours": "สี"
+    "colours": "สี",
+    "short": "ขาด {n}",
+    "haveOf": "{have} จาก {need}",
+    "shortOf": "ขาด {n} จาก {total}",
+    "estimate": "ประมาณการ"
   },
   "common": {
     "search": "ค้นหา",

@@ -76,7 +76,10 @@
     "spent": "Dipakai",
     "spentTitle": "Dipakai {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · diatur manual {hand} (tangkapan {capture})"
+    "handSet": " · diatur manual {hand} (tangkapan {capture})",
+    "missing": "Belum dimiliki",
+    "missingTitle": "Item yang belum pernah dimiliki akun ini",
+    "missingNote": "Tidak pernah ada di rekaman mana pun akun ini. Buka untuk melihat cara mendapatkannya."
   },
   "detail": {
     "history": "Riwayat",

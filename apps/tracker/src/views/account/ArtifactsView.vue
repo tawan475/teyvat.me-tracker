@@ -596,6 +596,7 @@ const GRID =
       </div>
 
       <UiPager
+        sticky
         :model-value="page"
         :page-count="pageCount"
         :page-size="pageSize"

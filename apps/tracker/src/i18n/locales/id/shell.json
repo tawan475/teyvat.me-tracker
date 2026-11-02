@@ -113,5 +113,43 @@
     "none": "Belum ada perangkat Capture terhubung",
     "get": "Dapatkan Teyvat.me Capture"
   },
-  "lastSync": "Disinkronkan {time}"
+  "lastSync": "Disinkronkan {time}",
+  "search": {
+    "button": "Cari",
+    "hint": "Cari semuanya (Ctrl+K)",
+    "title": "Cari",
+    "placeholder": "Karakter, item, musuh, pencapaian, halaman…",
+    "scope": "Cari di",
+    "recent": "Terbaru",
+    "start": "Ketik nama",
+    "loading": "Memuat nama…",
+    "failed": "Nama gagal dimuat",
+    "empty": "Tidak ada yang cocok dengan “{query}”",
+    "more": "{n} lainnya",
+    "open": "buka",
+    "move": "pindah",
+    "close": "tutup",
+    "notOwned": "belum dimiliki",
+    "owned": "{n} dimiliki",
+    "held": "{n} dimiliki",
+    "noneHeld": "belum dimiliki",
+    "level": "Lv {level} · C{c}",
+    "kinds": {
+      "all": "Semua",
+      "character": "Karakter",
+      "weapon": "Senjata",
+      "item": "Item",
+      "enemy": "Musuh",
+      "achievement": "Pencapaian",
+      "page": "Halaman"
+    },
+    "kind": {
+      "character": "Karakter",
+      "weapon": "Senjata",
+      "item": "Item",
+      "enemy": "Musuh",
+      "achievement": "Pencapaian",
+      "page": "Halaman"
+    }
+  }
 }

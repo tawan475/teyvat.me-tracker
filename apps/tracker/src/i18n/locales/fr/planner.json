@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} économise {mora}",
     "nothing": "Rien à dépenser",
-    "colours": "Couleurs"
+    "colours": "Couleurs",
+    "short": "{n} manquant(s)",
+    "haveOf": "{have} sur {need}",
+    "shortOf": "{n} sur {total} manquent",
+    "estimate": "Estimation"
   },
   "common": {
     "search": "Rechercher",

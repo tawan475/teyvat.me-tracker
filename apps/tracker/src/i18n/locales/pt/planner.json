@@ -174,7 +174,11 @@
   "cost": {
     "saves": "{name} economiza {mora}",
     "nothing": "Nada a gastar",
-    "colours": "Cores"
+    "colours": "Cores",
+    "short": "faltam {n}",
+    "haveOf": "{have} de {need}",
+    "shortOf": "faltam {n} de {total}",
+    "estimate": "Estimativa"
   },
   "common": {
     "search": "Buscar",

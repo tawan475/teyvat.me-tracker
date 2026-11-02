@@ -275,5 +275,19 @@
     "each": "{cost} cada uno",
     "afford": "Puedes comprar {n}",
     "hint": "Según la tienda que mostró el juego {time}"
+  },
+  "history": {
+    "title": "Historial de gachapones",
+    "viewMine": "Mis gachapones",
+    "view": "Vista de gachapones",
+    "kind": "Tipo de gachapón",
+    "search": "Personaje o arma",
+    "mine": "Solo gachapones en los que pedí deseos",
+    "none": "Ningún gachapón coincide",
+    "version": "Versión {version}",
+    "phase": "Fase {n}",
+    "fours": "4★ destacados",
+    "wishes": "deseos",
+    "skipped": "Sin deseos en este gachapón"
   }
 }

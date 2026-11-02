@@ -319,6 +319,7 @@ function close() {
           />
           <UiPager
             v-model="page"
+            sticky
             class="mt-4"
             :page-count="pageCount"
             :total="sortedRows.length"

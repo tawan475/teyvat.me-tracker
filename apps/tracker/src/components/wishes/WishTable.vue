@@ -12,6 +12,7 @@ import UiPager from '@/components/ui/UiPager.vue'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { vStickyHead } from '@/lib/sticky-head'
+import { useStickyToolbar } from '@/lib/sticky-stack'
 import { readStorage, writeStorage } from '@/lib/storage'
 import {
   BAND_COLOR,
@@ -108,7 +109,7 @@ const kind = (row: PullRow) =>
 
 /** The filter bar stays under the app bar; the column header under it, the pager at the foot. */
 const filters = useTemplateRef<HTMLElement>('filters')
-const filtersHeight = () => filters.value?.offsetHeight ?? 0
+useStickyToolbar(filters, () => true, { always: true })
 </script>
 
 <template>
@@ -118,7 +119,7 @@ const filtersHeight = () => filters.value?.offsetHeight ?? 0
   >
     <div
       ref="filters"
-      class="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
+      class="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 data-[stuck]:rounded-none data-[stuck]:shadow-md sm:px-4"
     >
       <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
         <FilterChip
@@ -153,7 +154,7 @@ const filtersHeight = () => filters.value?.offsetHeight ?? 0
     </p>
     <div v-else class="overflow-x-auto">
       <table class="tabular w-full font-mono text-sm">
-        <thead v-sticky-head="filtersHeight">
+        <thead v-sticky-head>
           <tr class="text-left text-xs text-text-muted">
             <th
               scope="col"

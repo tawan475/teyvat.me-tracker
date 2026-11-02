@@ -113,5 +113,43 @@
     "none": "Kein Capture-Gerät verbunden",
     "get": "Teyvat.me Capture holen"
   },
-  "lastSync": "Synchronisiert {time}"
+  "lastSync": "Synchronisiert {time}",
+  "search": {
+    "button": "Suchen",
+    "hint": "Alles durchsuchen (Strg+K)",
+    "title": "Suchen",
+    "placeholder": "Figuren, Gegenstände, Gegner, Errungenschaften, Seiten…",
+    "scope": "Suchen in",
+    "recent": "Zuletzt",
+    "start": "Namen eingeben",
+    "loading": "Namen werden geladen…",
+    "failed": "Namen konnten nicht geladen werden",
+    "empty": "Nichts passt zu „{query}“",
+    "more": "{n} weitere",
+    "open": "öffnen",
+    "move": "bewegen",
+    "close": "schließen",
+    "notOwned": "nicht im Besitz",
+    "owned": "{n} im Besitz",
+    "held": "{n} im Besitz",
+    "noneHeld": "nicht im Besitz",
+    "level": "St. {level} · K{c}",
+    "kinds": {
+      "all": "Alle",
+      "character": "Figuren",
+      "weapon": "Waffen",
+      "item": "Gegenstände",
+      "enemy": "Gegner",
+      "achievement": "Errungenschaften",
+      "page": "Seiten"
+    },
+    "kind": {
+      "character": "Figur",
+      "weapon": "Waffe",
+      "item": "Gegenstand",
+      "enemy": "Gegner",
+      "achievement": "Errungenschaft",
+      "page": "Seite"
+    }
+  }
 }

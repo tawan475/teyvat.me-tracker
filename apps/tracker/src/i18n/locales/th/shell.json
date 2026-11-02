@@ -113,5 +113,43 @@
     "none": "ยังไม่ได้เชื่อมต่ออุปกรณ์ Capture",
     "get": "ดาวน์โหลด Teyvat.me Capture"
   },
-  "lastSync": "ซิงก์ {time}"
+  "lastSync": "ซิงก์ {time}",
+  "search": {
+    "button": "ค้นหา",
+    "hint": "ค้นหาทั้งหมด (Ctrl+K)",
+    "title": "ค้นหา",
+    "placeholder": "ตัวละคร ไอเทม ศัตรู ความสำเร็จ หน้า…",
+    "scope": "ค้นหาใน",
+    "recent": "ล่าสุด",
+    "start": "พิมพ์ชื่อ",
+    "loading": "กำลังโหลดชื่อ…",
+    "failed": "โหลดชื่อไม่สำเร็จ",
+    "empty": "ไม่พบผลลัพธ์สำหรับ “{query}”",
+    "more": "อีก {n} รายการ",
+    "open": "เปิด",
+    "move": "เลื่อน",
+    "close": "ปิด",
+    "notOwned": "ยังไม่มี",
+    "owned": "มี {n}",
+    "held": "มี {n}",
+    "noneHeld": "ยังไม่มี",
+    "level": "Lv {level} · C{c}",
+    "kinds": {
+      "all": "ทั้งหมด",
+      "character": "ตัวละคร",
+      "weapon": "อาวุธ",
+      "item": "ไอเทม",
+      "enemy": "ศัตรู",
+      "achievement": "ความสำเร็จ",
+      "page": "หน้า"
+    },
+    "kind": {
+      "character": "ตัวละคร",
+      "weapon": "อาวุธ",
+      "item": "ไอเทม",
+      "enemy": "ศัตรู",
+      "achievement": "ความสำเร็จ",
+      "page": "หน้า"
+    }
+  }
 }

@@ -113,5 +113,43 @@
     "none": "연결된 Capture 기기 없음",
     "get": "Teyvat.me Capture 받기"
   },
-  "lastSync": "{time} 동기화"
+  "lastSync": "{time} 동기화",
+  "search": {
+    "button": "검색",
+    "hint": "전체 검색 (Ctrl+K)",
+    "title": "검색",
+    "placeholder": "캐릭터, 아이템, 적, 업적, 페이지…",
+    "scope": "검색 범위",
+    "recent": "최근",
+    "start": "이름을 입력하세요",
+    "loading": "이름 불러오는 중…",
+    "failed": "이름을 불러오지 못했습니다",
+    "empty": "“{query}”와 일치하는 항목이 없습니다",
+    "more": "{n}개 더",
+    "open": "열기",
+    "move": "이동",
+    "close": "닫기",
+    "notOwned": "미보유",
+    "owned": "{n}개 보유",
+    "held": "{n}개 보유",
+    "noneHeld": "미보유",
+    "level": "Lv {level} · {c}돌",
+    "kinds": {
+      "all": "전체",
+      "character": "캐릭터",
+      "weapon": "무기",
+      "item": "아이템",
+      "enemy": "적",
+      "achievement": "업적",
+      "page": "페이지"
+    },
+    "kind": {
+      "character": "캐릭터",
+      "weapon": "무기",
+      "item": "아이템",
+      "enemy": "적",
+      "achievement": "업적",
+      "page": "페이지"
+    }
+  }
 }

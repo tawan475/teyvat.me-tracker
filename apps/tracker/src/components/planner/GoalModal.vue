@@ -35,12 +35,13 @@ import {
   RotateCcw,
   Star,
   Trash2,
+  X,
 } from 'lucide-vue-next'
 import { RARITY_TEXT } from '@/components/characters/tokens'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
-import FilterChip from '@/components/ui/FilterChip.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIconButton from '@/components/ui/UiIconButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import { characterIcon, weaponIcon } from '@/lib/assets'
@@ -50,7 +51,8 @@ import { downloadBlob } from '@/lib/share-image'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useFeedback } from '@/stores/feedback'
 import ArtifactGoalBlock from './ArtifactGoalBlock.vue'
-import CostList from './CostList.vue'
+import CostChecklist from './CostChecklist.vue'
+import { costCells, stockCounts } from './cost-cells'
 import { plannerWeaponIcon } from './custom-registry'
 import CustomForm from './CustomForm.vue'
 import { makePreset, presetText } from './custom-preset'
@@ -83,9 +85,13 @@ import WeaponGoalBlock from './WeaponGoalBlock.vue'
  * from the capture too: ArtifactGoalBlock); a custom character also has its
  * profile and "Replace with" a real one. Presets set the whole goal in one click. A
  * weapon on its own card gets its editor alone. The cost of the card is
- * beside it (below on phones), each tile coloured by what the bag covers.
- * The header has the favourite, counted and delete (with Undo, from the
- * page); the note folds away.
+ * beside it as a checklist (CostChecklist: have of need, a mark per state).
+ *
+ * Laid out as the user's pick "D" (2026-11-02, design canvas "Planner goal
+ * editor"): the game-style panel on the left (portrait, name, favourite /
+ * counted / delete, constellation C0-C6, presets, the note), the parts' tabs
+ * in the middle, the cost on the right (under the middle below xl, all
+ * stacked on phones).
  *
  * Every change is emitted as it happens; the page writes it (optimistic,
  * sent after a short pause) and hands the new state back down.
@@ -316,6 +322,23 @@ function setArtifacts(artifacts: ArtifactGoal | undefined) {
   if (stored.value) setCharacter({ ...stored.value, artifacts })
 }
 
+/** The level goal is already reached (its tab carries a check). */
+const levelDone = computed(() => {
+  const ch = c.value
+  const goal = stored.value
+  return (
+    !!ch &&
+    !!goal &&
+    (ch.current.level > goal.level ||
+      (ch.current.level === goal.level && ch.current.ascension >= goal.ascension))
+  )
+})
+const tabOptions = computed(() =>
+  tabs.value.map((o) =>
+    o.value === 'level' && levelDone.value ? { ...o, label: `${o.label} ✓` } : o,
+  ),
+)
+
 const arNeed = computed(() => {
   const need = c.value?.requirement?.ar ?? 0
   return props.ar !== null && need > props.ar ? need : 0
@@ -349,6 +372,19 @@ const requirements = computed<Requirement[]>(() => {
   const e = props.entry
   if (!e) return []
   return [e.character, ...e.weapons].flatMap((x) => (x?.requirement ? [x.requirement] : []))
+})
+
+/** How many cost items the bag can't cover even for this goal alone. */
+const costShort = computed(() => {
+  if (requirements.value.length === 0) return { short: 0, total: 0 }
+  const cells = costCells({
+    planner: props.planner,
+    requirements: requirements.value,
+    others: props.others,
+    inventory: props.good.materials,
+    options: props.options,
+  })
+  return { short: stockCounts(cells).short, total: cells.length }
 })
 
 /** This card on its own: resin and days (domains, bosses, ley lines), weekly weeks. */
@@ -455,128 +491,185 @@ const replaceSelected = computed<ReadonlySet<string>>(
 </script>
 
 <template>
-  <UiModal :open="open && !!entry" :title="title" size="detail" @close="emit('close')">
-    <template #heading>
-      <div class="mr-auto flex min-w-0 flex-1 items-center gap-2.5">
-        <GameIcon
-          :src="portrait.src"
-          :name="title"
-          :rarity="portrait.rarity ?? undefined"
-          size="sm"
-        />
-        <ElementIcon v-if="c?.element" :element="c.element" />
-        <h2 class="min-w-0 truncate text-lg font-semibold">{{ title }}</h2>
-        <span
-          v-if="c?.rarity"
-          class="hidden shrink-0 text-sm sm:inline"
-          :class="RARITY_TEXT[c.rarity]"
-          aria-hidden="true"
-          >{{ '★'.repeat(c.rarity) }}</span
+  <UiModal :open="open && !!entry" :title="title" size="detail" bare @close="emit('close')">
+    <div
+      v-if="entry"
+      class="grid lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)_20rem]"
+    >
+      <!-- The game-style panel: who, the goal's shape (constellation, presets), the note -->
+      <aside
+        class="flex flex-col border-border-default bg-surface-sunken lg:row-span-2 lg:border-r xl:row-span-1"
+      >
+        <div
+          class="flex h-36 shrink-0 items-center justify-center bg-radial-[at_50%_50%] from-accent/25 via-surface-overlay/50 to-surface-sunken sm:h-44"
         >
-      </div>
-      <button
-        v-if="c && entry"
-        type="button"
-        class="inline-flex size-10 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-surface-overlay"
-        :class="entry.favorite ? 'text-rarity-5' : 'text-text-muted hover:text-text-primary'"
-        :aria-pressed="entry.favorite"
-        :aria-label="$t('planner.card.favoriteLabel', { name: title })"
-        :title="entry.favorite ? $t('planner.card.favorite') : $t('planner.card.notFavorite')"
-        @click="emit('favorite')"
-      >
-        <Star class="size-5" :fill="entry.favorite ? 'currentColor' : 'none'" aria-hidden="true" />
-      </button>
-      <button
-        v-if="entry"
-        type="button"
-        class="inline-flex size-10 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-overlay hover:text-text-primary"
-        :aria-pressed="entry.active"
-        :aria-label="
-          entry.active
-            ? $t('planner.editor.countedLabel', { name: title })
-            : $t('planner.editor.notCountedLabel', { name: title })
-        "
-        :title="entry.active ? $t('planner.common.counted') : $t('planner.common.notCounted')"
-        @click="emit('toggle')"
-      >
-        <Eye v-if="entry.active" class="size-5" aria-hidden="true" />
-        <EyeOff v-else class="size-5" aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        class="inline-flex size-10 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-overlay hover:text-danger-text"
-        :aria-label="$t('planner.common.removeName', { name: title })"
-        :title="$t('planner.common.removeName', { name: title })"
-        @click="emit('remove')"
-      >
-        <Trash2 class="size-5" aria-hidden="true" />
-      </button>
-    </template>
-
-    <div v-if="entry" class="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
-      <div class="flex min-w-0 flex-col gap-4">
-        <!-- Presets, constellation, note -->
-        <div v-if="c && stored" class="flex flex-wrap items-center gap-2">
-          <div
-            class="scroll-hide scroll-fade-x -mx-1 flex min-w-0 flex-1 basis-full gap-1.5 overflow-x-auto px-1 sm:basis-auto"
-            role="group"
-            :aria-label="$t('planner.editor.presets')"
-          >
-            <FilterChip
-              v-for="p in PRESETS"
-              :key="p.id"
-              :pressed="presetOn(p)"
-              :title="p.title"
-              @toggle="usePreset(p)"
-              >{{ p.label }}</FilterChip
+          <GameIcon
+            :src="portrait.src"
+            :name="title"
+            :rarity="portrait.rarity ?? undefined"
+            size="lg"
+            eager
+            class="!size-24 rounded-2xl shadow-lg ring-1 ring-white/15 sm:!size-28"
+          />
+        </div>
+        <div
+          class="flex shrink-0 items-center gap-2 border-y border-border-default bg-surface-base py-2.5 pr-2 pl-4"
+        >
+          <ElementIcon v-if="c?.element" :element="c.element" size="lg" />
+          <div class="flex min-w-0 flex-1 flex-col">
+            <h2 class="truncate text-xl leading-tight font-bold">{{ title }}</h2>
+            <span
+              v-if="portrait.rarity"
+              class="text-sm leading-none"
+              :class="RARITY_TEXT[portrait.rarity]"
+              aria-hidden="true"
+              >{{ '★'.repeat(portrait.rarity) }}</span
             >
           </div>
-          <span
-            class="inline-flex items-center gap-1.5"
-            :title="$t('planner.editor.constellationTitle')"
+          <button
+            v-if="c"
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-surface-overlay"
+            :class="entry.favorite ? 'text-rarity-5' : 'text-text-muted hover:text-text-primary'"
+            :aria-pressed="entry.favorite"
+            :aria-label="$t('planner.card.favoriteLabel', { name: title })"
+            :title="entry.favorite ? $t('planner.card.favorite') : $t('planner.card.notFavorite')"
+            @click="emit('favorite')"
           >
-            <span class="text-sm text-text-muted">C</span>
-            <NumberStepper
-              :model-value="c.constellation"
-              :min="c.capturedConstellation"
-              :max="6"
-              :label="$t('planner.editor.constellation')"
-              @update:model-value="setConstellation"
+            <Star
+              class="size-5"
+              :fill="entry.favorite ? 'currentColor' : 'none'"
+              aria-hidden="true"
             />
-          </span>
-          <UiButton
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-overlay hover:text-text-primary"
+            :aria-pressed="entry.active"
+            :aria-label="
+              entry.active
+                ? $t('planner.editor.countedLabel', { name: title })
+                : $t('planner.editor.notCountedLabel', { name: title })
+            "
+            :title="entry.active ? $t('planner.common.counted') : $t('planner.common.notCounted')"
+            @click="emit('toggle')"
+          >
+            <Eye v-if="entry.active" class="size-5" aria-hidden="true" />
+            <EyeOff v-else class="size-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-overlay hover:text-danger-text"
+            :aria-label="$t('planner.common.removeName', { name: title })"
+            :title="$t('planner.common.removeName', { name: title })"
+            @click="emit('remove')"
+          >
+            <Trash2 class="size-5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-overlay hover:text-text-primary lg:hidden"
+            :aria-label="$t('ui.close')"
+            @click="emit('close')"
+          >
+            <X class="size-5" aria-hidden="true" />
+          </button>
+        </div>
+        <div class="flex flex-col gap-4 p-4">
+          <template v-if="c && stored">
+            <div class="flex flex-col gap-2" :title="$t('planner.editor.constellationTitle')">
+              <span class="text-xs font-semibold text-text-muted">{{
+                $t('planner.editor.constellation')
+              }}</span>
+              <div
+                role="radiogroup"
+                :aria-label="$t('planner.editor.constellation')"
+                class="grid grid-cols-7 gap-1"
+              >
+                <button
+                  v-for="n in 7"
+                  :key="n"
+                  type="button"
+                  role="radio"
+                  :aria-checked="c.constellation === n - 1"
+                  :disabled="n - 1 < c.capturedConstellation"
+                  class="tabular inline-flex min-h-9 items-center justify-center rounded-md border font-mono text-xs font-semibold transition-colors disabled:opacity-35"
+                  :class="
+                    c.constellation === n - 1
+                      ? 'border-rarity-5 bg-rarity-5/15 text-rarity-5'
+                      : 'border-border-default text-text-secondary enabled:hover:bg-surface-overlay'
+                  "
+                  @click="setConstellation(n - 1)"
+                >
+                  C{{ n - 1 }}
+                </button>
+              </div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <span class="text-xs font-semibold text-text-muted">{{
+                $t('planner.editor.presets')
+              }}</span>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button
+                  v-for="p in PRESETS"
+                  :key="p.id"
+                  type="button"
+                  :aria-pressed="presetOn(p)"
+                  :title="p.title"
+                  class="min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-sm leading-tight transition-colors"
+                  :class="
+                    presetOn(p)
+                      ? 'border-accent bg-accent/15 font-semibold text-accent-text'
+                      : 'border-border-default text-text-secondary hover:bg-surface-overlay hover:text-text-primary'
+                  "
+                  @click="usePreset(p)"
+                >
+                  {{ p.label }}
+                </button>
+              </div>
+            </div>
+          </template>
+          <button
+            type="button"
+            class="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-border-strong px-3 text-sm text-text-secondary transition-colors hover:border-solid hover:text-text-primary"
             :aria-expanded="noteOpen"
             :title="noteOpen ? $t('planner.editor.hideNote') : $t('planner.editor.note')"
             @click="noteOpen = !noteOpen"
           >
             <NotebookPen class="size-4" aria-hidden="true" />
             {{ $t('planner.editor.note') }}
-          </UiButton>
+          </button>
+          <textarea
+            v-if="noteOpen"
+            v-model="note"
+            rows="3"
+            maxlength="1000"
+            :aria-label="$t('planner.editor.note')"
+            :placeholder="$t('planner.editor.note')"
+            class="min-h-10 w-full resize-y rounded-md border border-border-strong bg-surface-raised px-3 py-2 text-sm text-text-primary shadow-sm transition-colors placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
+            @input="onNote"
+            @blur="saveNote"
+          />
         </div>
-        <div v-else class="flex justify-end">
-          <UiButton
-            variant="ghost"
-            size="sm"
-            :aria-expanded="noteOpen"
-            @click="noteOpen = !noteOpen"
+      </aside>
+
+      <!-- The parts: tabs and their editors -->
+      <div class="flex min-w-0 flex-col gap-4 p-4 sm:p-5">
+        <div class="flex items-center gap-3">
+          <UiSegmented
+            v-if="c && stored && phases"
+            v-model="tab"
+            :options="tabOptions"
+            :label="$t('planner.editor.part')"
+          />
+          <UiIconButton
+            :label="$t('ui.close')"
+            class="ml-auto self-start max-lg:hidden"
+            @click="emit('close')"
           >
-            <NotebookPen class="size-4" aria-hidden="true" />
-            {{ $t('planner.editor.note') }}
-          </UiButton>
+            <X class="size-5" aria-hidden="true" />
+          </UiIconButton>
         </div>
-        <textarea
-          v-if="noteOpen"
-          v-model="note"
-          rows="2"
-          maxlength="1000"
-          :aria-label="$t('planner.editor.note')"
-          :placeholder="$t('planner.editor.note')"
-          class="min-h-10 w-full resize-y rounded-md border border-border-strong bg-surface-raised px-3 py-2 text-sm text-text-primary shadow-sm transition-colors placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
-          @input="onNote"
-          @blur="saveNote"
-        />
 
         <!-- A weapon on its own card -->
         <WeaponGoalBlock
@@ -611,13 +704,6 @@ const replaceSelected = computed<ReadonlySet<string>>(
         </section>
 
         <template v-if="c && stored && phases">
-          <UiSegmented
-            v-model="tab"
-            :options="tabs"
-            :label="$t('planner.editor.part')"
-            class="self-start"
-          />
-
           <!-- Level -->
           <section
             v-if="tab === 'level'"
@@ -665,31 +751,19 @@ const replaceSelected = computed<ReadonlySet<string>>(
             </div>
           </section>
 
-          <!-- Talents -->
+          <!-- Talents: one row each, its boost under its name, now → goal -->
           <section
             v-else-if="tab === 'talents'"
-            class="flex flex-col gap-2"
+            class="overflow-hidden rounded-xl border border-border-default"
             :aria-label="$t('planner.card.talents')"
           >
             <div
-              class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-2 sm:grid-cols-[8rem_auto_auto_minmax(0,1fr)]"
+              v-for="tn in TALENTS"
+              :key="tn"
+              class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b border-border-default px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:px-4"
             >
-              <span />
-              <span class="text-xs font-medium text-text-muted">
-                {{ $t('planner.editor.now') }}
-                <PencilLine
-                  v-if="talentsEdited"
-                  class="inline size-3.5 text-accent-text"
-                  :aria-label="$t('planner.card.setByHand')"
-                  role="img"
-                />
-              </span>
-              <span class="text-xs font-medium text-text-muted">{{
-                $t('planner.editor.goal')
-              }}</span>
-              <span class="hidden sm:block" />
-              <template v-for="tn in TALENTS" :key="tn">
-                <span class="flex min-w-0 flex-wrap items-center gap-x-1.5 text-sm">
+              <span class="col-span-2 flex min-w-0 flex-col gap-0.5 sm:col-span-1">
+                <span class="flex min-w-0 flex-wrap items-center gap-x-1.5 text-sm font-semibold">
                   {{ talentLabel(tn) }}
                   <span
                     v-if="boostOf(tn)"
@@ -707,29 +781,26 @@ const replaceSelected = computed<ReadonlySet<string>>(
                     >C{{ boostOf(tn)!.at }}</span
                   >
                 </span>
-                <NumberStepper
-                  :model-value="c.current.talents[tn]"
-                  :min="c.captured.talents[tn]"
-                  :label="$t('planner.editor.talentNow', { talent: talentLabel(tn) })"
-                  @update:model-value="setNowTalent(tn, $event)"
-                />
-                <NumberStepper
-                  :model-value="stored.talents[tn]"
-                  :min="c.current.talents[tn]"
-                  :label="$t('planner.editor.talentGoal', { talent: talentLabel(tn) })"
-                  @update:model-value="setGoalTalent(tn, $event)"
-                />
-                <span
-                  class="tabular col-span-3 -mt-1 font-mono text-xs text-text-muted sm:col-span-1 sm:mt-0"
-                  :class="boostOf(tn)?.on ? '' : 'hidden sm:block'"
-                  ><template v-if="boostOf(tn)?.on">{{
-                    $t('planner.editor.inGame', {
-                      from: c.boosted.current[tn],
-                      to: c.boosted.target[tn],
-                    })
-                  }}</template></span
-                >
-              </template>
+                <span v-if="boostOf(tn)?.on" class="tabular font-mono text-xs text-text-muted">{{
+                  $t('planner.editor.inGame', {
+                    from: c.boosted.current[tn],
+                    to: c.boosted.target[tn],
+                  })
+                }}</span>
+              </span>
+              <NumberStepper
+                :model-value="c.current.talents[tn]"
+                :min="c.captured.talents[tn]"
+                :label="$t('planner.editor.talentNow', { talent: talentLabel(tn) })"
+                @update:model-value="setNowTalent(tn, $event)"
+              />
+              <span class="hidden text-text-muted sm:inline" aria-hidden="true">→</span>
+              <NumberStepper
+                :model-value="stored.talents[tn]"
+                :min="c.current.talents[tn]"
+                :label="$t('planner.editor.talentGoal', { talent: talentLabel(tn) })"
+                @update:model-value="setGoalTalent(tn, $event)"
+              />
             </div>
           </section>
 
@@ -890,27 +961,35 @@ const replaceSelected = computed<ReadonlySet<string>>(
         </template>
       </div>
 
+      <!-- The cost: a checklist, the estimate at its foot -->
       <aside
-        class="flex min-w-0 flex-col gap-3 lg:border-l lg:border-border-subtle lg:pl-5"
+        class="flex min-w-0 flex-col gap-3 border-t border-border-default bg-surface-sunken/40 p-4 sm:p-5 lg:col-start-2 xl:col-start-3 xl:row-start-1 xl:border-t-0 xl:border-l"
         :aria-label="$t('planner.editor.cost')"
       >
-        <h3 class="text-sm font-semibold text-text-secondary">{{ $t('planner.editor.cost') }}</h3>
-        <CostList
+        <div class="flex items-baseline justify-between gap-2">
+          <h3 class="text-base font-semibold">{{ $t('planner.editor.cost') }}</h3>
+          <span v-if="costShort.short" class="text-xs text-warning-text">{{
+            $t('planner.cost.shortOf', { n: costShort.short, total: costShort.total })
+          }}</span>
+        </div>
+        <CostChecklist
           :planner="planner"
           :requirements="requirements"
           :others="others"
           :inventory="good.materials"
           :options="options"
           :label="title"
-          legend
         />
-        <p
+        <div
           v-if="estimate"
-          class="tabular font-mono text-sm text-text-secondary"
+          class="mt-auto flex flex-col gap-0.5 rounded-lg bg-surface-sunken px-3 py-2.5"
           :title="estimate.title"
         >
-          {{ estimate.text }}<span class="sr-only"> ({{ estimate.title }})</span>
-        </p>
+          <span class="text-xs text-text-muted">{{ $t('planner.cost.estimate') }}</span>
+          <span class="tabular font-mono text-sm font-semibold"
+            >{{ estimate.text }}<span class="sr-only"> ({{ estimate.title }})</span></span
+          >
+        </div>
       </aside>
     </div>
   </UiModal>

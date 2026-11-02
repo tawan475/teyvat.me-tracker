@@ -13,7 +13,14 @@ import { pageFromInput, pagerItems } from './pager'
  * ("…") opens "Go to page" to jump anywhere; on a phone only the arrows and
  * "page / pages" remain, and that opens it. Renders nothing for a single page.
  */
-const props = defineProps<{ pageCount: number; total: number; pageSize: number; label?: string }>()
+const props = defineProps<{
+  pageCount: number
+  total: number
+  pageSize: number
+  label?: string
+  /** Pinned to the screen's foot (above the phone tab bar) while its list scrolls: a solid card. */
+  sticky?: boolean
+}>()
 const page = defineModel<number>({ required: true })
 
 const from = computed(() => (props.total === 0 ? 0 : (page.value - 1) * props.pageSize + 1))
@@ -51,6 +58,10 @@ const GAP =
   <nav
     v-if="pageCount > 1"
     class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
+    :class="
+      sticky &&
+      'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 rounded-xl border border-border-default bg-surface-raised px-3 py-2 shadow-overlay lg:bottom-3'
+    "
     :aria-label="label ?? $t('ui.pager.label')"
   >
     <span class="tabular font-mono text-sm text-text-muted">

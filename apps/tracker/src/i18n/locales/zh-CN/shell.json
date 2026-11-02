@@ -113,5 +113,43 @@
     "none": "未连接 Capture 设备",
     "get": "获取 Teyvat.me Capture"
   },
-  "lastSync": "同步于 {time}"
+  "lastSync": "同步于 {time}",
+  "search": {
+    "button": "搜索",
+    "hint": "搜索全部（Ctrl+K）",
+    "title": "搜索",
+    "placeholder": "角色、道具、敌人、成就、页面…",
+    "scope": "搜索范围",
+    "recent": "最近",
+    "start": "输入名称",
+    "loading": "正在加载名称…",
+    "failed": "名称加载失败",
+    "empty": "没有与“{query}”匹配的结果",
+    "more": "还有 {n} 个",
+    "open": "打开",
+    "move": "移动",
+    "close": "关闭",
+    "notOwned": "未拥有",
+    "owned": "拥有 {n}",
+    "held": "持有 {n}",
+    "noneHeld": "未持有",
+    "level": "等级 {level} · {c}命",
+    "kinds": {
+      "all": "全部",
+      "character": "角色",
+      "weapon": "武器",
+      "item": "道具",
+      "enemy": "敌人",
+      "achievement": "成就",
+      "page": "页面"
+    },
+    "kind": {
+      "character": "角色",
+      "weapon": "武器",
+      "item": "道具",
+      "enemy": "敌人",
+      "achievement": "成就",
+      "page": "页面"
+    }
+  }
 }

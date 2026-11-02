@@ -307,18 +307,12 @@
     },
     "noMatch": "No entries match",
     "level": "Level",
-    "baseStats": "Base Stats",
     "hp": "HP",
-    "hpPlayers": "HP ({n}P)",
     "atk": "ATK",
     "def": "DEF",
     "em": "EM",
     "scaling": "Scaling",
     "monsterId": "Monster {id}",
-    "scalingBase": "Base",
-    "scalingCurve": "Curve at Lv. {n}",
-    "scalingValue": "Value",
-    "scalingCoop": "Co-op bonus (2P / 3P / 4P):",
     "res": "Elemental RES",
     "resHigh": "Above the usual 10%: resists this",
     "resLow": "Below the usual 10%: weak to this",
@@ -346,6 +340,46 @@
     "unfoldAll": "Unfold every category",
     "openWorld": "Open world",
     "version": "Version",
-    "fightBonusTip": "HP at Lv. {n} in this version × this fight's HP bonus"
+    "fightBonusTip": "HP at Lv. {n} in this version × this fight's HP bonus",
+    "players": "Players",
+    "playersN": "{n}P",
+    "levelDown": "Level down",
+    "levelUp": "Level up",
+    "scalingWiki": "How enemy stats scale",
+    "baseLink": "Base",
+    "curveLink": "Lv. {n} multiplier",
+    "fight": "Fight",
+    "hpAbove": "HP above",
+    "fightLink": "{where} HP",
+    "coop": "Co-op",
+    "coopX": "{n}P ×{x}",
+    "hpMultipliers": "HP multipliers"
+  },
+  "quests": {
+    "kind": "Quest type",
+    "kinds": {
+      "archon": "Archon Quests",
+      "story": "Story Quests",
+      "world": "World Quests"
+    },
+    "legend": "Markers",
+    "states": {
+      "done": "Done",
+      "active": "In progress",
+      "none": "Not started"
+    },
+    "byHand": "Marked by you",
+    "fromCapture": "from your capture",
+    "mark": "mark done",
+    "unmark": "remove your mark",
+    "chapters": "Chapters",
+    "search": "Search quests",
+    "filters": {
+      "all": "All",
+      "left": "Not done",
+      "done": "Done"
+    },
+    "needsCapture": "Done and in progress come from Teyvat.me Capture 1.16 or later; until then, mark quests by hand.",
+    "notSaved": "Quest marks not saved"
   }
 }

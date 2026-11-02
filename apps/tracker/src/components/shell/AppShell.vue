@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
+import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
 import {
   ArrowLeft,
   LayoutGrid,
@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   Settings,
   ShieldCheck,
   Sun,
@@ -35,6 +36,7 @@ import { ACCOUNT_SECTIONS, NAV_PARENT, STAFF_SECTIONS, pageTitle } from './nav'
 import { USER_SETTINGS_DEFAULTS } from '@gdt/shared/settings'
 import { NAV_COLLAPSED_KEY, useNavCollapse } from './nav-collapse'
 import SectionLabel from './SectionLabel.vue'
+import SiteSearch from './SiteSearch.vue'
 
 /**
  * The signed-in frame, in the original dashboard layout: a sidebar with
@@ -103,6 +105,23 @@ const currentId = computed<number | null>(() => {
   return last && accounts.byId.has(last) ? last : (accounts.list[0]?.id ?? null)
 })
 const current = computed(() => (currentId.value ? accounts.byId.get(currentId.value) : undefined))
+
+/** Site-wide search: the top bar's button, Ctrl+K (⌘K) anywhere, "/" outside a text field. */
+const searching = ref(false)
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
+useEventListener(window, 'keydown', (event: KeyboardEvent) => {
+  if (staffMode.value) return
+  const target = event.target as HTMLElement | null
+  const typing =
+    !!target && (/^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName) || target.isContentEditable)
+  const combo = (event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k'
+  const slash = event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey
+  if (!combo && !slash) return
+  // Another dialog open: leave its keys alone.
+  if (!searching.value && document.querySelector('dialog[open]')) return
+  event.preventDefault()
+  searching.value = true
+})
 
 /** The top bar's account name and UID copy on click. */
 async function copyFromBar(what: 'name' | 'uid', value: string, event: MouseEvent) {
@@ -388,7 +407,7 @@ const footButton =
         <template v-else-if="current">
           <div class="hidden h-4 w-px bg-border-strong sm:block" />
           <span
-            class="hidden min-w-0 items-center gap-1.5 text-sm font-medium text-text-muted sm:flex"
+            class="hidden min-w-0 items-center gap-1.5 overflow-hidden text-sm font-medium text-text-muted sm:flex"
           >
             <span class="size-2 shrink-0 rounded-full bg-emerald-500" />
             <button
@@ -418,6 +437,30 @@ const footButton =
           </span>
         </template>
         <div class="ml-auto flex shrink-0 items-center gap-2">
+          <template v-if="!staffMode">
+            <button
+              type="button"
+              class="hidden min-h-9 w-56 items-center gap-2 rounded-lg border border-border-default bg-surface-sunken px-3 text-sm text-text-muted transition-colors hover:border-border-strong hover:text-text-secondary xl:flex"
+              :title="$t('shell.search.hint')"
+              @click="searching = true"
+            >
+              <Search class="size-4 shrink-0" aria-hidden="true" />
+              {{ $t('shell.search.button') }}
+              <kbd
+                class="ml-auto rounded border border-border-strong px-1.5 font-sans text-xs"
+                aria-hidden="true"
+                >{{ isMac ? '⌘K' : 'Ctrl K' }}</kbd
+              >
+            </button>
+            <UiIconButton
+              :label="$t('shell.search.button')"
+              :title="$t('shell.search.hint')"
+              class="xl:hidden"
+              @click="searching = true"
+            >
+              <Search class="size-5" aria-hidden="true" />
+            </UiIconButton>
+          </template>
           <DiscordButton />
           <CaptureButton :account="staffMode ? undefined : current" />
           <AppearanceButton />
@@ -470,6 +513,7 @@ const footButton =
         <span class="max-w-full truncate">{{ $t('common.more') }}</span>
       </button>
     </nav>
+    <SiteSearch v-model:open="searching" :account-id="currentId" />
   </div>
 </template>
 

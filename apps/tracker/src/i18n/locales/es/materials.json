@@ -76,7 +76,10 @@
     "spent": "Gastados",
     "spentTitle": "Gastados {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · fijado a mano {hand} (captura {capture})"
+    "handSet": " · fijado a mano {hand} (captura {capture})",
+    "missing": "No tienes",
+    "missingTitle": "Objetos que esta cuenta nunca ha tenido",
+    "missingNote": "No aparecen en ninguna captura de esta cuenta. Ábrelos para ver cómo conseguirlos."
   },
   "detail": {
     "history": "Historial",

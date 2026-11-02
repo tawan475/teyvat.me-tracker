@@ -307,18 +307,12 @@
     },
     "noMatch": "Nessuna voce corrisponde",
     "level": "Livello",
-    "baseStats": "Statistiche di base",
     "hp": "PS",
-    "hpPlayers": "PS ({n} gioc.)",
     "atk": "ATT",
     "def": "DIF",
     "em": "ME",
     "scaling": "Crescita",
     "monsterId": "Mostro {id}",
-    "scalingBase": "Base",
-    "scalingCurve": "Curva al liv. {n}",
-    "scalingValue": "Valore",
-    "scalingCoop": "Bonus co-op (2G / 3G / 4G):",
     "res": "RES elementale",
     "resHigh": "Sopra il solito 10%: resiste",
     "resLow": "Sotto il solito 10%: debole a questo",
@@ -346,6 +340,46 @@
     "unfoldAll": "Espandi tutte le categorie",
     "openWorld": "Mondo aperto",
     "version": "Versione",
-    "fightBonusTip": "PS al liv. {n} in questa versione × il bonus PS di questo scontro"
+    "fightBonusTip": "PS al liv. {n} in questa versione × il bonus PS di questo scontro",
+    "players": "Giocatori",
+    "playersN": "{n}G",
+    "levelDown": "Abbassa livello",
+    "levelUp": "Alza livello",
+    "scalingWiki": "Come crescono i nemici",
+    "baseLink": "Base",
+    "curveLink": "Moltiplicatore Liv. {n}",
+    "fight": "Combattimento",
+    "hpAbove": "PS sopra",
+    "fightLink": "PS in {where}",
+    "coop": "Co-op",
+    "coopX": "{n}G ×{x}",
+    "hpMultipliers": "Moltiplicatori PS"
+  },
+  "quests": {
+    "kind": "Tipo di missione",
+    "kinds": {
+      "archon": "Missioni dell’Archon",
+      "story": "Missioni storia",
+      "world": "Missioni avventura"
+    },
+    "legend": "Indicatori",
+    "states": {
+      "done": "Completata",
+      "active": "In corso",
+      "none": "Non iniziata"
+    },
+    "byHand": "Segnata da te",
+    "fromCapture": "dalla tua acquisizione",
+    "mark": "segna come completata",
+    "unmark": "togli il tuo segno",
+    "chapters": "Capitoli",
+    "search": "Cerca missioni",
+    "filters": {
+      "all": "Tutte",
+      "left": "Da completare",
+      "done": "Completate"
+    },
+    "needsCapture": "Completata e in corso arrivano da Teyvat.me Capture 1.16 o successivo; fino ad allora segna le missioni a mano.",
+    "notSaved": "Segni delle missioni non salvati"
   }
 }

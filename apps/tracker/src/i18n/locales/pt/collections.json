@@ -307,18 +307,12 @@
     },
     "noMatch": "Nenhum resultado",
     "level": "Nível",
-    "baseStats": "Atributos Básicos",
     "hp": "Vida",
-    "hpPlayers": "Vida ({n} jog.)",
     "atk": "ATQ",
     "def": "DEF",
     "em": "PE",
     "scaling": "Escala",
     "monsterId": "Monstro {id}",
-    "scalingBase": "Base",
-    "scalingCurve": "Curva no nv. {n}",
-    "scalingValue": "Valor",
-    "scalingCoop": "Bônus cooperativo (2J / 3J / 4J):",
     "res": "RES Elemental",
     "resHigh": "Acima dos 10% habituais: resiste",
     "resLow": "Abaixo dos 10% habituais: é fraco a isto",
@@ -346,6 +340,46 @@
     "unfoldAll": "Expandir todas as categorias",
     "openWorld": "Mundo aberto",
     "version": "Versão",
-    "fightBonusTip": "Vida no nível {n} nesta versão × o bônus de Vida desta luta"
+    "fightBonusTip": "Vida no nível {n} nesta versão × o bônus de Vida desta luta",
+    "players": "Jogadores",
+    "playersN": "{n}J",
+    "levelDown": "Diminuir nível",
+    "levelUp": "Aumentar nível",
+    "scalingWiki": "Como os inimigos escalam",
+    "baseLink": "Base",
+    "curveLink": "Multiplicador Nv. {n}",
+    "fight": "Combate",
+    "hpAbove": "Vida acima",
+    "fightLink": "Vida em {where}",
+    "coop": "Cooperativo",
+    "coopX": "{n}J ×{x}",
+    "hpMultipliers": "Multiplicadores de Vida"
+  },
+  "quests": {
+    "kind": "Tipo de missão",
+    "kinds": {
+      "archon": "Missões do Arconte",
+      "story": "Missões Lendárias",
+      "world": "Missões do Mundo"
+    },
+    "legend": "Marcadores",
+    "states": {
+      "done": "Concluída",
+      "active": "Em progresso",
+      "none": "Não iniciada"
+    },
+    "byHand": "Marcada por você",
+    "fromCapture": "pela sua captura",
+    "mark": "marcar como concluída",
+    "unmark": "remover sua marca",
+    "chapters": "Capítulos",
+    "search": "Pesquisar missões",
+    "filters": {
+      "all": "Todas",
+      "left": "Não concluídas",
+      "done": "Concluídas"
+    },
+    "needsCapture": "Concluída e em progresso vêm do Teyvat.me Capture 1.16 ou mais recente; até lá, marque as missões à mão.",
+    "notSaved": "Marcas de missões não salvas"
   }
 }

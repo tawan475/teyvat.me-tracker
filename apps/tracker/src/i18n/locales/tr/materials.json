@@ -76,7 +76,10 @@
     "spent": "Harcanan",
     "spentTitle": "Harcanan {hint}",
     "tile": "{name}: {count}",
-    "handSet": " · elle ayarlandı {hand} (tarama {capture})"
+    "handSet": " · elle ayarlandı {hand} (tarama {capture})",
+    "missing": "Sahip değilsin",
+    "missingTitle": "Bu hesabın hiç sahip olmadığı eşyalar",
+    "missingNote": "Bu hesabın hiçbir kaydında yer almadı. Nereden geldiğini görmek için birini aç."
   },
   "detail": {
     "history": "Geçmiş",

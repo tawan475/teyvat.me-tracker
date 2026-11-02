@@ -70,7 +70,7 @@ function boardContent(lang: string) {
         {
           ann_id: 9001,
           title: wishTitle,
-          content: `<p>Promotional Character</p><p>&lt;t class="t_lc"&gt;${day(-1)} 18:00&lt;/t&gt; – &lt;t class="t_lc"&gt;${day(20)} 14:59&lt;/t&gt;</p>`,
+          content: `<p>Promotional Character</p><p>&lt;t class="t_lc"&gt;${day(-1)} 11:00&lt;/t&gt; – &lt;t class="t_lc"&gt;${day(20)} 14:59&lt;/t&gt;</p>`,
         },
         {
           ann_id: 9002,
@@ -172,12 +172,12 @@ describe('the game events sync', () => {
       ),
     })
     const local = (offset: number, time: string) => `${day(offset).replace(/\//g, '-')}T${time}`
-    // The banner phase opens every domain for 7 days; the official post's Favor is listed, the fan's Mastery not.
+    // A version's first banners open every domain for 7 days; the official post's Favor is listed, the fan's Mastery not.
     expect(asia.domain).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           kind: 'abundance',
-          start: local(-1, '18:00'),
+          start: local(-1, '11:00'),
           end: local(6, '04:00'),
           source: 'banner',
         }),

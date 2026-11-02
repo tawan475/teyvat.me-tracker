@@ -307,18 +307,12 @@
     },
     "noMatch": "該当する項目がありません",
     "level": "レベル",
-    "baseStats": "基本ステータス",
     "hp": "HP",
-    "hpPlayers": "HP（{n}人）",
     "atk": "攻撃力",
     "def": "防御力",
     "em": "熟知",
     "scaling": "成長",
     "monsterId": "モンスター {id}",
-    "scalingBase": "基礎値",
-    "scalingCurve": "Lv.{n}の曲線倍率",
-    "scalingValue": "数値",
-    "scalingCoop": "マルチボーナス（2人 / 3人 / 4人）：",
     "res": "元素耐性",
     "resHigh": "通常の10%より高い：耐性あり",
     "resLow": "通常の10%より低い：弱点",
@@ -346,6 +340,46 @@
     "unfoldAll": "すべての分類を展開",
     "openWorld": "フィールド",
     "version": "バージョン",
-    "fightBonusTip": "このバージョンのLv.{n}のHP × この戦闘のHPボーナス"
+    "fightBonusTip": "このバージョンのLv.{n}のHP × この戦闘のHPボーナス",
+    "players": "プレイ人数",
+    "playersN": "{n}人",
+    "levelDown": "レベルを下げる",
+    "levelUp": "レベルを上げる",
+    "scalingWiki": "敵ステータスの成長",
+    "baseLink": "基礎",
+    "curveLink": "Lv.{n} 倍率",
+    "fight": "戦闘",
+    "hpAbove": "上のHP",
+    "fightLink": "{where}のHP",
+    "coop": "マルチ",
+    "coopX": "{n}人 ×{x}",
+    "hpMultipliers": "HP倍率"
+  },
+  "quests": {
+    "kind": "任務の種類",
+    "kinds": {
+      "archon": "魔神任務",
+      "story": "伝説任務",
+      "world": "世界任務"
+    },
+    "legend": "マーカー",
+    "states": {
+      "done": "完了",
+      "active": "進行中",
+      "none": "未着手"
+    },
+    "byHand": "手動でマーク",
+    "fromCapture": "キャプチャより",
+    "mark": "完了にする",
+    "unmark": "マークを外す",
+    "chapters": "章",
+    "search": "任務を検索",
+    "filters": {
+      "all": "すべて",
+      "left": "未完了",
+      "done": "完了"
+    },
+    "needsCapture": "完了・進行中は Teyvat.me Capture 1.16 以降から取得します。それまでは手動でマークしてください。",
+    "notSaved": "任務のマークを保存できませんでした"
   }
 }

@@ -76,7 +76,10 @@
     "spent": "消費",
     "spentTitle": "消費 {hint}",
     "tile": "{name}：{count}",
-    "handSet": " · 手動設定 {hand}（キャプチャ {capture}）"
+    "handSet": " · 手動設定 {hand}（キャプチャ {capture}）",
+    "missing": "未所持",
+    "missingTitle": "このアカウントが一度も所持していないアイテム",
+    "missingNote": "このアカウントのどの記録にも出てこないアイテムです。開くと入手方法を確認できます。"
   },
   "detail": {
     "history": "履歴",

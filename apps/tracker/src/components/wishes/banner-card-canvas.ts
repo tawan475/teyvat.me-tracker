@@ -86,7 +86,8 @@ const GROUND_FILTER = {
 const SCRIM_RGB = { dark: '8,11,22', light: '248,250,252' } as const
 const ART_SHADOW: Shadow = { x: 0, y: 18, blur: 40, color: 'rgba(0,0,0,0.45)' }
 const TILE_SHADOW: Shadow = { x: 0, y: 8, blur: 22, color: 'rgba(0,0,0,0.35)' }
-const GAP = 14
+/** The gap between the panel's blocks (kept tight: the banner art takes what is left). */
+const GAP = 10
 
 function titleLines(banner: EventBanner): string[] {
   if (banner.kind === 'weapon') return banner.featured5.slice(0, 2).map((key) => itemName(key))
@@ -180,7 +181,7 @@ class BannerPainter extends CardPaint {
     const lines = titleLines(this.input.banner)
     const titleH = 12 + 34 + 10 + lines.length * 39
     const statsH = 87
-    const tableH = 184
+    const tableH = 160
     const tallyH = rated ? 68 : 0
     const plateH = this.plateHeight()
     const below = titleH + GAP + statsH + GAP + tableH + (rated ? GAP + tallyH : 0)
@@ -359,13 +360,13 @@ class BannerPainter extends CardPaint {
     const muted = this.v('--card-muted')
     const text = this.v('--card-text')
     const secondary = this.v('--card-secondary')
-    let top = y + 18
+    let top = y + 14
     this.line(t('wishes.rarity'), left, top, 13, 400, muted, { lineHeight: 20 })
     ;[t('wishes.share.total'), t('wishes.share.share'), t('wishes.share.avgPity')].forEach(
       (head, i) =>
         this.line(head, cols[i]!, top, 13, 400, muted, { lineHeight: 20, align: 'right' }),
     )
-    top += 28
+    top += 24
     const pct = (share: number) => `${(share * 100).toFixed(1)}%`
     const rows = [
       { stars: 5, label: '', row: n.five, size: 17, weight: 800, color: this.tokens['game-star'] },
@@ -417,7 +418,7 @@ class BannerPainter extends CardPaint {
           },
         ),
       )
-      top += lh + 8
+      top += lh + 4
     }
   }
 

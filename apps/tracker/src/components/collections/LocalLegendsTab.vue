@@ -19,7 +19,7 @@ import { legendSections, matchesLegend, type LegendView } from '@/data/local-leg
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { formatNumber, formatShort } from '@/lib/format'
-import { gameIcon, loadGameIcons } from '@/lib/assets'
+import { gameIcon, loadGameIcons, regionBackground } from '@/lib/assets'
 import { useAccount } from '@/views/account/context'
 import { t } from '@/i18n'
 
@@ -201,9 +201,22 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
               :aria-label="$t('collections.enemies.open', { name: row.name })"
               @click="show(row.legend.id)"
             >
+              <!-- The region's city painting behind the legend, its icon(s) centred on it -->
               <span
-                class="flex h-20 w-full items-end sm:h-24 justify-center gap-1 rounded-lg bg-linear-to-b from-surface-overlay to-surface-sunken"
+                class="relative isolate flex h-20 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-surface-sunken sm:h-24"
               >
+                <img
+                  v-if="regionBackground(section.region)"
+                  :src="regionBackground(section.region)"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  class="absolute inset-0 -z-20 size-full object-cover brightness-70 saturate-110"
+                />
+                <span
+                  class="absolute inset-0 -z-10 bg-linear-to-b from-transparent from-30% to-surface-raised/85"
+                  aria-hidden="true"
+                />
                 <GameIcon
                   v-for="(icon, i) in row.legend.icons"
                   :key="i"
@@ -211,9 +224,11 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
                   :name="row.name"
                   size="lg"
                   :class="
-                    row.legend.icons.length > 1 ? '!size-12 sm:!size-16' : '!size-20 sm:!size-24'
+                    row.legend.icons.length > 1
+                      ? '!size-13 sm:!size-15'
+                      : '!size-16 sm:!size-[4.75rem]'
                   "
-                  class="transition-transform group-hover:scale-[1.04]"
+                  class="rounded-xl shadow-[0_6px_18px_rgba(0,0,0,0.55)] ring-1 ring-white/20 transition-transform group-hover:scale-[1.04]"
                 />
               </span>
               <span class="mt-1.5 line-clamp-2 text-sm leading-snug font-semibold sm:text-base">{{
@@ -223,7 +238,7 @@ const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem
                 row.subtitle
               }}</span>
               <span
-                class="tabular mt-1 flex flex-wrap justify-center gap-x-2 font-mono text-sm font-semibold text-danger-text"
+                class="tabular mt-auto flex flex-wrap justify-center gap-x-2 pt-1 font-mono text-sm font-semibold text-danger-text"
                 :title="`${hpTip}\n${row.hp.map((n) => formatNumber(n)).join(' · ')}`"
               >
                 <span v-for="(hp, i) in row.hp" :key="i">♥ {{ formatShort(hp) }}</span>

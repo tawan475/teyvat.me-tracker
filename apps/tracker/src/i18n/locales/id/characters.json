@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Bagikan karakter",
-    "shareBuild": "Bagikan build",
-    "title": "Kartu karakter"
+    "title": "Kartu karakter",
+    "slow": "Di ponsel, kartu daftar karakter bisa butuh waktu.",
+    "start": "Buat kartu",
+    "pictures": "Gambar {n} / {total}",
+    "drawing": "Menggambar"
   },
   "buildPicker": {
     "label": "Karakter untuk dibagikan",

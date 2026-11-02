@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "分享角色一览",
-    "shareBuild": "分享角色配置",
-    "title": "角色一览"
+    "title": "角色一览",
+    "slow": "在手机上生成角色一览卡片可能需要一些时间。",
+    "start": "生成卡片",
+    "pictures": "图片 {n} / {total}",
+    "drawing": "绘制中"
   },
   "buildPicker": {
     "label": "要分享的角色",

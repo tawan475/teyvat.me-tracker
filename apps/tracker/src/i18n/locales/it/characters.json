@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Condividi personaggi",
-    "shareBuild": "Condividi build",
-    "title": "Scheda personaggi"
+    "title": "Scheda personaggi",
+    "slow": "Sul telefono la scheda dei personaggi può richiedere un po' di tempo.",
+    "start": "Crea scheda",
+    "pictures": "Immagini {n} / {total}",
+    "drawing": "Disegno in corso"
   },
   "buildPicker": {
     "label": "Personaggi da condividere",

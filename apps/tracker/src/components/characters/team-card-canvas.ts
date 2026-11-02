@@ -21,6 +21,7 @@ import {
   characterSplash,
   elementIconLight,
   giCdnArt,
+  regionBackground,
   weaponIcon,
 } from '@/lib/assets'
 import {
@@ -73,7 +74,6 @@ import {
   TEAM_PAD_X,
   TEAM_PAD_Y,
   TEAM_ROW,
-  regionBackground,
   teamCardHeight,
   teamNameFit,
   teamRegion,

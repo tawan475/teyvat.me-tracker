@@ -70,24 +70,38 @@ const GOLD = { from: '#fcde54', to: '#f0cc4e', text: '#8a4e24' }
 
 const bitmaps = new Map<string, Promise<ImageBitmap | null>>()
 
-/** A CORS image as a bitmap (both hosts send CORS), kept for the next draw; null when it fails. */
-function bitmap(url: string): Promise<ImageBitmap | null> {
+/**
+ * A CORS image as a bitmap (both hosts send CORS), kept for the next draw;
+ * null when it fails. `square` decodes a square picture straight to that many
+ * pixels: the portraits are 256 px and drawn at 174, and a hundred of them
+ * stay in memory for the visit.
+ */
+function bitmap(url: string, square?: number): Promise<ImageBitmap | null> {
   if (!url) return Promise.resolve(null)
-  let found = bitmaps.get(url)
+  const id = square ? `${url}@${square}` : url
+  let found = bitmaps.get(id)
   if (!found) {
     found = (async () => {
       for (const cache of ['default', 'reload'] as const) {
         try {
           const response = await fetch(url, { mode: 'cors', credentials: 'omit', cache })
-          if (response.ok) return await createImageBitmap(await response.blob())
+          if (!response.ok) continue
+          const blob = await response.blob()
+          return await (square
+            ? createImageBitmap(blob, {
+                resizeWidth: square,
+                resizeHeight: square,
+                resizeQuality: 'high',
+              })
+            : createImageBitmap(blob))
         } catch {
           // once more past the HTTP cache (a copy cached without CORS)
         }
       }
-      bitmaps.delete(url)
+      bitmaps.delete(id)
       return null
     })()
-    bitmaps.set(url, found)
+    bitmaps.set(id, found)
   }
   return found
 }
@@ -202,14 +216,27 @@ interface Images {
   pill: Map<Element, ImageBitmap | null>
 }
 
+/** How far the pictures have come: loaded (or failed) of all. */
+export type RosterProgress = (loaded: number, total: number) => void
+
 async function loadImages(
   characters: readonly CharacterView[],
+  scale: number,
+  progress?: RosterProgress,
 ): Promise<Images & { missing: number }> {
   let missing = 0
-  const counted = async <K>(map: Map<K, ImageBitmap | null>, key: K, url: string) => {
-    const image = await bitmap(url)
+  let loaded = 0
+  let total = 0
+  const counted = async <K>(
+    map: Map<K, ImageBitmap | null>,
+    key: K,
+    url: string,
+    square?: number,
+  ) => {
+    const image = await bitmap(url, square)
     if (url && !image) missing++
     map.set(key, image)
+    progress?.(++loaded, total)
   }
   const images: Images = {
     cell: new Map(),
@@ -219,20 +246,30 @@ async function loadImages(
   }
   const rarities = new Set(characters.map((c) => c.rarity ?? 0).filter((r) => r > 0))
   const elements = new Set(characters.flatMap((c) => (c.element ? [c.element] : [])))
-  await Promise.all([
-    ...[...rarities].map((r) => counted(images.cell, r, qualityCell(r))),
-    ...[...elements].map((e) => counted(images.element, e, elementIconLight(e))),
-    ...[...elements].map((e) => counted(images.pill, e, elementIcon(e))),
-    ...characters.map((c) => counted(images.portrait, c.key, characterIcon(c.key))),
-  ])
+  const jobs = [
+    ...[...rarities].map((r) => () => counted(images.cell, r, qualityCell(r))),
+    ...[...elements].map((e) => () => counted(images.element, e, elementIconLight(e))),
+    ...[...elements].map((e) => () => counted(images.pill, e, elementIcon(e))),
+    ...characters.map(
+      (c) => () =>
+        counted(images.portrait, c.key, characterIcon(c.key), Math.round(ROSTER_TILE * scale)),
+    ),
+  ]
+  total = jobs.length
+  progress?.(0, total)
+  await Promise.all(jobs.map((job) => job()))
   return { ...images, missing }
 }
 
-/** Draws the card at `scale` device pixels per CSS pixel. */
-export async function drawRoster(input: RosterDrawing, scale: number): Promise<DrawnRoster> {
+/** Draws the card at `scale` device pixels per CSS pixel; `progress` follows the pictures. */
+export async function drawRoster(
+  input: RosterDrawing,
+  scale: number,
+  progress?: RosterProgress,
+): Promise<DrawnRoster> {
   const family = getComputedStyle(document.body).fontFamily || 'Outfit, sans-serif'
   const [images] = await Promise.all([
-    loadImages(input.characters),
+    loadImages(input.characters, scale, progress),
     Promise.all(
       ['400', '600', '700'].map((w) =>
         document.fonts.load(`${w} 20px ${family}`).catch(() => undefined),

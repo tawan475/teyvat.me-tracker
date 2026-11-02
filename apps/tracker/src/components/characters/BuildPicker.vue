@@ -81,12 +81,7 @@ function toggle(key: string) {
 </script>
 
 <template>
-  <UiModal
-    :open="open"
-    :title="$t('characters.roster.shareBuild')"
-    size="wide"
-    @close="emit('close')"
-  >
+  <UiModal :open="open" :title="$t('characters.team.share')" size="wide" @close="emit('close')">
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-center gap-2">
         <label class="relative min-w-0 flex-1 basis-40">

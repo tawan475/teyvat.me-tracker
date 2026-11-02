@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Figuren teilen",
-    "shareBuild": "Build teilen",
-    "title": "Figurenübersicht"
+    "title": "Figurenübersicht",
+    "slow": "Auf dem Handy kann die Figurenkarte eine Weile dauern.",
+    "start": "Karte erstellen",
+    "pictures": "Bilder {n} / {total}",
+    "drawing": "Wird gezeichnet"
   },
   "buildPicker": {
     "label": "Figuren zum Teilen",

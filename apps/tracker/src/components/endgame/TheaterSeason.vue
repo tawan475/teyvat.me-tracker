@@ -88,185 +88,194 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
 </script>
 
 <template>
-  <div class="flex flex-wrap items-start gap-4">
-    <aside
-      class="flex max-w-full min-w-0 flex-[1_1_18rem] flex-col gap-3 lg:sticky lg:top-24 lg:max-w-[20rem]"
-    >
-      <section
-        class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
+  <!-- Side by side only when both fit the page's column (a container query, so the app's
+       sidebar counts); the side panel stays in view only then, never over a stacked list. -->
+  <div class="@container">
+    <div class="flex flex-col gap-4 @min-[51rem]:flex-row @min-[51rem]:items-start">
+      <aside
+        class="flex min-w-0 flex-col gap-3 @min-[51rem]:sticky @min-[51rem]:top-24 @min-[51rem]:w-[20rem] @min-[51rem]:shrink-0"
       >
-        <div class="relative h-28 bg-surface-sunken">
-          <img
-            :src="characterBanner(season.opening[0] ?? '')"
-            alt=""
-            class="size-full object-cover"
-          />
-          <span class="absolute inset-0 bg-linear-to-b from-transparent to-surface-raised" />
-        </div>
-        <div class="relative -mt-8 flex flex-col gap-1.5 px-4 pb-4">
-          <h2 class="text-2xl font-bold">{{ name }}</h2>
-          <span class="flex flex-wrap gap-x-3 text-sm">
-            <span class="tabular font-mono text-text-muted">{{ period }}</span>
-            <span v-if="left > 0" class="font-semibold text-success-text">{{
-              $t('endgame.activeLeft', { n: left }, left)
-            }}</span>
-          </span>
-          <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-            <li v-for="e in season.elements" :key="e" class="flex items-center gap-1.5 text-sm">
-              <ElementIcon :element="element(e)" size="lg" decorative />
-              {{ $t(`game.element.${element(e)}`) }}
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <section
-        class="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-raised p-4 shadow-sm"
-      >
-        <template v-for="group in ['opening', 'guests'] as const" :key="group">
-          <h3
-            class="text-xs font-semibold tracking-wide uppercase"
-            :class="group === 'guests' ? 'text-warning-text' : 'text-text-muted'"
-          >
-            {{ $t(`endgame.theater.${group}`) }}
-          </h3>
-          <ul
-            class="grid gap-x-1.5 gap-y-2"
-            :class="group === 'guests' ? 'grid-cols-4' : 'grid-cols-3'"
-          >
-            <li
-              v-for="key in season[group]"
-              :key="key"
-              class="flex min-w-0 flex-col items-center gap-1"
-            >
-              <img
-                :src="characterIcon(key)"
-                :alt="characterName(key)"
-                class="size-13 rounded-full border-2 bg-surface-overlay object-cover"
-                :class="group === 'guests' ? 'border-warning-text' : 'border-border-strong'"
-              />
-              <span class="w-full truncate text-center text-xs text-text-secondary">{{
-                characterName(key)
-              }}</span>
-            </li>
-          </ul>
-        </template>
-      </section>
-
-      <section
-        class="flex flex-col gap-0.5 rounded-xl border border-border-default bg-surface-raised p-2 shadow-sm"
-        role="radiogroup"
-        :aria-label="$t('endgame.theater.difficulty')"
-      >
-        <h3 class="px-3 pt-1 pb-1.5 text-xs font-semibold tracking-wide text-text-muted uppercase">
-          {{ $t('endgame.theater.difficulty') }}
-        </h3>
-        <button
-          v-for="d in difficulties"
-          :key="d.value"
-          type="button"
-          role="radio"
-          :aria-checked="d.value === difficulty"
-          class="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors"
-          :class="
-            d.value === difficulty
-              ? 'bg-surface-overlay font-semibold text-text-primary ring-1 ring-warning-text ring-inset'
-              : 'text-text-secondary hover:bg-surface-overlay'
-          "
-          @click="difficulty = d.value"
-        >
-          <span class="truncate">{{ d.label }}</span>
-          <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
-            $t('endgame.theater.acts', { n: d.acts })
-          }}</span>
-        </button>
-      </section>
-    </aside>
-
-    <ol class="flex min-w-0 flex-[999_1_32rem] flex-col gap-3">
-      <li v-for="(a, i) in acts" :key="a.key" class="flex flex-col gap-3">
-        <h3
-          v-if="i === firstExtra"
-          class="mt-2 text-xs font-semibold tracking-wide text-warning-text uppercase"
-        >
-          {{ $t('endgame.theater.extra') }}
-        </h3>
         <section
-          class="flex min-w-0 flex-col rounded-xl border bg-surface-raised shadow-sm"
-          :class="a.named ? 'border-warning-text/55' : 'border-border-default'"
+          class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
         >
-          <header
-            class="flex items-baseline justify-between gap-3 border-b border-border-default px-4 py-2.5"
-          >
-            <h4
-              class="min-w-0 truncate text-sm font-semibold"
-              :class="a.named && 'text-warning-text'"
-            >
-              {{ a.extra ? '' : $t('endgame.theater.act', { n: a.act })
-              }}{{ a.named && !a.extra ? ' · ' : '' }}{{ a.title }}
-            </h4>
-            <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
-              $t('endgame.level', { n: a.level })
-            }}</span>
-          </header>
-          <div v-if="a.named" class="flex min-w-0 items-start gap-4 p-3 sm:px-4">
-            <EnemyTile
-              v-for="(e, j) in a.lineups[0]?.slice(0, 1)"
-              :key="j"
-              :monster="e.monster"
-              :name="e.name"
-              :level="e.level"
-              :hp="e.hp"
-              size="lg"
-              class="shrink-0"
-              @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
+          <div class="relative h-28 bg-surface-sunken">
+            <img
+              :src="characterBanner(season.opening[0] ?? '')"
+              alt=""
+              class="size-full object-cover"
             />
-            <GameText
-              :text="a.desc"
-              :sprites="data.data.sprites"
-              :sprite-name="sprite"
-              class="min-w-0 pt-1 text-sm leading-relaxed text-text-secondary"
-            />
+            <span class="absolute inset-0 bg-linear-to-b from-transparent to-surface-raised" />
           </div>
-          <div
-            v-else
-            class="grid min-w-0 gap-px overflow-hidden rounded-b-xl bg-border-default"
-            :class="a.lineups.length > 1 ? 'md:grid-cols-2' : ''"
-            :title="a.lineups.length > 1 ? $t('endgame.theater.oneOf') : undefined"
-          >
-            <!-- One cell per lineup a run can draw, divided by hairlines; each after the first
-                 starts with "or", centred against the lineup however many rows it wraps to. -->
-            <div
-              v-for="(enemies, j) in a.lineups"
-              :key="j"
-              class="flex min-w-0 items-center gap-1 bg-surface-raised p-2.5"
-              :class="
-                j === a.lineups.length - 1 && a.lineups.length % 2 === 1 && j > 0
-                  ? 'md:col-span-2'
-                  : ''
-              "
-            >
-              <span
-                v-if="j > 0"
-                class="shrink-0 rounded-full bg-surface-overlay px-2 py-0.5 text-xs font-medium text-text-muted"
-              >
-                {{ $t('endgame.or') }}
-              </span>
-              <ul class="flex min-w-0 flex-1 flex-wrap content-start items-center gap-1">
-                <li v-for="(e, k) in enemies" :key="k">
-                  <EnemyTile
-                    :monster="e.monster"
-                    :name="e.name"
-                    :level="e.level"
-                    :hp="e.hp"
-                    @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
-                  />
-                </li>
-              </ul>
-            </div>
+          <div class="relative -mt-8 flex flex-col gap-1.5 px-4 pb-4">
+            <h2 class="text-2xl font-bold">{{ name }}</h2>
+            <span class="flex flex-wrap gap-x-3 text-sm">
+              <span class="tabular font-mono text-text-muted">{{ period }}</span>
+              <span v-if="left > 0" class="font-semibold text-success-text">{{
+                $t('endgame.activeLeft', { n: left }, left)
+              }}</span>
+            </span>
+            <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+              <li v-for="e in season.elements" :key="e" class="flex items-center gap-1.5 text-sm">
+                <ElementIcon :element="element(e)" size="lg" decorative />
+                {{ $t(`game.element.${element(e)}`) }}
+              </li>
+            </ul>
           </div>
         </section>
-      </li>
-    </ol>
+
+        <section
+          class="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-raised p-4 shadow-sm"
+        >
+          <template v-for="group in ['opening', 'guests'] as const" :key="group">
+            <h3
+              class="text-xs font-semibold tracking-wide uppercase"
+              :class="group === 'guests' ? 'text-warning-text' : 'text-text-muted'"
+            >
+              {{ $t(`endgame.theater.${group}`) }}
+            </h3>
+            <ul
+              class="grid gap-x-1.5 gap-y-2"
+              :class="group === 'guests' ? 'grid-cols-4' : 'grid-cols-3'"
+            >
+              <li
+                v-for="key in season[group]"
+                :key="key"
+                class="flex min-w-0 flex-col items-center gap-1"
+              >
+                <img
+                  :src="characterIcon(key)"
+                  :alt="characterName(key)"
+                  class="size-13 rounded-full border-2 bg-surface-overlay object-cover"
+                  :class="group === 'guests' ? 'border-warning-text' : 'border-border-strong'"
+                />
+                <span class="w-full truncate text-center text-xs text-text-secondary">{{
+                  characterName(key)
+                }}</span>
+              </li>
+            </ul>
+          </template>
+        </section>
+
+        <section
+          class="flex flex-col gap-0.5 rounded-xl border border-border-default bg-surface-raised p-2 shadow-sm"
+          role="radiogroup"
+          :aria-label="$t('endgame.theater.difficulty')"
+        >
+          <h3
+            class="px-3 pt-1 pb-1.5 text-xs font-semibold tracking-wide text-text-muted uppercase"
+          >
+            {{ $t('endgame.theater.difficulty') }}
+          </h3>
+          <button
+            v-for="d in difficulties"
+            :key="d.value"
+            type="button"
+            role="radio"
+            :aria-checked="d.value === difficulty"
+            class="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors"
+            :class="
+              d.value === difficulty
+                ? 'bg-surface-overlay font-semibold text-text-primary ring-1 ring-warning-text ring-inset'
+                : 'text-text-secondary hover:bg-surface-overlay'
+            "
+            @click="difficulty = d.value"
+          >
+            <span class="truncate">{{ d.label }}</span>
+            <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
+              $t('endgame.theater.acts', { n: d.acts })
+            }}</span>
+          </button>
+        </section>
+      </aside>
+
+      <ol class="flex min-w-0 flex-1 flex-col gap-3">
+        <li v-for="(a, i) in acts" :key="a.key" class="flex flex-col gap-3">
+          <h3
+            v-if="i === firstExtra"
+            class="mt-2 text-xs font-semibold tracking-wide text-warning-text uppercase"
+          >
+            {{ $t('endgame.theater.extra') }}
+          </h3>
+          <section
+            class="flex min-w-0 flex-col rounded-xl border bg-surface-raised shadow-sm"
+            :class="a.named ? 'border-warning-text/55' : 'border-border-default'"
+          >
+            <header
+              class="flex items-baseline justify-between gap-3 border-b border-border-default px-4 py-2.5"
+            >
+              <h4
+                class="min-w-0 truncate text-sm font-semibold"
+                :class="a.named && 'text-warning-text'"
+              >
+                {{ a.extra ? '' : $t('endgame.theater.act', { n: a.act })
+                }}{{ a.named && !a.extra ? ' · ' : '' }}{{ a.title }}
+              </h4>
+              <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
+                $t('endgame.level', { n: a.level })
+              }}</span>
+            </header>
+            <div v-if="a.named" class="flex min-w-0 items-start gap-4 p-3 sm:px-4">
+              <EnemyTile
+                v-for="(e, j) in a.lineups[0]?.slice(0, 1)"
+                :key="j"
+                :monster="e.monster"
+                :name="e.name"
+                :level="e.level"
+                :hp="e.hp"
+                size="lg"
+                class="shrink-0"
+                @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
+              />
+              <GameText
+                :text="a.desc"
+                :sprites="data.data.sprites"
+                :sprite-name="sprite"
+                class="min-w-0 pt-1 text-sm leading-relaxed text-text-secondary"
+              />
+            </div>
+            <div
+              v-else
+              class="grid min-w-0 gap-px overflow-hidden rounded-b-xl bg-border-default"
+              :class="a.lineups.length > 1 ? 'md:grid-cols-2' : ''"
+              :title="a.lineups.length > 1 ? $t('endgame.theater.oneOf') : undefined"
+            >
+              <!-- One cell per lineup a run can draw, divided by hairlines; each after the first
+                 has "or" on the hairline before it: the one above, or beside it in two columns. -->
+              <div
+                v-for="(enemies, j) in a.lineups"
+                :key="j"
+                class="relative flex min-w-0 items-center bg-surface-raised p-2.5"
+                :class="[
+                  j === a.lineups.length - 1 && a.lineups.length % 2 === 1 && j > 0
+                    ? 'md:col-span-2'
+                    : '',
+                  j > 0 && 'pt-4',
+                  j % 2 === 1 && 'md:pt-2.5 md:pl-5',
+                ]"
+              >
+                <span
+                  v-if="j > 0"
+                  class="absolute top-0 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border-default bg-surface-overlay px-2 py-0.5 text-xs font-medium text-text-muted"
+                  :class="j % 2 === 1 && 'md:top-1/2 md:left-0'"
+                >
+                  {{ $t('endgame.or') }}
+                </span>
+                <ul class="flex min-w-0 flex-1 flex-wrap content-start items-center gap-1">
+                  <li v-for="(e, k) in enemies" :key="k">
+                    <EnemyTile
+                      :monster="e.monster"
+                      :name="e.name"
+                      :level="e.level"
+                      :hp="e.hp"
+                      @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
+                    />
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </li>
+      </ol>
+    </div>
   </div>
 </template>

@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Share roster",
-    "shareBuild": "Share build",
-    "title": "Roster card"
+    "title": "Roster card",
+    "slow": "On a phone the roster card can take a while.",
+    "start": "Make card",
+    "pictures": "Pictures {n} / {total}",
+    "drawing": "Drawing"
   },
   "buildPicker": {
     "label": "Characters to share",

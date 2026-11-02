@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Chia sẻ nhân vật",
-    "shareBuild": "Chia sẻ build",
-    "title": "Thẻ nhân vật"
+    "title": "Thẻ nhân vật",
+    "slow": "Trên điện thoại, tạo thẻ danh sách nhân vật có thể mất một lúc.",
+    "start": "Tạo thẻ",
+    "pictures": "Hình ảnh {n} / {total}",
+    "drawing": "Đang vẽ"
   },
   "buildPicker": {
     "label": "Nhân vật để chia sẻ",

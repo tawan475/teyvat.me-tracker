@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "캐릭터 목록 공유",
-    "shareBuild": "빌드 공유",
-    "title": "캐릭터 목록"
+    "title": "캐릭터 목록",
+    "slow": "휴대폰에서는 캐릭터 목록 카드를 만드는 데 시간이 걸릴 수 있습니다.",
+    "start": "카드 만들기",
+    "pictures": "이미지 {n} / {total}",
+    "drawing": "그리는 중"
   },
   "buildPicker": {
     "label": "공유할 캐릭터",

@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Partager les personnages",
-    "shareBuild": "Partager le build",
-    "title": "Carte des personnages"
+    "title": "Carte des personnages",
+    "slow": "Sur téléphone, la carte des personnages peut prendre un moment.",
+    "start": "Créer la carte",
+    "pictures": "Images {n} / {total}",
+    "drawing": "Dessin en cours"
   },
   "buildPicker": {
     "label": "Personnages à partager",

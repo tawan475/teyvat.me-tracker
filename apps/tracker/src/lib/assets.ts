@@ -60,6 +60,14 @@ export function giCdnArt(name: string): string {
 }
 
 /**
+ * A region's city painting on gi-cdn (`UI_QuestHubLogPic_CityBg_<id>`,
+ * 1024×576, CityConfigData ids 1 Mondstadt … 8 Snezhnaya); '' for none.
+ */
+export function regionBackground(region: number): string {
+  return region >= 1 && region <= 8 ? giCdnArt(`UI_QuestHubLogPic_CityBg_${region}`) : ''
+}
+
+/**
  * URL of a game image by name: the host's, gi-cdn's for a name the host
  * lacks, or '' (no name, or no image anywhere).
  */

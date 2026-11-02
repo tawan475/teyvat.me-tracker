@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Compartilhar personagens",
-    "shareBuild": "Compartilhar build",
-    "title": "Cartão de personagens"
+    "title": "Cartão de personagens",
+    "slow": "No celular, o cartão de personagens pode demorar um pouco.",
+    "start": "Criar cartão",
+    "pictures": "Imagens {n} / {total}",
+    "drawing": "Desenhando"
   },
   "buildPicker": {
     "label": "Personagens para compartilhar",

@@ -28,6 +28,12 @@ export function useConstellationBoosts(key: () => string): ComputedRef<Constella
   return computed(() => (planner.value ? constellationBoosts(planner.value, key()) : null))
 }
 
+/** Settles once the planner data has loaded or failed (a drawing that waits draws once). */
+export function constellationBoostsReady(): Promise<void> {
+  load()
+  return loading ?? Promise.resolve()
+}
+
 /** The same for any character (a roster): a lookup by key, null until the data has loaded. */
 export function useConstellationBoostTable(): ComputedRef<
   ((key: string) => ConstellationBoosts | null) | null

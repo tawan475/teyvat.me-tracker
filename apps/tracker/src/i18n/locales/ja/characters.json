@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "キャラ一覧を共有",
-    "shareBuild": "ビルドを共有",
-    "title": "キャラ一覧"
+    "title": "キャラ一覧",
+    "slow": "スマホではキャラ一覧カードの作成に時間がかかることがあります。",
+    "start": "カードを作成",
+    "pictures": "画像 {n} / {total}",
+    "drawing": "描画中"
   },
   "buildPicker": {
     "label": "共有するキャラ",

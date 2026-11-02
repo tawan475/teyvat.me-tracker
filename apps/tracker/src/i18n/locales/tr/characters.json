@@ -182,8 +182,11 @@
   },
   "roster": {
     "share": "Karakterleri paylaş",
-    "shareBuild": "Yapıyı paylaş",
-    "title": "Karakter kartı"
+    "title": "Karakter kartı",
+    "slow": "Telefonda karakter listesi kartının hazırlanması biraz sürebilir.",
+    "start": "Kart oluştur",
+    "pictures": "Resimler {n} / {total}",
+    "drawing": "Çiziliyor"
   },
   "buildPicker": {
     "label": "Paylaşılacak karakterler",

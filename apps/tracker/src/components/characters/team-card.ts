@@ -10,7 +10,6 @@
 
 import { characterInfo } from '@gdt/game-data/catalog'
 import type { CharacterView } from '@/data/characters'
-import { giCdnArt } from '@/lib/assets'
 
 export const TEAM_CARD_WIDTH = 1920
 /** The PNG is the card at 1×, like the build card. */
@@ -110,11 +109,6 @@ export function teamRegion(keys: readonly string[]): number {
     else if (count === most) tied = true
   }
   return most && !tied ? best : DEFAULT_TEAM_REGION
-}
-
-/** A region's city painting on gi-cdn (`UI_QuestHubLogPic_CityBg_<id>`, 1024×576). */
-export function regionBackground(region: number): string {
-  return giCdnArt(`UI_QuestHubLogPic_CityBg_${region}`)
 }
 
 /** The PNG's name: the team's, else the characters' keys (`HuTao-Yelan-teyvat-me.png`). */

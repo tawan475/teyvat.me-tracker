@@ -13,6 +13,7 @@ import {
   PawPrint,
   Shirt,
   Sofa,
+  Swords,
   Sprout,
   Trophy,
 } from 'lucide-vue-next'
@@ -28,6 +29,7 @@ export const COLLECTION_TABS = [
   'archive',
   'handbook',
   'living-beings',
+  'local-legends',
   'tcg',
   'recipes',
   'crafting',
@@ -51,6 +53,7 @@ export const TAB_LABEL = {
   archive: 'archive',
   handbook: 'handbook',
   'living-beings': 'livingBeings',
+  'local-legends': 'localLegends',
   tcg: 'tcg',
   recipes: 'recipes',
   crafting: 'crafting',
@@ -63,7 +66,8 @@ export const TAB_LABEL = {
 
 /**
  * The captured part a tab shows (its capture time is the tab's); null for
- * Achievements and Anecdotes, which load their own data and hand marks.
+ * Achievements, Anecdotes and Local Legends, which load their own data and
+ * hand marks.
  */
 export const TAB_PART: Readonly<Record<CollectionTab, keyof CapturedCollections | null>> = {
   achievements: null,
@@ -73,6 +77,7 @@ export const TAB_PART: Readonly<Record<CollectionTab, keyof CapturedCollections 
   archive: 'archive',
   handbook: 'handbook',
   'living-beings': 'defeats',
+  'local-legends': null,
   tcg: 'tcg',
   recipes: 'recipes',
   crafting: 'crafting',
@@ -108,6 +113,7 @@ export const TAB_COMPONENTS: Readonly<Record<CollectionTab, Component>> = {
   archive: defineAsyncComponent(() => import('./ArchiveTab.vue')),
   handbook: defineAsyncComponent(() => import('./HandbookTab.vue')),
   'living-beings': defineAsyncComponent(() => import('./LivingBeingsTab.vue')),
+  'local-legends': defineAsyncComponent(() => import('./LocalLegendsTab.vue')),
   tcg: defineAsyncComponent(() => import('./TcgTab.vue')),
   recipes: defineAsyncComponent(() => import('./RecipesTab.vue')),
   crafting: defineAsyncComponent(() => import('./CraftingTab.vue')),
@@ -127,6 +133,7 @@ export const TAB_ICON: Readonly<Record<CollectionTab, Component>> = {
   archive: Archive,
   handbook: BookMarked,
   'living-beings': PawPrint,
+  'local-legends': Swords,
   tcg: Layers,
   recipes: CookingPot,
   crafting: Hammer,
@@ -162,6 +169,7 @@ export const TAB_ART: Readonly<Record<CollectionTab, CardArt>> = {
   archive: { name: 'UI_ItemIcon_121036' },
   handbook: { name: 'UI_ItemIcon_100226' },
   'living-beings': { name: 'UI_ItemIcon_112007' },
+  'local-legends': { name: 'UI_MonsterIcon_HermitCrab_Mature_Elite' },
   tcg: {
     name: 'UI_Gcg_CardBack_00',
     cdn: true,
@@ -194,6 +202,8 @@ export const TAB_TOPICS: Readonly<Record<CollectionTab, readonly CollectionTopic
   handbook: ['handbook'],
   // The enemy encyclopedia loads its own data (data/enemies.ts).
   'living-beings': [],
+  // Its own enemy data and achievements; the region names come from `world`.
+  'local-legends': [],
   tcg: ['tcg'],
   recipes: ['recipes'],
   crafting: ['crafting'],

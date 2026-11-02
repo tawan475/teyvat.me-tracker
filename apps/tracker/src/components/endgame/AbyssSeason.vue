@@ -5,7 +5,7 @@ import { Zap } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import type { EndgameData } from '@/data/endgame'
-import { gameIcon } from '@/lib/assets'
+import { abyssArt, abyssArtFailed } from '@/lib/assets'
 import { t } from '@/i18n'
 import EnemyTile from './EnemyTile.vue'
 
@@ -69,7 +69,12 @@ const chambers = computed(() =>
       class="overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm"
     >
       <div class="relative h-44 bg-surface-sunken sm:h-56">
-        <img :src="gameIcon(season.icon)" alt="" class="absolute inset-0 size-full object-cover" />
+        <img
+          :src="abyssArt(season.icon)"
+          alt=""
+          class="absolute inset-0 size-full object-cover"
+          @error="abyssArtFailed"
+        />
         <span
           class="absolute inset-0 bg-linear-to-r from-surface-base/95 via-surface-base/55 to-transparent"
         />

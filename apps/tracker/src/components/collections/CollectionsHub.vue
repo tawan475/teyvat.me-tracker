@@ -52,7 +52,9 @@ const cards = computed(() =>
       figure:
         tab === 'achievements' || tab === 'anecdotes'
           ? extras[EXTRA[tab]].value.figure
-          : figures.value[tab],
+          : tab === 'local-legends'
+            ? undefined
+            : figures.value[tab],
       takenAt:
         tab === 'achievements' || tab === 'anecdotes'
           ? extras[EXTRA[tab]].value.takenAt

@@ -17,7 +17,7 @@ import {
 } from '@/data/endgame'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
-import { characterBanner, characterIcon, gameIcon } from '@/lib/assets'
+import { abyssArt, abyssArtFailed, characterBanner, characterIcon, gameIcon } from '@/lib/assets'
 import { STYGIAN_GROUND } from './modes'
 
 /**
@@ -100,10 +100,11 @@ const shortName = (name: string) => name.split(':')[0]!.trim()
           >
             <img
               v-if="mode === 'abyss'"
-              :src="gameIcon(abyss(s).icon)"
+              :src="abyssArt(abyss(s).icon)"
               alt=""
               loading="lazy"
               class="size-full object-cover"
+              @error="abyssArtFailed"
             />
             <img
               v-else-if="mode === 'theater'"

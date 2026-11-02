@@ -16,7 +16,7 @@ import {
 } from '@/data/endgame'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
-import { characterIcon, gameIcon } from '@/lib/assets'
+import { abyssArt, abyssArtFailed, characterIcon, gameIcon } from '@/lib/assets'
 import { t } from '@/i18n'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import { MODE_BAR, MODE_CHOSEN, MODE_TEXT } from './modes'
@@ -90,9 +90,10 @@ const element = (name: string) => name.toLowerCase() as Element
       <span class="flex h-8 min-w-0 items-center gap-3 sm:h-10">
         <img
           v-if="card.mode === 'abyss' && card.season"
-          :src="gameIcon(abyss(card.season).icon)"
+          :src="abyssArt(abyss(card.season).icon)"
           alt=""
           class="h-8 w-16 shrink-0 rounded-md bg-surface-sunken object-cover sm:h-10 sm:w-20"
+          @error="abyssArtFailed"
         />
         <span
           v-else-if="card.mode === 'theater' && card.season"

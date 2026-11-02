@@ -19,7 +19,7 @@ import {
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { formatShort } from '@/lib/format'
-import { characterBanner, characterIcon, gameIcon } from '@/lib/assets'
+import { abyssArt, abyssArtFailed, characterBanner, characterIcon, gameIcon } from '@/lib/assets'
 import { STYGIAN_GROUND } from './modes'
 
 /**
@@ -95,7 +95,7 @@ const bosses = computed(() => {
   })
 })
 const art = computed(() => {
-  if (abyss.value) return gameIcon(abyss.value.icon)
+  if (abyss.value) return abyssArt(abyss.value.icon)
   if (theater.value) return characterBanner(theater.value.opening[0] ?? '')
   return ''
 })
@@ -109,7 +109,13 @@ const art = computed(() => {
       class="relative isolate overflow-hidden bg-surface-sunken"
       :class="stygian ? STYGIAN_GROUND : 'min-h-52 sm:min-h-72'"
     >
-      <img v-if="art" :src="art" alt="" class="absolute inset-0 size-full object-cover" />
+      <img
+        v-if="art"
+        :src="art"
+        alt=""
+        class="absolute inset-0 size-full object-cover"
+        @error="abyss && abyssArtFailed($event)"
+      />
       <!-- The bosses side by side, a little overlapped like the game's lineup; the row sets the height. -->
       <div v-if="stygian" class="flex items-center justify-center overflow-hidden px-2">
         <BossPicture

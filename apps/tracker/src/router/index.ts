@@ -42,7 +42,7 @@ declare module 'vue-router' {
 
 /** Collections' tabs and the wish banners' pages, for the owner's routes and Inspect's alike. */
 const COLLECTION_TAB_PATTERN =
-  'achievements|world|spincrystals|anecdotes|archive|handbook|living-beings|tcg|recipes|crafting|wardrobe|hangouts|blueprints|music|aranara'
+  'achievements|world|spincrystals|anecdotes|archive|handbook|living-beings|local-legends|tcg|recipes|crafting|wardrobe|hangouts|blueprints|music|aranara'
 const WISH_BANNER_PATTERN = 'character|weapon|standard|chronicled|beginners'
 // data/endgame.ts ENDGAME_MODES (kept here: the router is startup code, the data module isn't).
 const ENDGAME_MODE_PATTERN = 'abyss|theater|stygian'

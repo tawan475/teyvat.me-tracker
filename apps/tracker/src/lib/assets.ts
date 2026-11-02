@@ -141,6 +141,24 @@ export function gameIcon(name: string): string {
   return coverage.value ? imageUrl(name) : ''
 }
 
+/** The Spiral Abyss's own picture (its dungeon art, gi-cdn `extra`). */
+export const ABYSS_FALLBACK_ART = 'UI_DungeonPic_Tower_2'
+
+/**
+ * An Abyss period's picture: its blessing's art, or the Abyss's own where no
+ * host has that art (most periods before 4.x). '' until loadGameIcons resolves.
+ */
+export function abyssArt(blessing: string): string {
+  return coverage.value ? imageUrl(blessing) || giCdnArt(ABYSS_FALLBACK_ART) : ''
+}
+
+/** An Abyss picture that failed to load (`@error`) shows the Abyss's own instead. */
+export function abyssArtFailed(event: { target: unknown }): void {
+  const img = event.target as { src: string }
+  const fallback = giCdnArt(ABYSS_FALLBACK_ART)
+  if (img.src !== fallback) img.src = fallback
+}
+
 const GAME_ELEMENTS: Readonly<Record<Element, GameElement>> = {
   anemo: 'Anemo',
   geo: 'Geo',

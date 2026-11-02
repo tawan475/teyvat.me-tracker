@@ -51,9 +51,7 @@
   "legends": {
     "mark": "地方传奇",
     "defeated": "已击败",
-    "defeatedHint": "有击败成就的地方传奇（月之一之前）中成就已完成的数量：来自捕获或在成就页手动标记",
     "goalsTip": "已完成的成就",
-    "level": "战斗等级",
     "worldLevel": "世界等级",
     "wlN": "世界等级{n}",
     "wlYours": "世界等级{n}（你的）",

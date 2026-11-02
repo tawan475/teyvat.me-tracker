@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Lokallegende",
     "defeated": "Besiegt",
-    "defeatedHint": "Lokallegenden mit Sieg-Erfolg (bis Luna I), deren Erfolg erreicht ist: erfasst oder unter Erfolge abgehakt",
     "goalsTip": "Erreichte Erfolge",
-    "level": "Kampfstufe",
     "worldLevel": "Weltstufe",
     "wlN": "Weltstufe {n}",
     "wlYours": "Weltstufe {n} (deine)",

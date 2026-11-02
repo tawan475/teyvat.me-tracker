@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Leggenda locale",
     "defeated": "Sconfitte",
-    "defeatedHint": "Leggende locali con obiettivo di sconfitta (fino a Luna I) il cui obiettivo è completato: catturato o segnato in Obiettivi",
     "goalsTip": "Obiettivi completati",
-    "level": "Livello in combattimento",
     "worldLevel": "Livello del mondo",
     "wlN": "Livello del mondo {n}",
     "wlYours": "Livello del mondo {n} (il tuo)",

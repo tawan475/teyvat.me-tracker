@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Local Legend",
     "defeated": "Defeated",
-    "defeatedHint": "Local Legends with a defeat achievement (until Luna I) whose achievement is done: captured or marked on Achievements",
     "goalsTip": "Its achievements done",
-    "level": "Level they fight at",
     "worldLevel": "World Level",
     "wlN": "World Level {n}",
     "wlYours": "World Level {n} (yours)",

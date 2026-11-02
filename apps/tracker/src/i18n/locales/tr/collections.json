@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Yerel Efsane",
     "defeated": "Yenildi",
-    "defeatedHint": "Yenme başarımı olan (Luna I'e kadar) ve başarımı tamamlanmış Yerel Efsaneler: yakalamadan ya da Başarımlar'da işaretlenmiş",
     "goalsTip": "Tamamlanan başarımlar",
-    "level": "Savaştıkları seviye",
     "worldLevel": "Dünya Seviyesi",
     "wlN": "Dünya Seviyesi {n}",
     "wlYours": "Dünya Seviyesi {n} (seninki)",

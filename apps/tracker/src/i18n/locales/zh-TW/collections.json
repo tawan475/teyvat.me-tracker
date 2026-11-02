@@ -51,9 +51,7 @@
   "legends": {
     "mark": "地方傳奇",
     "defeated": "已擊敗",
-    "defeatedHint": "有擊敗成就的地方傳奇（月之一之前）中成就已完成的數量：來自擷取或在成就頁手動標記",
     "goalsTip": "已完成的成就",
-    "level": "戰鬥等級",
     "worldLevel": "世界等級",
     "wlN": "世界等級{n}",
     "wlYours": "世界等級{n}（你的）",

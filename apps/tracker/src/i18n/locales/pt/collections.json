@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Lenda Local",
     "defeated": "Derrotadas",
-    "defeatedHint": "Lendas Locais com conquista de derrota (até Luna I) cuja conquista está concluída: capturada ou marcada em Conquistas",
     "goalsTip": "Conquistas concluídas",
-    "level": "Nível em que lutam",
     "worldLevel": "Nível do Mundo",
     "wlN": "Nível do Mundo {n}",
     "wlYours": "Nível do Mundo {n} (o seu)",

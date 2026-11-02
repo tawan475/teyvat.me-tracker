@@ -51,9 +51,7 @@
   "legends": {
     "mark": "Legenda Lokal",
     "defeated": "Dikalahkan",
-    "defeatedHint": "Legenda Lokal dengan pencapaian kalahkan (hingga Luna I) yang pencapaiannya selesai: dari tangkapan atau ditandai di Pencapaian",
     "goalsTip": "Pencapaian yang selesai",
-    "level": "Level saat bertarung",
     "worldLevel": "Level Dunia",
     "wlN": "Level Dunia {n}",
     "wlYours": "Level Dunia {n} (milikmu)",

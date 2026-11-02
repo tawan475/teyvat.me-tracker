@@ -4,16 +4,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { Check, Search } from 'lucide-vue-next'
 import { localLegendLevel } from '@gdt/game-data/enemies'
 import EnemyDialog from './EnemyDialog.vue'
-import LegendCard from './LegendCard.vue'
 import { useCollectionCatalog } from './use-catalog'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
 import FilterChip from '@/components/ui/FilterChip.vue'
+import GameIcon from '@/components/ui/GameIcon.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiInput from '@/components/ui/UiInput.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
-import UiStat from '@/components/ui/UiStat.vue'
 import UiToolbar from '@/components/ui/UiToolbar.vue'
 import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achievement-capture'
 import { isDone } from '@/data/achievement-progress'
@@ -23,8 +23,8 @@ import { loadEnemyData } from '@/data/enemies'
 import { legendSections, matchesLegend, type LegendView } from '@/data/local-legends'
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
-import { formatNumber } from '@/lib/format'
-import { loadGameIcons } from '@/lib/assets'
+import { formatNumber, formatShort } from '@/lib/format'
+import { gameIcon, loadGameIcons } from '@/lib/assets'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useAccount } from '@/views/account/context'
 import { t } from '@/i18n'
@@ -104,8 +104,6 @@ const HIDE_KEY = 'collections:legends:hide-defeated'
 const hideDefeated = ref(readStorage(HIDE_KEY) === '1')
 watch(hideDefeated, (value) => writeStorage(HIDE_KEY, value ? '1' : null))
 const query = ref('')
-/** The region chip: every region (headed sections) or one. */
-const region = ref<number | 'all'>('all')
 
 const sections = computed(() => {
   const data = resource.data.value
@@ -115,7 +113,6 @@ const sections = computed(() => {
 const rows = computed(() => sections.value.flatMap((s) => s.rows))
 const shown = computed(() =>
   sections.value
-    .filter((s) => region.value === 'all' || s.region === region.value)
     .map((s) => ({
       ...s,
       rows: s.rows.filter(
@@ -124,15 +121,6 @@ const shown = computed(() =>
     }))
     .filter((s) => s.rows.length),
 )
-/** A section's defeated count of those with a defeat achievement (null when none has one). */
-const sectionTally = (rows: { defeated: boolean | null }[]) => {
-  const tracked = rows.filter((r) => r.defeated !== null)
-  return tracked.length ? `${tracked.filter((r) => r.defeated).length}/${tracked.length}` : null
-}
-const tally = computed(() => {
-  const tracked = rows.value.filter((r) => r.defeated !== null)
-  return { defeated: tracked.filter((r) => r.defeated).length, tracked: tracked.length }
-})
 /** A region's name; 0 (a Local Legend the data doesn't place yet) reads as Other. */
 const regionName = (city: number) => {
   if (city === 0) return t('collections.archive.otherRegion')
@@ -172,34 +160,12 @@ const fight = computed(() => {
 const hpTip = computed(() =>
   t('collections.legends.hpTip', { n: level.value, wl: wl.value, base: level.value - 3 }),
 )
-const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-2 sm:gap-3'
+/** Two columns on phones, cards of at least 16rem from `sm`. */
+const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] sm:gap-3'
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <ul
-      class="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4"
-      :aria-label="$t('collections.summary')"
-    >
-      <li class="flex min-w-0">
-        <UiStat :label="$t('collections.tabs.localLegends')" :value="rows.length" exact />
-      </li>
-      <li class="flex min-w-0">
-        <UiStat
-          :label="$t('collections.legends.defeated')"
-          :value="`${formatNumber(tally.defeated)} / ${formatNumber(tally.tracked)}`"
-          :hint="$t('collections.legends.defeatedHint')"
-        />
-      </li>
-      <li class="flex min-w-0">
-        <UiStat
-          :label="$t('collections.legends.level')"
-          :value="$t('endgame.level', { n: level })"
-          :hint="hpTip"
-        />
-      </li>
-    </ul>
-
     <UiToolbar :label="$t('collections.legends.search')">
       <div class="flex flex-wrap items-center gap-2">
         <label class="relative block min-w-0 flex-[1_1_12rem]">
@@ -226,26 +192,6 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap
           {{ $t('collections.legends.hideDefeated') }}
         </FilterChip>
       </div>
-      <div
-        v-if="sections.length > 1"
-        class="scroll-hide scroll-fade-x -mx-3 flex items-center gap-2 overflow-x-auto px-3 sm:mx-0 sm:scroll-fade-none sm:flex-wrap sm:overflow-visible sm:px-0"
-        role="radiogroup"
-        :aria-label="$t('collections.archive.region')"
-      >
-        <FilterChip radio :pressed="region === 'all'" :count="rows.length" @toggle="region = 'all'">
-          {{ $t('collections.enemies.all') }}
-        </FilterChip>
-        <FilterChip
-          v-for="s in sections"
-          :key="s.region"
-          radio
-          :pressed="region === s.region"
-          :count="s.rows.length"
-          @toggle="region = s.region"
-        >
-          {{ regionName(s.region) }}
-        </FilterChip>
-      </div>
     </UiToolbar>
 
     <UiError
@@ -255,7 +201,7 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap
       @retry="resource.reload"
     />
     <div v-else-if="!resource.data.value" :class="GRID" aria-busy="true">
-      <UiSkeleton v-for="n in 12" :key="n" class="h-28 sm:h-32" />
+      <UiSkeleton v-for="n in 12" :key="n" class="h-56" />
     </div>
     <UiEmpty v-else-if="!shown.length" :title="$t('collections.enemies.noMatch')" />
     <div v-else class="flex flex-col gap-6">
@@ -269,12 +215,6 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap
           <span class="tabular font-mono text-text-muted">{{
             formatNumber(section.rows.length)
           }}</span>
-          <span
-            v-if="sectionTally(section.rows)"
-            class="tabular inline-flex items-center gap-1 font-mono text-xs text-success-text"
-            :title="$t('collections.legends.defeatedHint')"
-            ><Check class="size-3.5" aria-hidden="true" />{{ sectionTally(section.rows) }}</span
-          >
           <span class="h-px min-w-4 flex-1 bg-border-default" aria-hidden="true" />
         </h3>
         <ul :class="GRID">
@@ -284,7 +224,53 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap
             class="rise-in flex min-w-0"
             :style="{ animationDelay: `${Math.min(i, 12) * 30}ms` }"
           >
-            <LegendCard :row="row" :hp-tip="hpTip" :priority="i < 8" @open="show(row.legend.id)" />
+            <button
+              type="button"
+              class="group relative flex w-full min-w-0 flex-col items-center gap-1 overflow-hidden rounded-xl border border-border-default bg-surface-raised px-2 pt-2 pb-3 text-center shadow-sm sm:px-3 sm:pt-3 sm:pb-3.5 transition-colors hover:border-border-strong hover:bg-surface-overlay focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              :aria-label="$t('collections.enemies.open', { name: row.name })"
+              @click="show(row.legend.id)"
+            >
+              <span
+                v-if="row.defeated"
+                class="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-surface-base/85 text-success-text ring-1 ring-current"
+                :title="$t('collections.legends.defeated')"
+              >
+                <Check class="size-4" aria-hidden="true" />
+              </span>
+              <UiBadge
+                v-else-if="row.goals && row.goals.total > 1 && row.goals.done"
+                class="absolute top-2 right-2"
+                :title="$t('collections.legends.goalsTip')"
+                >{{ row.goals.done }}/{{ row.goals.total }}</UiBadge
+              >
+              <span
+                class="flex h-20 w-full items-end sm:h-24 justify-center gap-1 rounded-lg bg-linear-to-b from-surface-overlay to-surface-sunken"
+              >
+                <GameIcon
+                  v-for="(icon, i) in row.legend.icons"
+                  :key="i"
+                  :src="gameIcon(icon)"
+                  :name="row.name"
+                  size="lg"
+                  :class="
+                    row.legend.icons.length > 1 ? '!size-12 sm:!size-16' : '!size-20 sm:!size-24'
+                  "
+                  class="transition-transform group-hover:scale-[1.04]"
+                />
+              </span>
+              <span class="mt-1.5 line-clamp-2 text-sm leading-snug font-semibold sm:text-base">{{
+                row.name
+              }}</span>
+              <span v-if="row.subtitle" class="line-clamp-2 text-xs text-warning-text sm:text-sm">{{
+                row.subtitle
+              }}</span>
+              <span
+                class="tabular mt-1 flex flex-wrap justify-center gap-x-2 font-mono text-sm font-semibold text-danger-text"
+                :title="`${hpTip}\n${row.hp.map((n) => formatNumber(n)).join(' · ')}`"
+              >
+                <span v-for="(hp, i) in row.hp" :key="i">♥ {{ formatShort(hp) }}</span>
+              </span>
+            </button>
           </li>
         </ul>
       </section>

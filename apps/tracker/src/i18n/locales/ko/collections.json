@@ -51,9 +51,7 @@
   "legends": {
     "mark": "지방 전설",
     "defeated": "처치함",
-    "defeatedHint": "처치 업적이 있는 지방 전설(달의 1장 이전) 중 업적을 달성한 수: 캡처 또는 업적에서 직접 표시",
     "goalsTip": "달성한 업적",
-    "level": "전투 레벨",
     "worldLevel": "월드 레벨",
     "wlN": "월드 레벨 {n}",
     "wlYours": "월드 레벨 {n} (내 레벨)",

@@ -235,33 +235,35 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
             :title="a.lineups.length > 1 ? $t('endgame.theater.oneOf') : undefined"
           >
             <!-- One cell per lineup a run can draw, divided by hairlines; each after the first
-                 starts with "or", inside the card at any width. -->
-            <ul
+                 starts with "or", centred against the lineup however many rows it wraps to. -->
+            <div
               v-for="(enemies, j) in a.lineups"
               :key="j"
-              class="flex min-w-0 flex-wrap content-start items-center gap-1 bg-surface-raised p-2.5"
+              class="flex min-w-0 items-center gap-1 bg-surface-raised p-2.5"
               :class="
                 j === a.lineups.length - 1 && a.lineups.length % 2 === 1 && j > 0
                   ? 'md:col-span-2'
                   : ''
               "
             >
-              <li
+              <span
                 v-if="j > 0"
-                class="rounded-full bg-surface-overlay px-2 py-0.5 text-xs font-medium text-text-muted"
+                class="shrink-0 rounded-full bg-surface-overlay px-2 py-0.5 text-xs font-medium text-text-muted"
               >
                 {{ $t('endgame.or') }}
-              </li>
-              <li v-for="(e, k) in enemies" :key="k">
-                <EnemyTile
-                  :monster="e.monster"
-                  :name="e.name"
-                  :level="e.level"
-                  :hp="e.hp"
-                  @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
-                />
-              </li>
-            </ul>
+              </span>
+              <ul class="flex min-w-0 flex-1 flex-wrap content-start items-center gap-1">
+                <li v-for="(e, k) in enemies" :key="k">
+                  <EnemyTile
+                    :monster="e.monster"
+                    :name="e.name"
+                    :level="e.level"
+                    :hp="e.hp"
+                    @open="(codex, level, hp) => $emit('enemy', codex, level, hp)"
+                  />
+                </li>
+              </ul>
+            </div>
           </div>
         </section>
       </li>

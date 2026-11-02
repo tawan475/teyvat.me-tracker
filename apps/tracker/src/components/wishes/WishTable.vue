@@ -9,7 +9,6 @@ import GameIcon from '@/components/ui/GameIcon.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiInput from '@/components/ui/UiInput.vue'
 import UiPager from '@/components/ui/UiPager.vue'
-import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { vStickyHead } from '@/lib/sticky-head'
 import { useStickyToolbar } from '@/lib/sticky-stack'
@@ -28,7 +27,7 @@ import {
 
 /**
  * Every pull of a banner, a page at a time (fast at 15,000 rows): its
- * number within the banner run (paimon.moe's #Roll), the item with its type,
+ * number within the banner run (paimon.moe's #Roll), the item,
  * the pity as a number and a bar (5★ coloured by how far into pity, 4★
  * against 10), the 50/50 result, the banner and the game-clock time (click
  * it to flip the order). 4★ and 5★ rows carry their rarity's tint. Rarity
@@ -106,13 +105,6 @@ function pity(row: PullRow): { color: string; width: string } | null {
   }
   return { color: 'var(--rarity-4)', width: `${Math.min(100, (row.pity / hard.value[1]) * 100)}%` }
 }
-const kind = (row: PullRow) =>
-  row.pull.item.kind === 'weapon'
-    ? t('wishes.table.weapon')
-    : row.pull.item.kind
-      ? t('wishes.table.character')
-      : ''
-
 /** The filter bar stays under the app bar; the column header under it, the pager at the foot. */
 const filters = useTemplateRef<HTMLElement>('filters')
 useStickyToolbar(filters, () => !props.embedded, { always: true })
@@ -249,9 +241,6 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
                       :title="wishItemName(row.pull.item)"
                       >{{ wishItemName(row.pull.item) }}</span
                     >
-                    <span class="hidden shrink-0 font-sans text-xs text-text-muted 2xl:inline">{{
-                      kind(row)
-                    }}</span>
                   </span>
                   <time
                     class="text-xs whitespace-nowrap text-text-muted sm:hidden"

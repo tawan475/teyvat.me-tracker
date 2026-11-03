@@ -53,5 +53,19 @@
     "clears": "Conclusões da comunidade",
     "clearsTip": "Conclusões de {boss} no stygian.moe (site de fãs)",
     "siteTip": "Conclusões e guias no stygian.moe (site de fãs)"
+  },
+  "captured": {
+    "run": "Sua tentativa",
+    "records": "Seus recordes",
+    "fromCapture": "Da captura de {date}",
+    "actsOf": "{n}/{total} atos",
+    "notEntered": "Não iniciado",
+    "solo": "Solo",
+    "coop": "Cooperativo",
+    "cleared": "Concluído",
+    "notCleared": "Não concluído",
+    "clearedOf": "{n}/{total} concluídos",
+    "total": "Total",
+    "fight": "Combate {n}"
   }
 }

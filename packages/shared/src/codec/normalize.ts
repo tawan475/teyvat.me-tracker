@@ -12,12 +12,16 @@ import type {
   GiProgress,
   GiProgressState,
   GiTasks,
+  GiEndgame,
   GiEvent,
   GiExploration,
   GiHangout,
   GiMiliastra,
   GiSignIn,
   GiFateStock,
+  GiStygianFight,
+  GiStygianRecord,
+  GiTheaterRun,
   GiTeapot,
   GiTribalState,
   GiWardrobe,
@@ -94,6 +98,8 @@ export interface NormalizedGood {
   teapot: GiTeapot | null
   /** `gi_miliastra`, the parts that pass whole. */
   miliastra: GiMiliastra | null
+  /** `gi_endgame`, the parts (theater, stygian) that pass whole. */
+  endgame: GiEndgame | null
 }
 
 export class GoodFormatError extends Error {
@@ -170,6 +176,7 @@ export function normalizeGood(input: unknown, options: NormalizeOptions = {}): N
     events: toEvents(input.gi_events),
     teapot: toTeapot(input.gi_teapot),
     miliastra: toMiliastra(input.gi_miliastra),
+    endgame: toEndgame(input.gi_endgame),
   }
   const itemGuids = toItemGuids(input)
   if (itemGuids) good.itemGuids = itemGuids
@@ -1287,6 +1294,82 @@ function toMiliastra(raw: unknown): GiMiliastra | null {
     return null
   }
   return { cosmetics: byId(cosmetics as [number, number][]) }
+}
+
+/** The game's fixed sizes in gi_endgame (contract v1): see GOOD_LIMITS.stygianRecords. */
+const THEATER_SEASON = [1, 10_000] as const
+const STYGIAN_SEASON = [1, 100_000_000] as const
+const ENDGAME_DIFFICULTY = [1, 200] as const
+const THEATER_ACTS = 12
+const TEAM_SIZE = 4
+/** A fight's seconds: the game's timer stops well under a day. */
+const FIGHT_TIME = [0, 86_400] as const
+
+/**
+ * `gi_endgame` (Capture 1.17.12): the Theater run and the Stygian records,
+ * each kept only when all of it passes (one bad record drops the list).
+ */
+function toEndgame(raw: unknown): GiEndgame | null {
+  if (!isObject(raw)) return null
+  const endgame: GiEndgame = {}
+  const theater = toTheaterRun(raw.theater)
+  if (theater) endgame.theater = theater
+  const records = toStygianRecords(isObject(raw.stygian) ? raw.stygian.records : undefined)
+  if (records) endgame.stygian = { records }
+  return Object.keys(endgame).length > 0 ? endgame : null
+}
+
+function toTheaterRun(raw: unknown): GiTheaterRun | null {
+  if (
+    !isObject(raw) ||
+    !isIntIn(raw.season, ...THEATER_SEASON) ||
+    !isIntIn(raw.acts, 0, THEATER_ACTS) ||
+    (raw.difficulty !== undefined && !isIntIn(raw.difficulty, ...ENDGAME_DIFFICULTY)) ||
+    (raw.level !== undefined && !isIntIn(raw.level, 1, 50))
+  ) {
+    return null
+  }
+  return {
+    season: raw.season,
+    ...(raw.difficulty !== undefined ? { difficulty: raw.difficulty } : {}),
+    ...(raw.level !== undefined ? { level: raw.level } : {}),
+    acts: raw.acts,
+  }
+}
+
+/** The records in the order sent (one per season and run kind, oldest first). */
+function toStygianRecords(raw: unknown): GiStygianRecord[] | null {
+  if (!Array.isArray(raw) || raw.length > GOOD_LIMITS.stygianRecords) return null
+  const out: GiStygianRecord[] = []
+  for (const r of raw) {
+    if (
+      !isObject(r) ||
+      !isIntIn(r.season, ...STYGIAN_SEASON) ||
+      !isIntIn(r.difficulty, ...ENDGAME_DIFFICULTY) ||
+      !isIntIn(r.at, ...TASK_TIME) ||
+      typeof r.coop !== 'boolean' ||
+      !Array.isArray(r.fights) ||
+      r.fights.length > GOOD_LIMITS.stygianFights
+    ) {
+      return null
+    }
+    const fights: GiStygianFight[] = []
+    for (const f of r.fights) {
+      if (
+        !isObject(f) ||
+        !isIntIn(f.time, ...FIGHT_TIME) ||
+        typeof f.done !== 'boolean' ||
+        !Array.isArray(f.team) ||
+        f.team.length > TEAM_SIZE ||
+        !f.team.every((key) => typeof key === 'string' && GOOD_KEY.test(key))
+      ) {
+        return null
+      }
+      fights.push({ time: f.time, done: f.done, team: [...(f.team as string[])] })
+    }
+    out.push({ season: r.season, difficulty: r.difficulty, at: r.at, coop: r.coop, fights })
+  }
+  return out
 }
 
 function isIntIn(value: unknown, min: number, max: number): value is number {

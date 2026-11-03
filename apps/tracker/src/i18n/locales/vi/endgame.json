@@ -53,5 +53,19 @@
     "clears": "Lượt vượt ải cộng đồng",
     "clearsTip": "Lượt vượt ải {boss} trên stygian.moe (trang người hâm mộ)",
     "siteTip": "Lượt vượt ải và hướng dẫn trên stygian.moe (trang người hâm mộ)"
+  },
+  "captured": {
+    "run": "Lượt chơi của bạn",
+    "records": "Kỷ lục của bạn",
+    "fromCapture": "Theo bản ghi ngày {date}",
+    "actsOf": "{n}/{total} màn",
+    "notEntered": "Chưa vào",
+    "solo": "Đơn",
+    "coop": "Co-op",
+    "cleared": "Đã vượt",
+    "notCleared": "Chưa vượt",
+    "clearedOf": "Đã vượt {n}/{total}",
+    "total": "Tổng",
+    "fight": "Trận {n}"
   }
 }

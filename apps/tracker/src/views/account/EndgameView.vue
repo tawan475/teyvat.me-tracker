@@ -21,6 +21,7 @@ import {
   type AnySeason,
   type EndgameMode,
 } from '@/data/endgame'
+import { loadCapturedEndgame, NO_CAPTURED_ENDGAME } from '@/data/endgame-capture'
 import { loadEnemyData } from '@/data/enemies'
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
@@ -37,6 +38,9 @@ import { useAccount, useAccountRoute } from './context'
  * steps. Game data only, the same for every account; dates are read on the
  * account's server, and seasons not started yet are left out. An enemy opens
  * its Living Beings entry at the level it was clicked at (`?enemy=<id>&lv=`).
+ * The account's own runs (Capture 1.17.12's gi_endgame, every capture's
+ * extras section) mark the seasons they cover: the Theater run and the
+ * Stygian records of a season on its page, a line on the cards.
  */
 const route = useRoute()
 const router = useRouter()
@@ -60,6 +64,13 @@ const resource = useResource(
     return data
   },
 )
+
+// The account's own runs; nothing to read without a capture.
+const captured = useResource(
+  () => account.value,
+  (a) => (a.latest ? loadCapturedEndgame(a) : Promise.resolve(NO_CAPTURED_ENDGAME)),
+)
+const yours = computed(() => captured.data.value ?? NO_CAPTURED_ENDGAME)
 
 // The clock the statuses read: once a minute, so "days left" moves on while the page is open.
 const now = ref(Date.now())
@@ -102,6 +113,14 @@ const index = computed(() => seasons.value.findIndex((s) => s.id === seasonId.va
 const season = computed(() => seasons.value[index.value] ?? null)
 const older = computed(() => seasons.value[index.value + 1] ?? null)
 const newer = computed(() => (index.value > 0 ? seasons.value[index.value - 1]! : null))
+/** What the season page gets of the account's runs: its mode's part for that season. */
+const seasonCapture = computed(() => {
+  const s = season.value
+  if (!s) return {}
+  if (mode.value === 'theater') return { run: yours.value.theater.get(s.id) ?? null }
+  if (mode.value === 'stygian') return { records: yours.value.stygian.get(s.id) ?? null }
+  return {}
+})
 
 // Enemies open their Living Beings entry, loaded the first time one is asked for.
 const enemyId = computed(() => Number(route.query.enemy) || 0)
@@ -199,6 +218,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
           :name="nameOf(mode, season)"
           :period="periodOf(season)"
           :left="daysLeft(season, now, server)"
+          v-bind="seasonCapture"
           @enemy="showEnemy"
         />
       </template>
@@ -214,6 +234,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
           :period="periodOf(seasons[0]!)"
           :left="daysLeft(seasons[0]!, now, server)"
           :to="to(mode, seasons[0]!.id)"
+          :captured="yours"
           @enemy="showEnemy"
         />
         <SeasonArchive
@@ -224,6 +245,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
           :name-of="(s) => nameOf(mode, s)"
           :period-of="periodOf"
           :to="(s) => to(mode, s.id)"
+          :captured="yours"
         />
       </template>
     </template>

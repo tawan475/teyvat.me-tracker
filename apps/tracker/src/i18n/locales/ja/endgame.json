@@ -53,5 +53,19 @@
     "clears": "みんなのクリア",
     "clearsTip": "stygian.moe の {boss} のクリア記録（ファンサイト）",
     "siteTip": "stygian.moe のクリア記録と攻略（ファンサイト）"
+  },
+  "captured": {
+    "run": "あなたの挑戦",
+    "records": "あなたの記録",
+    "fromCapture": "{date}のキャプチャより",
+    "actsOf": "{n}/{total}幕",
+    "notEntered": "未挑戦",
+    "solo": "シングル",
+    "coop": "マルチ",
+    "cleared": "クリア",
+    "notCleared": "未クリア",
+    "clearedOf": "{n}/{total}クリア",
+    "total": "合計",
+    "fight": "戦闘{n}"
   }
 }

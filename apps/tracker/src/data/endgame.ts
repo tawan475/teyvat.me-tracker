@@ -20,10 +20,11 @@ import {
   type TheaterSeason,
   type SERVER_OFFSETS,
 } from '@gdt/game-data/endgame'
-import type { GenshinServer } from '@gdt/shared'
+import type { GenshinServer, GiStygianRecord, GiTheaterRun } from '@gdt/shared'
 import { t } from '@/i18n'
 import type { Locale } from '@/i18n/locale'
 import { formatNumber } from '@/lib/format'
+import { fightsDone, formatFightTime, recordTotal } from './endgame-runs'
 
 export const ENDGAME_MODES = ['abyss', 'theater', 'stygian'] as const
 export type EndgameMode = (typeof ENDGAME_MODES)[number]
@@ -181,3 +182,65 @@ export function gameRuns(text: string): GameRun[][] {
     return runs
   })
 }
+
+// ----------------------------------------------------- the account's own runs
+// What the captures say (gi_endgame, Capture 1.17.12; data/endgame-capture.ts),
+// as the cards and season pages word it.
+
+/** A Theater difficulty's name as the game shows it ("Visionary Mode"), else its number. */
+export function theaterDifficultyName(level: number, text: EndgameText): string {
+  return text.get(`theaterDifficulty.${level}`) || t('endgame.theater.difficultyN', { n: level })
+}
+
+export function stygianDifficultyName(difficulty: number, text: EndgameText): string {
+  return text.get(`stygianDifficulty.${difficulty}`) || String(difficulty)
+}
+
+/** The account's own run of a season in a line (the hero and archive cards). */
+export interface RunLine {
+  text: string
+  /** A full clear: every act of the difficulty, every fight of the record. */
+  full: boolean
+  coop: boolean
+}
+
+/** The Theater difficulty row the run was on (its acts count), if the data has it. */
+export const theaterRunRow = (run: GiTheaterRun, season: TheaterSeason) =>
+  run.level === undefined ? undefined : season.difficulties.find((d) => d.difficulty === run.level)
+
+export function theaterRunLine(
+  run: GiTheaterRun,
+  season: TheaterSeason,
+  text: EndgameText,
+): RunLine {
+  const row = theaterRunRow(run, season)
+  if (!row && run.acts === 0)
+    return { text: t('endgame.captured.notEntered'), full: false, coop: false }
+  const total = row?.acts.length ?? 0
+  const acts = total
+    ? t('endgame.captured.actsOf', { n: run.acts, total })
+    : t('endgame.theater.acts', { n: run.acts })
+  const label = row ? theaterDifficultyName(row.difficulty, text) : ''
+  return {
+    text: label ? `${label} · ${acts}` : acts,
+    full: total > 0 && run.acts >= total,
+    coop: false,
+  }
+}
+
+export function stygianRecordLine(record: GiStygianRecord, text: EndgameText): RunLine {
+  const total = recordTotal(record)
+  const figure =
+    total === null
+      ? t('endgame.captured.clearedOf', { n: fightsDone(record), total: record.fights.length })
+      : formatFightTime(total)
+  return {
+    text: `${stygianDifficultyName(record.difficulty, text)} · ${figure}`,
+    full: total !== null,
+    coop: record.coop,
+  }
+}
+
+/** Solo first, then co-op (the order the game lists them). */
+export const soloFirst = (records: readonly GiStygianRecord[]) =>
+  [...records].sort((a, b) => Number(a.coop) - Number(b.coop))

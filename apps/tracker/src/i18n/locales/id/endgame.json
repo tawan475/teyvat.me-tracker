@@ -53,5 +53,19 @@
     "clears": "Clear komunitas",
     "clearsTip": "Clear {boss} di stygian.moe (situs penggemar)",
     "siteTip": "Clear dan panduan di stygian.moe (situs penggemar)"
+  },
+  "captured": {
+    "run": "Run kamu",
+    "records": "Rekor kamu",
+    "fromCapture": "Dari rekaman {date}",
+    "actsOf": "{n}/{total} babak",
+    "notEntered": "Belum dimasuki",
+    "solo": "Solo",
+    "coop": "Co-op",
+    "cleared": "Selesai",
+    "notCleared": "Belum selesai",
+    "clearedOf": "{n}/{total} selesai",
+    "total": "Total",
+    "fight": "Pertarungan {n}"
   }
 }

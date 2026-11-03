@@ -115,6 +115,14 @@ export const GOOD_LIMITS = {
   quests: 20_000,
   domainsCleared: 5_000,
   tribalChapters: 1_000,
+  /**
+   * Capture 1.17.12's gi_endgame: Stygian records (one per season and run
+   * kind: 13 seasons × 2 at 7.1) and fights per record (3 bosses). The
+   * Theater's acts (≤ 12) and a team (≤ 4) are the game's fixed sizes,
+   * checked in normalize.ts.
+   */
+  stygianRecords: 200,
+  stygianFights: 6,
   /** UTF-16 units of a deck or team name the player typed. */
   playerText: 100,
   /** An artifact has at most 4 substats (and unactivated ones). */

@@ -26,6 +26,7 @@ import {
   encodeSnapshot,
   encodeTasks,
   encodeExploration,
+  encodeEndgame,
   encodeExtras,
   encodeProgress,
   encodeWardrobe,
@@ -58,6 +59,7 @@ import {
   syntheticExploration,
   synthetic17,
   synthetic18,
+  syntheticEndgame,
   syntheticRecipes,
   syntheticWardrobe,
 } from './synthetic'
@@ -290,6 +292,7 @@ function expectedGood(input: unknown): Omit<Good, 'timestamp'> {
   if (good.events) expected.gi_events = good.events
   if (good.teapot) expected.gi_teapot = good.teapot
   if (good.miliastra) expected.gi_miliastra = good.miliastra
+  if (good.endgame) expected.gi_endgame = good.endgame
   return expected
 }
 
@@ -2328,5 +2331,131 @@ describe("Teyvat.me Capture 1.8.0-1.11.0's keys", () => {
       ['c', 'k', 'u'].filter((k) => k in values.collections2.g),
     )
     expect(values.collections2.v).toBeDefined()
+  })
+})
+
+// ------------------------------------------------------ Capture 1.17.12
+
+describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
+  const endgame = syntheticEndgame(11)
+  const new18 = synthetic18(11)
+  const base = { ...sample, gi_tasks: { welkin: { days: 30 } } }
+  const withExtras = { ...base, gi_teapot: new18.teapot, gi_miliastra: new18.miliastra }
+  const input = { ...withExtras, gi_endgame: endgame }
+
+  it("round-trips the Theater run and every Stygian record at a real account's scale", async () => {
+    const { encoded, decoded } = await roundTrip(input)
+    expect(extraSectionsOf(encoded).at(-1)!.kind).toBe('extras')
+    expect(canonical(decoded)).toEqual(canonical(expectedGood(input)))
+    expect(decoded.gi_endgame).toEqual(endgame)
+    expect(Object.keys(decoded).at(-1)).toBe('gi_endgame')
+    expect(endgame.stygian.records.length).toBeGreaterThan(15)
+  })
+
+  it('is the extras section alone when the file has no other extras', async () => {
+    const { encoded, decoded } = await roundTrip({ ...base, gi_endgame: endgame })
+    expect(encoded.extras).not.toBeNull()
+    expect(JSON.parse(encoded.extras!.json)).toEqual({
+      e: encodeEndgame(normalizeGood(input).endgame!),
+    })
+    expect(decoded.gi_endgame).toEqual(endgame)
+    expect(decoded.gi_teapot).toBeUndefined()
+  })
+
+  it('keeps the theater run or the records alone', async () => {
+    const theater = (await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } })).decoded
+    expect(theater.gi_endgame).toEqual({ theater: endgame.theater })
+    const bare = (await roundTrip({ ...base, gi_endgame: { theater: { season: 31, acts: 0 } } }))
+      .decoded
+    expect(bare.gi_endgame).toEqual({ theater: { season: 31, acts: 0 } })
+    const stygian = (await roundTrip({ ...base, gi_endgame: { stygian: endgame.stygian } })).decoded
+    expect(stygian.gi_endgame).toEqual({ stygian: endgame.stygian })
+  })
+
+  it('hashes as before for the trackers that did not keep it', async () => {
+    const catalog = new Catalog()
+    const before = await roundTrip(withExtras, catalog)
+    const after = await roundTrip(input, catalog)
+    expect(after.encoded.contentHash).not.toBe(before.encoded.contentHash)
+    expect(after.encoded.pre20ContentHash).toBe(before.encoded.contentHash)
+    expect(after.encoded.pre19ContentHash).toBe(before.encoded.pre19ContentHash)
+    expect(after.encoded.pre18ContentHash).toBe(before.encoded.pre18ContentHash)
+    expect(after.encoded.pre17ContentHash).toBe(before.encoded.pre17ContentHash)
+    expect(before.encoded.pre20ContentHash).toBe(before.encoded.contentHash)
+    // Alone, the endgame makes an extras section those trackers never had.
+    const plain = await roundTrip(base, catalog)
+    const alone = await roundTrip({ ...base, gi_endgame: endgame }, catalog)
+    expect(alone.encoded.pre20ContentHash).toBe(plain.encoded.contentHash)
+    expect(alone.encoded.pre19ContentHash).toBe(plain.encoded.contentHash)
+    expect(alone.encoded.pre18ContentHash).toBe(plain.encoded.contentHash)
+  })
+
+  it('drops a bad part and keeps the rest', () => {
+    const read = (patch: object) =>
+      normalizeGood({ ...input, gi_endgame: { ...endgame, ...patch } })
+    const record = endgame.stygian.records[0]!
+    expect(read({ theater: { season: 0, acts: 1 } }).endgame).toEqual({ stygian: endgame.stygian })
+    expect(read({ theater: { season: 31, acts: 13 } }).endgame).toEqual({
+      stygian: endgame.stygian,
+    })
+    expect(
+      read({ theater: { season: 31, difficulty: 201, acts: 1 } }).endgame!.theater,
+    ).toBeUndefined()
+    expect(read({ stygian: { records: [{ ...record, difficulty: 201 }] } }).endgame).toEqual({
+      theater: endgame.theater,
+    })
+    expect(
+      read({ stygian: { records: [{ ...record, coop: 1 }] } }).endgame!.stygian,
+    ).toBeUndefined()
+    const fight = record.fights[0]!
+    const fights = (f: object) =>
+      read({ stygian: { records: [{ ...record, fights: [{ ...fight, ...f }] }] } })
+    expect(fights({ team: ['Furina', 'Bad Key'] }).endgame!.stygian).toBeUndefined()
+    expect(fights({ team: ['A', 'B', 'C', 'D', 'E'] }).endgame!.stygian).toBeUndefined()
+    expect(fights({ time: -1 }).endgame!.stygian).toBeUndefined()
+    expect(fights({ time: 0, done: false, team: [] }).endgame!.stygian!.records[0]!.fights).toEqual(
+      [{ time: 0, done: false, team: [] }],
+    )
+    const many = { records: Array.from({ length: 201 }, () => record) }
+    expect(read({ stygian: many }).endgame!.stygian).toBeUndefined()
+    expect(
+      read({ stygian: { records: Array(7).fill(record) } }).endgame!.stygian!.records,
+    ).toHaveLength(7)
+    expect(normalizeGood({ ...input, gi_endgame: {} }).endgame).toBeNull()
+    expect(normalizeGood({ ...input, gi_endgame: 5 }).endgame).toBeNull()
+  })
+
+  it('stores it in the extras binary layout, small; a team key the dictionary lacks is spelled out', () => {
+    const good = normalizeGood({
+      ...input,
+      gi_endgame: {
+        ...endgame,
+        stygian: {
+          records: [
+            ...endgame.stygian.records,
+            {
+              season: 5_269_014,
+              difficulty: 6,
+              at: 1_790_972_494,
+              coop: false,
+              fights: [{ time: 51, done: true, team: ['Alhaitham', 'Newcomer7'] }],
+            },
+          ],
+        },
+      },
+    })
+    const value = JSON.parse(
+      JSON.stringify(
+        encodeExtras({ teapot: good.teapot!, miliastra: good.miliastra!, endgame: good.endgame! }),
+      ),
+    )
+    expect(value.e.s.at(-1)[4][0][2]).toEqual([expect.any(Number), 'Newcomer7'])
+    const blob = encodeSectionBlob('extras', value, false, null)
+    expect(blob.payload[0]).toBe(0x10)
+    const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+    expect(JSON.stringify(back.value)).toBe(JSON.stringify(value))
+    const alone = encodeSectionBlob('extras', { e: value.e }, false, null)
+    // ~25 records × 3 fights × a team: well under a kilobyte.
+    expect(alone.data.length).toBeLessThan(1_000)
   })
 })

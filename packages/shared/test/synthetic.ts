@@ -588,3 +588,39 @@ export function synthetic18(seed = 1) {
     },
   }
 }
+
+/**
+ * Capture 1.17.12's gi_endgame at a long-played account's scale: the Theater
+ * run of the season running and a Stygian record per season and run kind
+ * (13 seasons × solo and co-op at 7.1), each with the three fights and a
+ * team of up to four characters (keys from the dictionary, made up).
+ */
+export function syntheticEndgame(seed = 1, seasons = 13) {
+  const rand = random(seed)
+  const characters = CHARACTERS.keys
+  const team = () =>
+    Array.from({ length: int(rand, 1, 4) }, () => pick(rand, characters)).filter(
+      (key, i, all) => all.indexOf(key) === i,
+    )
+  const records = []
+  for (let n = 0; n < seasons; n++) {
+    for (const coop of [false, true]) {
+      if (coop && rand() < 0.4) continue
+      records.push({
+        season: 5_269_001 + n,
+        difficulty: int(rand, 1, 6),
+        at: 1_750_000_000 + n * 3_628_800 + int(rand, 0, 1_000_000),
+        coop,
+        fights: Array.from({ length: 3 }, (_, i) => ({
+          time: int(rand, 20, 180),
+          done: i < 2 || rand() < 0.7,
+          team: team(),
+        })),
+      })
+    }
+  }
+  return {
+    theater: { season: 31, difficulty: 129, level: 5, acts: int(rand, 0, 10) },
+    stygian: { records },
+  }
+}

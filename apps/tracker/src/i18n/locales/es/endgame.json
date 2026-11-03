@@ -53,5 +53,19 @@
     "clears": "Superaciones de la comunidad",
     "clearsTip": "Superaciones de {boss} en stygian.moe (sitio de fans)",
     "siteTip": "Superaciones y guías en stygian.moe (sitio de fans)"
+  },
+  "captured": {
+    "run": "Tu recorrido",
+    "records": "Tus récords",
+    "fromCapture": "De la captura del {date}",
+    "actsOf": "{n}/{total} actos",
+    "notEntered": "Sin entrar",
+    "solo": "En solitario",
+    "coop": "Cooperativo",
+    "cleared": "Superado",
+    "notCleared": "No superado",
+    "clearedOf": "{n}/{total} superados",
+    "total": "Total",
+    "fight": "Combate {n}"
   }
 }

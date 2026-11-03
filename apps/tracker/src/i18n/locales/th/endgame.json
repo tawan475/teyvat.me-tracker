@@ -53,5 +53,19 @@
     "clears": "เคลียร์จากชุมชน",
     "clearsTip": "บันทึกการเคลียร์ {boss} บน stygian.moe (เว็บแฟนคลับ)",
     "siteTip": "บันทึกการเคลียร์และคู่มือบน stygian.moe (เว็บแฟนคลับ)"
+  },
+  "captured": {
+    "run": "การเล่นของคุณ",
+    "records": "สถิติของคุณ",
+    "fromCapture": "จากข้อมูลที่บันทึกเมื่อ {date}",
+    "actsOf": "{n}/{total} องก์",
+    "notEntered": "ยังไม่ได้เข้า",
+    "solo": "เดี่ยว",
+    "coop": "Co-op",
+    "cleared": "ผ่านแล้ว",
+    "notCleared": "ยังไม่ผ่าน",
+    "clearedOf": "ผ่านแล้ว {n}/{total}",
+    "total": "รวม",
+    "fight": "การต่อสู้ {n}"
   }
 }

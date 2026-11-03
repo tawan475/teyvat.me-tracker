@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
-import { ExternalLink } from 'lucide-vue-next'
+import { Check, ExternalLink, Minus, User, Users } from 'lucide-vue-next'
 import type { EndgameText, StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
@@ -9,12 +9,22 @@ import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import {
   loadEndgameData,
+  soloFirst,
   stygianBossPicture,
+  stygianDifficultyName,
   stygianHpTip as hpTip,
   type EndgameData,
 } from '@/data/endgame'
-import { formatShort } from '@/lib/format'
-import { gameIcon } from '@/lib/assets'
+import {
+  fightsDone,
+  formatFightTime,
+  recordTotal,
+  type CapturedStygian,
+} from '@/data/endgame-capture'
+import { characterName } from '@/i18n/game-names'
+import { t } from '@/i18n'
+import { formatDate, formatShort } from '@/lib/format'
+import { characterIcon, gameIcon } from '@/lib/assets'
 import { STYGIAN_GROUND } from './modes'
 
 /**
@@ -24,7 +34,10 @@ import { STYGIAN_GROUND } from './modes'
  * recommends, centred) is one button that opens the boss's Living Beings entry;
  * below it, its mechanics, numbered, and a link to the boss's community
  * clears on stygian.moe (a fan site, the users' ask; the header links the
- * site itself).
+ * site itself). With a capture of the account's records this season
+ * (`records`, Capture 1.17.12) a card per record (solo, co-op) lists each
+ * fight's boss, time, done mark and the player's team between the scale and
+ * the opponents, and the scale starts at the hardest difficulty they played.
  */
 const props = defineProps<{
   season: StygianSeason
@@ -32,6 +45,7 @@ const props = defineProps<{
   name: string
   period: string
   left: number
+  records?: CapturedStygian | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -41,11 +55,15 @@ defineEmits<{
 const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
 const difficulty = ref(0)
-watch(
-  () => props.season.id,
-  () => (difficulty.value = props.season.difficulties.at(-1)?.difficulty ?? 0),
-  { immediate: true },
-)
+/** The hardest difficulty the account has a record on, else the season's hardest. */
+const startAt = () => {
+  const own = new Set(props.records?.records.map((r) => r.difficulty) ?? [])
+  const played = props.season.difficulties.filter((d) => own.has(d.difficulty)).at(-1)
+  return played?.difficulty ?? props.season.difficulties.at(-1)?.difficulty ?? 0
+}
+watch([() => props.season.id, () => props.records], () => (difficulty.value = startAt()), {
+  immediate: true,
+})
 const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
@@ -67,6 +85,42 @@ function clearsUrl(index: number): string | null {
   const name = id !== undefined ? english.value?.get(`stygianBoss.${id}.name`) : ''
   return name ? `${STYGIAN_MOE}clears?${new URLSearchParams({ boss: name })}` : null
 }
+/**
+ * The account's records this season, solo first: each fight with the boss
+ * of that slot on the record's difficulty (its icon and short name), the
+ * time, whether it was done and the player's team.
+ */
+const yourRecords = computed(() => {
+  if (!props.records) return []
+  const from = t('endgame.captured.fromCapture', { date: formatDate(props.records.takenAt) })
+  return soloFirst(props.records.records).map((r) => {
+    const row = props.season.difficulties.find((d) => d.difficulty === r.difficulty)
+    const total = recordTotal(r)
+    return {
+      key: `${r.coop ? 'c' : 's'}-${r.difficulty}-${r.at}`,
+      coop: r.coop,
+      label: stygianDifficultyName(r.difficulty, text.value),
+      level: row?.level ?? 0,
+      date: formatDate(r.at * 1000),
+      from,
+      done: fightsDone(r),
+      total: total === null ? '' : formatFightTime(total),
+      fights: r.fights.map((f, i) => {
+        const id = row?.bosses[i]
+        const full = id === undefined ? '' : text.value.get(`stygianBoss.${id}.name`)
+        return {
+          icon: (id === undefined ? undefined : props.data.data.stygianBosses.get(id))?.icon ?? '',
+          name: full ? full.split(':')[0]!.trim() : t('endgame.captured.fight', { n: i + 1 }),
+          full,
+          time: formatFightTime(f.time),
+          done: f.done,
+          team: f.team,
+        }
+      }),
+    }
+  })
+})
+
 const bosses = computed(() => {
   const level = chosen.value?.level ?? 0
   return (chosen.value?.bosses ?? []).flatMap((id, i) => {
@@ -138,6 +192,88 @@ const bosses = computed(() => {
         }}</span>
       </button>
     </div>
+
+    <section v-if="yourRecords.length" class="flex flex-col gap-2">
+      <h3 class="text-xs font-semibold tracking-wide text-text-muted uppercase">
+        {{ $t('endgame.captured.records') }}
+      </h3>
+      <div class="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
+        <article
+          v-for="r in yourRecords"
+          :key="r.key"
+          class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+          :title="r.from"
+        >
+          <header
+            class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border-default px-4 py-2.5"
+          >
+            <span class="flex min-w-0 flex-wrap items-center gap-2">
+              <UiBadge>
+                <component :is="r.coop ? Users : User" class="size-3.5" aria-hidden="true" />
+                {{ r.coop ? $t('endgame.captured.coop') : $t('endgame.captured.solo') }}
+              </UiBadge>
+              <span class="truncate text-sm font-semibold">{{ r.label }}</span>
+              <span v-if="r.level" class="tabular font-mono text-xs text-text-muted">{{
+                $t('endgame.level', { n: r.level })
+              }}</span>
+            </span>
+            <span class="tabular font-mono text-xs text-text-muted">{{ r.date }}</span>
+          </header>
+          <ol class="flex flex-col px-4">
+            <li
+              v-for="(f, i) in r.fights"
+              :key="i"
+              class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
+              :class="i > 0 && 'border-t border-border-default'"
+            >
+              <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="sm" />
+              <span class="flex min-w-0 flex-col gap-1">
+                <span class="truncate text-sm font-semibold" :title="f.full || undefined">{{
+                  f.name
+                }}</span>
+                <span v-if="f.team.length" class="flex flex-wrap gap-1">
+                  <img
+                    v-for="key in f.team"
+                    :key="key"
+                    :src="characterIcon(key)"
+                    :alt="characterName(key)"
+                    :title="characterName(key)"
+                    loading="lazy"
+                    class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                  />
+                </span>
+              </span>
+              <!-- Done or not is a mark and a struck time, never the colour alone. -->
+              <span
+                class="flex items-center gap-1.5 justify-self-end"
+                :title="f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')"
+              >
+                <span
+                  class="tabular font-mono text-sm font-semibold"
+                  :class="f.done ? '' : 'text-text-muted line-through'"
+                  >{{ f.time }}</span
+                >
+                <Check v-if="f.done" class="size-4 text-success-text" aria-hidden="true" />
+                <Minus v-else class="size-4 text-text-muted" aria-hidden="true" />
+                <span class="sr-only">{{
+                  f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')
+                }}</span>
+              </span>
+            </li>
+          </ol>
+          <footer
+            class="flex items-center justify-between gap-3 border-t border-border-default px-4 py-2 text-sm"
+          >
+            <span class="text-text-secondary">{{
+              r.total
+                ? $t('endgame.captured.total')
+                : $t('endgame.captured.clearedOf', { n: r.done, total: r.fights.length })
+            }}</span>
+            <span v-if="r.total" class="tabular font-mono font-semibold">{{ r.total }}</span>
+          </footer>
+        </article>
+      </div>
+    </section>
 
     <div class="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-3">
       <article

@@ -53,5 +53,19 @@
     "clears": "社群通關",
     "clearsTip": "stygian.moe 上 {boss} 的通關紀錄（粉絲網站）",
     "siteTip": "stygian.moe 上的通關紀錄與攻略（粉絲網站）"
+  },
+  "captured": {
+    "run": "你的挑戰",
+    "records": "你的紀錄",
+    "fromCapture": "來自 {date} 的紀錄",
+    "actsOf": "{n}/{total}幕",
+    "notEntered": "未進入",
+    "solo": "單人",
+    "coop": "連線",
+    "cleared": "已通關",
+    "notCleared": "未通關",
+    "clearedOf": "已通關 {n}/{total}",
+    "total": "總計",
+    "fight": "第{n}戰"
   }
 }

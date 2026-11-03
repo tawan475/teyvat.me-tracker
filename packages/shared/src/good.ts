@@ -390,6 +390,50 @@ export interface GiMiliastra {
   cosmetics?: Record<string, number>
 }
 
+/**
+ * Teyvat.me Capture's `gi_endgame` (1.17.12): the account's own endgame runs
+ * (contract v1: E:/gdt-playground/refs/endgame/CONTRACT.md, `GiEndgame` in
+ * teyvat.me-capture/docs/leyline.d.ts). Append fields only.
+ */
+export interface GiEndgame {
+  /** The Imaginarium Theater as of the login: one season's state. */
+  theater?: GiTheaterRun
+  /** The Stygian Onslaught's own records, as listed when its menu is opened. */
+  stygian?: { records: GiStygianRecord[] }
+}
+
+export interface GiTheaterRun {
+  /** RoleCombatSchedule id (the season running). */
+  season: number
+  /** RoleCombatDifficulty id chosen; absent until chosen. */
+  difficulty?: number
+  /** That row's level, 1 Easy … 5 Lunar Mode; absent when the data lacks the row. */
+  level?: number
+  /** Acts cleared this season (0 before the run is over or the season entered). */
+  acts: number
+}
+
+/** One Stygian Onslaught record: a season and a run kind (solo or co-op). */
+export interface GiStygianRecord {
+  /** LeyLineChallenge schedule id. */
+  season: number
+  /** 1-6. */
+  difficulty: number
+  /** Unix seconds the record was set. */
+  at: number
+  /** A co-op run (the other players' teams and UIDs are never exported). */
+  coop: boolean
+  fights: GiStygianFight[]
+}
+
+export interface GiStygianFight {
+  /** Seconds. */
+  time: number
+  done: boolean
+  /** The player's own team, GOOD character keys. */
+  team: string[]
+}
+
 export interface Good {
   format: string
   version: number
@@ -418,6 +462,8 @@ export interface Good {
   gi_events?: Record<string, GiEvent>
   gi_teapot?: GiTeapot
   gi_miliastra?: GiMiliastra
+  /** The account's Theater run and Stygian records (Capture 1.17.12). */
+  gi_endgame?: GiEndgame
 }
 
 /**

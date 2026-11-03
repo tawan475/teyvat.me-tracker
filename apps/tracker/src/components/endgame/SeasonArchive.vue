@@ -9,12 +9,17 @@ import BossPicture from './BossPicture.vue'
 import {
   abyssTopEnemies,
   seasonYear,
+  soloFirst,
   stygianBossPicture,
+  stygianRecordLine,
   stygianTop,
+  theaterRunLine,
   type AnySeason,
   type EndgameData,
   type EndgameMode,
 } from '@/data/endgame'
+import type { CapturedEndgame } from '@/data/endgame-capture'
+import { t } from '@/i18n'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { abyssArt, abyssArtFailed, characterBanner, characterIcon, gameIcon } from '@/lib/assets'
@@ -24,7 +29,9 @@ import { STYGIAN_GROUND } from './modes'
  * A mode's earlier seasons as picture cards, one year at a time (year chips,
  * newest first): the Abyss's blessing art with Floor 12's enemies, the
  * Theater's namecard with its elements and Opening Characters, the Stygian
- * season's three bosses side by side. Each opens its season page.
+ * season's three bosses side by side. Each opens its season page. The
+ * account's own run of a season (`captured`, Capture 1.17.12) is one line
+ * under the name.
  */
 const props = defineProps<{
   mode: EndgameMode
@@ -33,6 +40,7 @@ const props = defineProps<{
   nameOf: (season: AnySeason) => string
   periodOf: (season: AnySeason) => string
   to: (season: AnySeason) => RouteLocationRaw
+  captured?: CapturedEndgame | null
 }>()
 
 const years = computed(() => [...new Set(props.seasons.map(seasonYear))])
@@ -57,6 +65,25 @@ const bosses = (s: AnySeason) =>
     return boss ? [{ boss, name: props.data.text.get(`stygianBoss.${id}.name`) }] : []
   })
 const shortName = (name: string) => name.split(':')[0]!.trim()
+
+/** The account's own run of a season in a line ('' without one): the Theater's, or each Stygian record's. */
+function yours(s: AnySeason): string {
+  const c = props.captured
+  if (!c) return ''
+  if (props.mode === 'theater') {
+    const run = c.theater.get(s.id)?.run
+    return run ? theaterRunLine(run, theater(s), props.data.text).text : ''
+  }
+  if (props.mode === 'stygian') {
+    return soloFirst(c.stygian.get(s.id)?.records ?? [])
+      .map((r) => {
+        const kind = r.coop ? t('endgame.captured.coop') : t('endgame.captured.solo')
+        return `${kind} ${stygianRecordLine(r, props.data.text).text}`
+      })
+      .join(' / ')
+  }
+  return ''
+}
 </script>
 
 <template>
@@ -141,6 +168,12 @@ const shortName = (name: string) => name.split(':')[0]!.trim()
           </span>
           <span class="flex min-w-0 flex-col gap-2 p-3">
             <span class="truncate font-semibold">{{ nameOf(s) }}</span>
+            <span
+              v-if="yours(s)"
+              class="truncate text-xs text-text-secondary"
+              :title="`${$t('endgame.captured.run')}: ${yours(s)}`"
+              >{{ yours(s) }}</span
+            >
             <span v-if="mode === 'abyss'" class="flex gap-1">
               <GameIcon
                 v-for="id in abyssTopEnemies(abyss(s), 5)"

@@ -53,5 +53,19 @@
     "clears": "社区通关",
     "clearsTip": "stygian.moe 上 {boss} 的通关记录（粉丝网站）",
     "siteTip": "stygian.moe 上的通关记录与攻略（粉丝网站）"
+  },
+  "captured": {
+    "run": "你的挑战",
+    "records": "你的记录",
+    "fromCapture": "来自 {date} 的记录",
+    "actsOf": "{n}/{total}幕",
+    "notEntered": "未进入",
+    "solo": "单人",
+    "coop": "联机",
+    "cleared": "已通关",
+    "notCleared": "未通关",
+    "clearedOf": "已通关 {n}/{total}",
+    "total": "总计",
+    "fight": "第{n}战"
   }
 }

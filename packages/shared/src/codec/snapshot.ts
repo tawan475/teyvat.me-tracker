@@ -207,6 +207,12 @@ export interface EncodedSnapshot extends ExtraSections {
    */
   pre19ContentHash: string
   /**
+   * The content hash a tracker from before Capture 1.17.12's gi_endgame gave
+   * this file (the extras section without its endgame part, absent when that
+   * leaves nothing), so re-uploading it stays a no-op.
+   */
+  pre20ContentHash: string
+  /**
    * The content hash with the recipes left out of collections2 (equal to
    * `contentHash` without recipes): what a tracker from before Capture
    * 1.5.0's recipes stored such a file as, so re-uploading it stays a no-op.
@@ -295,6 +301,7 @@ export async function encodeStaticSections(
       encodeExtras({
         ...(good.teapot ? { teapot: good.teapot } : {}),
         ...(good.miliastra ? { miliastra: good.miliastra } : {}),
+        ...(good.endgame ? { endgame: good.endgame } : {}),
       }),
     ),
   ])
@@ -415,7 +422,18 @@ export async function completeSnapshot(
     sections.extras,
   )
   const contentHash = full.content
-  const { tasks, collections, exploration } = prepared.good
+  const { tasks, collections, exploration, endgame } = prepared.good
+  // Capture 1.17.12's gi_endgame lives inside the extras section: what the
+  // section was for trackers that did not know it (none, when it alone made one).
+  const preEndgameExtras = endgame
+    ? await optionalSection(
+        'extras',
+        encodeExtras({
+          ...(prepared.good.teapot ? { teapot: prepared.good.teapot } : {}),
+          ...(prepared.good.miliastra ? { miliastra: prepared.good.miliastra } : {}),
+        }),
+      )
+    : sections.extras
   // The recipes (1.5.0) live inside collections2: what this file hashed to
   // where collections2 did not have them yet.
   const preRecipesContentHash = collections?.recipes
@@ -437,16 +455,18 @@ export async function completeSnapshot(
    * that era and later ones added are left out of the sections they grew, and
    * the sections they added are absent.
    */
-  const asOf = async (era: 17 | 18 | 19) => {
+  const asOf = async (era: 17 | 18 | 19 | 20) => {
     const taskKeys = era === 17 ? [...TASKS_17, ...TASKS_18] : era === 18 ? TASKS_18 : []
     const collectionKeys =
       era === 17
         ? [...COLLECTIONS_17, ...COLLECTIONS_18, ...COLLECTIONS_19]
         : era === 18
           ? [...COLLECTIONS_18, ...COLLECTIONS_19]
-          : COLLECTIONS_19
-    const tcgKeys = era === 19 ? [] : TCG_18
-    const explorationKeys = era === 19 ? [] : EXPLORATION_18
+          : era === 19
+            ? COLLECTIONS_19
+            : []
+    const tcgKeys = era >= 19 ? [] : TCG_18
+    const explorationKeys = era >= 19 ? [] : EXPLORATION_18
     const grewTasks = !!tasks && taskKeys.some((key) => tasks[key] !== undefined)
     const grewCollections =
       !!collections &&
@@ -454,8 +474,15 @@ export async function completeSnapshot(
         (!!collections.tcg && tcgKeys.some((key) => collections.tcg![key] !== undefined)))
     const grewExploration =
       !!exploration && explorationKeys.some((key) => exploration[key] !== undefined)
+    // Every era before 1.17.12 stored the extras without the endgame.
     const added =
-      era === 17 ? sections.progress || sections.extras : era === 18 ? sections.extras : null
+      era === 17
+        ? sections.progress || sections.extras
+        : era === 18
+          ? sections.extras
+          : endgame
+            ? sections.extras
+            : null
     if (!grewTasks && !grewCollections && !grewExploration && !added) return contentHash
     const olderCollections = (c: GiCollections) => {
       const out = withoutKeys(c, collectionKeys)
@@ -479,13 +506,14 @@ export async function completeSnapshot(
             )
           : sections.exploration,
         era === 17 ? null : sections.progress,
-        era === 19 ? sections.extras : null,
+        era >= 19 ? preEndgameExtras : null,
       )
     ).content
   }
   const pre17ContentHash = await asOf(17)
   const pre18ContentHash = await asOf(18)
   const pre19ContentHash = await asOf(19)
+  const pre20ContentHash = await asOf(20)
   return {
     ...sections,
     artifacts,
@@ -504,6 +532,7 @@ export async function completeSnapshot(
     pre17ContentHash,
     pre18ContentHash,
     pre19ContentHash,
+    pre20ContentHash,
   }
 }
 
@@ -741,6 +770,7 @@ export function decodeSnapshot(
     const parts = decodeExtras(JSON.parse(stored.extras))
     if (parts.teapot) good.gi_teapot = parts.teapot
     if (parts.miliastra) good.gi_miliastra = parts.miliastra
+    if (parts.endgame) good.gi_endgame = parts.endgame
   }
   return good
 }

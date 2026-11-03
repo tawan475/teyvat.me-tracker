@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import { Check, Users } from 'lucide-vue-next'
 import type { AbyssPeriod, StygianSeason, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
@@ -9,13 +10,18 @@ import UiBadge from '@/components/ui/UiBadge.vue'
 import BossPicture from './BossPicture.vue'
 import {
   abyssTopEnemies,
+  soloFirst,
   stygianBossPicture,
   stygianHpTip,
+  stygianRecordLine,
   stygianTop,
+  theaterRunLine,
   type AnySeason,
   type EndgameData,
   type EndgameMode,
+  type RunLine,
 } from '@/data/endgame'
+import type { CapturedEndgame } from '@/data/endgame-capture'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { formatShort } from '@/lib/format'
@@ -28,6 +34,8 @@ import { STYGIAN_GROUND } from './modes'
  * bosses), then its name, dates and what it holds (the blessing and Floor 12,
  * the cast, the bosses with their HP at the hardest difficulty). Enemies open
  * their Living Beings entry (`enemy`); the rest of the card opens the season (`to`).
+ * The account's own run of the season (`captured`, Capture 1.17.12) is a badge
+ * under the name: the Theater difficulty and acts, each Stygian record's time.
  */
 const props = defineProps<{
   mode: EndgameMode
@@ -37,6 +45,7 @@ const props = defineProps<{
   period: string
   left: number
   to: RouteLocationRaw
+  captured?: CapturedEndgame | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -93,6 +102,20 @@ const bosses = computed(() => {
       },
     ]
   })
+})
+/** The account's own run this season, a line per record (Theater: one). */
+const yours = computed<RunLine[]>(() => {
+  const c = props.captured
+  if (!c) return []
+  if (theater.value) {
+    const run = c.theater.get(theater.value.id)?.run
+    return run ? [theaterRunLine(run, theater.value, text.value)] : []
+  }
+  if (stygian.value) {
+    const records = c.stygian.get(stygian.value.id)?.records ?? []
+    return soloFirst(records).map((r) => stygianRecordLine(r, text.value))
+  }
+  return []
 })
 const art = computed(() => {
   if (abyss.value) return abyssArt(abyss.value.icon)
@@ -152,6 +175,18 @@ const art = computed(() => {
       <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 class="min-w-0 text-2xl font-bold break-words">{{ name }}</h2>
         <span class="tabular font-mono text-xs text-text-muted">{{ period }}</span>
+      </div>
+      <!-- A full clear carries a check (or the co-op mark), not only its tone. -->
+      <div
+        v-if="yours.length"
+        class="flex flex-wrap gap-1.5"
+        :title="theater ? $t('endgame.captured.run') : $t('endgame.captured.records')"
+      >
+        <UiBadge v-for="(y, i) in yours" :key="i" :tone="y.full ? 'success' : 'neutral'">
+          <Users v-if="y.coop" class="size-3.5" aria-hidden="true" />
+          <Check v-else-if="y.full" class="size-3.5" aria-hidden="true" />
+          {{ y.text }}
+        </UiBadge>
       </div>
 
       <template v-if="abyss">

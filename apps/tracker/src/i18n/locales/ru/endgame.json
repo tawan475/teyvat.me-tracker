@@ -53,5 +53,19 @@
     "clears": "Прохождения сообщества",
     "clearsTip": "Прохождения: {boss} на stygian.moe (фан-сайт)",
     "siteTip": "Прохождения и гайды на stygian.moe (фан-сайт)"
+  },
+  "captured": {
+    "run": "Ваш забег",
+    "records": "Ваши рекорды",
+    "fromCapture": "По снимку от {date}",
+    "actsOf": "Актов: {n}/{total}",
+    "notEntered": "Не начато",
+    "solo": "Соло",
+    "coop": "Кооператив",
+    "cleared": "Пройдено",
+    "notCleared": "Не пройдено",
+    "clearedOf": "Пройдено: {n}/{total}",
+    "total": "Итого",
+    "fight": "Бой {n}"
   }
 }

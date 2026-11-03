@@ -53,5 +53,19 @@
     "clears": "Topluluk temizlemeleri",
     "clearsTip": "stygian.moe'da {boss} temizlemeleri (hayran sitesi)",
     "siteTip": "stygian.moe'da temizlemeler ve rehberler (hayran sitesi)"
+  },
+  "captured": {
+    "run": "Senin denemen",
+    "records": "Senin rekorların",
+    "fromCapture": "{date} kaydına göre",
+    "actsOf": "{n}/{total} perde",
+    "notEntered": "Girilmedi",
+    "solo": "Tek",
+    "coop": "Ortak oyun",
+    "cleared": "Geçildi",
+    "notCleared": "Geçilmedi",
+    "clearedOf": "{n}/{total} geçildi",
+    "total": "Toplam",
+    "fight": "{n}. Dövüş"
   }
 }

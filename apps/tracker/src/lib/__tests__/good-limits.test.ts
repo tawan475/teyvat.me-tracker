@@ -8,12 +8,20 @@
 import achievementsJson from '@gdt/game-data/data/achievements.json'
 import anecdotesJson from '@gdt/game-data/data/anecdotes.json'
 import catalogJson from '@gdt/game-data/data/catalog.json'
+import endgameJson from '@gdt/game-data/data/endgame.json'
 import materialsJson from '@gdt/game-data/data/materials.json'
 import { entryIcon } from '@gdt/game-data'
 import { GOOD_LIMITS } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 
 const HEADROOM = 1.2
+/** endgame.json's Stygian seasons: [id, start, end, difficulties [id, level, bosses, …]]. */
+const stygianSeasons = endgameJson.stygian as unknown as [
+  number,
+  string,
+  string,
+  [number, number, number[], ...unknown[]][],
+][]
 
 describe('GOOD_LIMITS', () => {
   it("stay well above the game data's own counts", () => {
@@ -29,6 +37,9 @@ describe('GOOD_LIMITS', () => {
             entryIcon(entry as Parameters<typeof entryIcon>[0]) === 'UI_ItemIcon_BGM_Common',
         ).length,
       ],
+      // A Stygian record per season and run kind (solo, co-op); fights = the bosses of a difficulty.
+      ['stygianRecords', stygianSeasons.length * 2],
+      ['stygianFights', Math.max(...stygianSeasons.flatMap((s) => s[3].map((d) => d[2].length)))],
     ]
     for (const [cap, count] of counts) {
       expect(count, cap).toBeGreaterThan(0)

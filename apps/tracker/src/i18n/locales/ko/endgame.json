@@ -53,5 +53,19 @@
     "clears": "커뮤니티 클리어",
     "clearsTip": "stygian.moe의 {boss} 클리어 기록 (팬 사이트)",
     "siteTip": "stygian.moe의 클리어 기록과 공략 (팬 사이트)"
+  },
+  "captured": {
+    "run": "내 도전",
+    "records": "내 기록",
+    "fromCapture": "{date} 캡처 기준",
+    "actsOf": "{n}/{total}막",
+    "notEntered": "미입장",
+    "solo": "싱글",
+    "coop": "멀티",
+    "cleared": "클리어",
+    "notCleared": "미클리어",
+    "clearedOf": "{n}/{total} 클리어",
+    "total": "합계",
+    "fight": "전투 {n}"
   }
 }

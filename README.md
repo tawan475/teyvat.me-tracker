@@ -219,7 +219,16 @@ gi_exploration's `domainsCleared`/`tribalChapters` are exploration parts
 migration 0034; later top-level keys append a part there).
 `pre18ContentHash` keeps re-uploads no-ops. Capture 1.17: gi_collections'
 `quests` (every parent quest touched: MainQuest ids `finished` and `active`)
-is collections2 part `q`; `pre19ContentHash` keeps re-uploads no-ops. The
+is collections2 part `q`; `pre19ContentHash` keeps re-uploads no-ops.
+Capture 1.17.12: `gi_endgame` (the Theater run of the season running and the
+player's own Stygian Onslaught records; contract
+`E:/gdt-playground/refs/endgame/CONTRACT.md`) is extras part `e` (`t` the run,
+`s` the records with teams as character refs); `pre20ContentHash` keeps
+re-uploads no-ops, also where the endgame alone would have made the extras
+section. The Endgame page reads every snapshot's extras section
+(`src/data/endgame-capture.ts`): the newest capture of each Theater season
+and each season's Stygian records, on the season page and as a line on the
+cards. The
 Archive's World Quests chip lists `@gdt/game-data`'s `worldQuests` (the
 wiki's list by region, from v7.1.29), done when any of a quest's ids is
 finished (`src/data/world-quests.ts`). Deck and team names are the

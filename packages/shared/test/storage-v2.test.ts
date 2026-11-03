@@ -273,6 +273,32 @@ function randomSection(rand: () => number, kind: SectionKind, delta: boolean): u
               ]),
             }
           : {}),
+        ...(rand() < 0.6
+          ? {
+              e: {
+                ...(rand() < 0.8
+                  ? { t: [int(rand, 1, 40), int(rand, 0, 200), int(rand, 0, 5), int(rand, 0, 12)] }
+                  : {}),
+                ...(rand() < 0.8
+                  ? {
+                      s: Array.from({ length: int(rand, 0, 30) }, () => [
+                        int(rand, 5_269_001, 5_269_030),
+                        int(rand, 1, 6),
+                        int(rand, 1.7e9, 1.8e9),
+                        int(rand, 0, 1),
+                        Array.from({ length: int(rand, 0, 3) }, () => [
+                          int(rand, 0, 600),
+                          int(rand, 0, 1),
+                          Array.from({ length: int(rand, 0, 4) }, () =>
+                            rand() < 0.1 ? `Custom${int(rand, 1, 9)}` : int(rand, 1, 110),
+                          ),
+                        ]),
+                      ]),
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       }
     case 'progress':
       return {

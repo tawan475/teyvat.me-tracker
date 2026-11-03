@@ -1018,9 +1018,59 @@ const comfortPart: TaggedPart = {
   read: (r) => readById(r, checkedCount(r), (id) => [id, r.uint(), readUintList(r)]),
 }
 
+// `e` gi_endgame (Capture 1.17.12): a byte of flags (bit 0 = `t`, 1 = `s`);
+// `t` the Theater run's four numbers; `s` the records as count, then per
+// record season, difficulty, at, co-op, fights as count, then per fight time,
+// done, the team as count + KeyRef cells (no delta: a team is unordered).
+const endgamePart: TaggedPart = {
+  write(w, value) {
+    const v = fields(value, ['t', 's'], ['t', 's'])
+    w.byte((v.t !== undefined ? 1 : 0) | (v.s !== undefined ? 2 : 0))
+    if (v.t !== undefined) for (const n of row(v.t, 4)) w.uint(uint(n))
+    if (v.s !== undefined) {
+      const records = array(v.s)
+      w.uint(records.length)
+      for (const record of records) {
+        const [season, difficulty, at, coop, fights] = row(record, 5)
+        w.uint(uint(season)).uint(uint(difficulty)).uint(uint(at)).uint(uint(coop))
+        const list = array(fights)
+        w.uint(list.length)
+        for (const fight of list) {
+          const [time, done, team] = row(fight, 3)
+          w.uint(uint(time)).uint(uint(done))
+          const keys = array(team) as KeyRef[]
+          w.uint(keys.length)
+          for (const key of keys) writeRef(w, key, 0)
+        }
+      }
+    }
+  },
+  read(r) {
+    const flags = r.byte()
+    if (flags >= 4) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
+    const section: Record<string, unknown> = {}
+    if (flags & 1) section.t = [r.uint(), r.uint(), r.uint(), r.uint()]
+    if (flags & 2) {
+      section.s = Array.from({ length: checkedCount(r) }, () => [
+        r.uint(),
+        r.uint(),
+        r.uint(),
+        r.uint(),
+        Array.from({ length: checkedCount(r) }, () => [
+          r.uint(),
+          r.uint(),
+          Array.from({ length: checkedCount(r) }, () => readRef(r, 0)[0]),
+        ]),
+      ])
+    }
+    return section
+  },
+}
+
 const extrasLayout = taggedLayout('extras', [
   ['t', comfortPart],
   ['m', levelsPart],
+  ['e', endgamePart],
 ])
 
 const LAYOUTS: Record<SectionKind, Layout> = {

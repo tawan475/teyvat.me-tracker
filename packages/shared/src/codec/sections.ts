@@ -18,6 +18,7 @@ import type {
   GiAranaraState,
   GiCharacter,
   GiCollections,
+  GiEndgame,
   GiPlayer,
   GiProgress,
   GiProgressState,
@@ -27,6 +28,7 @@ import type {
   GiHangout,
   GiMiliastra,
   GiSignIn,
+  GiStygianRecord,
   GiTeapot,
   GiWardrobe,
   GiWardrobeKind,
@@ -1252,17 +1254,37 @@ export function decodeProgress(section: ProgressSection): GiProgressParts {
 // -------------------------------------------------------------------- extras
 // Capture 1.8.0+'s new top-level keys, each a part: `t` gi_teapot's comfort
 // [realm, mansion, [blocks]] by realm; `m` gi_miliastra's cosmetics [id, at
-// (0: no time sent)] by id. Later top-level keys append a letter here
-// instead of taking a section kind of their own.
+// (0: no time sent)] by id; `e` gi_endgame (Capture 1.17.12). Later top-level
+// keys append a letter here instead of taking a section kind of their own.
 
 export interface ExtrasSection {
   t?: [realm: number, mansion: number, blocks: number[]][]
   m?: [id: number, at: number][]
+  e?: EndgameSection
 }
+
+/**
+ * gi_endgame: `t` the Theater run [season, difficulty id (0: none chosen),
+ * level (0: unknown), acts]; `s` the Stygian records in the order sent:
+ * [season, difficulty, at, co-op 0/1, fights [time, done 0/1, team as
+ * character dictionary refs]].
+ */
+export interface EndgameSection {
+  t?: [season: number, difficulty: number, level: number, acts: number]
+  s?: StygianRecordRow[]
+}
+export type StygianRecordRow = [
+  season: number,
+  difficulty: number,
+  at: number,
+  coop: number,
+  fights: [time: number, done: number, team: KeyRef[]][],
+]
 
 export interface GiExtrasParts {
   teapot?: GiTeapot
   miliastra?: GiMiliastra
+  endgame?: GiEndgame
 }
 
 export function encodeExtras(parts: GiExtrasParts): ExtrasSection | null {
@@ -1276,7 +1298,58 @@ export function encodeExtras(parts: GiExtrasParts): ExtrasSection | null {
   }
   const cosmetics = parts.miliastra?.cosmetics
   if (cosmetics) section.m = ids(cosmetics).map((id) => [id, cosmetics[String(id)]!])
+  const endgame = parts.endgame ? encodeEndgame(parts.endgame) : null
+  if (endgame) section.e = endgame
   return Object.keys(section).length > 0 ? section : null
+}
+
+export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
+  const section: EndgameSection = {}
+  const { theater, stygian } = endgame
+  if (theater) {
+    section.t = [theater.season, theater.difficulty ?? 0, theater.level ?? 0, theater.acts]
+  }
+  if (stygian) {
+    section.s = stygian.records.map((r) => [
+      r.season,
+      r.difficulty,
+      r.at,
+      r.coop ? 1 : 0,
+      r.fights.map((f) => [f.time, f.done ? 1 : 0, f.team.map((key) => toRef(CHARACTERS, key))]),
+    ])
+  }
+  return Object.keys(section).length > 0 ? section : null
+}
+
+export function decodeEndgame(section: EndgameSection): GiEndgame {
+  const endgame: GiEndgame = {}
+  if (section.t) {
+    const [season, difficulty, level, acts] = section.t
+    endgame.theater = {
+      season,
+      ...(difficulty ? { difficulty } : {}),
+      ...(level ? { level } : {}),
+      acts,
+    }
+  }
+  if (section.s) {
+    endgame.stygian = {
+      records: section.s.map(
+        ([season, difficulty, at, coop, fights]): GiStygianRecord => ({
+          season,
+          difficulty,
+          at,
+          coop: coop === 1,
+          fights: fights.map(([time, done, team]) => ({
+            time,
+            done: done === 1,
+            team: team.map((ref) => fromRef(CHARACTERS, ref)),
+          })),
+        }),
+      ),
+    }
+  }
+  return endgame
 }
 
 export function decodeExtras(section: ExtrasSection): GiExtrasParts {
@@ -1293,5 +1366,6 @@ export function decodeExtras(section: ExtrasSection): GiExtrasParts {
       cosmetics: Object.fromEntries(section.m.map(([id, at]) => [String(id), at])),
     }
   }
+  if (section.e) parts.endgame = decodeEndgame(section.e)
   return parts
 }

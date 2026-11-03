@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { Check } from 'lucide-vue-next'
 import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
-import type { EndgameData } from '@/data/endgame'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import { theaterDifficultyName, theaterRunRow, type EndgameData } from '@/data/endgame'
+import type { CapturedTheater } from '@/data/endgame-capture'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { characterBanner, characterIcon } from '@/lib/assets'
+import { formatDate } from '@/lib/format'
 import { t } from '@/i18n'
 import EnemyTile from './EnemyTile.vue'
 
@@ -15,7 +19,9 @@ import EnemyTile from './EnemyTile.vue'
  * elements, Opening Characters, Special Guest Stars and the difficulties),
  * beside the chosen difficulty's acts, one row each: a boss act shows its
  * boss and what it does; any other its lineups side by side (a run meets one
- * of them); then the hardest difficulty's extra bouts.
+ * of them); then the hardest difficulty's extra bouts. With a capture of the
+ * account's run this season (`run`, Capture 1.17.12) the side column says
+ * its difficulty and acts cleared, and that difficulty is the one chosen.
  */
 const props = defineProps<{
   season: TheaterSeason
@@ -23,6 +29,7 @@ const props = defineProps<{
   name: string
   period: string
   left: number
+  run?: CapturedTheater | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -33,20 +40,38 @@ const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
 const element = (name: string) => name.toLowerCase() as Element
 const difficulty = ref(0)
-watch(
-  () => props.season.id,
-  () => (difficulty.value = props.season.difficulties.at(-1)?.difficulty ?? 0),
-  { immediate: true },
-)
+/** The account's difficulty when the capture has it (the run shown is theirs), else the hardest. */
+const startAt = () =>
+  (props.run && theaterRunRow(props.run.run, props.season)?.difficulty) ||
+  props.season.difficulties.at(-1)?.difficulty ||
+  0
+watch([() => props.season.id, () => props.run], () => (difficulty.value = startAt()), {
+  immediate: true,
+})
 const difficulties = computed(() =>
   props.season.difficulties.map((d) => ({
     value: d.difficulty,
-    label:
-      text.value.get(`theaterDifficulty.${d.difficulty}`) ||
-      t('endgame.theater.difficultyN', { n: d.difficulty }),
+    label: theaterDifficultyName(d.difficulty, text.value),
     acts: d.acts.length + d.extra.length,
+    main: d.acts.length,
   })),
 )
+/** The account's run this season: its difficulty's name, acts cleared of that difficulty's. */
+const yourRun = computed(() => {
+  if (!props.run) return null
+  const { run, takenAt } = props.run
+  const row = theaterRunRow(run, props.season)
+  const total = row?.acts.length ?? 0
+  return {
+    level: row?.difficulty,
+    label: row ? theaterDifficultyName(row.difficulty, text.value) : '',
+    acts: run.acts,
+    total,
+    full: total > 0 && run.acts >= total,
+    entered: !!row || run.acts > 0,
+    from: t('endgame.captured.fromCapture', { date: formatDate(takenAt) }),
+  }
+})
 const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
@@ -114,6 +139,31 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                 $t('endgame.activeLeft', { n: left }, left)
               }}</span>
             </span>
+            <div
+              v-if="yourRun"
+              class="mt-1.5 flex flex-col gap-0.5 rounded-lg border border-border-default bg-surface-sunken px-3 py-2"
+              :title="yourRun.from"
+            >
+              <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">{{
+                $t('endgame.captured.run')
+              }}</span>
+              <span v-if="!yourRun.entered" class="text-sm text-text-secondary">{{
+                $t('endgame.captured.notEntered')
+              }}</span>
+              <span v-else class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
+                <span v-if="yourRun.label" class="font-semibold">{{ yourRun.label }}</span>
+                <span class="tabular font-mono text-text-secondary">{{
+                  yourRun.total
+                    ? $t('endgame.captured.actsOf', { n: yourRun.acts, total: yourRun.total })
+                    : $t('endgame.theater.acts', { n: yourRun.acts })
+                }}</span>
+                <Check
+                  v-if="yourRun.full"
+                  class="size-4 text-success-text"
+                  :aria-label="$t('endgame.captured.cleared')"
+                />
+              </span>
+            </div>
             <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
               <li v-for="e in season.elements" :key="e" class="flex items-center gap-1.5 text-sm">
                 <ElementIcon :element="element(e)" size="lg" decorative />
@@ -180,7 +230,17 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
             "
             @click="difficulty = d.value"
           >
-            <span class="truncate">{{ d.label }}</span>
+            <span class="flex min-w-0 items-center gap-2">
+              <span class="truncate">{{ d.label }}</span>
+              <!-- The account's row: its acts cleared of this difficulty's. -->
+              <UiBadge
+                v-if="yourRun?.entered && yourRun.level === d.value"
+                tone="accent"
+                mono
+                :title="$t('endgame.captured.run')"
+                >{{ `${yourRun.acts}/${d.main}` }}</UiBadge
+              >
+            </span>
             <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
               $t('endgame.theater.acts', { n: d.acts })
             }}</span>

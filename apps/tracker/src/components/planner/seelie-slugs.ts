@@ -134,6 +134,8 @@ export const SEELIE_ITEMS: Readonly<Record<SeelieItemType, Readonly<Record<strin
     lunar_iron: 112143,
     accreted: 112152,
     life: 112155,
+    // 7.2 (Snowborn Heartshard), spelled from the name until Seelie's bundle shows its own slug.
+    snowborn: 112158,
   },
   element_1: {
     brilliant_diamond: 104101,
@@ -194,6 +196,8 @@ export const SEELIE_ITEMS: Readonly<Record<SeelieItemType, Readonly<Record<strin
     unscorched_blossom_branch: 113090,
     severed_tail_of_the_sky_roamer: 113091,
     cracked_armor: 113092,
+    // 7.2, spelled from the name until Seelie's bundle shows its own slug.
+    shattered_stability_anchor: 113093,
   },
   boss: {
     dvalins_plume: 113003,
@@ -301,6 +305,9 @@ export const SEELIE_ITEMS: Readonly<Record<SeelieItemType, Readonly<Record<strin
     frostfairy: 101275,
     flockingweed: 101276,
     golden_fern: 101277,
+    // 7.2's planner locals (7.1 items), spelled from the names until Seelie's bundle shows its own.
+    fairy_wormwood: 101273,
+    kristallfold: 101274,
   },
   special: {
     crown: 104319,

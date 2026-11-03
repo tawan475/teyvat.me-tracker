@@ -11,6 +11,7 @@ import {
   decodePoints,
   distinctPaths,
   encodeChanges,
+  encodeChangesNative,
   encodeFigures,
   encodeItemIndex,
   encodePoints,
@@ -338,6 +339,12 @@ describe('mergeChanges', () => {
 describe('storage formats', () => {
   it('round-trips a batch', () => {
     expect(decodeChanges(encodeChanges(changes))).toEqual(changes)
+  })
+
+  it('round-trips a batch deflated natively, in the same format', async () => {
+    const native = await encodeChangesNative(changes)
+    expect(native[0]).toBe(encodeChanges(changes)[0])
+    expect(decodeChanges(native)).toEqual(changes)
   })
 
   it('round-trips figures', () => {

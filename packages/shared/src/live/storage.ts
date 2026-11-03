@@ -23,6 +23,20 @@ export function encodeChanges(changes: readonly DeltaChange[]): Uint8Array {
   return withFormat(CHANGES_JSON, deflate(encoder.encode(JSON.stringify(changes))))
 }
 
+/**
+ * The same bytes' format, deflated by the platform's native zlib where it
+ * exists (the Worker, every current browser) instead of fflate's JavaScript:
+ * the whole merged window is re-deflated on every batch of a live session,
+ * and native deflate costs a fraction of the CPU in a cold isolate.
+ * `decodeChanges` reads either; the stored format byte is the same.
+ */
+export async function encodeChangesNative(changes: readonly DeltaChange[]): Promise<Uint8Array> {
+  if (typeof CompressionStream === 'undefined') return encodeChanges(changes)
+  const json = encoder.encode(JSON.stringify(changes))
+  const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('deflate-raw'))
+  return withFormat(CHANGES_JSON, new Uint8Array(await new Response(stream).arrayBuffer()))
+}
+
 export function decodeChanges(data: Uint8Array): DeltaChange[] {
   if (data[0] !== CHANGES_JSON) throw new CorruptDataError(`Unknown changes format ${data[0]}`)
   try {

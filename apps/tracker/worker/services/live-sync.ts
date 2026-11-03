@@ -29,7 +29,7 @@ import {
   decodeItemIndex,
   decodePoints,
   distinctPaths,
-  encodeChanges,
+  encodeChangesNative,
   encodeFigures,
   encodeItemIndex,
   encodePoints,
@@ -208,7 +208,7 @@ export async function storeBatch(
   const changes = merge
     ? mergeChanges(decodeChanges(toBytes(newest.data)), delta.changes)
     : [...delta.changes]
-  const data = encodeChanges(changes)
+  const data = await encodeChangesNative(changes)
   const paths = distinctPaths(changes)
   const addedBytes = data.length - (merge ? toBytes(newest.data).length : 0)
   const addedPaths = paths - (merge ? newest.changes : 0)

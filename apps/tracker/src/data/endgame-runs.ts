@@ -1,4 +1,5 @@
 import type { GiEndgame, GiStygianRecord, GiTasks, GiTheaterRun } from '@gdt/shared'
+import { formatSeconds } from '@/lib/format'
 
 /**
  * What the captures say about the account's endgame runs (`gi_endgame`,
@@ -88,11 +89,9 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
   return takenAt === null ? NO_CAPTURED_ENDGAME : { abyss, theater, stygian, takenAt }
 }
 
-/** A fight's seconds as the game's timer shows them: "0:51", "12:03". */
+/** A fight's seconds as the game's record shows them: bare seconds with the unit, "51s" (the language's unit elsewhere). */
 export function formatFightTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${s < 10 ? '0' : ''}${s}`
+  return formatSeconds(seconds)
 }
 
 /** The record's time over its fights when every one is done; null while one isn't (no total yet). */

@@ -49,6 +49,21 @@ export function formatNumber(value: number): string {
   return numberFormat().format(value)
 }
 
+/**
+ * Whole seconds with their unit, as the game's Stygian Onslaught timer shows
+ * a run: "78s" in English (narrow), "78 วิ" / "78 秒" / "78 с" elsewhere (the
+ * short unit: narrow drops the space Thai writes). The user's call,
+ * 2026-11-05, over "1:18".
+ */
+export function formatSeconds(seconds: number): string {
+  return numberFormat({
+    style: 'unit',
+    unit: 'second',
+    unitDisplay: numberLocale() === 'en-US' ? 'narrow' : 'short',
+    maximumFractionDigits: 0,
+  }).format(seconds)
+}
+
 /** 72,164,464 -> "72.2M" (Chinese "7216.4万"); small numbers stay exact. */
 export function formatCompact(value: number): string {
   return Math.abs(value) < 10_000 ? formatNumber(value) : numberFormat(COMPACT).format(value)

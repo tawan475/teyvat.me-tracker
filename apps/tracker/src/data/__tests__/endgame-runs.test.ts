@@ -94,9 +94,9 @@ describe('capturedEndgame', () => {
 
 describe('record figures', () => {
   it('formats a time like the game', () => {
-    expect(formatFightTime(0)).toBe('0:00')
-    expect(formatFightTime(51)).toBe('0:51')
-    expect(formatFightTime(723)).toBe('12:03')
+    expect(formatFightTime(0)).toBe('0s')
+    expect(formatFightTime(51)).toBe('51s')
+    expect(formatFightTime(78)).toBe('78s')
   })
 
   it('totals a record only once every fight is done', () => {

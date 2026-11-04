@@ -13,10 +13,8 @@ import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiStat from '@/components/ui/UiStat.vue'
 import WishBannerCard from '@/components/wishes/WishBannerCard.vue'
 import WishBannerHistory from '@/components/wishes/WishBannerHistory.vue'
-import WishBannerSummary from '@/components/wishes/WishBannerSummary.vue'
 import WishBargains from '@/components/wishes/WishBargains.vue'
 import WishMonthChart from '@/components/wishes/WishMonthChart.vue'
-import WishSmallSummary from '@/components/wishes/WishSmallSummary.vue'
 import WishTransferDialog from '@/components/wishes/WishTransferDialog.vue'
 import { useWishHistory } from '@/components/wishes/use-wish-history'
 import { useWishStats } from '@/components/wishes/use-wish-stats'
@@ -33,9 +31,11 @@ import { useAccount, useAccountRoute, useReadOnly } from './context'
  * Wish history overview: a card per banner (lifetime pulls, 5★ pity with
  * the next 5★'s odds and the way to hard pity, 4★ pity; the chevron folds
  * out the latest pulls below the card), pulls per month by rarity beside
- * what every wish was worth and the Character Event's average 5★ pity, then
- * each banner's numbers: Character and Weapon with every 5★ as tiles,
- * Standard and Chronicled smaller. Each banner's page lists every pull.
+ * what every wish was worth and the Character Event's average 5★ pity. Each
+ * banner's page lists every pull. (The per-banner summaries that followed —
+ * Character and Weapon with every 5★ as tiles, Standard and Chronicled
+ * smaller — are commented out since 2026-11-05: a user found them confusing
+ * and the user agreed; the numbers live on the banner pages.)
  * History arrives from irminsul (Wish → History opened in game, once a
  * day) or a UIGF / paimon.moe file; live events re-read it.
  */
@@ -61,8 +61,10 @@ const shown = computed(() =>
     (b): b is Shown => !!b.stats && (b.info.banner !== 100 || b.stats.total > 0),
   ),
 )
-const rated = computed(() => shown.value.filter((b) => b.info.rated && b.stats.total > 0))
-const plain = computed(() => shown.value.filter((b) => !b.info.rated && b.stats.total > 0))
+// The commented-out summaries below split `shown` into rated (Character,
+// Weapon) and plain (Standard, Chronicled, Beginners') banners:
+// const rated = computed(() => shown.value.filter((b) => b.info.rated && b.stats.total > 0))
+// const plain = computed(() => shown.value.filter((b) => !b.info.rated && b.stats.total > 0))
 const accountRoute = useAccountRoute()
 const detail = (banner: UigfGachaType) => ({
   name: accountRoute('account-wishes-banner'),
@@ -249,6 +251,9 @@ watch(view, (value) => {
           :now="Date.now()"
         />
 
+        <!-- Per-banner summaries, off since 2026-11-05 (a user found them
+             confusing; the banner pages carry the numbers). To bring them
+             back: the imports, `rated` / `plain` above, and these two blocks.
         <WishBannerSummary
           v-for="b in rated"
           :key="b.info.banner"
@@ -267,6 +272,7 @@ watch(view, (value) => {
             :to="detail(b.info.banner)"
           />
         </div>
+        -->
       </div>
     </template>
 

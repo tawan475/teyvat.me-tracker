@@ -134,8 +134,11 @@ const art = computed(() => {
 </script>
 
 <template>
+  <!-- The art column is capped at 620px AND 55% of the card: a fixed-max track
+       takes its whole cap before the 1fr column gets anything, so on a narrow
+       desktop the text was left ~80px wide, one character a line (2026-11-05). -->
   <section
-    class="relative grid min-w-0 overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm transition-colors hover:border-border-strong lg:grid-cols-[minmax(0,620px)_minmax(0,1fr)]"
+    class="relative grid min-w-0 overflow-hidden rounded-xl border border-border-default bg-surface-raised shadow-sm transition-colors hover:border-border-strong lg:grid-cols-[minmax(0,min(620px,55%))_minmax(0,1fr)]"
   >
     <div
       class="relative isolate overflow-hidden bg-surface-sunken"

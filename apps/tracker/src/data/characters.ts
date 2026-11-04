@@ -223,6 +223,24 @@ function findGaps(
 }
 
 /** Joins characters with what they wear. Run once per inventory. */
+/**
+ * A character the account doesn't own, as the dialog shows it bare (the
+ * user's ask, 2026-11-04): C0, every talent at 1, no gear, no level or
+ * friendship — what is left is the kit's text, scaling and guides. Null for
+ * a key the game data doesn't know.
+ */
+export function bareCharacter(key: string): CharacterView | null {
+  if (!characterMeta(key)) return null
+  const roster = buildRoster({
+    characters: [
+      { key, level: 1, ascension: 0, constellation: 0, talent: { auto: 1, skill: 1, burst: 1 } },
+    ],
+    weapons: [],
+    artifacts: [],
+  })
+  return roster.characters[0] ?? null
+}
+
 export function buildRoster(
   good: Pick<Good, 'characters' | 'weapons' | 'artifacts' | 'gi_characters'>,
 ): Roster {

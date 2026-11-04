@@ -52,6 +52,8 @@ const props = defineProps<{
   total: number
   /** Opened from Share build's picker: a Back arrow returns to it. */
   back?: boolean
+  /** A character the account doesn't own: the kit alone, nothing to export or favourite. */
+  bare?: boolean
 }>()
 const emit = defineEmits<{ close: []; step: [delta: -1 | 1]; back: [] }>()
 
@@ -194,7 +196,7 @@ const wikiOf = (key: string) => wikiPage(key.startsWith('Traveler') ? 'Traveler'
         </UiIconButton>
         <h2 class="min-w-0 truncate text-lg font-semibold">{{ character?.name ?? '' }}</h2>
         <FavoriteStar
-          v-if="character"
+          v-if="character && !bare"
           :on="isFavorite(character.key)"
           :name="character.name"
           always
@@ -212,16 +214,16 @@ const wikiOf = (key: string) => wikiPage(key.startsWith('Traveler') ? 'Traveler'
         <BookOpen class="size-4" aria-hidden="true" />
         <span class="max-sm:sr-only">{{ $t('characters.modal.wiki') }}</span>
       </a>
-      <CardArtButton v-if="showcase && character" :control="cardArt" />
+      <CardArtButton v-if="showcase && character && !bare" :control="cardArt" />
       <ShareActions
-        v-if="showcase"
+        v-if="showcase && !bare"
         v-model:theme="theme"
         v-model:name="showName"
         v-model:uid="showUid"
         :exporter="exporter"
       />
       <ShareMenu
-        v-else
+        v-else-if="!bare"
         v-model:theme="theme"
         v-model:name="showName"
         v-model:uid="showUid"
@@ -236,6 +238,7 @@ const wikiOf = (key: string) => wikiPage(key.startsWith('Traveler') ? 'Traveler'
       :now="character"
       :account="account"
       :showcase="showcase"
+      :bare="bare"
       :card-theme="theme"
       :owner="owner"
       :taken-at="takenAt"

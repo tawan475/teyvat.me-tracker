@@ -1,6 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import { NO_CHARACTER_FILTERS } from '../characters'
+import { NO_CHARACTER_FILTERS, bareCharacter } from '../characters'
 import { unownedCharacters } from '../unowned-characters'
+
+describe('a character the account lacks, bare', () => {
+  it('is C0 with every talent at 1 and no gear; unknown keys give null', () => {
+    const c = bareCharacter('Furina')!
+    expect(c).toMatchObject({
+      key: 'Furina',
+      rarity: 5,
+      element: 'hydro',
+      weaponType: 'sword',
+      constellation: 0,
+      talent: { auto: 1, skill: 1, burst: 1 },
+      weapon: null,
+      artifactCount: 0,
+      friendship: null,
+    })
+    expect(bareCharacter('NoSuchCharacter')).toBeNull()
+  })
+})
 
 const name = (key: string) => key.replace(/([a-z])([A-Z])/g, '$1 $2')
 const KEYS = [

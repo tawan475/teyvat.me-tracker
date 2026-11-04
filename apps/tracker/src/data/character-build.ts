@@ -62,7 +62,9 @@ export const DAMAGE_ORDER: readonly DamageKind[] = [
 
 /** "Max HP" where the Attributes screen names a stat differently, else the stat's name. */
 export function statLabel(key: string): string {
-  return key === 'hp' ? t('characters.stat.maxHp') : formatStatName(key)
+  if (key === 'hp') return t('characters.stat.maxHp')
+  if (key === 'baseAtk') return t('characters.stat.baseAtk')
+  return formatStatName(key)
 }
 
 /** "18,663" for flat stats, "62.2%" for percentages (GOOD's trailing underscore). */

@@ -25,6 +25,7 @@ import {
   buildRoster,
   characterSorts,
   facetCounts,
+  bareCharacter,
   filterCharacters,
   hasCharacterFilters,
   sortCharacters,
@@ -188,6 +189,10 @@ const route = useRoute()
 const router = useRouter()
 const selectedKey = computed(() => (typeof route.query.c === 'string' ? route.query.c : null))
 const selected = computed(() => all.value.find((c) => c.key === selectedKey.value) ?? null)
+// ?c= of a character the account doesn't own: the dialog opens bare ("Don't have", or a link).
+const bare = computed(() =>
+  selectedKey.value !== null && selected.value === null ? bareCharacter(selectedKey.value) : null,
+)
 let pushed = false
 watch(selectedKey, (key) => {
   if (key === null) {
@@ -236,7 +241,7 @@ function step(delta: -1 | 1) {
 // Mounted from the first open on, so closing it hands focus back like any dialog.
 const detailsUsed = ref(false)
 watch(
-  selected,
+  () => selected.value ?? bare.value,
   (character) => {
     if (character) detailsUsed.value = true
   },
@@ -461,17 +466,18 @@ watch(
         @open="open"
         @favorite="toggleFavorite"
       />
-      <UnownedCharacters class="mt-4" :owned="ownedKeys" :filters="filters" />
+      <UnownedCharacters class="mt-4" :owned="ownedKeys" :filters="filters" @open="open" />
     </template>
 
     <CharacterModal
       v-if="detailsUsed"
-      :character="selected"
+      :character="selected ?? bare"
+      :bare="selected === null && bare !== null"
       :account="account"
       :player-uid="player?.uid ?? null"
       :ar="player?.ar ?? null"
       :index="selectedIndex >= 0 ? selectedIndex : undefined"
-      :total="stepList.length"
+      :total="bare ? 1 : stepList.length"
       :back="fromPicker"
       @close="close"
       @step="step"

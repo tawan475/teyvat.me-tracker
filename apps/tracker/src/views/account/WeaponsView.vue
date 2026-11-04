@@ -18,10 +18,12 @@ import WeaponDetail from '@/components/weapons/WeaponDetail.vue'
 import WeaponGroupRow from '@/components/weapons/WeaponGroupRow.vue'
 import WeaponTable from '@/components/weapons/WeaponTable.vue'
 import WeaponToolbar from '@/components/weapons/WeaponToolbar.vue'
+import UnownedWeapons from '@/components/weapons/UnownedWeapons.vue'
 import { loadLatestInventory } from '@/data/account-data'
 import { useResource } from '@/data/use-resource'
 import {
   NO_WEAPON_FILTERS,
+  bareWeaponGroup,
   buildArmory,
   filterWeapons,
   groupWeapons,
@@ -191,6 +193,13 @@ const selected = computed(() => {
     )[0] ?? null
   )
 })
+// ?w= of a weapon the account doesn't own: the dialog opens bare ("Don't have", or a link).
+const bare = computed(() =>
+  selectedKey.value !== null && selected.value === null && armory.value
+    ? bareWeaponGroup(selectedKey.value)
+    : null,
+)
+const ownedKeys = computed(() => [...new Set(rows.value.map((r) => r.key))])
 let pushed = false
 watch(selectedKey, (key) => {
   if (key === null) {
@@ -252,21 +261,31 @@ function close() {
       </div>
     </div>
 
-    <UiPanel v-else-if="inventory.data.value === null || (armory && armory.total === 0)" flush>
-      <UiEmpty
-        :title="
-          inventory.data.value === null
-            ? $t('characters.page.noSnapshots')
-            : $t('weapons.page.empty')
-        "
-      >
-        <template #icon><Swords aria-hidden="true" /></template>
-        <UiButton v-if="!readOnly" variant="primary" :to="{ name: 'account-import' }">
-          <Upload class="size-4" aria-hidden="true" />
-          {{ $t('characters.page.import') }}
-        </UiButton>
-      </UiEmpty>
-    </UiPanel>
+    <template v-else-if="inventory.data.value === null || (armory && armory.total === 0)">
+      <UiPanel flush>
+        <UiEmpty
+          :title="
+            inventory.data.value === null
+              ? $t('characters.page.noSnapshots')
+              : $t('weapons.page.empty')
+          "
+        >
+          <template #icon><Swords aria-hidden="true" /></template>
+          <UiButton v-if="!readOnly" variant="primary" :to="{ name: 'account-import' }">
+            <Upload class="size-4" aria-hidden="true" />
+            {{ $t('characters.page.import') }}
+          </UiButton>
+        </UiEmpty>
+      </UiPanel>
+      <!-- An account with no weapons yet can still read any weapon's page -->
+      <UnownedWeapons
+        v-if="armory"
+        class="mt-4"
+        :owned="ownedKeys"
+        :filters="filters"
+        @open="open"
+      />
+    </template>
 
     <template v-else-if="armory">
       <StatStrip class="mb-4" :items="strip" @toggle="toggleStrip" />
@@ -328,14 +347,20 @@ function close() {
           />
         </template>
       </div>
+      <UnownedWeapons class="mt-4" :owned="ownedKeys" :filters="filters" @open="open" />
     </template>
 
-    <UiModal :open="selected !== null" :title="selected?.name ?? ''" @close="close">
+    <UiModal
+      :open="selected !== null || bare !== null"
+      :title="(selected ?? bare)?.name ?? ''"
+      @close="close"
+    >
       <WeaponDetail
-        v-if="selected"
-        :group="selected"
+        v-if="selected ?? bare"
+        :group="(selected ?? bare)!"
         :selected-id="selectedRow"
         :account-id="account.id"
+        :bare="selected === null"
         @select="selectedRow = $event"
       />
     </UiModal>

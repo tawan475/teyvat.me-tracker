@@ -278,6 +278,39 @@ export function groupWeapons(
   })
 }
 
+/**
+ * A weapon the account doesn't own, as the dialog shows it bare (the user's
+ * ask, 2026-11-04): one imagined copy at its level cap, R1, held by no one,
+ * so the passive, stats and lore have a level to read at. Null for a key the
+ * game data doesn't know.
+ */
+export function bareWeaponGroup(key: string): WeaponGroup | null {
+  const meta = weaponMeta(key)
+  if (!meta) return null
+  const [rarity, type] = meta
+  const name = itemName(key)
+  const maxLevel = weaponMaxLevel(key, rarity)
+  const row: WeaponRow = {
+    id: key,
+    key,
+    name,
+    rarity,
+    type,
+    level: maxLevel,
+    ascension: maxLevel >= 90 ? 6 : 4,
+    refinement: 1,
+    location: '',
+    ownerName: '',
+    lock: false,
+    count: 0,
+    maxLevel,
+    exp: 0,
+    gameId: weaponGameId(key),
+    haystack: normalize(`${name} ${key}`),
+  }
+  return { key, name, rarity, type, rows: [], count: 0, owners: [], best: row, refine: null }
+}
+
 /** "Favonius Greatsword · R1 · Lv 1/20 · 55 copies · Locked", for tooltips. */
 export function weaponTitle(row: WeaponRow): string {
   return [

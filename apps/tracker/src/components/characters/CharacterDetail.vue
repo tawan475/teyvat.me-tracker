@@ -81,6 +81,12 @@ const props = defineProps<{
   past: { at: number; capture: GiCapture | null } | null
   /** The player's own card art (card-art.ts). */
   art?: CardArt
+  /**
+   * A character the account doesn't own (data/characters.ts bareCharacter):
+   * the phone layout at every width, without level, gear, stats or history —
+   * the kit's text and scaling (the tips), constellations and guides.
+   */
+  bare?: boolean
 }>()
 const emit = defineEmits<{ view: [snapshotId: number | null] }>()
 
@@ -89,6 +95,7 @@ const { width: frameWidth } = useElementSize(frame)
 const scale = computed(() => (frameWidth.value ? frameWidth.value / CARD_WIDTH : 0))
 
 const c = computed(() => props.character)
+const wide = computed(() => props.showcase && !props.bare)
 
 const boosts = useConstellationBoosts(() => c.value.key)
 const expNeed = useExpNeed()
@@ -174,7 +181,7 @@ watch(
       @newer="step(1)"
       @now="view(null)"
     />
-    <template v-if="showcase">
+    <template v-if="wide">
       <div
         ref="frame"
         class="relative w-full overflow-hidden rounded-xl border border-border-default bg-surface-sunken"
@@ -269,7 +276,7 @@ watch(
                 >
               </p>
               <p class="flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span class="inline-flex items-center gap-2">
+                <span v-if="!bare" class="inline-flex items-center gap-2">
                   <LevelText
                     :level="c.level"
                     :ascension="c.ascension"
@@ -289,18 +296,18 @@ watch(
               </p>
             </header>
             <TalentLevels :character-key="c.key" :levels="talents" :element="c.element" />
-            <WeaponBlock :weapon="c.weapon" :account-id="account.id" />
+            <WeaponBlock v-if="!bare" :weapon="c.weapon" :account-id="account.id" />
           </div>
 
           <!-- The in-game stat panel -->
-          <div class="min-w-0 px-4 pb-4 sm:px-5 sm:pb-5 md:col-start-2 md:pl-3">
+          <div v-if="!bare" class="min-w-0 px-4 pb-4 sm:px-5 sm:pb-5 md:col-start-2 md:pl-3">
             <BuildStats :panel="panel" />
           </div>
         </div>
 
         <!-- What is left to do (the "needs work" badges) -->
         <div
-          v-if="c.gaps.length"
+          v-if="!bare && c.gaps.length"
           class="relative flex min-h-12 flex-wrap items-center gap-1.5 border-t border-border-default bg-surface-base/80 py-2 pr-3 pl-4 sm:pl-5"
         >
           <Wrench class="size-4 text-warning-text" aria-hidden="true" />
@@ -309,7 +316,7 @@ watch(
         </div>
       </section>
 
-      <section class="min-w-0" aria-labelledby="detail-artifacts">
+      <section v-if="!bare" class="min-w-0" aria-labelledby="detail-artifacts">
         <div class="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <h3 id="detail-artifacts" class="sr-only">{{ $t('game.artifacts') }}</h3>
           <SetBonuses v-if="c.artifactCount" :sets="c.sets" />
@@ -342,7 +349,7 @@ watch(
       <GuidesSection :guides="guides" @videos="guidesOpen = true" />
     </template>
 
-    <section aria-labelledby="detail-changes">
+    <section v-if="!bare" aria-labelledby="detail-changes">
       <h3 id="detail-changes" class="mb-3 text-sm font-semibold text-text-secondary">
         {{ $t('characters.detail.history') }}
       </h3>

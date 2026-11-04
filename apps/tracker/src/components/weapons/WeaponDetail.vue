@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { t } from '@/i18n'
+import { locale } from '@/i18n/locale'
 import { ArrowRight, ArrowUp, Backpack, Lock } from 'lucide-vue-next'
+import type { WeaponDetail as WeaponText } from '@gdt/game-data/details'
+import { displayStat, hasWeaponStats, weaponBaseStats } from '@gdt/game-data/stats'
+import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import ExpProgress from '@/components/ui/ExpProgress.vue'
 import LevelText from '@/components/ui/LevelText.vue'
+import UiSegmented from '@/components/ui/UiSegmented.vue'
 import { useExpNeed } from '@/lib/exp-need'
 import RarityStars from '@/components/ui/RarityStars.vue'
+import { formatPanelValue, statLabel } from '@/data/character-build'
 import {
   MAX_REFINEMENT,
   WEAPON_TYPE_LABELS,
@@ -21,10 +27,19 @@ import { useAccountRoute } from '@/views/account/context'
 /**
  * Every copy of one weapon. The head is the chosen copy as the game shows a
  * selected weapon ("R5 · Lv. 90/90", refinement diamonds, who wears it);
- * below, one line per copy or stack of spare copies, the chosen one
- * highlighted. Picking a line chooses it.
+ * then the weapon itself as its in-game page reads (the user's ask,
+ * 2026-11-04): its stats at that copy's level, the passive at a refinement
+ * one can step through, and its lore; below, one line per copy or stack of
+ * spare copies, the chosen one highlighted. Picking a line chooses it.
+ * `bare` (a weapon the account doesn't own, data/weapons.ts
+ * bareWeaponGroup): the weapon's page alone, at its level cap.
  */
-const props = defineProps<{ group: WeaponGroup; selectedId: string | null; accountId: number }>()
+const props = defineProps<{
+  group: WeaponGroup
+  selectedId: string | null
+  accountId: number
+  bare?: boolean
+}>()
 const emit = defineEmits<{ select: [id: string] }>()
 const routeName = useAccountRoute()
 
@@ -32,6 +47,52 @@ const g = computed(() => props.group)
 const selected = computed<WeaponRow>(
   () => g.value.rows.find((r) => r.id === props.selectedId) ?? g.value.best,
 )
+
+// --------------------------------------------------------------- the weapon's page
+// Stats at the chosen copy's level, as the weapon's page lists them: Base ATK and the substat
+// (none on 1-2★); the passive's own stats are in its text.
+const stats = computed(() => {
+  const w = selected.value
+  if (!hasWeaponStats(w.key)) return []
+  const values = weaponBaseStats({ key: w.key, level: w.level, ascension: w.ascension })
+  return Object.entries(values)
+    .sort(([a], [b]) => (a === 'baseAtk' ? -1 : b === 'baseAtk' ? 1 : 0))
+    .map(([key, value]) => ({
+      key,
+      label: statLabel(key),
+      text: formatPanelValue(key, displayStat(key, value)),
+    }))
+})
+
+// The passive at a refinement of the reader's choosing (the copy's to start), and the lore.
+const text = shallowRef<WeaponText | null | undefined>()
+watch(
+  () => [g.value.key, locale.value] as const,
+  ([key, lang]) => {
+    text.value = undefined
+    void import('@gdt/game-data/details')
+      .then((m) => m.loadWeaponDetail(key, lang))
+      .catch(() => undefined)
+      .then((found) => g.value.key === key && (text.value = found ?? null))
+  },
+  { immediate: true },
+)
+const refinement = ref(selected.value.refinement)
+watch(
+  () => selected.value.refinement,
+  (r) => (refinement.value = r),
+)
+const refinable = computed(() => (text.value?.refinements.length ?? 0) > 1)
+const refinementOptions = computed(() =>
+  Array.from({ length: MAX_REFINEMENT }, (_, i) => ({ value: i + 1, label: `R${i + 1}` })),
+)
+const passive = computed(() => {
+  const found = text.value
+  if (!found) return null
+  const steps = found.refinements
+  const description = steps[Math.min(refinement.value, steps.length) - 1]
+  return description ? { name: found.name, description } : null
+})
 // A bar only for a weapon the capture says is partway into a level.
 const expNeed = useExpNeed()
 const selectedNeed = computed(() => {
@@ -70,7 +131,7 @@ const refinementTitle = (r: number) =>
           <LevelText :level="selected.level" :ascension="selected.ascension" />
           <ExpProgress v-if="selectedNeed" :exp="selected.exp" :need="selectedNeed" />
         </p>
-        <p class="flex min-w-0 items-center gap-2 text-sm text-text-secondary">
+        <p v-if="!bare" class="flex min-w-0 items-center gap-2 text-sm text-text-secondary">
           <span
             class="inline-flex shrink-0 gap-1"
             role="img"
@@ -106,7 +167,40 @@ const refinementTitle = (r: number) =>
       </div>
     </div>
 
-    <p class="flex flex-wrap gap-x-4 text-sm text-text-secondary">
+    <!-- The weapon's page: stats at this level, the passive per refinement, the lore -->
+    <section
+      v-if="stats.length || text !== null"
+      class="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-base p-3 sm:p-4"
+      :aria-label="g.name"
+    >
+      <dl v-if="stats.length" class="flex flex-wrap gap-x-6 gap-y-1">
+        <div v-for="s in stats" :key="s.key" class="flex items-baseline gap-2">
+          <dt class="text-sm text-text-secondary">{{ s.label }}</dt>
+          <dd class="tabular font-mono font-semibold">{{ s.text }}</dd>
+        </div>
+      </dl>
+      <div v-if="text === undefined" class="h-16 animate-pulse rounded-lg bg-surface-overlay" />
+      <template v-else-if="passive">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-sm font-semibold">{{ passive.name }}</h3>
+          <UiSegmented
+            v-if="refinable"
+            v-model="refinement"
+            :options="refinementOptions"
+            :label="$t('weapons.detail.refinementTitle', { rank: refinement, max: MAX_REFINEMENT })"
+            compact
+          />
+        </div>
+        <GameText :text="passive.description" class="text-sm leading-relaxed" />
+      </template>
+      <GameText
+        v-if="text?.lore"
+        :text="text.lore"
+        class="border-t border-border-subtle pt-3 text-sm leading-relaxed text-text-muted italic"
+      />
+    </section>
+
+    <p v-if="!bare" class="flex flex-wrap gap-x-4 text-sm text-text-secondary">
       <i18n-t keypath="weapons.detail.copies" tag="span" :plural="g.count"
         ><template #n
           ><span class="tabular font-mono text-lg text-text-primary">{{
@@ -139,6 +233,7 @@ const refinementTitle = (r: number) =>
     </ul>
 
     <ul
+      v-if="!bare"
       class="divide-y divide-border-subtle overflow-hidden rounded-xl border border-border-default"
       :aria-label="$t('weapons.sort.count')"
     >

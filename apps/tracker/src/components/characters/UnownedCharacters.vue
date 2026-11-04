@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { ChevronDown, ExternalLink } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import RarityStars from '@/components/ui/RarityStars.vue'
@@ -8,19 +8,20 @@ import type { CharacterFilters } from '@/data/characters'
 import { unownedCharacters } from '@/data/unowned-characters'
 import { characterName } from '@/i18n/game-names'
 import { characterIcon } from '@/lib/assets'
-import { formatNumber, keyToName } from '@/lib/format'
+import { formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
-import { wikiPage } from '@/lib/wiki'
 
 /**
  * "Don't have" under the roster: the released characters the account
- * doesn't own, under the roster's filters, each opening its wiki page.
+ * doesn't own, under the roster's filters, each opening the character's
+ * dialog bare (kit text, scaling, guides; the wiki link is in there).
  * Folded by default (per device); a search that finds one opens it.
  */
 const props = defineProps<{
   owned: readonly string[]
   filters: CharacterFilters
 }>()
+const emit = defineEmits<{ open: [key: string] }>()
 
 const OPEN_KEY = 'characters:unowned-open'
 const open = ref(readStorage(OPEN_KEY) === '1')
@@ -56,12 +57,10 @@ const shown = computed(() => open.value || (searching.value && list.value.length
       class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,13rem),1fr))] gap-2 border-t border-border-default p-3"
     >
       <li v-for="c in list" :key="c.key">
-        <a
-          :href="wikiPage(keyToName(c.key))"
-          target="_blank"
-          rel="noopener"
-          class="group flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-overlay"
-          :title="$t('characters.unowned.wiki', { name: c.name })"
+        <button
+          type="button"
+          class="group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface-overlay"
+          @click="emit('open', c.key)"
         >
           <GameIcon :src="characterIcon(c.key)" :name="c.name" :rarity="c.rarity" size="sm" />
           <span class="flex min-w-0 flex-1 flex-col">
@@ -71,11 +70,11 @@ const shown = computed(() => open.value || (searching.value && list.value.length
             </span>
             <RarityStars :rarity="c.rarity" class="text-xs" />
           </span>
-          <ExternalLink
+          <ChevronRight
             class="size-3.5 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
           />
-        </a>
+        </button>
       </li>
     </ul>
   </section>

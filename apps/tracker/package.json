@@ -23,7 +23,7 @@
     "admin:grant": "node scripts/admin-grant.mjs"
   },
   "dependencies": {
-    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.0",
+    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.1",
     "@gdt/shared": "workspace:*",
     "@noble/hashes": "^2.4.0",
     "@tailwindcss/vite": "^4.3.1",

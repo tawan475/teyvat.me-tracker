@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Share2 } from 'lucide-vue-next'
 import type { EventBanner, PullRow } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
@@ -11,16 +10,14 @@ import { OUTCOME_STYLE, outcomeLabel } from './wish-labels'
  * An opened banner's numbers (paimon.moe's banner popup, the user's ask):
  * the banner's official art (both banners of a double run), the wishes made
  * on it and what they were worth, the rarity table (5★, 4★ by characters
- * and weapons: count, share of the run, average pity), the 5★ 50/50s, and
- * the way to share it as a card.
+ * and weapons: count, share of the run, average pity) and the 5★ 50/50s.
+ * (Sharing it as a card is the row's button, WishBannerHistory.)
  */
 const props = defineProps<{
   banner: EventBanner
   pulls: readonly PullRow[]
   rolls: ReadonlyMap<PullRow, number>
-  canShare: boolean
 }>()
-defineEmits<{ share: [] }>()
 
 const numbers = computed(() => bannerCardNumbers(props.pulls, props.rolls))
 const arts = computed(() => {
@@ -91,15 +88,6 @@ const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
             }}<span class="ml-1 text-base text-rarity-4" aria-hidden="true">✦</span></span
           >
         </span>
-        <button
-          v-if="canShare"
-          type="button"
-          class="ml-auto inline-flex min-h-10 items-center gap-2 rounded-lg border border-border-default bg-surface-raised px-3 text-sm font-medium transition-colors hover:bg-surface-overlay"
-          @click="$emit('share')"
-        >
-          <Share2 class="size-4" aria-hidden="true" />
-          {{ $t('wishes.share.button') }}
-        </button>
       </div>
       <table class="tabular w-full font-mono text-sm">
         <thead>

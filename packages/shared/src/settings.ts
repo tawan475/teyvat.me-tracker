@@ -59,6 +59,13 @@ export interface PlannerSettings {
    * elsewhere: the shop, events, Dust of Azoth).
    */
   gems: boolean
+  /**
+   * Convert a weekly boss's spare drops into the one needed with Dream
+   * Solvent (the game's Alchemy conversion). Off: every weekly drop is farmed
+   * as it is (a Discord user's ask, 2026-11-05). Absent in settings saved
+   * before it: read as on.
+   */
+  solvent: boolean
 }
 
 /**
@@ -138,6 +145,7 @@ export const ACCOUNT_SETTINGS_DEFAULTS: AccountSettings = {
     resinSteps: [-40, 60],
     crafting: true,
     gems: true,
+    solvent: true,
   },
   resin: null,
   favoriteCharacters: [],

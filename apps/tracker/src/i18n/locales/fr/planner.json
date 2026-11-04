@@ -429,6 +429,8 @@
     "steps": "Boutons de résine",
     "azothTitle": "Couvrir les gemmes manquantes avec des gemmes en trop d'un autre élément",
     "azoth": "Poudre d'Azoth",
+    "solventTitle": "Échanger les drops en trop d'un boss hebdomadaire contre celui qu'il faut avec du Solvant de rêve. Désactivé : chaque drop hebdomadaire se farme tel quel",
+    "solvent": "Solvant de rêve",
     "passivesTitle": "Shogun Raiden, Nomade : −50 % de Mora pour l'élévation d'arme",
     "passives": "Passifs Mora",
     "craftingTitle": "La liste de la vue Farm de ce qu'il faut convertir, synthétiser et forger",

@@ -216,6 +216,7 @@ export function usePlannerModel(
     settings.value.planner.passives ? ownedCharacters.value : null,
   )
   const planOptions = computed<PlanOptions>(() => ({
+    solvent: settings.value.planner.solvent !== false,
     azoth: settings.value.planner.azoth,
     passives: passiveOwners.value,
     forge: forge.value,

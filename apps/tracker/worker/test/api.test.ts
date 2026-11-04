@@ -1565,6 +1565,7 @@ describe('progress set by hand', () => {
       resinSteps: [-40, 60],
       crafting: true,
       gems: true,
+      solvent: true,
     })
     const hidden = await client.json<S>(path, {
       method: 'PATCH',

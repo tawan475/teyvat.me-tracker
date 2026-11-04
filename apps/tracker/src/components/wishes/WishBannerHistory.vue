@@ -44,7 +44,9 @@ import WishTable from './WishTable.vue'
  * summary (wishes, 5★ and 4★ counts, 50/50s won and lost) that opens into
  * the run's numbers (BannerRunStats: its art, wishes, the rarity table) over
  * every pull of that run (the banner page's table, 5★/4★/3★ chips), or
- * that it was skipped; a run can be shared as a card (BannerShareModal).
+ * that it was skipped; a run's row has a Share button for its card
+ * (BannerShareModal; the user's placement, 2026-11-05: on the row, not in
+ * the opened run).
  * Character, Weapon and Chronicled; a name search and "only banners I
  * wished on".
  */
@@ -301,6 +303,16 @@ const outcomes = (row: BannerHistoryRow) => {
           </div>
 
           <button
+            v-if="row.run && row.run.pulls && account"
+            type="button"
+            class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-border-default bg-surface-raised px-3 text-sm font-medium transition-colors hover:bg-surface-overlay"
+            :title="$t('wishes.share.title')"
+            @click.stop="sharing = row"
+          >
+            <Share2 class="size-4" aria-hidden="true" />
+            {{ $t('wishes.share.button') }}
+          </button>
+          <button
             v-if="row.run && row.run.pulls"
             type="button"
             class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] gap-3 rounded-lg border border-border-default bg-surface-sunken px-3 py-1.5 text-left transition-colors hover:bg-surface-overlay"
@@ -356,9 +368,7 @@ const outcomes = (row: BannerHistoryRow) => {
             :banner="row.banner"
             :pulls="pullsOf(row)"
             :rolls="rolls"
-            :can-share="!!account"
             class="px-4 pt-4"
-            @share="sharing = row"
           />
           <WishTable :rows="pullsOf(row)" :banner="banner" embedded class="m-3" />
         </template>

@@ -87,9 +87,11 @@ const detail = computed(() => props.size === 'detail')
     :class="
       detail
         ? [
-            'm-0 h-dvh max-h-dvh w-full max-w-none overflow-hidden sm:m-auto sm:max-h-[90dvh] sm:w-[calc(100%-2rem)] sm:max-w-6xl sm:rounded-xl sm:border sm:border-border-default',
-            // A modal dialog stretches to its cap at height auto; fit-content is the browser's own default.
-            bare ? 'sm:h-fit' : 'sm:h-auto',
+            // fit-content, not auto: a modal dialog stretches to its cap at
+            // height auto, which left the share dialogs with an empty band
+            // under their card (the user, 2026-11-05); a tall body still
+            // caps at 90dvh and scrolls.
+            'm-0 h-dvh max-h-dvh w-full max-w-none overflow-hidden sm:m-auto sm:h-fit sm:max-h-[90dvh] sm:w-[calc(100%-2rem)] sm:max-w-6xl sm:rounded-xl sm:border sm:border-border-default',
           ]
         : [
             'm-auto w-[calc(100%-2rem)] rounded-xl border border-border-default',

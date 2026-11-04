@@ -68,6 +68,8 @@
     "total": "합계",
     "fight": "전투 {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "최강 일격",
+    "damage": "최대 누적 피해"
   }
 }

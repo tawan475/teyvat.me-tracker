@@ -23,7 +23,7 @@ import {
 } from '@/data/endgame-capture'
 import { characterName } from '@/i18n/game-names'
 import { t } from '@/i18n'
-import { formatDate, formatShort } from '@/lib/format'
+import { formatDate, formatNumber, formatShort } from '@/lib/format'
 import { characterIcon, gameIcon } from '@/lib/assets'
 import { STYGIAN_GROUND } from './modes'
 
@@ -115,6 +115,22 @@ const yourRecords = computed(() => {
           time: formatFightTime(f.time),
           done: f.done,
           team: f.team,
+          // The strongest strike and the top damage (v1 addition), with the character when named.
+          figures: (['strike', 'damage'] as const).flatMap((kind) => {
+            const figure = f[kind]
+            if (!figure) return []
+            const by = figure.by ? characterName(figure.by) : ''
+            return [
+              {
+                kind,
+                label: t(`endgame.captured.${kind}`),
+                short: formatShort(figure.value),
+                title: `${t(`endgame.captured.${kind}`)}: ${formatNumber(figure.value)}${by ? ` · ${by}` : ''}`,
+                by: figure.by ?? '',
+                byName: by,
+              },
+            ]
+          }),
         }
       }),
     }
@@ -241,6 +257,24 @@ const bosses = computed(() => {
                     loading="lazy"
                     class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
                   />
+                </span>
+                <span v-if="f.figures.length" class="flex flex-wrap gap-x-3 gap-y-1">
+                  <span
+                    v-for="g in f.figures"
+                    :key="g.kind"
+                    class="flex items-center gap-1 text-xs text-text-secondary"
+                    :title="g.title"
+                  >
+                    {{ g.label }}
+                    <b class="tabular font-mono text-text-primary">{{ g.short }}</b>
+                    <img
+                      v-if="g.by"
+                      :src="characterIcon(g.by)"
+                      :alt="g.byName"
+                      loading="lazy"
+                      class="size-5 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                    />
+                  </span>
                 </span>
               </span>
               <!-- Done or not is a mark and a struck time, never the colour alone. -->

@@ -14,6 +14,7 @@ import type {
   GiTasks,
   GiEndgame,
   GiEvent,
+  GiFigure,
   GiExploration,
   GiHangout,
   GiMiliastra,
@@ -1296,6 +1297,17 @@ function toMiliastra(raw: unknown): GiMiliastra | null {
   return { cosmetics: byId(cosmetics as [number, number][]) }
 }
 
+/** A fight's damage figure: undefined when absent, null when it fails (the record list goes). */
+function toFigure(raw: unknown): GiFigure | null | undefined {
+  if (raw === undefined) return undefined
+  if (!isObject(raw) || !isIntIn(raw.value, 0, DAMAGE)) return null
+  if (raw.by === undefined) return { value: raw.value }
+  if (typeof raw.by !== 'string' || !GOOD_KEY.test(raw.by)) return null
+  return { value: raw.value, by: raw.by }
+}
+/** A damage figure: the game's totals stay far below 2^50 (what the binary layout holds). */
+const DAMAGE = 2 ** 50
+
 /** The game's fixed sizes in gi_endgame (contract v1): see GOOD_LIMITS.stygianRecords. */
 const THEATER_SEASON = [1, 10_000] as const
 const STYGIAN_SEASON = [1, 100_000_000] as const
@@ -1371,7 +1383,16 @@ function toStygianRecords(raw: unknown): GiStygianRecord[] | null {
       ) {
         return null
       }
-      fights.push({ time: f.time, done: f.done, team: [...(f.team as string[])] })
+      const strike = toFigure(f.strike)
+      const damage = toFigure(f.damage)
+      if (strike === null || damage === null) return null
+      fights.push({
+        time: f.time,
+        done: f.done,
+        team: [...(f.team as string[])],
+        ...(strike ? { strike } : {}),
+        ...(damage ? { damage } : {}),
+      })
     }
     out.push({ season: r.season, difficulty: r.difficulty, at: r.at, coop: r.coop, fights })
   }

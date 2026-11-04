@@ -436,6 +436,17 @@ export interface GiStygianFight {
   done: boolean
   /** The player's own team, GOOD character keys. */
   team: string[]
+  /** The fight's strongest single strike (v1 addition, 2026-11-04). */
+  strike?: GiFigure
+  /** The highest total damage dealt by one character. */
+  damage?: GiFigure
+}
+
+/** A damage figure and, when the game names one character for it, whose. */
+export interface GiFigure {
+  value: number
+  /** GOOD character key; absent when the game's two figures name two characters (their pairing is unsure). */
+  by?: string
 }
 
 export interface Good {

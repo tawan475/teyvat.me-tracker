@@ -68,6 +68,8 @@
     "total": "Итого",
     "fight": "Бой {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "Сильнейший удар",
+    "damage": "Наибольший урон"
   }
 }

@@ -68,6 +68,8 @@
     "total": "Total",
     "fight": "Pertarungan {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "Serangan terkuat",
+    "damage": "Damage tertinggi"
   }
 }

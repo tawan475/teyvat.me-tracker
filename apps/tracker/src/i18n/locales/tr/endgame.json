@@ -68,6 +68,8 @@
     "total": "Toplam",
     "fight": "{n}. Dövüş",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "En güçlü vuruş",
+    "damage": "En yüksek hasar"
   }
 }

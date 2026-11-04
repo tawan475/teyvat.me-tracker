@@ -287,13 +287,18 @@ function randomSection(rand: () => number, kind: SectionKind, delta: boolean): u
                         int(rand, 1, 6),
                         int(rand, 1.7e9, 1.8e9),
                         int(rand, 0, 1),
-                        Array.from({ length: int(rand, 0, 3) }, () => [
-                          int(rand, 0, 600),
-                          int(rand, 0, 1),
-                          Array.from({ length: int(rand, 0, 4) }, () =>
-                            rand() < 0.1 ? `Custom${int(rand, 1, 9)}` : int(rand, 1, 110),
-                          ),
-                        ]),
+                        Array.from({ length: int(rand, 0, 3) }, () => {
+                          const figure = () =>
+                            rand() < 0.3 ? 0 : [int(rand, 0, 90_000_000), int(rand, 0, 110)]
+                          return [
+                            int(rand, 0, 600),
+                            int(rand, 0, 1),
+                            Array.from({ length: int(rand, 0, 4) }, () =>
+                              rand() < 0.1 ? `Custom${int(rand, 1, 9)}` : int(rand, 1, 110),
+                            ),
+                            ...(rand() < 0.5 ? [[int(rand, 0, 90_000_000), 5], figure()] : []),
+                          ]
+                        }),
                       ]),
                     }
                   : {}),

@@ -68,6 +68,8 @@
     "total": "合計",
     "fight": "戦闘{n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "最大単発ダメージ",
+    "damage": "最大累計ダメージ"
   }
 }

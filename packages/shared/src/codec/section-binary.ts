@@ -1022,7 +1022,9 @@ const comfortPart: TaggedPart = {
 // 2 = `r`); `t` the Theater run's four numbers; `s` the records as count,
 // then per record season, difficulty, at, co-op, fights as count, then per
 // fight time, done, the team as count + KeyRef cells (no delta: a team is
-// unordered); `r` the run's two star numbers.
+// unordered), a byte of figure flags (bit 0 strike, 1 damage) and each
+// present figure's value + its character as a KeyRef cell (0: none); `r`
+// the run's two star numbers.
 const endgamePart: TaggedPart = {
   write(w, value) {
     const v = fields(value, ['t', 's', 'r'], ['t', 's', 'r'])
@@ -1037,11 +1039,22 @@ const endgamePart: TaggedPart = {
         const list = array(fights)
         w.uint(list.length)
         for (const fight of list) {
-          const [time, done, team] = row(fight, 3)
+          const cells = array(fight)
+          if (cells.length !== 3 && cells.length !== 5) throw new TypeError('Not a fight')
+          const [time, done, team, strike, damage] = cells
           w.uint(uint(time)).uint(uint(done))
           const keys = array(team) as KeyRef[]
           w.uint(keys.length)
           for (const key of keys) writeRef(w, key, 0)
+          const figures = [strike, damage].map((f) =>
+            f === 0 || f === undefined ? null : row(f, 2),
+          )
+          w.byte((figures[0] ? 1 : 0) | (figures[1] ? 2 : 0))
+          for (const figure of figures) {
+            if (!figure) continue
+            w.uint(uint(figure[0]))
+            writeRef(w, figure[1] as KeyRef, 0)
+          }
         }
       }
     }
@@ -1058,11 +1071,21 @@ const endgamePart: TaggedPart = {
         r.uint(),
         r.uint(),
         r.uint(),
-        Array.from({ length: checkedCount(r) }, () => [
-          r.uint(),
-          r.uint(),
-          Array.from({ length: checkedCount(r) }, () => readRef(r, 0)[0]),
-        ]),
+        Array.from({ length: checkedCount(r) }, () => {
+          const fight: unknown[] = [
+            r.uint(),
+            r.uint(),
+            Array.from({ length: checkedCount(r) }, () => readRef(r, 0)[0]),
+          ]
+          const figures = r.byte()
+          if (figures >= 4) throw new CorruptDataError(`Unknown fight figures ${figures}`)
+          if (figures) {
+            for (const bit of [1, 2]) {
+              fight.push(figures & bit ? [r.uint(), readRef(r, 0)[0]] : 0)
+            }
+          }
+          return fight
+        }),
       ])
     }
     if (flags & 4) section.r = [r.uint(), r.uint()]

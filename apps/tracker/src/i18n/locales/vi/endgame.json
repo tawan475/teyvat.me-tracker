@@ -68,6 +68,8 @@
     "total": "Tổng",
     "fight": "Trận {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "Đòn mạnh nhất",
+    "damage": "Sát thương cao nhất"
   }
 }

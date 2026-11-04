@@ -68,6 +68,8 @@
     "total": "Totale",
     "fight": "Scontro {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "Colpo più forte",
+    "damage": "Danno maggiore"
   }
 }

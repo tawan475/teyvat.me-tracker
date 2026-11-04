@@ -611,11 +611,19 @@ export function syntheticEndgame(seed = 1, seasons = 13) {
         difficulty: int(rand, 1, 6),
         at: 1_750_000_000 + n * 3_628_800 + int(rand, 0, 1_000_000),
         coop,
-        fights: Array.from({ length: 3 }, (_, i) => ({
-          time: int(rand, 20, 180),
-          done: i < 2 || rand() < 0.7,
-          team: team(),
-        })),
+        fights: Array.from({ length: 3 }, (_, i) => {
+          const members = team()
+          const figure = () => {
+            const value = int(rand, 100_000, 60_000_000)
+            return rand() < 0.8 ? { value, by: pick(rand, members) } : { value }
+          }
+          return {
+            time: int(rand, 20, 180),
+            done: i < 2 || rand() < 0.7,
+            team: members,
+            ...(rand() < 0.66 ? { strike: figure(), damage: figure() } : {}),
+          }
+        }),
       })
     }
   }

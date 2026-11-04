@@ -25,9 +25,11 @@ import type {
   GiTasks,
   GiEvent,
   GiExploration,
+  GiFigure,
   GiHangout,
   GiMiliastra,
   GiSignIn,
+  GiStygianFight,
   GiStygianRecord,
   GiTeapot,
   GiWardrobe,
@@ -1267,8 +1269,10 @@ export interface ExtrasSection {
  * gi_endgame: `t` the Theater run [season, difficulty id (0: none chosen),
  * level (0: unknown), acts]; `s` the Stygian records in the order sent:
  * [season, difficulty, at, co-op 0/1, fights [time, done 0/1, team as
- * character dictionary refs]]; `r` the run's stars [earned, possible (0:
- * not sent)], only when the capture has them.
+ * character dictionary refs, then only when the fight has a figure: the
+ * strongest strike and the top damage, each [value, by (0: no character)] or
+ * 0 when absent]]; `r` the run's stars [earned, possible (0: not sent)],
+ * only when the capture has them.
  */
 export interface EndgameSection {
   t?: [season: number, difficulty: number, level: number, acts: number]
@@ -1280,8 +1284,12 @@ export type StygianRecordRow = [
   difficulty: number,
   at: number,
   coop: number,
-  fights: [time: number, done: number, team: KeyRef[]][],
+  fights: StygianFightRow[],
 ]
+export type FigureCell = 0 | [value: number, by: KeyRef]
+export type StygianFightRow =
+  | [time: number, done: number, team: KeyRef[]]
+  | [time: number, done: number, team: KeyRef[], strike: FigureCell, damage: FigureCell]
 
 export interface GiExtrasParts {
   teapot?: GiTeapot
@@ -1318,10 +1326,26 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
       r.difficulty,
       r.at,
       r.coop ? 1 : 0,
-      r.fights.map((f) => [f.time, f.done ? 1 : 0, f.team.map((key) => toRef(CHARACTERS, key))]),
+      r.fights.map((f): StygianFightRow => {
+        const row: StygianFightRow = [
+          f.time,
+          f.done ? 1 : 0,
+          f.team.map((key) => toRef(CHARACTERS, key)),
+        ]
+        return f.strike || f.damage ? [...row, figureCell(f.strike), figureCell(f.damage)] : row
+      }),
     ])
   }
   return Object.keys(section).length > 0 ? section : null
+}
+
+const figureCell = (figure: GiFigure | undefined): FigureCell =>
+  figure ? [figure.value, toRef(CHARACTERS, figure.by ?? '')] : 0
+
+function figureOf(cell: FigureCell | undefined): GiFigure | undefined {
+  if (!cell) return undefined
+  const by = fromRef(CHARACTERS, cell[1])
+  return by ? { value: cell[0], by } : { value: cell[0] }
 }
 
 export function decodeEndgame(section: EndgameSection): GiEndgame {
@@ -1345,11 +1369,18 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
           difficulty,
           at,
           coop: coop === 1,
-          fights: fights.map(([time, done, team]) => ({
-            time,
-            done: done === 1,
-            team: team.map((ref) => fromRef(CHARACTERS, ref)),
-          })),
+          fights: fights.map((row): GiStygianFight => {
+            const [time, done, team] = row
+            const strike = figureOf(row[3])
+            const damage = figureOf(row[4])
+            return {
+              time,
+              done: done === 1,
+              team: team.map((ref) => fromRef(CHARACTERS, ref)),
+              ...(strike ? { strike } : {}),
+              ...(damage ? { damage } : {}),
+            }
+          }),
         }),
       ),
     }

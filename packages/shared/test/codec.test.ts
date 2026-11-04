@@ -2393,6 +2393,45 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     })
   })
 
+  it("keeps each fight's strongest strike and top damage, with the character when named", async () => {
+    const withFigures = endgame.stygian.records.filter((r) => r.fights.some((f) => f.strike))
+    expect(withFigures.length).toBeGreaterThan(3)
+    const { encoded, decoded } = await roundTrip({ ...base, gi_endgame: endgame })
+    expect(decoded.gi_endgame).toEqual(endgame)
+    const rows = JSON.parse(encoded.extras!.json).e.s as unknown[][]
+    // A fight without figures stays a three-cell row; one with them carries two more cells.
+    const lengths = new Set(rows.flatMap((r) => (r[4] as unknown[][]).map((f) => f.length)))
+    expect([...lengths].sort()).toEqual([3, 5])
+    const read = (fight: object) =>
+      normalizeGood({
+        ...base,
+        gi_endgame: { stygian: { records: [{ ...record, fights: [{ ...fight0, ...fight }] }] } },
+      }).endgame?.stygian?.records[0]?.fights[0]
+    const record = endgame.stygian.records[0]!
+    const fight0 = { time: 51, done: true, team: ['Furina'] }
+    expect(read({ strike: { value: 4_330_011 } })).toEqual({
+      ...fight0,
+      strike: { value: 4_330_011 },
+    })
+    expect(read({ damage: { value: 1, by: 'Bennett' } })?.damage).toEqual({
+      value: 1,
+      by: 'Bennett',
+    })
+    expect(read({ strike: { value: -1 } })).toBeUndefined()
+    expect(read({ strike: { value: 1, by: 'no key' } })).toBeUndefined()
+    expect(read({ damage: 5 })).toBeUndefined()
+    const cell = encodeSectionBlob(
+      'extras',
+      { e: { s: [[5_269_012, 6, 1_790_972_494, 0, [[51, 1, [3], [4_330_011, 3], 0]]]] } },
+      false,
+      null,
+    )
+    const back = decodeSectionBlob(kindCode('extras', false), cell.data, null, null)
+    expect(back.value).toEqual({
+      e: { s: [[5_269_012, 6, 1_790_972_494, 0, [[51, 1, [3], [4_330_011, 3], 0]]]] },
+    })
+  })
+
   it('keeps the theater run or the records alone', async () => {
     const theater = (await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } })).decoded
     expect(theater.gi_endgame).toEqual({ theater: endgame.theater })
@@ -2444,9 +2483,10 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     expect(fights({ team: ['Furina', 'Bad Key'] }).endgame!.stygian).toBeUndefined()
     expect(fights({ team: ['A', 'B', 'C', 'D', 'E'] }).endgame!.stygian).toBeUndefined()
     expect(fights({ time: -1 }).endgame!.stygian).toBeUndefined()
-    expect(fights({ time: 0, done: false, team: [] }).endgame!.stygian!.records[0]!.fights).toEqual(
-      [{ time: 0, done: false, team: [] }],
-    )
+    expect(
+      fights({ time: 0, done: false, team: [], strike: undefined, damage: undefined }).endgame!
+        .stygian!.records[0]!.fights,
+    ).toEqual([{ time: 0, done: false, team: [] }])
     const many = { records: Array.from({ length: 201 }, () => record) }
     expect(read({ stygian: many }).endgame!.stygian).toBeUndefined()
     expect(
@@ -2486,7 +2526,7 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
     expect(JSON.stringify(back.value)).toBe(JSON.stringify(value))
     const alone = encodeSectionBlob('extras', { e: value.e }, false, null)
-    // ~25 records × 3 fights × a team: well under a kilobyte.
-    expect(alone.data.length).toBeLessThan(1_000)
+    // ~25 records × 3 fights × a team, two in three with their two figures: about a kilobyte.
+    expect(alone.data.length).toBeLessThan(1_600)
   })
 })

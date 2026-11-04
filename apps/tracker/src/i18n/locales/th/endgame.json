@@ -68,6 +68,8 @@
     "total": "รวม",
     "fight": "การต่อสู้ {n}",
     "stars": "★ {n}/{total}",
-    "starsN": "★ {n}"
+    "starsN": "★ {n}",
+    "strike": "โจมตีแรงสุด",
+    "damage": "ดาเมจสูงสุด"
   }
 }

@@ -10,6 +10,7 @@ import UiInput from '@/components/ui/UiInput.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { useResource } from '@/data/use-resource'
+import { bannerTitle } from '@/data/wish-banner-names'
 import { parseRunKey, runRowKey } from '@/data/wish-run-key'
 import {
   bannerHistory,
@@ -102,7 +103,8 @@ const isOpen = (row: BannerHistoryRow) => row.banner.start <= now && now < row.b
 function title(row: BannerHistoryRow): string {
   const b = row.banner
   if (kind.value === 'weapon') return b.featured5.map(nameOf).join(' / ')
-  return b.name400 ? `${b.name} / ${b.name400}` : b.name || b.version
+  const name = bannerTitle(b.name)
+  return b.name400 ? `${name} / ${bannerTitle(b.name400)}` : name || b.version
 }
 const FEW = { five: 4, four: 5 }
 const shownKeys = (keys: readonly string[], max: number) => ({

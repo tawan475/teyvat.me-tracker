@@ -11,8 +11,9 @@
  * the card grows taller. The card is as wide and as tall as the grid.
  */
 
-import { formatWishTime } from '@gdt/shared'
+import { formatWishTime, parseWishTime } from '@gdt/shared'
 import type { EventBanner, Outcome, PullRow } from '@/data/wish-history'
+import { locale, type Locale } from '@/i18n/locale'
 import { giCdnArt } from '@/lib/assets'
 
 export const BANNER_CARD_PAD_X = 48
@@ -176,16 +177,39 @@ const ART_KIND: Record<EventBanner['kind'], string> = {
 }
 
 /**
+ * HoYoLAB's Event Wish posts, where gi-cdn takes the art in every language
+ * from, are translated from this phase on (2.0's second, 2021-08-10); the
+ * earlier banners have English art only, so no other language is asked for.
+ */
+export const LOCALIZED_ART_FROM = parseWishTime('2021-08-10 18:00:00')! - 8 * 3600
+
+/**
  * The banner's official art on gi-cdn (`WishBanner_<C|W|R>_<YYYYMMDD>`, `_2`
  * the second banner of a double character run; gi-cdn's wish-banners.ts):
  * named by the start date on the banner's own clock (UTC+8 in the data; the
- * server-clock openings at 06:00 keep the same date there).
+ * server-clock openings at 06:00 keep the same date there). In another
+ * language than English the art of that language (`_<code>`: HoYoLAB's
+ * post there) is asked for; `bannerArtFallback` gives the English one when
+ * it fails to load (a banner the post didn't picture in that language).
  */
-export function bannerArt(banner: EventBanner, second = false): string {
+export function bannerArt(
+  banner: EventBanner,
+  second = false,
+  lang: Locale = locale.value,
+): string {
   const day = formatWishTime(banner.start + 8 * 3600)
     .slice(0, 10)
     .replaceAll('-', '')
-  return giCdnArt(`WishBanner_${ART_KIND[banner.kind]}_${day}${second ? '_2' : ''}`)
+  const suffix = lang !== 'en' && banner.start >= LOCALIZED_ART_FROM ? `_${lang}` : ''
+  return giCdnArt(`WishBanner_${ART_KIND[banner.kind]}_${day}${second ? '_2' : ''}${suffix}`)
+}
+
+const LOCALIZED_ART = /^(.*\/WishBanner_[CWR]_\d{8}(?:_2)?)_(?:zh-CN|zh-TW|[a-z]{2})\.webp$/
+
+/** The English art a localized banner art URL falls back to; null when it is the English one already. */
+export function bannerArtFallback(url: string): string | null {
+  const m = LOCALIZED_ART.exec(url)
+  return m ? `${m[1]}.webp` : null
 }
 
 /** The PNG's name: `banner-7-1-phase-1-teyvat-me.png`. */

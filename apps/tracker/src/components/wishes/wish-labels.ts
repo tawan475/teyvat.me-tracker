@@ -1,5 +1,6 @@
 import { characterImages, weaponImages } from '@gdt/game-data/images'
 import { formatWishTime, toGoodKey, type UigfGachaType, type WishItem } from '@gdt/shared'
+import { bannerTitle } from '@/data/wish-banner-names'
 import type { BannerRun, Outcome, PityBand, PullRow } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
@@ -199,12 +200,12 @@ export function outcomeTitle(outcome: Outcome, banner: UigfGachaType, rank = 5):
   return t(`wishes.outcomeTitles.${outcome}`, { odds })
 }
 
-/** The banner a pull was made on, by name ('' outside the banner data). */
+/** The banner a pull was made on, by name in the language on screen ('' outside the banner data). */
 export function runName(row: PullRow): string {
   const on = row.on
   if (!on) return ''
-  if (row.pull.gachaType === 400 && on.name400) return on.name400
-  return on.name
+  if (row.pull.gachaType === 400 && on.name400) return bannerTitle(on.name400)
+  return bannerTitle(on.name)
 }
 
 export const RARITY_TEXT: Record<number, string> = {

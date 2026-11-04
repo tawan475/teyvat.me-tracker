@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import type { EventBanner, PullRow } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { bannerArt, bannerCardNumbers } from './banner-card'
+import { bannerTitle } from '@/data/wish-banner-names'
+import { bannerArt, bannerArtFallback, bannerCardNumbers } from './banner-card'
 import { OUTCOME_STYLE, outcomeLabel } from './wish-labels'
 
 /**
@@ -24,13 +25,25 @@ const arts = computed(() => {
   const b = props.banner
   const second = b.kind === 'character' && b.name400
   return [
-    { src: bannerArt(b), alt: b.kind === 'weapon' ? t('wishes.banners.weapon.title') : b.name },
-    ...(second ? [{ src: bannerArt(b, true), alt: b.name400 }] : []),
+    {
+      src: bannerArt(b),
+      alt: b.kind === 'weapon' ? t('wishes.banners.weapon.title') : bannerTitle(b.name),
+    },
+    ...(second ? [{ src: bannerArt(b, true), alt: bannerTitle(b.name400) }] : []),
   ]
 })
 /** Art that failed to load (a banner the CDN doesn't have yet) is left out. */
 const failed = ref<ReadonlySet<string>>(new Set())
-const fail = (src: string) => (failed.value = new Set([...failed.value, src]))
+/**
+ * The language's art that failed shows the English one instead (`@error`);
+ * English failing leaves the art out.
+ */
+function fail(event: Event, src: string) {
+  const img = event.target as HTMLImageElement
+  const english = bannerArtFallback(img.src)
+  if (english) img.src = english
+  else failed.value = new Set([...failed.value, src])
+}
 
 const pct = (share: number) => `${(share * 100).toFixed(1)}%`
 const avg = (n: number, count: number) => (count ? n.toFixed(1) : '—')
@@ -68,7 +81,7 @@ const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
             :src="art.src"
             :alt="art.alt"
             class="size-full object-cover"
-            @error="fail(art.src)"
+            @error="fail($event, art.src)"
           />
         </a>
       </template>

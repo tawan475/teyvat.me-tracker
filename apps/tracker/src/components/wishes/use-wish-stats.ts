@@ -8,16 +8,23 @@ import {
   type BannerStats,
   type WishHistory,
 } from '@/data/wish-history'
+import { loadBannerNames } from '@/data/wish-banner-names'
+import { locale } from '@/i18n/locale'
 import { loadGameIcons } from '@/lib/assets'
 import { WISH_BANNERS } from './wish-labels'
 
 let bannerFile: Promise<BannerFile> | null = null
 
-/** Banner dates and featured items (paimon.moe's data, MIT) and the icon names: one cached load. */
+/**
+ * Banner dates and featured items (paimon.moe's data, MIT), the icon names
+ * and, in another language than English, the banners' titles there: one
+ * cached load.
+ */
 export function loadBannerFile(): Promise<BannerFile> {
   bannerFile ??= Promise.all([
     import('@/data/wish-banners.json').then((m) => m.default as unknown as BannerFile),
     loadGameIcons(),
+    locale.value === 'en' ? undefined : loadBannerNames(),
   ]).then(([file]) => file)
   bannerFile.catch(() => (bannerFile = null))
   return bannerFile

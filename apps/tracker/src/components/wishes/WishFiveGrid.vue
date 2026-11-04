@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { bannerTitle } from '@/data/wish-banner-names'
 import { runPullNumbers, type BannerStats } from '@/data/wish-history'
 import { fiveGroups, type FiveGroup } from '@/data/wish-five-groups'
 import { itemName } from '@/data/weapons'
@@ -38,7 +39,8 @@ function title(group: FiveGroup): string {
   const b = group.banner
   if (!b) return group.month ? wishMonth(group.month) : ''
   if (b.kind === 'weapon') return b.featured5.map(itemName).join(' / ')
-  return b.name400 ? `${b.name} / ${b.name400}` : b.name
+  const name = bannerTitle(b.name)
+  return b.name400 ? `${name} / ${bannerTitle(b.name400)}` : name
 }
 const dates = (group: FiveGroup) =>
   group.run ? runDates(group.run, group.run.banner.start <= now && now < group.run.banner.end) : ''

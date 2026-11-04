@@ -31,8 +31,10 @@ import { RARITY_GRADIENT, qualityCell } from '@/lib/item-art'
 import { CardPaint, STAR_SHADOW, parseFilterShadow } from '../characters/card-paint'
 import type { CardOwner, CardTheme } from '../characters/share-card'
 import { ownerParts } from '../characters/share-card-model'
+import { bannerTitle } from '@/data/wish-banner-names'
 import {
   bannerArt,
+  bannerArtFallback,
   bannerCardLayout,
   tileNameGap,
   tileNameSize,
@@ -91,16 +93,36 @@ const GAP = 10
 
 function titleLines(banner: EventBanner): string[] {
   if (banner.kind === 'weapon') return banner.featured5.slice(0, 2).map((key) => itemName(key))
-  if (banner.kind === 'character' && banner.name400) return [banner.name, banner.name400]
-  return [banner.name || banner.featured5.map(characterName).join(' / ')]
+  if (banner.kind === 'character' && banner.name400) {
+    return [bannerTitle(banner.name), bannerTitle(banner.name400)]
+  }
+  return [bannerTitle(banner.name) || banner.featured5.map(characterName).join(' / ')]
+}
+
+/**
+ * The art to draw: the language's own where gi-cdn has it, else the English
+ * one (the probe's picture stays cached for the draw). '' stays ''.
+ */
+async function artToDraw(url: string): Promise<string> {
+  const english = bannerArtFallback(url)
+  if (!english) return url
+  const probe = await CardImages.load([url])
+  const found = probe.get(url) !== null
+  probe.close()
+  return found ? url : english
 }
 
 /** The card at `scale` device pixels per CSS pixel (1: the PNG). */
 export async function drawBannerCard(input: BannerDrawing, scale = 1): Promise<DrawnBanner> {
   const layout = bannerCardLayout(input.numbers.fives.length)
-  const art = bannerArt(input.banner)
-  const second =
-    input.banner.kind === 'character' && input.banner.name400 ? bannerArt(input.banner, true) : ''
+  const [art, second] = await Promise.all([
+    artToDraw(bannerArt(input.banner)),
+    artToDraw(
+      input.banner.kind === 'character' && input.banner.name400
+        ? bannerArt(input.banner, true)
+        : '',
+    ),
+  ])
   const urls = [
     art,
     second,

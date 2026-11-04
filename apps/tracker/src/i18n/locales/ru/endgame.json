@@ -66,6 +66,8 @@
     "notCleared": "Не пройдено",
     "clearedOf": "Пройдено: {n}/{total}",
     "total": "Итого",
-    "fight": "Бой {n}"
+    "fight": "Бой {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

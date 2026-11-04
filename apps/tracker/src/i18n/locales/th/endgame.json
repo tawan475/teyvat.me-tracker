@@ -66,6 +66,8 @@
     "notCleared": "ยังไม่ผ่าน",
     "clearedOf": "ผ่านแล้ว {n}/{total}",
     "total": "รวม",
-    "fight": "การต่อสู้ {n}"
+    "fight": "การต่อสู้ {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

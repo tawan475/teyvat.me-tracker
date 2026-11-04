@@ -2362,6 +2362,37 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     expect(decoded.gi_teapot).toBeUndefined()
   })
 
+  it('keeps the star count when the capture has it (appended after v1)', async () => {
+    const catalog = new Catalog()
+    const without = await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } }, catalog)
+    const starred = { ...endgame.theater, stars: 12, maxStars: 12 }
+    const { encoded, decoded } = await roundTrip(
+      { ...base, gi_endgame: { theater: starred } },
+      catalog,
+    )
+    expect(decoded.gi_endgame).toEqual({ theater: starred })
+    expect(encoded.contentHash).not.toBe(without.encoded.contentHash)
+    expect(JSON.parse(encoded.extras!.json).e).toEqual({
+      t: [31, 129, 5, starred.acts],
+      r: [12, 12],
+    })
+    // Earned alone (no maximum sent); 0 stars is a value, not an absence.
+    const zero = (
+      await roundTrip({ ...base, gi_endgame: { theater: { season: 31, acts: 0, stars: 0 } } })
+    ).decoded
+    expect(zero.gi_endgame).toEqual({ theater: { season: 31, acts: 0, stars: 0 } })
+    const blob = encodeSectionBlob('extras', { e: { t: [31, 129, 5, 10], r: [7, 0] } }, false, null)
+    const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+    expect(back.value).toEqual({ e: { t: [31, 129, 5, 10], r: [7, 0] } })
+    // A bad star count drops the run, like any other part of it.
+    const read = (theater: object) => normalizeGood({ ...base, gi_endgame: { theater } }).endgame
+    expect(read({ season: 31, acts: 1, stars: -1 })).toBeNull()
+    expect(read({ season: 31, acts: 1, maxStars: 0 })).toBeNull()
+    expect(read({ season: 31, acts: 1, stars: 3 })).toEqual({
+      theater: { season: 31, acts: 1, stars: 3 },
+    })
+  })
+
   it('keeps the theater run or the records alone', async () => {
     const theater = (await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } })).decoded
     expect(theater.gi_endgame).toEqual({ theater: endgame.theater })

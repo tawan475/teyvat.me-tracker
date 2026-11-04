@@ -223,7 +223,8 @@ is collections2 part `q`; `pre19ContentHash` keeps re-uploads no-ops.
 Capture 1.17.12: `gi_endgame` (the Theater run of the season running and the
 player's own Stygian Onslaught records; contract
 `E:/gdt-playground/refs/endgame/CONTRACT.md`) is extras part `e` (`t` the run,
-`s` the records with teams as character refs); `pre20ContentHash` keeps
+`s` the records with teams as character refs, `r` the run's stars earned and
+possible once Capture sends them, flag bit 2); `pre20ContentHash` keeps
 re-uploads no-ops, also where the endgame alone would have made the extras
 section. The Endgame page reads every snapshot's extras section
 (`src/data/endgame-capture.ts`): the newest capture of each Theater season

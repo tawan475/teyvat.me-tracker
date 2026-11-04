@@ -5,7 +5,12 @@ import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
-import { theaterDifficultyName, theaterRunRow, type EndgameData } from '@/data/endgame'
+import {
+  theaterDifficultyName,
+  theaterRunRow,
+  theaterStarsText,
+  type EndgameData,
+} from '@/data/endgame'
 import type { CapturedTheater } from '@/data/endgame-capture'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
@@ -67,8 +72,9 @@ const yourRun = computed(() => {
     label: row ? theaterDifficultyName(row.difficulty, text.value) : '',
     acts: run.acts,
     total,
+    stars: theaterStarsText(run, props.season),
     full: total > 0 && run.acts >= total,
-    entered: !!row || run.acts > 0,
+    entered: !!row || run.acts > 0 || !!run.stars,
     from: t('endgame.captured.fromCapture', { date: formatDate(takenAt) }),
   }
 })
@@ -156,6 +162,9 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                   yourRun.total
                     ? $t('endgame.captured.actsOf', { n: yourRun.acts, total: yourRun.total })
                     : $t('endgame.theater.acts', { n: yourRun.acts })
+                }}</span>
+                <span v-if="yourRun.stars" class="tabular font-mono text-text-secondary">{{
+                  yourRun.stars
                 }}</span>
                 <Check
                   v-if="yourRun.full"

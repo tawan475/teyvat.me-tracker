@@ -66,6 +66,8 @@
     "notCleared": "未通關",
     "clearedOf": "已通關 {n}/{total}",
     "total": "總計",
-    "fight": "第{n}戰"
+    "fight": "第{n}戰",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

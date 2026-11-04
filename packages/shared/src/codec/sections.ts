@@ -1267,11 +1267,13 @@ export interface ExtrasSection {
  * gi_endgame: `t` the Theater run [season, difficulty id (0: none chosen),
  * level (0: unknown), acts]; `s` the Stygian records in the order sent:
  * [season, difficulty, at, co-op 0/1, fights [time, done 0/1, team as
- * character dictionary refs]].
+ * character dictionary refs]]; `r` the run's stars [earned, possible (0:
+ * not sent)], only when the capture has them.
  */
 export interface EndgameSection {
   t?: [season: number, difficulty: number, level: number, acts: number]
   s?: StygianRecordRow[]
+  r?: [stars: number, maxStars: number]
 }
 export type StygianRecordRow = [
   season: number,
@@ -1309,6 +1311,7 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
   if (theater) {
     section.t = [theater.season, theater.difficulty ?? 0, theater.level ?? 0, theater.acts]
   }
+  if (theater?.stars !== undefined) section.r = [theater.stars, theater.maxStars ?? 0]
   if (stygian) {
     section.s = stygian.records.map((r) => [
       r.season,
@@ -1330,6 +1333,8 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
       ...(difficulty ? { difficulty } : {}),
       ...(level ? { level } : {}),
       acts,
+      ...(section.r ? { stars: section.r[0] } : {}),
+      ...(section.r?.[1] ? { maxStars: section.r[1] } : {}),
     }
   }
   if (section.s) {

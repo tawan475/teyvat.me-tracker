@@ -1018,14 +1018,15 @@ const comfortPart: TaggedPart = {
   read: (r) => readById(r, checkedCount(r), (id) => [id, r.uint(), readUintList(r)]),
 }
 
-// `e` gi_endgame (Capture 1.17.12): a byte of flags (bit 0 = `t`, 1 = `s`);
-// `t` the Theater run's four numbers; `s` the records as count, then per
-// record season, difficulty, at, co-op, fights as count, then per fight time,
-// done, the team as count + KeyRef cells (no delta: a team is unordered).
+// `e` gi_endgame (Capture 1.17.12): a byte of flags (bit 0 = `t`, 1 = `s`,
+// 2 = `r`); `t` the Theater run's four numbers; `s` the records as count,
+// then per record season, difficulty, at, co-op, fights as count, then per
+// fight time, done, the team as count + KeyRef cells (no delta: a team is
+// unordered); `r` the run's two star numbers.
 const endgamePart: TaggedPart = {
   write(w, value) {
-    const v = fields(value, ['t', 's'], ['t', 's'])
-    w.byte((v.t !== undefined ? 1 : 0) | (v.s !== undefined ? 2 : 0))
+    const v = fields(value, ['t', 's', 'r'], ['t', 's', 'r'])
+    w.byte((v.t !== undefined ? 1 : 0) | (v.s !== undefined ? 2 : 0) | (v.r !== undefined ? 4 : 0))
     if (v.t !== undefined) for (const n of row(v.t, 4)) w.uint(uint(n))
     if (v.s !== undefined) {
       const records = array(v.s)
@@ -1044,10 +1045,11 @@ const endgamePart: TaggedPart = {
         }
       }
     }
+    if (v.r !== undefined) for (const n of row(v.r, 2)) w.uint(uint(n))
   },
   read(r) {
     const flags = r.byte()
-    if (flags >= 4) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
+    if (flags >= 8) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
     const section: Record<string, unknown> = {}
     if (flags & 1) section.t = [r.uint(), r.uint(), r.uint(), r.uint()]
     if (flags & 2) {
@@ -1063,6 +1065,7 @@ const endgamePart: TaggedPart = {
         ]),
       ])
     }
+    if (flags & 4) section.r = [r.uint(), r.uint()]
     return section
   },
 }

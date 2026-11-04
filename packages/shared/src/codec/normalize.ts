@@ -1301,6 +1301,8 @@ const THEATER_SEASON = [1, 10_000] as const
 const STYGIAN_SEASON = [1, 100_000_000] as const
 const ENDGAME_DIFFICULTY = [1, 200] as const
 const THEATER_ACTS = 12
+/** Stars: one per act and extra bout (12 at Lunar Mode), with room. */
+const THEATER_STARS = 50
 const TEAM_SIZE = 4
 /** A fight's seconds: the game's timer stops well under a day. */
 const FIGHT_TIME = [0, 86_400] as const
@@ -1325,7 +1327,9 @@ function toTheaterRun(raw: unknown): GiTheaterRun | null {
     !isIntIn(raw.season, ...THEATER_SEASON) ||
     !isIntIn(raw.acts, 0, THEATER_ACTS) ||
     (raw.difficulty !== undefined && !isIntIn(raw.difficulty, ...ENDGAME_DIFFICULTY)) ||
-    (raw.level !== undefined && !isIntIn(raw.level, 1, 50))
+    (raw.level !== undefined && !isIntIn(raw.level, 1, 50)) ||
+    (raw.stars !== undefined && !isIntIn(raw.stars, 0, THEATER_STARS)) ||
+    (raw.maxStars !== undefined && !isIntIn(raw.maxStars, 1, THEATER_STARS))
   ) {
     return null
   }
@@ -1334,6 +1338,8 @@ function toTheaterRun(raw: unknown): GiTheaterRun | null {
     ...(raw.difficulty !== undefined ? { difficulty: raw.difficulty } : {}),
     ...(raw.level !== undefined ? { level: raw.level } : {}),
     acts: raw.acts,
+    ...(raw.stars !== undefined ? { stars: raw.stars } : {}),
+    ...(raw.maxStars !== undefined ? { maxStars: raw.maxStars } : {}),
   }
 }
 

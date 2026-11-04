@@ -66,6 +66,8 @@
     "notCleared": "Geçilmedi",
     "clearedOf": "{n}/{total} geçildi",
     "total": "Toplam",
-    "fight": "{n}. Dövüş"
+    "fight": "{n}. Dövüş",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

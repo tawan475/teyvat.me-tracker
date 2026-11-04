@@ -208,21 +208,38 @@ export interface RunLine {
 export const theaterRunRow = (run: GiTheaterRun, season: TheaterSeason) =>
   run.level === undefined ? undefined : season.difficulties.find((d) => d.difficulty === run.level)
 
+/** The stars a run could earn: what the capture says, else one per act and extra bout of its difficulty. */
+export function theaterStarsMax(run: GiTheaterRun, season: TheaterSeason): number {
+  if (run.maxStars) return run.maxStars
+  const row = theaterRunRow(run, season)
+  return row ? row.acts.length + row.extra.length : 0
+}
+
+/** "★ 12/12" ("★ 12" when the maximum is unknown); '' when the capture has no stars. */
+export function theaterStarsText(run: GiTheaterRun, season: TheaterSeason): string {
+  if (run.stars === undefined) return ''
+  const total = theaterStarsMax(run, season)
+  return total
+    ? t('endgame.captured.stars', { n: run.stars, total })
+    : t('endgame.captured.starsN', { n: run.stars })
+}
+
 export function theaterRunLine(
   run: GiTheaterRun,
   season: TheaterSeason,
   text: EndgameText,
 ): RunLine {
   const row = theaterRunRow(run, season)
-  if (!row && run.acts === 0)
+  if (!row && run.acts === 0 && !run.stars)
     return { text: t('endgame.captured.notEntered'), full: false, coop: false }
   const total = row?.acts.length ?? 0
   const acts = total
     ? t('endgame.captured.actsOf', { n: run.acts, total })
     : t('endgame.theater.acts', { n: run.acts })
   const label = row ? theaterDifficultyName(row.difficulty, text) : ''
+  const stars = theaterStarsText(run, season)
   return {
-    text: label ? `${label} · ${acts}` : acts,
+    text: [label, acts, stars].filter(Boolean).join(' · '),
     full: total > 0 && run.acts >= total,
     coop: false,
   }

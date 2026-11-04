@@ -411,6 +411,10 @@ export interface GiTheaterRun {
   level?: number
   /** Acts cleared this season (0 before the run is over or the season entered). */
   acts: number
+  /** Stars earned this season (appended after contract v1; absent until Capture sends it). */
+  stars?: number
+  /** Stars possible, when the game says; else the difficulty's acts and extra bouts. */
+  maxStars?: number
 }
 
 /** One Stygian Onslaught record: a season and a run kind (solo or co-op). */

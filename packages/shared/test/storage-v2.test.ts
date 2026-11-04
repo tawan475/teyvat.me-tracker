@@ -279,6 +279,7 @@ function randomSection(rand: () => number, kind: SectionKind, delta: boolean): u
                 ...(rand() < 0.8
                   ? { t: [int(rand, 1, 40), int(rand, 0, 200), int(rand, 0, 5), int(rand, 0, 12)] }
                   : {}),
+                ...(rand() < 0.5 ? { r: [int(rand, 0, 12), rand() < 0.5 ? 0 : 12] } : {}),
                 ...(rand() < 0.8
                   ? {
                       s: Array.from({ length: int(rand, 0, 30) }, () => [

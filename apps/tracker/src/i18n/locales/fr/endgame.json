@@ -66,6 +66,8 @@
     "notCleared": "Non réussi",
     "clearedOf": "{n}/{total} réussis",
     "total": "Total",
-    "fight": "Combat {n}"
+    "fight": "Combat {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

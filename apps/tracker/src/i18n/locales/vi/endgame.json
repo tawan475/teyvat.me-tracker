@@ -66,6 +66,8 @@
     "notCleared": "Chưa vượt",
     "clearedOf": "Đã vượt {n}/{total}",
     "total": "Tổng",
-    "fight": "Trận {n}"
+    "fight": "Trận {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

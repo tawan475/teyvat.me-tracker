@@ -66,6 +66,8 @@
     "notCleared": "Belum selesai",
     "clearedOf": "{n}/{total} selesai",
     "total": "Total",
-    "fight": "Pertarungan {n}"
+    "fight": "Pertarungan {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

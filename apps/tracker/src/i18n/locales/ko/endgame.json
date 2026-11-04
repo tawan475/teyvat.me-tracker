@@ -66,6 +66,8 @@
     "notCleared": "미클리어",
     "clearedOf": "{n}/{total} 클리어",
     "total": "합계",
-    "fight": "전투 {n}"
+    "fight": "전투 {n}",
+    "stars": "★ {n}/{total}",
+    "starsN": "★ {n}"
   }
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import html from '../../../index.html?raw'
+import { LANGUAGE_FONTS } from '@/lib/language-fonts'
 import { browserLanguages, detectLocale, LOCALES } from '../locale'
 
 /**
@@ -55,6 +56,34 @@ describe('the first-paint language script', () => {
   it('lists the same languages', () => {
     const list = /var ours = (\[[^\]]*\])/.exec(script!)?.[1]
     expect(JSON.parse(list!.replace(/'/g, '"'))).toEqual([...LOCALES])
+  })
+
+  it('names the same web fonts as lib/language-fonts', () => {
+    const table = /var fonts = (\{[^}]*\})/.exec(script!)?.[1]
+    expect(new Function(`return ${table}`)()).toEqual(LANGUAGE_FONTS)
+  })
+
+  it('adds the language font link at first paint', () => {
+    const links: { href: string; attrs: Record<string, string> }[] = []
+    const doc = {
+      documentElement: { lang: '' },
+      createElement: () => {
+        const link = { href: '', attrs: {} as Record<string, string> }
+        return Object.assign(link, {
+          setAttribute: (k: string, v: string) => (link.attrs[k] = v),
+        })
+      },
+      head: { appendChild: (link: (typeof links)[number]) => links.push(link) },
+    }
+    const run = new Function('localStorage', 'navigator', 'document', script!)
+    run({ getItem: () => 'th' }, { languages: ['en'] }, doc)
+    expect(links.map((l) => l.href)).toEqual([
+      'https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap',
+    ])
+    expect(links[0]!.attrs['data-language-font']).toBe('th')
+    links.length = 0
+    run({ getItem: () => 'ja' }, { languages: ['en'] }, doc)
+    expect(links).toEqual([])
   })
 
   it('answers like detectLocale', () => {

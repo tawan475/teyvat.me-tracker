@@ -2,7 +2,7 @@
 import { pushOnHere } from '@/lib/push-flag'
 import type { ManualResin } from '@gdt/shared'
 import { computed, ref, shallowRef, watch } from 'vue'
-import { Bell, BellOff, BellRing, Pencil } from 'lucide-vue-next'
+import { Bell, BellOff, BellRing, ChevronDown, Pencil } from 'lucide-vue-next'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -16,8 +16,8 @@ import {
   alertAt,
   formatStep,
   fullAt,
-  nextMark,
   resinAt,
+  resinMarks,
   setResin,
   stepResin,
   type ResinReading,
@@ -35,10 +35,15 @@ import { formatSpan } from './tasks'
 
 /**
  * Original Resin now: the newest reading (a capture's, or one set here)
- * plus regeneration. The number sets it by hand, the quick buttons add or
+ * plus regeneration (the next-40 countdown that stood here read as noise:
+ * the user, 2026-11-05; the marks table has every mark, labelled). The
+ * number sets it by hand, the quick buttons add or
  * spend (the regeneration clock keeps running), the bell notifies this
  * device at a chosen amount while the site is open. A hand-set value stays
- * until a capture reads resin after it.
+ * until a capture reads resin after it. The chevron folds out the marks
+ * table (a Discord user's ask, 2026-11-05): when resin reaches 40 … 200,
+ * each with the time left and the clock time, a bell on each row setting
+ * the alert to it; open or folded per device.
  */
 const props = defineProps<{
   reading: ResinReading | null
@@ -57,8 +62,11 @@ const props = defineProps<{
 const emit = defineEmits<{ set: [value: ManualResin | null] }>()
 
 const current = computed(() => (props.reading ? resinAt(props.reading, props.now) : null))
+const MARKS_KEY = 'planner:resin-marks'
+const marksOpen = ref(readStorage(MARKS_KEY) === '1')
+watch(marksOpen, (value) => writeStorage(MARKS_KEY, value ? '1' : null))
+const marks = computed(() => (props.reading ? resinMarks(props.reading, props.now) : []))
 const full = computed(() => (props.reading ? fullAt(props.reading, props.now) : null))
-const mark = computed(() => (props.reading ? nextMark(props.reading, props.now) : null))
 const readingTitle = computed(() => {
   const r = props.reading
   if (!r) return t('planner.resin.unknown')
@@ -256,15 +264,6 @@ watch(
         <span class="font-mono text-text-primary">{{ formatNumber(spent.value) }}</span>
       </span>
       <span
-        v-if="mark && mark.amount < RESIN_MAX"
-        class="inline-flex gap-1 font-mono"
-        :title="$t('planner.resin.markTitle', { amount: mark.amount, time: formatTime(mark.at) })"
-      >
-        <span class="text-text-primary">{{ mark.amount }}</span>
-        <span class="font-sans text-text-muted">{{ $t('planner.resin.in') }}</span>
-        {{ formatSpan(mark.at - now) }}
-      </span>
-      <span
         class="inline-flex items-center gap-1 font-mono"
         :title="materialName('CondensedResin')"
       >
@@ -299,6 +298,67 @@ watch(
       <Bell v-else class="size-4" aria-hidden="true" />
       <span v-if="alertOn" class="tabular font-mono text-xs">{{ amount }}</span>
     </button>
+    <button
+      v-if="marks.length"
+      type="button"
+      class="-my-1 -mr-1 inline-flex min-h-9 items-center rounded-md px-1.5 text-text-muted transition-colors hover:bg-surface-overlay hover:text-text-primary"
+      :title="$t('planner.resin.marks')"
+      :aria-label="$t('planner.resin.marks')"
+      :aria-expanded="marksOpen"
+      @click="marksOpen = !marksOpen"
+    >
+      <ChevronDown
+        class="size-4 transition-transform"
+        :class="marksOpen ? 'rotate-180' : ''"
+        aria-hidden="true"
+      />
+    </button>
+
+    <!-- The marks table: amount, time left, clock time, the alert bell. Reached
+         rows are muted with a tick (not colour alone). -->
+    <ul
+      v-if="marksOpen && marks.length"
+      class="mt-1 grid w-full grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-4 border-t border-border-subtle pt-2 text-sm"
+      :aria-label="$t('planner.resin.marks')"
+    >
+      <li v-for="m in marks" :key="m.amount" class="contents">
+        <span
+          class="tabular font-mono font-semibold"
+          :class="m.reached ? 'text-text-muted' : 'text-text-primary'"
+          >{{ m.amount }}</span
+        >
+        <span
+          class="tabular font-mono"
+          :class="m.reached ? 'text-text-muted' : 'text-text-secondary'"
+        >
+          <template v-if="m.reached">✓ {{ $t('planner.resin.reached') }}</template>
+          <template v-else
+            ><span class="font-sans text-text-muted">{{ $t('planner.resin.in') }}</span>
+            {{ formatSpan(m.at - now) }}</template
+          >
+        </span>
+        <time
+          class="tabular font-mono"
+          :class="m.reached ? 'text-text-muted' : 'text-text-secondary'"
+          :datetime="new Date(m.at).toISOString()"
+          :title="formatDateTime(m.at)"
+          >{{ m.reached ? '' : formatTime(m.at) }}</time
+        >
+        <button
+          type="button"
+          class="inline-flex min-h-8 items-center rounded-md px-1.5 transition-colors hover:bg-surface-overlay hover:text-text-primary disabled:opacity-40 disabled:hover:bg-transparent"
+          :class="alertOn && amount === m.amount ? 'text-accent-text' : 'text-text-muted'"
+          :title="$t('planner.resin.notifyAtAmount', { n: m.amount })"
+          :aria-label="$t('planner.resin.notifyAtAmount', { n: m.amount })"
+          :aria-pressed="alertOn && amount === m.amount"
+          :disabled="m.reached || support === 'unsupported'"
+          @click="chooseAlert(alertOn && amount === m.amount ? null : m.amount)"
+        >
+          <BellRing v-if="alertOn && amount === m.amount" class="size-4" aria-hidden="true" />
+          <Bell v-else class="size-4" aria-hidden="true" />
+        </button>
+      </li>
+    </ul>
 
     <UiPopover
       :open="editing"

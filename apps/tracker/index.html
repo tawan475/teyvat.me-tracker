@@ -35,23 +35,7 @@
       ;(function () {
         try {
           var lang = localStorage.getItem('gdt:lang')
-          var ours = [
-            'en',
-            'zh-CN',
-            'zh-TW',
-            'ja',
-            'ko',
-            'es',
-            'fr',
-            'ru',
-            'th',
-            'vi',
-            'de',
-            'id',
-            'pt',
-            'it',
-            'tr',
-          ]
+          var ours = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'fr', 'ru', 'th', 'vi', 'de', 'id', 'pt', 'it', 'tr']
           if (ours.indexOf(lang) < 0) {
             lang = 'en'
             var tags =

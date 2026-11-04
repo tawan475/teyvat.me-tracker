@@ -108,17 +108,25 @@ export function resinAt(reading: Pick<ResinReading, 'value' | 'at'>, now: number
 
 /**
  * When resin reaches `amount` (ms since epoch): in the past when it has
- * already, null when regeneration never gets there (above 200).
+ * already, null when regeneration never gets there (above 200). A reading
+ * dated after `now` (a clock ahead, a capture stamped in the future) counts
+ * from `now`: the number shown is the reading's, so its countdowns start
+ * here too (the user, 2026-11-05: "155 now" beside "Full in 2 days").
  */
-export function reachedAt(reading: Pick<ResinReading, 'value' | 'at'>, amount: number) {
-  if (reading.value >= amount) return reading.at
+export function reachedAt(
+  reading: Pick<ResinReading, 'value' | 'at'>,
+  amount: number,
+  now: number = reading.at,
+): number | null {
+  const from = Math.min(reading.at, now)
+  if (reading.value >= amount) return from
   if (amount > RESIN_MAX) return null
-  return reading.at + (amount - reading.value) * RESIN_STEP_MS
+  return from + (amount - reading.value) * RESIN_STEP_MS
 }
 
 /** When resin is full (200), null when it already is. */
 export function fullAt(reading: Pick<ResinReading, 'value' | 'at'>, now: number): number | null {
-  const at = reachedAt(reading, RESIN_MAX)
+  const at = reachedAt(reading, RESIN_MAX, now)
   return at === null || at <= now ? null : at
 }
 
@@ -134,7 +142,36 @@ export function nextMark(
   const current = resinAt(reading, now)
   if (current >= RESIN_MAX) return null
   const amount = Math.min(RESIN_MAX, (Math.floor(current / step) + 1) * step)
-  return { amount, at: reachedAt(reading, amount)! }
+  return { amount, at: reachedAt(reading, amount, now)! }
+}
+
+/**
+ * The amounts the marks table lists (a Discord user's ask, 2026-11-05, like
+ * paimon.moe's resin calculator): the game's costs and its own milestones.
+ */
+export const RESIN_MARKS = [40, 60, 80, 100, 120, 160, 180, 200] as const
+
+export interface ResinMark {
+  amount: number
+  /** When resin is (or was) there, ms since epoch. */
+  at: number
+  /** Already there at `now`. */
+  reached: boolean
+}
+
+/** Every mark with when resin reaches it, in amount order (reached ones come first by nature). */
+export function resinMarks(
+  reading: Pick<ResinReading, 'value' | 'at'>,
+  now: number,
+  amounts: readonly number[] = RESIN_MARKS,
+): ResinMark[] {
+  const current = resinAt(reading, now)
+  return amounts
+    .filter((amount) => amount <= RESIN_MAX)
+    .map((amount) => {
+      const at = reachedAt(reading, amount, now)!
+      return { amount, at, reached: current >= amount }
+    })
 }
 
 /**
@@ -177,7 +214,7 @@ export function alertAt(
   now: number,
 ): number | null {
   if (!reading || amount <= 0) return null
-  const at = reachedAt(reading, amount)
+  const at = reachedAt(reading, amount, now)
   return at === null || at <= now ? null : at
 }
 

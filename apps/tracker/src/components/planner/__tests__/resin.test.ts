@@ -11,6 +11,7 @@ import {
   parseSteps,
   reachedAt,
   resinAt,
+  resinMarks,
   resinReading,
   setResin,
   stepResin,
@@ -100,6 +101,38 @@ describe('resin readings', () => {
     expect(nextMark({ value: 200, at: T }, T)).toBeNull()
     expect(reachedAt(r, 90)).toBe(T)
     expect(reachedAt(r, 201)).toBeNull()
+  })
+
+  it('lists every mark with when resin is there, reached ones flagged', () => {
+    const marks = resinMarks({ value: 95, at: T }, T + 2 * RESIN_STEP_MS)
+    expect(marks.map((m) => m.amount)).toEqual([40, 60, 80, 100, 120, 160, 180, 200])
+    expect(marks.map((m) => m.reached)).toEqual([
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ])
+    expect(marks[0]!.at).toBe(T)
+    expect(marks[3]!.at).toBe(T + 5 * RESIN_STEP_MS)
+    expect(marks[7]!.at).toBe(T + 105 * RESIN_STEP_MS)
+    expect(resinMarks({ value: 200, at: T }, T).every((m) => m.reached)).toBe(true)
+    expect(resinMarks({ value: 0, at: T }, T, [40, 250]).map((m) => m.amount)).toEqual([40])
+  })
+
+  it('counts from now when the reading is dated after it (a clock ahead)', () => {
+    const ahead = { value: 155, at: T + 2 * 24 * 60 * MIN }
+    expect(resinAt(ahead, T)).toBe(155)
+    expect(fullAt(ahead, T)).toBe(T + 45 * RESIN_STEP_MS)
+    expect(reachedAt(ahead, 160, T)).toBe(T + 5 * RESIN_STEP_MS)
+    expect(reachedAt(ahead, 120, T)).toBe(T)
+    expect(alertAt(ahead, 180, T)).toBe(T + 25 * RESIN_STEP_MS)
+    const marks = resinMarks(ahead, T)
+    expect(marks.map((m) => m.reached)).toEqual([true, true, true, true, true, false, false, false])
+    expect(marks[5]!.at).toBe(T + 5 * RESIN_STEP_MS)
   })
 
   it('sets and steps resin, keeping the regeneration clock', () => {

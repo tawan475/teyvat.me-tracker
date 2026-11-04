@@ -1,5 +1,6 @@
 import { readStorage, writeStorage } from '@/lib/storage'
 import { quietTransition } from '@/lib/view-transition'
+import { ensureLanguageFont } from '@/lib/language-fonts'
 import { i18n, setLocale } from './index'
 import {
   browserLanguages,
@@ -47,6 +48,7 @@ export async function applyLocale(
   if (persist) writeStorage('lang', preference === 'system' ? null : preference)
   shown = preference
   const target = resolveLocale(preference)
+  ensureLanguageFont(target)
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   await setLocale(target, (show) => {
     const paint = () => {

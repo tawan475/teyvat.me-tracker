@@ -35,7 +35,23 @@
       ;(function () {
         try {
           var lang = localStorage.getItem('gdt:lang')
-          var ours = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'fr', 'ru', 'th', 'vi', 'de', 'id', 'pt', 'it', 'tr']
+          var ours = [
+            'en',
+            'zh-CN',
+            'zh-TW',
+            'ja',
+            'ko',
+            'es',
+            'fr',
+            'ru',
+            'th',
+            'vi',
+            'de',
+            'id',
+            'pt',
+            'it',
+            'tr',
+          ]
           if (ours.indexOf(lang) < 0) {
             lang = 'en'
             var tags =
@@ -66,6 +82,18 @@
             }
           }
           document.documentElement.lang = lang
+          // The language's web font (a copy of lib/language-fonts.ts' table).
+          var fonts = {
+            th: 'Noto+Sans+Thai:wght@400;500;600;700',
+            ru: 'Manrope:wght@400;500;600;700;800',
+          }
+          if (fonts[lang]) {
+            var link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = 'https://fonts.googleapis.com/css2?family=' + fonts[lang] + '&display=swap'
+            link.setAttribute('data-language-font', lang)
+            document.head.appendChild(link)
+          }
         } catch (_) {}
       })()
     </script>

@@ -177,11 +177,15 @@
 
 /*
  * Other scripts: Outfit has only Latin glyphs, so Han, kana, Hangul, Thai and
- * Cyrillic fall through to the system's own font for that language (nothing
- * extra downloads; Japanese must not get Chinese glyph shapes); Latin letters
- * and digits stay in Outfit. Vietnamese skips Outfit (`--font-brand`): it
- * lacks the stacked diacritics, which would switch fonts mid-word. Set from
- * <html lang> (i18n/locale.ts).
+ * Cyrillic fall through to the font named for that language; Latin letters
+ * and digits stay in Outfit. Han, kana and Hangul use the system's own font
+ * (nothing extra downloads; Japanese must not get Chinese glyph shapes). Thai
+ * and Russian load a web font (lib/language-fonts.ts, also index.html's first
+ * paint): the system Thai fonts have a small body that read a size under the
+ * Outfit digits beside them, and Cyrillic had no font named at all, so it was
+ * a different typeface per device (the user's review, 2026-11-05). Vietnamese
+ * skips Outfit (`--font-brand`): it lacks the stacked diacritics, which would
+ * switch fonts mid-word. Set from <html lang> (i18n/locale.ts).
  */
 :root {
   --font-brand: 'Outfit';
@@ -201,7 +205,11 @@
   --font-cjk: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR';
 }
 :root:lang(th) {
-  --font-cjk: 'Leelawadee UI', 'Thonburi', 'Noto Sans Thai';
+  --font-cjk: 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi';
+}
+:root:lang(ru) {
+  /* Manrope: geometric like Outfit, with Cyrillic. */
+  --font-cjk: 'Manrope', ui-sans-serif;
 }
 :root:lang(vi) {
   --font-brand: 'Segoe UI';

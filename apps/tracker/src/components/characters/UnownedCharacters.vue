@@ -4,9 +4,7 @@ import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import RarityStars from '@/components/ui/RarityStars.vue'
-import type { CharacterFilters } from '@/data/characters'
-import { unownedCharacters } from '@/data/unowned-characters'
-import { characterName } from '@/i18n/game-names'
+import type { UnownedCharacter } from '@/data/unowned-characters'
 import { characterIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
@@ -15,11 +13,13 @@ import { readStorage, writeStorage } from '@/lib/storage'
  * "Don't have" under the roster: the released characters the account
  * doesn't own, under the roster's filters, each opening the character's
  * dialog bare (kit text, scaling, guides; the wiki link is in there).
- * Folded by default (per device); a search that finds one opens it.
+ * Folded by default (per device); a search that finds one opens it. Under
+ * the Don't have sort (`only`) it is the page's list: open, with no fold.
  */
 const props = defineProps<{
-  owned: readonly string[]
-  filters: CharacterFilters
+  list: readonly UnownedCharacter[]
+  searching: boolean
+  only?: boolean
 }>()
 const emit = defineEmits<{ open: [key: string] }>()
 
@@ -27,9 +27,7 @@ const OPEN_KEY = 'characters:unowned-open'
 const open = ref(readStorage(OPEN_KEY) === '1')
 watch(open, (value) => writeStorage(OPEN_KEY, value ? '1' : null))
 
-const list = computed(() => unownedCharacters(new Set(props.owned), props.filters, characterName))
-const searching = computed(() => props.filters.query.trim() !== '')
-const shown = computed(() => open.value || (searching.value && list.value.length > 0))
+const shown = computed(() => props.only || open.value || (props.searching && props.list.length > 0))
 </script>
 
 <template>
@@ -38,7 +36,15 @@ const shown = computed(() => open.value || (searching.value && list.value.length
     class="rounded-xl border border-border-default bg-surface-raised shadow-sm"
     :aria-label="$t('characters.unowned.title')"
   >
+    <h2
+      v-if="only"
+      class="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold"
+    >
+      {{ $t('characters.unowned.title') }}
+      <span class="tabular font-mono text-text-muted">{{ formatNumber(list.length) }}</span>
+    </h2>
     <button
+      v-else
       type="button"
       class="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold"
       :aria-expanded="shown"

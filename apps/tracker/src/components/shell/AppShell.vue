@@ -388,7 +388,11 @@ const footButton =
         <UiIconButton :label="$t('shell.openMenu')" class="-ml-2 lg:hidden" @click="drawer = true">
           <Menu class="size-5" aria-hidden="true" />
         </UiIconButton>
-        <span class="truncate text-lg font-semibold sm:shrink-0">{{ title }}</span>
+        <!-- On phones the title takes what the buttons leave; under 7rem it
+             hides rather than show "C…" (the user's call, 2026-11-04). -->
+        <span class="bar-title min-w-0 flex-1 sm:flex-none">
+          <span class="block truncate text-lg font-semibold">{{ title }}</span>
+        </span>
         <template v-if="staffMode">
           <template v-if="staff.topRole">
             <div class="hidden h-4 w-px bg-border-strong sm:block" />
@@ -529,5 +533,17 @@ const footButton =
   transition-property: opacity, visibility, max-width, gap, color, background-color, border-color;
   transition-duration: 150ms;
   transition-timing-function: ease;
+}
+/* The page title on phones: gone when the bar leaves it under 7rem (it would
+   read "C..."); the page's own sr-only heading still names the page. */
+@media (max-width: 39.9375rem) {
+  .bar-title {
+    container-type: inline-size;
+  }
+  @container (max-width: 7rem) {
+    .bar-title > span {
+      display: none;
+    }
+  }
 }
 </style>

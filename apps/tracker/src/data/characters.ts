@@ -402,6 +402,8 @@ export type CharacterSort =
   | 'name'
   | 'friendship'
   | 'obtained'
+  /** Not a sort: the page lists the characters the account lacks instead (Don't have). */
+  | 'unowned'
 export type SortDirection = 'asc' | 'desc'
 
 export interface SortOption {
@@ -479,6 +481,15 @@ export const CHARACTER_SORTS: SortOption[] = [
     value: 'obtained',
     get label() {
       return t('characters.sort.obtained')
+    },
+    natural: 'desc',
+  },
+  // "Don't have" (a Discord user's ask, 2026-11-04): the sort menu is where
+  // phones look for it, so it lives there; descending = 5★ first.
+  {
+    value: 'unowned',
+    get label() {
+      return t('characters.unowned.title')
     },
     natural: 'desc',
   },
@@ -712,6 +723,9 @@ const compareBy: Record<CharacterSort, (a: CharacterView, b: CharacterView) => n
   name: (a, b) => compareText(a.name, b.name),
   friendship: (a, b) => (a.friendship ?? 0) - (b.friendship ?? 0),
   obtained: (a, b) => (a.obtainedAt ?? 0) - (b.obtainedAt ?? 0),
+  // The roster isn't shown under Don't have; what still lists it (the share
+  // cards' pickers) keeps the game's order.
+  unowned: () => 0,
 }
 
 /** Playable characters the game gives no friendship level: the Traveler, Manekin and Manekina. */

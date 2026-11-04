@@ -1,6 +1,6 @@
 import { CHARACTER_KEYS } from '@gdt/game-data/catalog'
 import { normalizeSearch } from '@/lib/search'
-import type { CharacterFilters, Element, WeaponType } from './characters'
+import type { CharacterFilters, Element, SortDirection, WeaponType } from './characters'
 import { characterMeta } from './game-meta'
 
 /**
@@ -9,7 +9,8 @@ import { characterMeta } from './game-meta'
  * element, rarity and weapon filters as the roster. The Traveler (always
  * owned) and the Manekin pair (Miliastra Wonderland only) are left out.
  * Filters an unowned character can't meet (build, talents, favourites)
- * leave the list empty. Pure.
+ * leave the list empty. `direction` desc = 5★ first, asc = 4★ first; names
+ * A to Z within a rarity either way. Pure.
  */
 export interface UnownedCharacter {
   key: string
@@ -26,6 +27,7 @@ export function unownedCharacters(
   filters: CharacterFilters,
   nameOf: (key: string) => string,
   keys: readonly string[] = CHARACTER_KEYS,
+  direction: SortDirection = 'desc',
 ): UnownedCharacter[] {
   if (filters.build !== 'all' || filters.talents !== 'all' || filters.favorites) return []
   const words = normalizeSearch(filters.query).split(/\s+/).filter(Boolean)
@@ -45,5 +47,6 @@ export function unownedCharacters(
     }
     out.push({ key, name, rarity, element, weapon })
   }
-  return out.sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name))
+  const sign = direction === 'asc' ? -1 : 1
+  return out.sort((a, b) => sign * (b.rarity - a.rarity) || a.name.localeCompare(b.name))
 }

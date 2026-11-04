@@ -34,6 +34,8 @@ import {
   type SortDirection,
 } from '@/data/characters'
 import { useFavoriteCharacters } from '@/data/favorite-characters'
+import { unownedCharacters } from '@/data/unowned-characters'
+import { characterName } from '@/i18n/game-names'
 import { useResource } from '@/data/use-resource'
 import { readJson, writeJson } from '@/lib/storage'
 import { useAccount, useReadOnly } from './context'
@@ -85,7 +87,8 @@ const direction = ref<SortDirection>(savedSort.direction === 'asc' ? 'asc' : 'de
 const view = ref<'grid' | 'list'>(saved.view === 'list' ? 'list' : 'grid')
 watch([sort, direction, view], () =>
   writeJson('characters:sort', {
-    sort: sort.value,
+    // Don't have is a mode, not an order: the next visit starts on the roster.
+    sort: sort.value === 'unowned' ? 'default' : sort.value,
     direction: direction.value,
     view: view.value,
     v: 2,
@@ -117,6 +120,18 @@ const shown = computed(() =>
 )
 /** Cards whose pictures load first: what a wide screen shows before scrolling. */
 const FIRST_SCREEN = 12
+
+// "Don't have": the released characters the account lacks, under the same
+// filters. Always a section under the roster; the Don't have sort makes it
+// the page (a phone's way to it, asked on Discord 2026-11-04).
+const unownedOnly = computed(() => sort.value === 'unowned')
+const unowned = computed(() =>
+  unownedCharacters(new Set(ownedKeys.value), filters, characterName, undefined, direction.value),
+)
+const unownedTotal = computed(
+  () => unownedCharacters(new Set(ownedKeys.value), NO_CHARACTER_FILTERS, characterName).length,
+)
+const searching = computed(() => filters.query.trim() !== '')
 
 // The roster mounts a screenful first and the rest over the next frames:
 // ~120 cards at once froze a phone for most of a second.
@@ -414,20 +429,22 @@ watch(
         :element-counts="elementCounts"
         :rarity-counts="rarityCounts"
         :favorite-count="favoriteCount"
-        :shown="shown.length"
-        :total="roster.total"
+        :shown="unownedOnly ? unowned.length : shown.length"
+        :total="unownedOnly ? unownedTotal : roster.total"
         :filtered="filtered"
         @clear="clearFilters"
         @share="openRoster"
         @share-build="openBuildPicker"
       />
 
-      <UiPanel v-if="shown.length === 0" flush>
+      <UiPanel v-if="(unownedOnly ? unowned : shown).length === 0" flush>
         <UiEmpty :title="$t('characters.page.noMatches')">
           <template #icon><SearchX aria-hidden="true" /></template>
           <UiButton @click="clearFilters">{{ $t('characters.toolbar.clear') }}</UiButton>
         </UiEmpty>
       </UiPanel>
+
+      <template v-else-if="unownedOnly" />
 
       <ul
         v-else-if="view === 'grid'"
@@ -466,7 +483,13 @@ watch(
         @open="open"
         @favorite="toggleFavorite"
       />
-      <UnownedCharacters class="mt-4" :owned="ownedKeys" :filters="filters" @open="open" />
+      <UnownedCharacters
+        :class="unownedOnly ? '' : 'mt-4'"
+        :list="unowned"
+        :searching="searching"
+        :only="unownedOnly"
+        @open="open"
+      />
     </template>
 
     <CharacterModal

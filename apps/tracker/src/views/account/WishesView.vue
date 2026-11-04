@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ArrowDownUp, Clock, Sparkles } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -116,8 +116,15 @@ const views = computed(() => [
 ])
 /** A run named in the URL (`?run=`, the banner page's links) opens in Banner history. */
 const route = useRoute()
+const router = useRouter()
 const openRun = computed(() => (typeof route.query.run === 'string' ? route.query.run : null))
 watch(openRun, (key) => key && (view.value = 'banners'), { immediate: true })
+// Leaving Banner history drops `?run=` again, so the same link opens the run
+// a second time (a click on the URL the page already has is no navigation).
+watch(view, (value) => {
+  if (value !== 'banners' && route.query.run !== undefined)
+    void router.replace({ query: { ...route.query, run: undefined } })
+})
 </script>
 
 <template>

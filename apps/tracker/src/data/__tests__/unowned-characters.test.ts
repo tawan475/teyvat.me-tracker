@@ -37,6 +37,11 @@ describe("Characters' Don't have", () => {
     expect(list.map((c) => c.key)).toEqual(['Neuvillette', 'Wriothesley', 'Bennett'])
   })
 
+  it('puts 4★ first when ascending, names A to Z either way', () => {
+    const list = unownedCharacters(new Set(['Furina']), NO_CHARACTER_FILTERS, name, KEYS, 'asc')
+    expect(list.map((c) => c.key)).toEqual(['Bennett', 'Neuvillette', 'Wriothesley'])
+  })
+
   it('follows the search, element, rarity and weapon filters', () => {
     const owned = new Set<string>()
     const run = (over: Partial<typeof NO_CHARACTER_FILTERS>) =>

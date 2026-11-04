@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Check } from 'lucide-vue-next'
 import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
@@ -73,7 +72,6 @@ const yourRun = computed(() => {
     acts: run.acts,
     total,
     stars: theaterStarsText(run, props.season),
-    full: total > 0 && run.acts >= total,
     entered: !!row || run.acts > 0 || !!run.stars,
     from: t('endgame.captured.fromCapture', { date: formatDate(takenAt) }),
   }
@@ -166,11 +164,6 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                 <span v-if="yourRun.stars" class="tabular font-mono text-text-secondary">{{
                   yourRun.stars
                 }}</span>
-                <Check
-                  v-if="yourRun.full"
-                  class="size-4 text-success-text"
-                  :aria-label="$t('endgame.captured.cleared')"
-                />
               </span>
             </div>
             <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">

@@ -199,8 +199,6 @@ export function stygianDifficultyName(difficulty: number, text: EndgameText): st
 /** The account's own run of a season in a line (the hero and archive cards). */
 export interface RunLine {
   text: string
-  /** A full clear: every act of the difficulty, every fight of the record. */
-  full: boolean
   coop: boolean
 }
 
@@ -231,18 +229,14 @@ export function theaterRunLine(
 ): RunLine {
   const row = theaterRunRow(run, season)
   if (!row && run.acts === 0 && !run.stars)
-    return { text: t('endgame.captured.notEntered'), full: false, coop: false }
+    return { text: t('endgame.captured.notEntered'), coop: false }
   const total = row?.acts.length ?? 0
   const acts = total
     ? t('endgame.captured.actsOf', { n: run.acts, total })
     : t('endgame.theater.acts', { n: run.acts })
   const label = row ? theaterDifficultyName(row.difficulty, text) : ''
   const stars = theaterStarsText(run, season)
-  return {
-    text: [label, acts, stars].filter(Boolean).join(' · '),
-    full: total > 0 && run.acts >= total,
-    coop: false,
-  }
+  return { text: [label, acts, stars].filter(Boolean).join(' · '), coop: false }
 }
 
 export function stygianRecordLine(record: GiStygianRecord, text: EndgameText): RunLine {
@@ -253,7 +247,6 @@ export function stygianRecordLine(record: GiStygianRecord, text: EndgameText): R
       : formatFightTime(total)
   return {
     text: `${stygianDifficultyName(record.difficulty, text)} · ${figure}`,
-    full: total !== null,
     coop: record.coop,
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { Check, Users } from 'lucide-vue-next'
+import { Users } from 'lucide-vue-next'
 import type { AbyssPeriod, StygianSeason, TheaterSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
@@ -176,15 +176,14 @@ const art = computed(() => {
         <h2 class="min-w-0 text-2xl font-bold break-words">{{ name }}</h2>
         <span class="tabular font-mono text-xs text-text-muted">{{ period }}</span>
       </div>
-      <!-- A full clear carries a check (or the co-op mark), not only its tone. -->
+      <!-- The figures say it all (10/10 acts, a time): no tone or mark for a full clear. -->
       <div
         v-if="yours.length"
         class="flex flex-wrap gap-1.5"
         :title="theater ? $t('endgame.captured.run') : $t('endgame.captured.records')"
       >
-        <UiBadge v-for="(y, i) in yours" :key="i" :tone="y.full ? 'success' : 'neutral'">
+        <UiBadge v-for="(y, i) in yours" :key="i">
           <Users v-if="y.coop" class="size-3.5" aria-hidden="true" />
-          <Check v-else-if="y.full" class="size-3.5" aria-hidden="true" />
           {{ y.text }}
         </UiBadge>
       </div>

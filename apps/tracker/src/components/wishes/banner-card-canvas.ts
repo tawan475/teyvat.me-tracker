@@ -90,6 +90,8 @@ const ART_SHADOW: Shadow = { x: 0, y: 18, blur: 40, color: 'rgba(0,0,0,0.45)' }
 const TILE_SHADOW: Shadow = { x: 0, y: 8, blur: 22, color: 'rgba(0,0,0,0.35)' }
 /** The gap between the panel's blocks (kept tight: the banner art takes what is left). */
 const GAP = 10
+/** The banner art's crop keeps the left edge, where the title is (see `art`). */
+const ART_ANCHOR = { x: 0 }
 
 function titleLines(banner: EventBanner): string[] {
   if (banner.kind === 'weapon') return banner.featured5.slice(0, 2).map((key) => itemName(key))
@@ -258,13 +260,18 @@ class BannerPainter extends CardPaint {
     }
   }
 
-  /** The banner's art, rounded and lifted; a double run's second banner over its corner. */
+  /**
+   * The banner's art, rounded and lifted; a double run's second banner over
+   * its corner. The art keeps its left edge: HoYoLAB's pictures are 16:9 or
+   * a wider 1080x533 frame, and the banner's title sits at the left, so a
+   * centred crop of the wide ones cut it (a Thai card, 2026-11-05).
+   */
   private art(x: number, y: number, w: number, h: number, main: string, second: string) {
     const { p } = this
     p.boxShadow(x, y, w, h, 20, ART_SHADOW)
     const image = this.images.get(main)
     p.clipped(x, y, w, h, 20, () => {
-      if (image) p.cover(image, x, y, w, h)
+      if (image) p.cover(image, x, y, w, h, ART_ANCHOR)
       else p.fill(x, y, w, h, 0, this.v('--card-panel'))
     })
     p.insetRing(x, y, w, h, 20, 1, 'rgba(255,255,255,0.12)')
@@ -276,7 +283,7 @@ class BannerPainter extends CardPaint {
     const sy = y + h + 22 - sh
     p.boxShadow(sx, sy, sw, sh, 14, { x: 0, y: 10, blur: 28, color: 'rgba(0,0,0,0.55)' })
     p.fill(sx - 3, sy - 3, sw + 6, sh + 6, 17, this.v('--card-ground'))
-    p.clipped(sx, sy, sw, sh, 14, () => p.cover(other, sx, sy, sw, sh))
+    p.clipped(sx, sy, sw, sh, 14, () => p.cover(other, sx, sy, sw, sh, ART_ANCHOR))
   }
 
   /** Version · phase, the banner type and its dates as pills, then its name. */

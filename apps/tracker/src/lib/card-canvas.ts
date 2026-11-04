@@ -375,8 +375,19 @@ export class Painter {
     this.ctx.drawImage(image, ...this.snap(x + (w - dw) / 2, y + (h - dh) / 2, dw, dh))
   }
 
-  /** The picture scaled to cover the box, centred (`object-cover`). */
-  cover(image: ImageBitmap | null, x: number, y: number, w: number, h: number) {
+  /**
+   * The picture scaled to cover the box (`object-cover`), centred unless
+   * `anchor` says where the cropped-away part goes: `{ x: 0 }` keeps the
+   * left edge whole (`object-position: left`), 1 the right; 0.5 is centred.
+   */
+  cover(
+    image: ImageBitmap | null,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    anchor: { x?: number; y?: number } = {},
+  ) {
     if (!image) return
     const k = Math.max(w / image.width, h / image.height)
     const sw = w / k
@@ -384,8 +395,8 @@ export class Painter {
     const [dx, dy, dw, dh] = this.snap(x, y, w, h)
     this.ctx.drawImage(
       image,
-      (image.width - sw) / 2,
-      (image.height - sh) / 2,
+      (image.width - sw) * (anchor.x ?? 0.5),
+      (image.height - sh) * (anchor.y ?? 0.5),
       sw,
       sh,
       dx,

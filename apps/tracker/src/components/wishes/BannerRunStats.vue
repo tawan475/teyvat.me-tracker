@@ -80,7 +80,7 @@ const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
           <img
             :src="art.src"
             :alt="art.alt"
-            class="size-full object-cover"
+            class="size-full object-cover object-left"
             @error="fail($event, art.src)"
           />
         </a>

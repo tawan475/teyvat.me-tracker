@@ -58,13 +58,22 @@ const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
   <div class="flex flex-wrap gap-4">
     <div class="flex min-w-0 flex-[1_1_22rem] flex-wrap gap-3">
       <template v-for="art in arts" :key="art.src">
-        <img
+        <!-- The art opens in its own tab (the user's ask, 2026-11-04). -->
+        <a
           v-if="!failed.has(art.src)"
-          :src="art.src"
-          :alt="art.alt"
-          class="aspect-[16/9] min-w-0 flex-[1_1_16rem] rounded-xl object-cover shadow-sm"
-          @error="fail(art.src)"
-        />
+          :href="art.src"
+          target="_blank"
+          rel="noopener"
+          :title="art.alt"
+          class="aspect-[16/9] min-w-0 flex-[1_1_16rem] overflow-hidden rounded-xl shadow-sm"
+        >
+          <img
+            :src="art.src"
+            :alt="art.alt"
+            class="size-full object-cover"
+            @error="fail(art.src)"
+          />
+        </a>
       </template>
     </div>
     <div class="flex min-w-0 flex-[1_1_20rem] flex-col gap-3">

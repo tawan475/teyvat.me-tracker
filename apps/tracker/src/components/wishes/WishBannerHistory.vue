@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { ChevronDown, Search, SearchX, Share2 } from 'lucide-vue-next'
 import { characterInfo, weaponInfo } from '@gdt/game-data/catalog'
 import type { AccountResponse, UigfGachaType } from '@gdt/shared'
@@ -10,6 +10,7 @@ import UiInput from '@/components/ui/UiInput.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { useResource } from '@/data/use-resource'
+import { parseRunKey, runRowKey } from '@/data/wish-run-key'
 import {
   bannerHistory,
   featuring,
@@ -54,6 +55,8 @@ const props = defineProps<{
   account?: AccountResponse
   playerUid?: number | null
   ar?: number | null
+  /** A run to open (data/wish-run-key.ts; the banner page's links): its kind, expanded and scrolled to. */
+  openRun?: string | null
 }>()
 
 const file = useResource(() => 0, loadBannerFile)
@@ -137,6 +140,36 @@ function toggle(row: BannerHistoryRow) {
   expanded.value = next
 }
 watch([kind, mine, needle], () => (expanded.value = new Set()))
+const rowId = (row: BannerHistoryRow) => `run-${rowKey(row)}`
+// A run asked for by the URL: switch to its kind (the filter reset above runs first), then expand it once
+// the versions are there and bring its row to the top.
+const wanted = ref<string | null>(null)
+watch(
+  () => props.openRun,
+  (key) => {
+    const want = parseRunKey(key)
+    if (!want) return
+    wanted.value = key!
+    search.value = ''
+    if (KINDS.some((k) => k.kind === want.kind)) kind.value = want.kind
+  },
+  { immediate: true },
+)
+watch(
+  [wanted, versions],
+  async ([key, list]) => {
+    const want = parseRunKey(key)
+    if (!want || !list || kind.value !== want.kind) return
+    wanted.value = null
+    const row = list.flatMap((v) => v.rows).find((r) => rowKey(r) === runRowKey(want))
+    if (!row?.run?.pulls) return
+    await nextTick()
+    expanded.value = new Set([...expanded.value, rowKey(row)])
+    await nextTick()
+    document.getElementById(rowId(row))?.scrollIntoView({ block: 'start' })
+  },
+  { immediate: true, flush: 'post' },
+)
 const OUTCOMES = ['won', 'lost', 'guaranteed', 'radiance'] as const
 const outcomes = (row: BannerHistoryRow) => {
   const fives = row.run?.fives ?? []
@@ -199,8 +232,9 @@ const outcomes = (row: BannerHistoryRow) => {
       </h2>
       <article
         v-for="row in v.rows"
+        :id="rowId(row)"
         :key="row.banner.start + row.banner.name"
-        class="rounded-xl border border-border-default bg-surface-raised shadow-sm"
+        class="scroll-mt-20 rounded-xl border border-border-default bg-surface-raised shadow-sm"
       >
         <!-- An open banner's row stays under the app bar while its pulls scroll past.
              The whole row opens it (the summary button inside is the keyboard's way in;

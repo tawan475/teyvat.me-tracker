@@ -6,6 +6,7 @@ import { itemName } from '@/data/weapons'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import WishFiveTile from './WishFiveTile.vue'
+import { useRunLink } from './run-link'
 import { OUTCOME_STYLE, runDates, wishMonth } from './wish-labels'
 
 /**
@@ -17,6 +18,7 @@ import { OUTCOME_STYLE, runDates, wishMonth } from './wish-labels'
  * each one's day (the banner page).
  */
 const props = defineProps<{ stats: BannerStats; boxClass?: string; dated?: boolean }>()
+const runLink = useRunLink()
 
 const LEGEND = [
   { key: 'won' },
@@ -86,7 +88,14 @@ const summary = (group: FiveGroup) =>
             class="shrink-0 text-[0.6875rem] font-semibold tracking-wide text-text-muted uppercase"
             >{{ $t('wishes.history.version', { version: group.banner.version }) }}</span
           >
-          <span class="min-w-0 truncate text-sm font-semibold" :title="title(group)">{{
+          <RouterLink
+            v-if="group.banner"
+            :to="runLink(group.banner)"
+            class="min-w-0 truncate text-sm font-semibold hover:text-accent-text hover:underline"
+            :title="title(group)"
+            >{{ title(group) }}</RouterLink
+          >
+          <span v-else class="min-w-0 truncate text-sm font-semibold" :title="title(group)">{{
             title(group)
           }}</span>
           <span v-if="dates(group)" class="tabular shrink-0 font-mono text-xs text-text-muted">{{

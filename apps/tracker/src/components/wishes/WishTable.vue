@@ -13,6 +13,7 @@ import { formatNumber } from '@/lib/format'
 import { vStickyHead } from '@/lib/sticky-head'
 import { useStickyToolbar } from '@/lib/sticky-stack'
 import { readStorage, writeStorage } from '@/lib/storage'
+import { useRunLink } from './run-link'
 import {
   BAND_COLOR,
   OUTCOME_STYLE,
@@ -41,6 +42,7 @@ const props = defineProps<{
   banner: UigfGachaType
   embedded?: boolean
 }>()
+const runLink = useRunLink()
 
 const PAGE_SIZE = 50
 const page = ref(1)
@@ -216,10 +218,12 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
               v-if="runs && !embedded"
               class="hidden max-w-52 py-2 pr-2 pl-4 text-text-secondary lg:table-cell"
             >
-              <span
-                class="block truncate font-sans"
-                :title="row.on ? `${runName(row)} · ${row.on.version}` : undefined"
-                >{{ runName(row) }}</span
+              <RouterLink
+                v-if="row.on"
+                :to="runLink(row.on)"
+                class="block truncate font-sans hover:text-accent-text hover:underline"
+                :title="`${runName(row)} · ${row.on.version}`"
+                >{{ runName(row) }}</RouterLink
               >
             </td>
             <td class="hidden py-2 pr-2 pl-4 text-right text-text-muted sm:table-cell">

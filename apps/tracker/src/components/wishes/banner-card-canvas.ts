@@ -183,14 +183,17 @@ class BannerPainter extends CardPaint {
     const statsH = 87
     const tableH = 160
     const tallyH = rated ? 68 : 0
-    const plateH = this.plateHeight()
+    const plateH = 48
+    // The plate is one line now (the user's call, 2026-11-04): the art moves up by the line it saved
+    // and keeps its height, so a double run's second banner stays clear of the pills under it.
+    const lift = this.input.owner.name ? 24 : 0
     const below = titleH + GAP + statsH + GAP + tableH + (rated ? GAP + tallyH : 0)
-    const artH = box.h - plateH - GAP - below
+    const artH = box.h - (plateH + lift) - GAP - below
 
     this.plate(x, y, w, plateH)
     y += plateH + GAP
     this.art(x, y, w, artH, art, second)
-    y += artH
+    y += artH + lift
     this.title(x, y + 12, w, lines)
     y += titleH + GAP
     this.stats(x, y, w, statsH)
@@ -200,42 +203,37 @@ class BannerPainter extends CardPaint {
     if (rated) this.tally(x, y, w, tallyH)
   }
 
-  private plateHeight(): number {
-    return this.input.owner.name ? 72 : 48
-  }
-
-  /** The owner: name on top; UID · AR at the left under it, the date · teyvat.me at the right. */
+  /** The owner on one line: the name at the left, UID · AR · date · teyvat.me at the right. */
   private plate(x: number, y: number, w: number, h: number) {
     this.glass(x, y, w, h, 16, 'panel')
     const owner = this.input.owner
     const text = this.v('--card-text')
     const muted = this.v('--card-muted')
     const secondary = this.v('--card-secondary')
-    let top = y + 12
-    if (owner.name) {
-      this.line(
-        ownerParts({ name: owner.name, uid: null, ar: null })[0]!,
-        x + 18,
-        top,
-        22,
-        700,
-        text,
-        {
-          lineHeight: 28,
-          max: w - 36,
-        },
-      )
-      top += 30
-    }
-    const left = ownerParts({ name: null, uid: owner.uid, ar: owner.ar }).join(' · ')
-    if (left) this.line(left, x + 18, top, 15, 400, muted, { lineHeight: 22 })
-    const date = formatDate(Date.now())
+    const top = y + (h - 22) / 2
+    const meta = [
+      ...ownerParts({ name: null, uid: owner.uid, ar: owner.ar }),
+      formatDate(Date.now()),
+    ]
     const brandW = this.textWidth('teyvat.me', 15, 700)
     this.line('teyvat.me', x + w - 18, top, 15, 700, secondary, { lineHeight: 22, align: 'right' })
-    this.line(`${date} · `, x + w - 18 - brandW, top, 15, 400, muted, {
+    const metaText = `${meta.join(' · ')} · `
+    this.line(metaText, x + w - 18 - brandW, top, 15, 400, muted, {
       lineHeight: 22,
       align: 'right',
     })
+    if (owner.name) {
+      const metaW = brandW + this.textWidth(metaText, 15, 400)
+      this.line(
+        ownerParts({ name: owner.name, uid: null, ar: null })[0]!,
+        x + 18,
+        y + (h - 28) / 2,
+        22,
+        700,
+        text,
+        { lineHeight: 28, max: w - 36 - metaW - 16 },
+      )
+    }
   }
 
   /** The banner's art, rounded and lifted; a double run's second banner over its corner. */

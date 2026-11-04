@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ArrowDownUp, Clock, Sparkles } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -113,6 +114,10 @@ const views = computed(() => [
   { value: 'mine' as const, label: t('wishes.history.viewMine') },
   { value: 'banners' as const, label: t('wishes.history.title') },
 ])
+/** A run named in the URL (`?run=`, the banner page's links) opens in Banner history. */
+const route = useRoute()
+const openRun = computed(() => (typeof route.query.run === 'string' ? route.query.run : null))
+watch(openRun, (key) => key && (view.value = 'banners'), { immediate: true })
 </script>
 
 <template>
@@ -160,6 +165,7 @@ const views = computed(() => [
         :account="account"
         :player-uid="capture.data.value?.good.gi_player?.uid ?? null"
         :ar="capture.data.value?.good.gi_player?.ar ?? null"
+        :open-run="openRun"
       />
       <UiPanel v-else-if="history.total === 0" flush>
         <div :title="$t('wishes.overview.syncHelp')">

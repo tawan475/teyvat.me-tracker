@@ -24,7 +24,14 @@ import type { GenshinServer, GiStygianRecord, GiTheaterRun } from '@gdt/shared'
 import { t } from '@/i18n'
 import type { Locale } from '@/i18n/locale'
 import { formatNumber } from '@/lib/format'
-import { fightsDone, formatFightTime, recordTotal } from './endgame-runs'
+import {
+  fightsDone,
+  formatFightTime,
+  recordTotal,
+  type CapturedAbyss,
+  type CapturedEndgame,
+  type GiAbyssRun,
+} from './endgame-runs'
 
 export const ENDGAME_MODES = ['abyss', 'theater', 'stygian'] as const
 export type EndgameMode = (typeof ENDGAME_MODES)[number]
@@ -248,6 +255,33 @@ export function stygianRecordLine(record: GiStygianRecord, text: EndgameText): R
   return {
     text: `${stygianDifficultyName(record.difficulty, text)} · ${figure}`,
     coop: record.coop,
+  }
+}
+
+/**
+ * The account's Abyss stars of a period: the capture whose running period
+ * (`gi_tasks.abyss`, the game's own start) began inside this period on the
+ * account's server (the start matches to the second; the window tolerates a
+ * clock a little off).
+ */
+export function abyssRunFor(
+  period: AbyssPeriod,
+  captured: CapturedEndgame,
+  server: GenshinServer | null | undefined,
+): CapturedAbyss | null {
+  const start = seasonTime(period.start, server) / 1000
+  const exact = captured.abyss.get(start)
+  if (exact) return exact
+  const end = seasonTime(period.end, server) / 1000
+  for (const [at, run] of captured.abyss) if (at >= start && at <= end) return run
+  return null
+}
+
+/** "★ 27/36": a period's stars as the capture counted them. */
+export function abyssRunLine(run: GiAbyssRun): RunLine {
+  return {
+    text: t('endgame.captured.stars', { n: run.stars, total: run.maxStars }),
+    coop: false,
   }
 }
 

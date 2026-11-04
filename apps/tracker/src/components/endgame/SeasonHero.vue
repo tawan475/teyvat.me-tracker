@@ -9,6 +9,8 @@ import GameIcon from '@/components/ui/GameIcon.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import BossPicture from './BossPicture.vue'
 import {
+  abyssRunFor,
+  abyssRunLine,
   abyssTopEnemies,
   soloFirst,
   stygianBossPicture,
@@ -22,6 +24,7 @@ import {
   type RunLine,
 } from '@/data/endgame'
 import type { CapturedEndgame } from '@/data/endgame-capture'
+import type { GenshinServer } from '@gdt/shared'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
 import { formatShort } from '@/lib/format'
@@ -46,6 +49,8 @@ const props = defineProps<{
   left: number
   to: RouteLocationRaw
   captured?: CapturedEndgame | null
+  /** The account's server: where the Abyss period's dates are read. */
+  server?: GenshinServer | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -107,6 +112,10 @@ const bosses = computed(() => {
 const yours = computed<RunLine[]>(() => {
   const c = props.captured
   if (!c) return []
+  if (abyss.value) {
+    const run = abyssRunFor(abyss.value, c, props.server)
+    return run ? [abyssRunLine(run.run)] : []
+  }
   if (theater.value) {
     const run = c.theater.get(theater.value.id)?.run
     return run ? [theaterRunLine(run, theater.value, text.value)] : []
@@ -180,7 +189,7 @@ const art = computed(() => {
       <div
         v-if="yours.length"
         class="flex flex-wrap gap-1.5"
-        :title="theater ? $t('endgame.captured.run') : $t('endgame.captured.records')"
+        :title="stygian ? $t('endgame.captured.records') : $t('endgame.captured.run')"
       >
         <UiBadge v-for="(y, i) in yours" :key="i">
           <Users v-if="y.coop" class="size-3.5" aria-hidden="true" />

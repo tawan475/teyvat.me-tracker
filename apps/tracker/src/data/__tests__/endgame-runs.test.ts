@@ -110,3 +110,28 @@ describe('record figures', () => {
     expect(recordTotal({ ...full, fights: [] })).toBeNull()
   })
 })
+
+describe('captured Abyss periods', () => {
+  const abyss = (start: number, stars: number) => ({
+    start,
+    end: start + 1_296_000,
+    stars,
+    maxStars: 36,
+  })
+
+  it('keeps the newest capture of each period, by its start, beside the other modes', () => {
+    const got = capturedEndgame([
+      { takenAt: 10, endgame: null, abyss: abyss(1_792_094_400, 27) },
+      { takenAt: 20, endgame: null, abyss: abyss(1_792_094_400, 33) },
+      { takenAt: 5, endgame: null, abyss: abyss(1_790_798_400, 36) },
+      { takenAt: 30, endgame: { theater: { season: 31, acts: 1 } }, abyss: null },
+    ])
+    expect([...got.abyss.keys()].sort()).toEqual([1_790_798_400, 1_792_094_400])
+    expect(got.abyss.get(1_792_094_400)).toEqual({ run: abyss(1_792_094_400, 33), takenAt: 20 })
+    expect(got.abyss.get(1_790_798_400)?.takenAt).toBe(5)
+    expect(got.theater.get(31)?.run.acts).toBe(1)
+    expect(got.takenAt).toBe(30)
+    // Abyss figures alone make a capture count.
+    expect(capturedEndgame([{ takenAt: 1, endgame: null, abyss: abyss(1, 1) }]).takenAt).toBe(1)
+  })
+})

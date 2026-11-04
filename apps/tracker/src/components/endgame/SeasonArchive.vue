@@ -7,6 +7,8 @@ import FilterChip from '@/components/ui/FilterChip.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import BossPicture from './BossPicture.vue'
 import {
+  abyssRunFor,
+  abyssRunLine,
   abyssTopEnemies,
   seasonYear,
   soloFirst,
@@ -19,6 +21,7 @@ import {
   type EndgameMode,
 } from '@/data/endgame'
 import type { CapturedEndgame } from '@/data/endgame-capture'
+import type { GenshinServer } from '@gdt/shared'
 import { t } from '@/i18n'
 import type { Element } from '@/data/game-meta'
 import { characterName } from '@/i18n/game-names'
@@ -41,6 +44,8 @@ const props = defineProps<{
   periodOf: (season: AnySeason) => string
   to: (season: AnySeason) => RouteLocationRaw
   captured?: CapturedEndgame | null
+  /** The account's server: where the Abyss periods' dates are read. */
+  server?: GenshinServer | null
 }>()
 
 const years = computed(() => [...new Set(props.seasons.map(seasonYear))])
@@ -70,6 +75,10 @@ const shortName = (name: string) => name.split(':')[0]!.trim()
 function yours(s: AnySeason): string {
   const c = props.captured
   if (!c) return ''
+  if (props.mode === 'abyss') {
+    const run = abyssRunFor(abyss(s), c, props.server)
+    return run ? abyssRunLine(run.run).text : ''
+  }
   if (props.mode === 'theater') {
     const run = c.theater.get(s.id)?.run
     return run ? theaterRunLine(run, theater(s), props.data.text).text : ''

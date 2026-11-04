@@ -1,4 +1,4 @@
-import type { GiEndgame, GiStygianRecord, GiTheaterRun } from '@gdt/shared'
+import type { GiEndgame, GiStygianRecord, GiTasks, GiTheaterRun } from '@gdt/shared'
 
 /**
  * What the captures say about the account's endgame runs (`gi_endgame`,
@@ -7,8 +7,10 @@ import type { GiEndgame, GiStygianRecord, GiTheaterRun } from '@gdt/shared'
  * one season's state (the season running at that login), so the history is
  * put together across the account's snapshots: the newest capture of each
  * season wins. The Stygian list is already per season; a season's records
- * come from the newest capture that lists it. Pure: the loader is
- * data/endgame-capture.ts (it reads the `extras` section of every snapshot).
+ * come from the newest capture that lists it. The Spiral Abyss comes from
+ * `gi_tasks.abyss` (the running period's stars, at login): one period's
+ * state per capture, kept by the period's start. Pure: the loader is
+ * data/endgame-capture.ts (it reads every snapshot's `extras` and `tasks`).
  */
 
 export interface CapturedTheater {
@@ -23,7 +25,16 @@ export interface CapturedStygian {
   takenAt: number
 }
 
+/** The Spiral Abyss period running at a capture: its stars (gi_tasks.abyss). */
+export interface CapturedAbyss {
+  run: GiAbyssRun
+  takenAt: number
+}
+export type GiAbyssRun = NonNullable<GiTasks['abyss']>
+
 export interface CapturedEndgame {
+  /** By the period's start (unix seconds, the game's own figure). */
+  abyss: ReadonlyMap<number, CapturedAbyss>
   /** By RoleCombatSchedule id. */
   theater: ReadonlyMap<number, CapturedTheater>
   /** By LeyLineChallenge schedule id. */
@@ -33,6 +44,7 @@ export interface CapturedEndgame {
 }
 
 export const NO_CAPTURED_ENDGAME: CapturedEndgame = {
+  abyss: new Map(),
   theater: new Map(),
   stygian: new Map(),
   takenAt: null,
@@ -42,14 +54,21 @@ export const NO_CAPTURED_ENDGAME: CapturedEndgame = {
 export interface EndgameSnapshot {
   takenAt: number
   endgame: GiEndgame | null | undefined
+  /** The capture's `gi_tasks.abyss`, if it had one. */
+  abyss?: GiAbyssRun | null
 }
 
 export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): CapturedEndgame {
+  const abyss = new Map<number, CapturedAbyss>()
   const theater = new Map<number, CapturedTheater>()
   const stygian = new Map<number, CapturedStygian>()
   let takenAt: number | null = null
   // Oldest first, so a later capture replaces an earlier one's season.
   for (const s of [...snapshots].sort((a, b) => a.takenAt - b.takenAt)) {
+    if (s.abyss) {
+      abyss.set(s.abyss.start, { run: s.abyss, takenAt: s.takenAt })
+      takenAt = s.takenAt
+    }
     const e = s.endgame
     if (!e) continue
     takenAt = s.takenAt
@@ -66,7 +85,7 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
       }
     }
   }
-  return takenAt === null ? NO_CAPTURED_ENDGAME : { theater, stygian, takenAt }
+  return takenAt === null ? NO_CAPTURED_ENDGAME : { abyss, theater, stygian, takenAt }
 }
 
 /** A fight's seconds as the game's timer shows them: "0:51", "12:03". */

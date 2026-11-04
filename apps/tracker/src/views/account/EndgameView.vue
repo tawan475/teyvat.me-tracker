@@ -10,8 +10,10 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import type { AbyssPeriod } from '@gdt/game-data/endgame'
 import {
   ENDGAME_MODES,
+  abyssRunFor,
   daysLeft,
   isEndgameMode,
   loadEndgameData,
@@ -117,6 +119,9 @@ const newer = computed(() => (index.value > 0 ? seasons.value[index.value - 1]! 
 const seasonCapture = computed(() => {
   const s = season.value
   if (!s) return {}
+  if (mode.value === 'abyss') {
+    return { run: abyssRunFor(s as AbyssPeriod, yours.value, server.value) }
+  }
   if (mode.value === 'theater') return { run: yours.value.theater.get(s.id) ?? null }
   if (mode.value === 'stygian') return { records: yours.value.stygian.get(s.id) ?? null }
   return {}
@@ -235,6 +240,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
           :left="daysLeft(seasons[0]!, now, server)"
           :to="to(mode, seasons[0]!.id)"
           :captured="yours"
+          :server="server"
           @enemy="showEnemy"
         />
         <SeasonArchive
@@ -246,6 +252,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
           :period-of="periodOf"
           :to="(s) => to(mode, s.id)"
           :captured="yours"
+          :server="server"
         />
       </template>
     </template>

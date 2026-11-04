@@ -5,14 +5,18 @@ import { Zap } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import type { EndgameData } from '@/data/endgame'
+import type { CapturedAbyss } from '@/data/endgame-capture'
 import { abyssArt, abyssArtFailed } from '@/lib/assets'
+import { formatDate } from '@/lib/format'
 import { t } from '@/i18n'
 import EnemyTile from './EnemyTile.vue'
 
 /**
  * A Spiral Abyss period: the blessing on its art, then one floor at a time
  * (Floor 12 first, the one that matters): its Ley Line Disorders and three
- * chambers, each half's enemies with their HP at the chamber's level.
+ * chambers, each half's enemies with their HP at the chamber's level. With a
+ * capture of this period (`run`: gi_tasks.abyss at a login) the header says
+ * the account's stars.
  */
 const props = defineProps<{
   season: AbyssPeriod
@@ -20,6 +24,7 @@ const props = defineProps<{
   name: string
   period: string
   left: number
+  run?: CapturedAbyss | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -28,6 +33,18 @@ defineEmits<{
 
 const text = computed(() => props.data.text)
 const sprite = (id: number) => text.value.get(`sprite.${id}`)
+/** The account's stars this period, as the capture counted them. */
+const yourRun = computed(() =>
+  props.run
+    ? {
+        stars: t('endgame.captured.stars', {
+          n: props.run.run.stars,
+          total: props.run.run.maxStars,
+        }),
+        from: t('endgame.captured.fromCapture', { date: formatDate(props.run.takenAt) }),
+      }
+    : null,
+)
 const floorNo = ref(0)
 watch(
   () => props.season.id,
@@ -88,6 +105,16 @@ const chambers = computed(() =>
             <span v-if="left > 0" class="font-semibold text-success-text">{{
               $t('endgame.activeLeft', { n: left }, left)
             }}</span>
+          </span>
+          <span
+            v-if="yourRun"
+            class="mt-1 flex w-fit items-baseline gap-2 rounded-lg border border-border-default bg-surface-sunken/90 px-3 py-1.5"
+            :title="yourRun.from"
+          >
+            <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">{{
+              $t('endgame.captured.run')
+            }}</span>
+            <span class="tabular font-mono text-sm font-semibold">{{ yourRun.stars }}</span>
           </span>
         </div>
       </div>

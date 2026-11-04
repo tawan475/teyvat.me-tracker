@@ -410,20 +410,24 @@ const footButton =
         </template>
         <template v-else-if="current">
           <div class="hidden h-4 w-px bg-border-strong sm:block" />
+          <!-- The line takes what the buttons leave (flex-1, a size container)
+               and gives way in order (CSS below): the sync label first, then
+               the name, rather than show "p…" beside the UID (the user's
+               call, 2026-11-05). -->
           <span
-            class="hidden min-w-0 items-center gap-1.5 overflow-hidden text-sm font-medium text-text-muted sm:flex"
+            class="bar-account hidden min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm font-medium text-text-muted sm:flex"
           >
             <span class="size-2 shrink-0 rounded-full bg-emerald-500" />
             <button
               v-if="current.name"
               type="button"
-              class="min-w-0 truncate rounded-md px-1 py-0.5 transition-colors hover:bg-surface-overlay hover:text-text-primary"
+              class="bar-name min-w-0 truncate rounded-md px-1 py-0.5 transition-colors hover:bg-surface-overlay hover:text-text-primary"
               :title="$t('shell.copyName')"
               @click="copyFromBar('name', current.name, $event)"
             >
               {{ current.name }}
             </button>
-            <span v-if="current.name && current.uid" aria-hidden="true">·</span>
+            <span v-if="current.name && current.uid" class="bar-name" aria-hidden="true">·</span>
             <button
               v-if="current.uid"
               type="button"
@@ -437,7 +441,7 @@ const footButton =
             <span v-if="!current.name && !current.uid" class="truncate">{{
               accounts.displayName(current)
             }}</span>
-            <LastSync :account="current" />
+            <span class="bar-sync contents"><LastSync :account="current" /></span>
           </span>
         </template>
         <div class="ml-auto flex shrink-0 items-center gap-2">
@@ -544,6 +548,24 @@ const footButton =
     .bar-title > span {
       display: none;
     }
+  }
+}
+/* The account line beside the title gives way as the bar narrows: under
+   21rem the sync label goes (it took ~8rem, leaving a 1366px laptop's name
+   cut), under 10rem the name and its dot (less than ~6 characters would
+   show). The UID always stays; the sidebar and the account picker still name
+   the account. */
+.bar-account {
+  container-type: inline-size;
+}
+@container (max-width: 21rem) {
+  .bar-account > .bar-sync {
+    display: none;
+  }
+}
+@container (max-width: 10rem) {
+  .bar-account > .bar-name {
+    display: none;
   }
 }
 </style>

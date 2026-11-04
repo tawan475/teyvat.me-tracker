@@ -589,7 +589,7 @@ class TeamPainter extends CardPaint {
         ? this.tokens['talent-crown']
         : talent.from
           ? this.tokens['talent-boost']
-          : this.v('--card-text')
+          : this.v(talent.low ? '--card-muted' : '--card-text')
       this.line(levelText, tx, py, 20, 700, color, { lineHeight: 30 })
       x += w + 18
     }

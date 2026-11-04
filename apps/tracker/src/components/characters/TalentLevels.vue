@@ -14,8 +14,8 @@ import { useCrownIcon } from './use-boosts'
  * level as the game shows it and, raised by C3 / C5, the book level before
  * it ("10 → 13", Enka's way, in cyan). A crowned talent (base 10) is
  * gold with the game's Crown of Insight, whether raised or not; base 9 has
- * a silver border. In the character details each shows what it does
- * (detail-tip).
+ * a silver border; book levels 1-5 are muted. In the character details each
+ * shows what it does (detail-tip).
  */
 const props = defineProps<{
   characterKey: string
@@ -70,7 +70,15 @@ const tone = computed(() =>
         >
         <span
           class="text-xl font-semibold"
-          :class="t.crowned ? 'text-talent-crown' : t.from ? 'text-talent-boost' : ''"
+          :class="
+            t.crowned
+              ? 'text-talent-crown'
+              : t.from
+                ? 'text-talent-boost'
+                : t.low
+                  ? 'text-text-muted'
+                  : ''
+          "
           >{{ t.level }}</span
         >
         <img

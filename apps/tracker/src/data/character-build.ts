@@ -208,7 +208,16 @@ export interface TalentLevel {
   crowned: boolean
   /** Base level 9, one Crown short: the silver ring (the base decides, like `crowned`). */
   silver: boolean
+  /** Book level 1-5 (`TALENT_LOW_MAX`): shown muted, so a 1 never reads brighter than a boosted 11. */
+  low: boolean
 }
+
+/**
+ * The highest book level still shown muted (the user's ask, 2026-11-04: on
+ * the card a white 1 looked brighter than a cyan 11). 6 and up read as
+ * invested, in the plain text colour.
+ */
+export const TALENT_LOW_MAX = 5
 
 /**
  * Attack, skill and burst as the game shows them: +3 on the talent C3
@@ -236,6 +245,7 @@ export function talentLevels(
       from,
       crowned: base >= 10,
       silver: base === 9,
+      low: base <= TALENT_LOW_MAX,
     }
   })
 }

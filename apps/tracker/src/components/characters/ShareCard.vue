@@ -203,13 +203,15 @@ function setTitle(set: SetCount): string {
   return [`${set.name} ×${set.count}`, ...setBonusTitle(set.setKey, set.active)].join('\n')
 }
 
-/** Talent level colour: crowned gold first (Enka), then a C3/C5 boost in cyan. */
+/** Talent level colour: crowned gold first (Enka), then a C3/C5 boost in cyan; a low book level muted. */
 function talentTone(talent: TalentLevel): string {
   return talent.crowned
     ? 'text-talent-crown'
     : talent.from
       ? 'text-talent-boost'
-      : 'text-(--card-text)'
+      : talent.low
+        ? 'text-(--card-muted)'
+        : 'text-(--card-text)'
 }
 
 /** Four substat lines per piece, empty ones kept, so the rows line up across the five. */

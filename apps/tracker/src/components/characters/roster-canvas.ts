@@ -62,6 +62,8 @@ const RARITY_TEXT: Record<CardTheme, Record<number, string>> = {
 }
 /** The C3/C5 talent boost on the tiles' dark chips (the dark theme's token). */
 const BOOST = '#67e8f9'
+/** A low book level (TalentLevel.low) on those chips: the dark theme's muted text. */
+const LOW = '#94a3b8'
 /** A base-9 talent's silver ring on those chips (the dark theme's token). */
 const SILVER = '#c5ccd7'
 const GOLD = { from: '#fcde54', to: '#f0cc4e', text: '#8a4e24' }
@@ -577,7 +579,7 @@ function drawTile(
           }
         : {
             fill: 'rgba(30,36,51,0.85)',
-            color: t.from ? BOOST : '#ffffff',
+            color: t.from ? BOOST : t.low ? LOW : '#ffffff',
             font: font(700, 12 * CQW, family),
             shadow: ['rgba(0,0,0,0.35)', 1.5 * CQW, 0.5 * CQW],
             ...(t.silver ? { ring: [SILVER, 1.5 * CQW] as [string, number] } : {}),

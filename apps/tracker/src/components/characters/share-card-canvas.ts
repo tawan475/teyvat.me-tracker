@@ -491,7 +491,7 @@ class CardPainter extends CardPaint {
         ? this.tokens['talent-crown']
         : talent.from
           ? this.tokens['talent-boost']
-          : this.v('--card-text')
+          : this.v(talent.low ? '--card-muted' : '--card-text')
       this.line(levelText, tx, py + 0.5, 26, 700, color)
       x += liW + 30
     }

@@ -212,6 +212,13 @@ describe('talentLevels', () => {
     expect(c6.map((t) => t.crowned)).toEqual([true, false, true])
   })
 
+  it('marks book levels 1-5 low, by the book level, not the boosted one', () => {
+    const low = talentLevels({ auto: 1, skill: 5, burst: 6 }, 6, { c3: 'auto', c5: 'skill' })
+    expect(low.map((t) => t.level)).toEqual([4, 8, 6])
+    expect(low.map((t) => t.low)).toEqual([true, true, false])
+    expect(talentLevels(talent, 6, null).map((t) => t.low)).toEqual([false, false, false])
+  })
+
   it('shows base levels without boosts (newer character, data not loaded)', () => {
     expect(talentLevels(talent, 6, null).map((t) => t.level)).toEqual([10, 9, 10])
     expect(constellationBoosts(planner, 'Aloy')).toEqual({ c3: null, c5: null })

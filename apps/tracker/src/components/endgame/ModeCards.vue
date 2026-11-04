@@ -111,7 +111,12 @@ const element = (name: string) => name.toLowerCase() as Element
           card.name
         }}</span>
       </span>
-      <span v-if="card.season" class="flex h-8 gap-1.5 max-sm:hidden">
+      <!-- The icons scroll sideways under a fade rather than spill past the
+           card's edge (they did on a narrow desktop, 2026-11-05). -->
+      <span
+        v-if="card.season"
+        class="scroll-hide scroll-fade-x flex h-8 min-w-0 gap-1.5 overflow-x-auto max-sm:hidden [&>*]:shrink-0"
+      >
         <template v-if="card.mode === 'abyss'">
           <GameIcon
             v-for="id in abyssTopEnemies(abyss(card.season))"

@@ -15,6 +15,8 @@ import {
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { describe, expect, it } from 'vitest'
+import { NEAREST_SQL } from '../services/import'
+import { REORDER_CURSOR, reorderAccount, reorderStorage } from '../services/reorder'
 import { COLLECT_SECTION_BLOBS, runMaintenance, TRASH_DAYS } from '../services/maintenance'
 import type { RepackResult } from '../services/repack'
 import {
@@ -250,6 +252,136 @@ describe('storage v2 without v1', () => {
  * one over live rows, or the primary key); only maintenance reads the whole
  * table, as it always did. The statements are the Worker's, by shape.
  */
+/**
+ * Twelve daily captures of an account that plays: each day moves a few more
+ * materials and flips a few more locks, so the last day shares little with
+ * the first (what a backfilled history looks like).
+ */
+function history(): [Good, number][] {
+  const big = bigGood()
+  return Array.from({ length: 12 }, (_, day) => {
+    const materials = Object.fromEntries(
+      Object.entries(big.materials).map(([key, count], i) => [
+        key,
+        i % 12 < day ? count + day * 7 : count,
+      ]),
+    )
+    const artifacts = big.artifacts.map((a, i) => (i % 40 < day ? { ...a, lock: !a.lock } : a))
+    return [bigGood({ materials, artifacts }), 1_000 + day * 86_400_000] as [Good, number]
+  })
+}
+
+describe('history imported after newer captures', () => {
+  it('is stored against its neighbour in time, as cheaply as in order', async () => {
+    const days = history()
+    const stored = async (order: [Good, number][]) => {
+      const { client, account, upload } = await setUp()
+      for (const [good, at] of order) await upload(good, at)
+      const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+      expect(list).toHaveLength(days.length)
+      return {
+        bytes: list.reduce((sum, s) => sum + s.storedSize, 0),
+        files: await exportsOf(client, account.id),
+      }
+    }
+    const inOrder = await stored(days)
+    // The newest capture first, then the rest of the history oldest first
+    // (an import of older files after the capture app had been running).
+    const late = await stored([days.at(-1)!, ...days.slice(0, -1)])
+    // Each file decodes the same whichever order it came in.
+    expect(Object.values(late.files.files2).sort()).toEqual(
+      Object.values(inOrder.files.files2).sort(),
+    )
+    // Planned against the newest capture, the older days cost 1.4x what in
+    // order costs here (4x on a real account's history); against their
+    // neighbour in time, about the same.
+    expect(late.bytes).toBeLessThan(inOrder.bytes * 1.3)
+  })
+})
+
+describe('time-order repack', () => {
+  /** An account whose every day was stored alone (nearly whole), as a backfill planned against far captures was. */
+  async function storedApart() {
+    const set = await setUp()
+    for (const [good, at] of history()) {
+      await env.DB.prepare(
+        'UPDATE snapshots SET deleted_at = 1 WHERE account_id = ?1 AND deleted_at IS NULL',
+      )
+        .bind(set.account.id)
+        .run()
+      await set.upload(good, at)
+    }
+    await env.DB.prepare('UPDATE snapshots SET deleted_at = NULL WHERE account_id = ?1')
+      .bind(set.account.id)
+      .run()
+    return set
+  }
+  const counted = (accountId: number) =>
+    env.DB.prepare(
+      `SELECT stored_bytes AS counter,
+         (SELECT coalesce(sum(length(data)), 0) FROM section_blobs WHERE account_id = ?1) AS actual
+       FROM genshin_accounts WHERE id = ?1`,
+    )
+      .bind(accountId)
+      .first<{ counter: number; actual: number }>()
+
+  it('re-encodes the history oldest first; every file reads the same', async () => {
+    const { client, account } = await storedApart()
+    const before = await exportsOf(client, account.id)
+    const result = await reorderAccount(env.DB, account.id)
+    expect(result).toMatchObject({ applied: true, snapshots: 12 })
+    expect(result.after).toBeLessThan(result.before * 0.6)
+    const after = await exportsOf(client, account.id)
+    expect(after.goods).toEqual(before.goods)
+    expect(after.files1).toEqual(before.files1)
+    expect(after.files2).toEqual(before.files2)
+    expect(after.catalog).toEqual(before.catalog)
+    // Each snapshot's stored size is now what it adds in time order.
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list.reduce((sum, s) => sum + s.storedSize, 0)).toBe(result.after)
+    // The rows nothing points at go with the daily collection; the counter
+    // then matches what is stored.
+    await runMaintenance(env.DB)
+    const { counter, actual } = (await counted(account.id))!
+    expect(counter).toBe(actual)
+    expect(actual).toBeLessThan(result.before)
+    // Done once: a second run finds nothing to gain.
+    expect(await reorderAccount(env.DB, account.id)).toMatchObject({ applied: false })
+    // And uploads go on from the new layout.
+    const next = bigGood({ materials: { ...bigGood().materials, Mora: 77 } })
+    const res = await client.fetch(`/api/accounts/${account.id}/import?timestamp=${2e12}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(next),
+    })
+    expect(res.status, await res.clone().text()).toBeLessThan(300)
+    const latest = await exportsOf(client, account.id)
+    expect(Object.keys(latest.goods)).toHaveLength(13)
+  })
+
+  it('walks accounts from its cursor and leaves one that uploaded lately', async () => {
+    const { account } = await storedApart()
+    await env.DB.prepare('DELETE FROM site_settings WHERE key = ?1').bind(REORDER_CURSOR).run()
+    await env.DB.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?1, ?2, 0)')
+      .bind(REORDER_CURSOR, String(account.id - 1))
+      .run()
+    // Its last capture was "just now": left for the next run.
+    const seen = await env.DB.prepare(
+      'SELECT max(last_seen_at) AS seen FROM snapshots WHERE account_id = ?1',
+    )
+      .bind(account.id)
+      .first<{ seen: number }>()
+    expect(await reorderStorage(env.DB, seen!.seen + 60_000)).toEqual([])
+    // Half an hour later it goes, and the cursor moves past it.
+    const done = await reorderStorage(env.DB, seen!.seen + 31 * 60_000)
+    expect(done[0]).toMatchObject({ accountId: account.id, applied: true })
+    const cursor = await env.DB.prepare('SELECT value FROM site_settings WHERE key = ?1')
+      .bind(REORDER_CURSOR)
+      .first<{ value: string }>()
+    expect(Number(cursor!.value)).toBeGreaterThanOrEqual(account.id)
+  })
+})
+
 describe('snapshot query plans', () => {
   async function plan(sql: string, ...params: unknown[]): Promise<string> {
     const { results } = await env.DB.prepare(`EXPLAIN QUERY PLAN ${sql}`)
@@ -266,6 +398,7 @@ describe('snapshot query plans', () => {
        ORDER BY taken_at DESC, id DESC LIMIT 1`,
       [1],
     ],
+    ['nearest capture (import)', NEAREST_SQL, [1, 2]],
     [
       'same capture time',
       `SELECT id FROM snapshots WHERE account_id = ?1 AND taken_at = ?2 AND deleted_at IS NULL`,

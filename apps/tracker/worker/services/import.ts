@@ -86,6 +86,12 @@ interface LatestRow extends Record<string, unknown> {
   meta: unknown
 }
 
+/** The snapshot an upload is stored against (NEAREST_SQL). */
+interface NearestRow extends Record<string, unknown> {
+  id: number
+  characters_ref: number | null
+}
+
 interface SameTimeRow {
   id: number
   content_hash: string | null
@@ -104,12 +110,31 @@ const latestSql = (legacy: boolean) => `SELECT id, taken_at,
   ORDER BY taken_at DESC, id DESC LIMIT 1`
 
 /**
- * The latest snapshot's v2 sections and every blob they need (bases, and
- * their dictionaries), with data: at most three levels. Nothing for a v1 row.
+ * The snapshot an upload is stored against (its sections are what the new
+ * ones are deltas of or compressed against): the nearest capture at or
+ * before the upload's time, else the first one after it. For a new capture
+ * that is the latest; for older history imported afterwards it is its
+ * neighbour in time, not the newest capture, which shares little with it
+ * (an account whose history arrived after its newer captures stored most
+ * of it whole, 2026-11-06). ?1 the account, ?2 the upload's capture time.
+ */
+export const NEAREST_SQL = `SELECT id, ${REFS_SQL} FROM (
+    SELECT * FROM (SELECT id, ${REFS_SQL}, 0 AS side FROM snapshots
+      WHERE account_id = ?1 AND deleted_at IS NULL AND taken_at <= ?2
+      ORDER BY taken_at DESC, id DESC LIMIT 1)
+    UNION ALL
+    SELECT * FROM (SELECT id, ${REFS_SQL}, 1 AS side FROM snapshots
+      WHERE account_id = ?1 AND deleted_at IS NULL AND taken_at > ?2
+      ORDER BY taken_at ASC, id ASC LIMIT 1)
+  ) ORDER BY side LIMIT 1`
+
+/**
+ * The nearest snapshot's (NEAREST_SQL) v2 sections and every blob they need
+ * (bases, and their dictionaries), with data: at most three levels. Nothing
+ * for a v1 row.
  */
 const LATEST_BLOBS_SQL = `WITH RECURSIVE latest AS (
-    SELECT ${REFS_SQL} FROM snapshots WHERE account_id = ?1 AND deleted_at IS NULL
-    ORDER BY taken_at DESC, id DESC LIMIT 1),
+    SELECT ${REFS_SQL} FROM (${NEAREST_SQL})),
   need(id, depth) AS (
     SELECT j.value, 0 FROM latest, json_each(json_array(${REFS_SQL})) AS j
     UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
@@ -223,6 +248,7 @@ async function importOnce(
   // 1.
   const [
     latestResult,
+    nearestResult,
     sameTimeResult,
     idsResult,
     chunksResult,
@@ -231,10 +257,11 @@ async function importOnce(
     usageResult,
   ] = await meter.batch(d1, 'lookup', [
     d1.prepare(latestSql(legacy)).bind(accountId),
+    d1.prepare(NEAREST_SQL).bind(accountId, takenAt),
     d1.prepare(sameTimeSql(legacy)).bind(accountId, takenAt),
     selectArtifactIds(d1, accountId, hashes),
     d1.prepare('SELECT id, data FROM artifact_chunks WHERE account_id = ?1').bind(accountId),
-    d1.prepare(LATEST_BLOBS_SQL).bind(accountId),
+    d1.prepare(LATEST_BLOBS_SQL).bind(accountId, takenAt),
     d1
       .prepare(
         `SELECT b.id, hex(b.hash) AS hash, b.kind FROM json_each(?2) AS j
@@ -244,6 +271,7 @@ async function importOnce(
     usageStatement(d1, accountId, day),
   ])
   const latest = (latestResult!.results[0] as LatestRow | undefined) ?? null
+  const nearest = (nearestResult!.results[0] as NearestRow | undefined) ?? null
   const sameTime = sameTimeResult!.results[0] as SameTimeRow | undefined
   const legacyIds = idMap(idsResult!.results)
   const chunks = readChunks(chunksResult!.results)
@@ -395,10 +423,10 @@ async function importOnce(
 
   assertCanStore(usage, now)
 
-  // The latest snapshot's sections are what new ones are deltas of or
-  // compressed against; a v1 latest has none, so everything is stored whole
-  // (once per account, until repack converts it).
-  const known = latest?.characters_ref != null ? knownBlobs(blobsResult!.results) : null
+  // The nearest snapshot's sections (NEAREST_SQL) are what new ones are
+  // deltas of or compressed against; a v1 row has none, so everything is
+  // stored whole (once per account, until repack converts it).
+  const known = nearest?.characters_ref != null ? knownBlobs(blobsResult!.results) : null
   const plan = await planSnapshotV2({
     encoded,
     prepared,
@@ -407,7 +435,7 @@ async function importOnce(
       ? Object.fromEntries(
           SLOTS.map((slot) => [
             slot,
-            known.get((latest![REF_COLUMNS[slot]] as number) ?? -1) ?? null,
+            known.get((nearest![REF_COLUMNS[slot]] as number) ?? -1) ?? null,
           ]),
         )
       : {},

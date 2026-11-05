@@ -487,6 +487,38 @@ export function decodeAchievementTimes(
   return [...times].sort((a, b) => a[0] - b[0])
 }
 
+/**
+ * A stored section as its full form: a delta (materials, artifacts,
+ * achievement times; `b` set) applied to its full `base`, anything else as
+ * it is. What two storage layouts of the same history must agree on (the
+ * time-order repack compares them).
+ */
+export function fullSection(
+  kind: SectionKind,
+  value: unknown,
+  base: unknown,
+  dictionary: KeyDictionary,
+): unknown {
+  if ((value as { b?: unknown } | null)?.b === undefined) return value
+  if (kind === 'materials') {
+    const materials = decodeMaterials(
+      value as MaterialsSection,
+      dictionary,
+      base as MaterialsSection,
+    )
+    return encodeMaterialsFull(materials, dictionary)
+  }
+  if (kind === 'artifacts') {
+    return sectionOfRows(artifactRows(value as ArtifactsSection, base as ArtifactsSection))
+  }
+  if (kind === 'achievementTimes') {
+    return encodeAchievementTimes(
+      decodeAchievementTimes(value as AchievementTimesSection, base as AchievementTimesSection),
+    )
+  }
+  throw new Error(`A ${kind} section has no deltas`)
+}
+
 // ----------------------------------------------------------- characterExtras
 // irminsul's `gi_characters`. Row: [character, friendship, obtained at (unix
 // seconds), exp, friendship exp], 0 where unknown, trailing zeros trimmed

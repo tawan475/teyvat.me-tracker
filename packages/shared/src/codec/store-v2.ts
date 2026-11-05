@@ -179,7 +179,77 @@ export function sectionHashOf(kind: SectionKind, value: unknown): Promise<string
 }
 
 export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
-  const { encoded, prepared, existing } = input
+  const { encoded, prepared } = input
+  const values: SectionValues = {}
+  let playerVars: PlayerVars = {}
+  for (const slot of SLOTS) {
+    const section = encoded[slot]
+    if (slot === 'player') {
+      if (!section || !prepared.good.player) continue
+      const player = await storedPlayer(prepared.good.player)
+      playerVars = player.vars
+      values.player = { value: player.stable, hash: shortHashHex(player.hash) }
+      continue
+    }
+    if (!section) continue
+    values[slot] = {
+      value: JSON.parse(section.json),
+      hash: shortHashHex(section.hash),
+      ...(slot === 'materials' ? { materials: prepared.good.materials } : {}),
+    }
+  }
+  const plan = await planSections({
+    values,
+    latest: input.latest,
+    existing: input.existing,
+    materialsDictionary: input.materialsDictionary,
+    growthBytes: input.growthBytes,
+  })
+  return { ...plan, playerVars }
+}
+
+/** A full section of each slot a snapshot has: its value and 16-hex-digit hash. */
+export type SectionValues = Partial<
+  Record<
+    Slot,
+    {
+      value: unknown
+      hash: string
+      /** Materials only: the counts by key (decoded from `value` when absent). */
+      materials?: ReadonlyMap<string, number>
+    }
+  >
+>
+
+export interface SectionPlanInput {
+  values: SectionValues
+  /** The blob of each slot of the snapshot this one is stored against, bases attached. */
+  latest: Partial<Record<Slot, KnownBlob | null>>
+  /** Blobs that exist, by short hash (16 hex digits). */
+  existing: ReadonlyMap<string, { id: number; code: number }>
+  materialsDictionary: KeyDictionary
+  growthBytes?: number
+}
+
+/** The root of a blob's chain of bases: the standalone blob it ends at. */
+function rootOf(blob: KnownBlob): KnownBlob {
+  let root = blob
+  while (root.base) root = root.base
+  return root
+}
+
+/**
+ * Which blobs a snapshot with these full sections stores and which it points
+ * at (planSnapshotV2's work, and what the time-order repack replays). Never
+ * builds a chain the decoder cannot read (a delta, its keyframe, the
+ * keyframe's dictionary): a full section is compressed only against a
+ * standalone blob, and a delta is made only of a keyframe at most one base
+ * deep, whatever the blobs read looked like.
+ */
+export async function planSections(
+  input: SectionPlanInput,
+): Promise<Omit<SnapshotPlan, 'playerVars'>> {
+  const { existing, values } = input
   const blobs: PlannedBlob[] = []
   const planned = new Map<string, PlannedBlob>()
 
@@ -211,38 +281,19 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
     return { ref: { hash }, size: blob.data.length, base, blob }
   }
   /** The standalone blob a full section of this kind would be compressed against. */
-  const anchorOf = (blob: KnownBlob | null | undefined): KnownBlob | null => {
-    if (!blob) return null
-    const keyframe = kindOfCode(blob.code).delta ? blob.base : blob
-    if (!keyframe) return null
-    return keyframe.base ?? keyframe
-  }
+  const anchorOf = (blob: KnownBlob | null | undefined): KnownBlob | null =>
+    blob ? rootOf(blob) : null
 
   const refs = {} as Record<Slot, BlobRef | null>
-  let playerVars: PlayerVars = {}
 
   for (const slot of SLOTS) {
     const latest = input.latest[slot] ?? null
-    const section = encoded[slot]
-    let value: unknown
-    let hash: string
-    if (slot === 'player') {
-      if (!section || !prepared.good.player) {
-        refs.player = null
-        continue
-      }
-      const player = await storedPlayer(prepared.good.player)
-      playerVars = player.vars
-      value = player.stable
-      hash = shortHashHex(player.hash)
-    } else {
-      if (!section) {
-        refs[slot] = null
-        continue
-      }
-      value = JSON.parse(section.json)
-      hash = shortHashHex(section.hash)
+    const section = values[slot]
+    if (!section) {
+      refs[slot] = null
+      continue
     }
+    const { value, hash } = section
     // Delta kinds are full here (planSnapshotV2 takes the snapshot before withBases).
     if ((value as { b?: unknown } | null)?.b !== undefined) {
       throw new Error(`${slot} must be a full section`)
@@ -254,8 +305,10 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
       continue
     }
 
-    // A delta of the latest snapshot's keyframe, or a new keyframe.
-    const keyframe = !latest ? null : kindOfCode(latest.code).delta ? latest.base : latest
+    // A delta of the latest snapshot's keyframe, or a new keyframe. A keyframe
+    // already two bases deep (rows changed under a reader) takes no delta.
+    const candidate = !latest ? null : kindOfCode(latest.code).delta ? latest.base : latest
+    const keyframe = candidate && !candidate.base?.base ? candidate : null
     if (!DELTA_KINDS.has(slot) || !keyframe) {
       const full = storeFull(slot, value, hash, anchorOf(latest))
       refs[slot] = store(hash, kindCode(slot, false), full.base, full.blob)
@@ -265,7 +318,10 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
     let delta: object
     if (slot === 'materials') {
       const base = keyframe.decoded.value as MaterialsSection
-      delta = encodeMaterialsDelta(prepared.good.materials, input.materialsDictionary, {
+      const materials =
+        section.materials ??
+        decodeMaterials(value as MaterialsSection, input.materialsDictionary, null)
+      delta = encodeMaterialsDelta(materials, input.materialsDictionary, {
         hash: keyframeHash,
         materials: decodeMaterials(base, input.materialsDictionary, null),
       })
@@ -298,7 +354,7 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
       continue
     }
-    const full = storeFull(slot, value, hash, keyframe.base ?? keyframe)
+    const full = storeFull(slot, value, hash, anchorOf(keyframe))
     if (deltaBlob.data.length ** 2 <= 2 * growth * full.size) {
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
     } else {
@@ -310,6 +366,5 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
     blobs,
     refs,
     storedSize: blobs.reduce((sum, blob) => sum + blob.data.length, 0),
-    playerVars,
   }
 }

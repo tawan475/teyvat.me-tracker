@@ -1,3 +1,4 @@
+import { strToU8, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
 import {
   CHARACTERS,
@@ -6,6 +7,7 @@ import {
   WEAPONS,
   WISH_CHUNK_SIZE,
   WISH_ITEMS,
+  WishFileError,
   WishRecordError,
   buildPaimonCsv,
   buildUigf,
@@ -17,7 +19,9 @@ import {
   mergePulls,
   newestRealId,
   normalizeWishRecords,
+  parsePaimonXlsx,
   paddedWishId,
+  parseWishBytes,
   parseWishFile,
   parseWishId,
   parseWishTime,
@@ -320,6 +324,187 @@ describe('wish files', () => {
     expect(file.accounts[0]!.uid).toBe(UID)
     const back = pullsOf(file.accounts[0]!.records)
     for (const [banner, list] of banners) expect(plain(back.get(banner)!)).toEqual(plain(list))
+  })
+
+  /** A workbook as paimon.moe's Excel export lays it out (plus Excel's own re-save quirks). */
+  function paimonXlsx(options: { chronicled?: boolean } = {}): Uint8Array {
+    const shared = [
+      'Type',
+      'Name',
+      'Time',
+      '⭐',
+      'Pity',
+      '#Roll',
+      'Group',
+      'Banner',
+      'Part',
+      'Weapon',
+      'Raven Bow',
+      '2021-01-17 20:11:02',
+      'Adrift in the Harbor',
+      '',
+      'Character',
+      'Noelle',
+      'Hu Tao',
+      'Wolf&apos;s Gravestone',
+      'Slingshot',
+      'Paimon.moe Wish History Export',
+      'Version',
+      'Export Date',
+    ]
+    const si = shared.map((t) => `<si><t>${t}</t></si>`).join('')
+    const s = (i: number) => `t="s"><v>${i}</v>`
+    const n = (v: number | string) => `><v>${v}</v>`
+    const header = `<row r="1">${['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+      .map((c, i) => `<c r="${c}1" ${s(i)}</c>`)
+      .join('')}</row>`
+    const row = (r: number, cells: string[]) =>
+      `<row r="${r}">${cells.map((c, i) => `<c r="${'ABCDEFGHI'[i]}${r}" ${c}</c>`).join('')}</row>`
+    const sheet = (rows: string) =>
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${header}${rows}</sheetData></worksheet>`
+    const character = sheet(
+      row(2, [s(9), s(10), s(11), n(3), n(1), n(1), n(1), s(12), s(13)]) +
+        // Same second, listed oldest first (paimon.moe's order); Excel re-saved the time as a day serial.
+        row(3, [s(14), s(15), s(11), n(4), n(2), n(2), n(2), s(12), s(13)]) +
+        row(4, [s(14), s(16), 's="1"' + n('44214.84169'), n(5), n(3), n(3), n(3), s(12), s(13)]),
+    )
+    // Rich text and an inline string instead of shared ones.
+    const weapon = sheet(
+      row(2, [
+        s(9),
+        't="inlineStr"><is><r><t>Wolf&apos;s</t></r><r><t xml:space="preserve"> Gravestone</t></r></is>',
+        s(11),
+        n(5),
+        n(1),
+        n(1),
+        n(1),
+        s(12),
+        s(13),
+      ]),
+    )
+    const standard = sheet(row(2, [s(9), s(18), s(11), n(3), n(1), n(1), n(1), s(13), s(13)]))
+    const chronicled = sheet(row(2, [s(14), s(16), s(11), n(5), n(1), n(1), n(1), s(13), s(13)]))
+    const names = [
+      'Character Event',
+      'Weapon Event',
+      'Standard',
+      'Beginners&apos; Wish',
+      'Banner List',
+      'Information',
+    ]
+    const xmls = [character, weapon, standard, sheet(''), sheet(''), sheet('')]
+    if (options.chronicled) {
+      names.push('Chronicled Wish')
+      xmls.push(chronicled)
+    }
+    const files: Record<string, Uint8Array> = {
+      'xl/workbook.xml': strToU8(
+        `<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names
+          .map((name, i) => `<sheet sheetId="${i + 1}" name="${name}" r:id="rId${i + 4}"/>`)
+          .join('')}</sheets></workbook>`,
+      ),
+      'xl/_rels/workbook.xml.rels': strToU8(
+        `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="x/sharedStrings" Target="sharedStrings.xml"/>${names
+          .map(
+            (_, i) =>
+              `<Relationship Id="rId${i + 4}" Type="x/worksheet" Target="${i === 0 ? '/xl/' : ''}worksheets/sheet${i + 1}.xml"/>`,
+          )
+          .join('')}</Relationships>`,
+      ),
+      'xl/sharedStrings.xml': strToU8(
+        `<?xml version="1.0"?><sst count="${shared.length}" uniqueCount="${shared.length}">${si}</sst>`,
+      ),
+    }
+    xmls.forEach((xml, i) => (files[`xl/worksheets/sheet${i + 1}.xml`] = strToU8(xml)))
+    return zipSync(files)
+  }
+
+  it("reads paimon.moe's Excel export", () => {
+    const file = parseWishBytes(paimonXlsx({ chronicled: true }))
+    expect(file.format).toBe('paimon-xlsx')
+    expect(file.accounts).toHaveLength(1)
+    const account = file.accounts[0]!
+    expect(account).toMatchObject({ uid: null, timezone: null })
+    expect(account.records).toEqual([
+      {
+        gacha_type: '301',
+        time: '2021-01-17 20:11:02',
+        name: 'Raven Bow',
+        item_type: 'Weapon',
+        rank_type: '3',
+      },
+      {
+        gacha_type: '301',
+        time: '2021-01-17 20:11:02',
+        name: 'Noelle',
+        item_type: 'Character',
+        rank_type: '4',
+      },
+      {
+        gacha_type: '301',
+        time: '2021-01-18 20:12:02',
+        name: 'Hu Tao',
+        item_type: 'Character',
+        rank_type: '5',
+      },
+      {
+        gacha_type: '302',
+        time: '2021-01-17 20:11:02',
+        name: "Wolf's Gravestone",
+        item_type: 'Weapon',
+        rank_type: '5',
+      },
+      {
+        gacha_type: '200',
+        time: '2021-01-17 20:11:02',
+        name: 'Slingshot',
+        item_type: 'Weapon',
+        rank_type: '3',
+      },
+      {
+        gacha_type: '500',
+        time: '2021-01-17 20:11:02',
+        name: 'Hu Tao',
+        item_type: 'Character',
+        rank_type: '5',
+      },
+    ])
+    // The same pulls as the CSV lists them (newest first) get the same synthetic ids.
+    const fromXlsx = pullsOf(account.records).get(301)!
+    const csv = `${PAIMON_CSV_HEADER}
+301,2021-01-18 20:12:02,Hu Tao,Character,5
+301,2021-01-17 20:11:02,Noelle,Character,4
+301,2021-01-17 20:11:02,Raven Bow,Weapon,3
+`
+    const fromCsv = pullsOf(parseWishFile(csv).accounts[0]!.records).get(301)!
+    expect(plain(fromXlsx)).toEqual(plain(fromCsv))
+    expect(fromXlsx.map((p) => p.item.name)).toEqual(['Raven Bow', 'Noelle', 'Hu Tao'])
+  })
+
+  it('refuses a workbook or zip that is not the export', () => {
+    expect(() => parsePaimonXlsx(zipSync({ 'a.txt': strToU8('hi') }))).toThrow(WishFileError)
+    expect(() => parseWishBytes(strToU8('PK not a zip'))).toThrow(WishFileError)
+    expect(() =>
+      parseWishBytes(
+        zipSync({
+          'xl/workbook.xml': strToU8(
+            '<workbook><sheets><sheet name="Totals" r:id="rId4"/></sheets></workbook>',
+          ),
+          'xl/_rels/workbook.xml.rels': strToU8(
+            '<Relationships><Relationship Id="rId4" Target="worksheets/sheet1.xml"/></Relationships>',
+          ),
+          'xl/worksheets/sheet1.xml': strToU8('<worksheet><sheetData/></worksheet>'),
+        }),
+      ),
+    ).toThrow(WishFileError)
+    // Text files still go the text way.
+    expect(
+      parseWishBytes(
+        strToU8(`${PAIMON_CSV_HEADER}
+200,2021-01-17 20:11:02,Slingshot,Weapon,3
+`),
+      ).format,
+    ).toBe('paimon-csv')
   })
 
   it('writes the CSV paimon.moe reads', () => {

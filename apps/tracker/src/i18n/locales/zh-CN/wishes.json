@@ -253,7 +253,7 @@
     "deleteDetail": "将删除此账号的全部 {n} 抽记录。Teyvat.me Capture 可以重新获取最近六个月的记录。",
     "deleteConfirm": "删除",
     "notDeleted": "未删除",
-    "dropTitle": "UIGF JSON（Snap Hutao、Starward、genshin-wish-export…）、paimon.moe 导入器的 CSV，或 paimon.moe 的备份（Settings → Export）",
+    "dropTitle": "UIGF JSON（Snap Hutao、Starward、genshin-wish-export…）、paimon.moe 导入器的 CSV、paimon.moe 的 Excel 导出，或 paimon.moe 的备份（Settings → Export）",
     "drop": "UIGF 或 paimon.moe 文件",
     "fileAccount": "文件中的账号",
     "uigfTitle": "UIGF v4.1：Snap Hutao、Starward 和大多数抽卡记录工具都能读取",

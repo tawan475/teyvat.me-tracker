@@ -253,7 +253,7 @@
     "deleteDetail": "Todas as {n} orações desta conta serão removidas. O Teyvat.me Capture pode buscar os últimos seis meses de novo.",
     "deleteConfirm": "Excluir",
     "notDeleted": "Não excluído",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), um CSV do importador do paimon.moe, ou o backup do paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), um CSV do importador do paimon.moe, a exportação Excel do paimon.moe, ou o backup do paimon.moe (Settings → Export)",
     "drop": "Arquivo UIGF ou do paimon.moe",
     "fileAccount": "Conta no arquivo",
     "uigfTitle": "UIGF v4.1: lido pelo Snap Hutao, Starward e pela maioria dos rastreadores de Orações",

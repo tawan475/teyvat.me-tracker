@@ -253,7 +253,7 @@
     "deleteDetail": "การสุ่มทั้งหมด {n} ครั้งของบัญชีนี้จะถูกลบ Teyvat.me Capture ดึงข้อมูลย้อนหลังหกเดือนได้อีกครั้ง",
     "deleteConfirm": "ลบ",
     "notDeleted": "ลบไม่สำเร็จ",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV ของ paimon.moe importer หรือไฟล์สำรองของ paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV ของ paimon.moe importer, ไฟล์ Excel ที่ส่งออกจาก paimon.moe หรือไฟล์สำรองของ paimon.moe (Settings → Export)",
     "drop": "ไฟล์ UIGF หรือ paimon.moe",
     "fileAccount": "บัญชีในไฟล์",
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward และตัวติดตามการอธิษฐานส่วนใหญ่อ่านได้",

@@ -253,7 +253,7 @@
     "deleteDetail": "Tutti i {n} tiri di questo account vengono rimossi. Teyvat.me Capture può recuperare di nuovo gli ultimi sei mesi.",
     "deleteConfirm": "Elimina",
     "notDeleted": "Non eliminato",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), un CSV per l'importatore di paimon.moe, o il backup di paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), un CSV per l'importatore di paimon.moe, l'esportazione Excel di paimon.moe, o il backup di paimon.moe (Settings → Export)",
     "drop": "File UIGF o paimon.moe",
     "fileAccount": "Account nel file",
     "uigfTitle": "UIGF v4.1: lo leggono Snap Hutao, Starward e la maggior parte dei tracker di desideri",

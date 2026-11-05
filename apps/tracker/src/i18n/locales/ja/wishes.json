@@ -253,7 +253,7 @@
     "deleteDetail": "このアカウントの {n} 回分の祈願がすべて削除されます。直近 6 か月分は Teyvat.me Capture で再取得できます。",
     "deleteConfirm": "削除",
     "notDeleted": "削除できませんでした",
-    "dropTitle": "UIGF JSON（Snap Hutao、Starward、genshin-wish-export など）、paimon.moe インポーター用 CSV、または paimon.moe のバックアップ（Settings → Export）",
+    "dropTitle": "UIGF JSON（Snap Hutao、Starward、genshin-wish-export など）、paimon.moe インポーター用 CSV、paimon.moe の Excel エクスポート、または paimon.moe のバックアップ（Settings → Export）",
     "drop": "UIGF または paimon.moe のファイル",
     "fileAccount": "ファイル内のアカウント",
     "uigfTitle": "UIGF v4.1：Snap Hutao、Starward など多くの祈願トラッカーで読み込めます",

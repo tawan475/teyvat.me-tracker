@@ -253,7 +253,7 @@
     "deleteDetail": "Bu hesabın tüm {n} dileği kaldırılır. Teyvat.me Capture son altı ayı tekrar getirebilir.",
     "deleteConfirm": "Sil",
     "notDeleted": "Silinmedi",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), paimon.moe içe aktarıcı CSV'si veya paimon.moe yedeği (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), paimon.moe içe aktarıcı CSV'si, paimon.moe Excel dışa aktarımı veya paimon.moe yedeği (Settings → Export)",
     "drop": "UIGF veya paimon.moe dosyası",
     "fileAccount": "Dosyadaki hesap",
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward ve çoğu dilek takipçisi okur",

@@ -5,7 +5,7 @@ import {
   WISH_SITE_IMPORT_MAX_RECORDS,
   buildPaimonCsv,
   buildUigf,
-  parseWishFile,
+  parseWishBytes,
   type AccountResponse,
   type WishFile,
   type WishFileAccount,
@@ -25,7 +25,8 @@ import { useFeedback } from '@/stores/feedback'
 
 /**
  * Wish history in and out: import a UIGF v4 JSON (or older UIGF), a
- * paimon.moe CSV (its Local Importer's format) or paimon.moe's own backup;
+ * paimon.moe CSV (its Local Importer's format) or Excel export, or
+ * paimon.moe's own backup;
  * export UIGF v4 or that CSV; delete the history. Files are read and
  * written in the browser; an import sends the records (merged by id on the
  * server, so a file overlapping what is held only adds what is new).
@@ -44,7 +45,9 @@ const formatLabel = (format: WishFile['format']): string =>
     ? 'UIGF'
     : format === 'paimon-csv'
       ? 'paimon.moe CSV'
-      : t('wishes.transfer.backup')
+      : format === 'paimon-xlsx'
+        ? 'paimon.moe Excel'
+        : t('wishes.transfer.backup')
 
 const input = ref<HTMLInputElement>()
 const dragging = ref(false)
@@ -108,7 +111,7 @@ async function read(picked: File | undefined) {
   fileName.value = picked.name
   reading.value = true
   try {
-    file.value = parseWishFile(await picked.text())
+    file.value = parseWishBytes(new Uint8Array(await picked.arrayBuffer()))
   } catch {
     failure.value = t('wishes.transfer.notWishFile')
   } finally {
@@ -235,7 +238,7 @@ async function remove() {
             <input
               ref="input"
               type="file"
-              accept=".json,.csv,application/json,text/csv"
+              accept=".json,.csv,.xlsx,application/json,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               class="hidden"
               tabindex="-1"
               aria-hidden="true"

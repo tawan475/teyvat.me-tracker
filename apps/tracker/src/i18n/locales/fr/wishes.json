@@ -253,7 +253,7 @@
     "deleteDetail": "Les {n} vœux de ce compte sont supprimés. Teyvat.me Capture peut récupérer à nouveau les six derniers mois.",
     "deleteConfirm": "Supprimer",
     "notDeleted": "Non supprimé",
-    "dropTitle": "JSON UIGF (Snap Hutao, Starward, genshin-wish-export…), un CSV de l'importeur paimon.moe, ou la sauvegarde paimon.moe (Settings → Export)",
+    "dropTitle": "JSON UIGF (Snap Hutao, Starward, genshin-wish-export…), un CSV de l'importeur paimon.moe, l'export Excel de paimon.moe, ou la sauvegarde paimon.moe (Settings → Export)",
     "drop": "Fichier UIGF ou paimon.moe",
     "fileAccount": "Compte du fichier",
     "uigfTitle": "UIGF v4.1 : Snap Hutao, Starward et la plupart des trackers de vœux le lisent",

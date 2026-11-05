@@ -253,7 +253,7 @@
     "deleteDetail": "Все молитвы этого аккаунта ({n}) будут удалены. Teyvat.me Capture может снова загрузить последние полгода.",
     "deleteConfirm": "Удалить",
     "notDeleted": "Не удалено",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV для импорта paimon.moe или резервная копия paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV для импорта paimon.moe, экспорт Excel из paimon.moe или резервная копия paimon.moe (Settings → Export)",
     "drop": "Файл UIGF или paimon.moe",
     "fileAccount": "Аккаунт в файле",
     "uigfTitle": "UIGF v4.1: читают Snap Hutao, Starward и большинство трекеров молитв",

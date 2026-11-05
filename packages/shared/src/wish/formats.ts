@@ -7,8 +7,8 @@
  *   `gacha_type,time,name,item_type,rank_type` rows; what its Local
  *   Importer reads), and paimon.moe's own backup (Settings → Export: its
  *   local save, `wish-counter-<banner>` keys of `{pulls: [{type, id, time,
- *   code}]}` with its own item ids).
- * Neither paimon.moe format has record ids: their pulls get synthetic ids
+ *   code}]}` with its own item ids); its Excel export is read by xlsx.ts.
+ * No paimon.moe format has record ids: their pulls get synthetic ids
  * (pulls.ts) and are matched by banner, time and item.
  */
 
@@ -33,7 +33,7 @@ export interface WishFileAccount {
 }
 
 export interface WishFile {
-  format: 'uigf' | 'paimon-csv' | 'paimon-backup'
+  format: 'uigf' | 'paimon-csv' | 'paimon-xlsx' | 'paimon-backup'
   accounts: WishFileAccount[]
 }
 

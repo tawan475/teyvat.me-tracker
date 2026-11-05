@@ -253,7 +253,7 @@
     "deleteDetail": "Semua {n} pull akun ini dihapus. Teyvat.me Capture bisa mengambil enam bulan terakhir lagi.",
     "deleteConfirm": "Hapus",
     "notDeleted": "Tidak terhapus",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV importer paimon.moe, atau cadangan paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV importer paimon.moe, ekspor Excel paimon.moe, atau cadangan paimon.moe (Settings → Export)",
     "drop": "File UIGF atau paimon.moe",
     "fileAccount": "Akun di file",
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward dan kebanyakan pelacak permohonan bisa membacanya",

@@ -253,7 +253,7 @@
     "deleteDetail": "Toàn bộ {n} lượt của tài khoản này sẽ bị xóa. Teyvat.me Capture có thể lấy lại sáu tháng gần nhất.",
     "deleteConfirm": "Xóa",
     "notDeleted": "Chưa xóa",
-    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV của trình nhập paimon.moe, hoặc bản sao lưu của paimon.moe (Settings → Export)",
+    "dropTitle": "UIGF JSON (Snap Hutao, Starward, genshin-wish-export…), CSV của trình nhập paimon.moe, bản xuất Excel của paimon.moe, hoặc bản sao lưu của paimon.moe (Settings → Export)",
     "drop": "Tệp UIGF hoặc paimon.moe",
     "fileAccount": "Tài khoản trong tệp",
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward và hầu hết trình theo dõi cầu nguyện đọc được",

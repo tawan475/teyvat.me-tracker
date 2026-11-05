@@ -18,7 +18,11 @@ const props = defineProps<{
   total: number
   pageSize: number
   label?: string
-  /** Pinned to the screen's foot (above the phone tab bar) while its list scrolls: a solid card. */
+  /**
+   * Pinned near the screen's foot (above the phone tab bar) while its list
+   * scrolls: a solid card rounded on every corner, a little clear of the edge
+   * (square bottom corners read as cut off where it rests under its list).
+   */
   sticky?: boolean
 }>()
 const page = defineModel<number>({ required: true })
@@ -60,7 +64,7 @@ const GAP =
     class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
     :class="
       sticky &&
-      'sticky bottom-[calc(3.5rem+1px+env(safe-area-inset-bottom))] z-10 rounded-t-xl border border-b-0 border-border-default bg-surface-raised px-3 py-2 shadow-overlay lg:bottom-0'
+      'sticky bottom-[calc(3.5rem+1px+0.5rem+env(safe-area-inset-bottom))] z-10 rounded-xl border border-border-default bg-surface-raised px-3 py-2 shadow-overlay lg:bottom-3'
     "
     :aria-label="label ?? $t('ui.pager.label')"
   >

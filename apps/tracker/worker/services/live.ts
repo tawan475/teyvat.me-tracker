@@ -383,7 +383,12 @@ export class LiveHub extends DurableObject<Env> {
 
   override async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
     // Only the keep-alive is expected, and the auto-response normally answers it.
-    if (message === 'ping') socket.send('pong')
+    if (message !== 'ping') return
+    try {
+      socket.send('pong')
+    } catch {
+      // Closing already: an uncaught throw here counts as the hub's exception.
+    }
   }
 
   override async webSocketClose(socket: WebSocket, code: number, reason: string) {
@@ -440,7 +445,12 @@ export class LiveHub extends DurableObject<Env> {
 }
 
 function attachment(socket: WebSocket): Attachment {
-  return (socket.deserializeAttachment() ?? { userId: 0, ver: 0 }) as Attachment
+  try {
+    return (socket.deserializeAttachment() ?? { userId: 0, ver: 0 }) as Attachment
+  } catch {
+    // Unreadable: treated like none (user 0 is never released or notified).
+    return { userId: 0, ver: 0 }
+  }
 }
 
 /** A whole-number header the Worker set, or null when empty or absent. */

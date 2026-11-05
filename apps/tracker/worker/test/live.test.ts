@@ -379,6 +379,30 @@ describe('wish history events', () => {
   })
 })
 
+describe('socket handlers', () => {
+  it('never throw on a socket that is already closing', async () => {
+    const { me } = await signUp()
+    const closing = {
+      readyState: WebSocket.CLOSING,
+      send() {
+        throw new TypeError("Can't call WebSocket send() after close().")
+      },
+      close() {
+        throw new TypeError('WebSocket already closed.')
+      },
+      deserializeAttachment() {
+        throw new Error('Attachment unreadable.')
+      },
+    } as unknown as WebSocket
+    await runInDurableObject(liveHub(env, me.id), async (hub: LiveHub) => {
+      await expect(hub.webSocketMessage(closing, 'ping')).resolves.toBeUndefined()
+      await expect(hub.webSocketMessage(closing, 'other')).resolves.toBeUndefined()
+      await expect(hub.webSocketClose(closing, 1006, '')).resolves.toBeUndefined()
+      await expect(hub.webSocketError(closing)).resolves.toBeUndefined()
+    })
+  })
+})
+
 describe('ending sessions', () => {
   it('closes the sockets of every session when the user signs out everywhere', async () => {
     const { client, username, password } = await signUp()

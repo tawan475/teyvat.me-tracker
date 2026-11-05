@@ -6,8 +6,11 @@
  *   Without `url` a site's page is made from the key in kebab case
  *   (`RaidenShogun` → prydwen.gg/genshin-impact/characters/raiden-shogun,
  *   keqingmains.com/raiden-shogun/, …/genshin-builds/en/raiden-shogun/);
- *   give `url` where the site's page differs. A character (or site) not
- *   listed links to the site's search.
+ *   give `url` where the site's page differs. Prydwen's page is always the
+ *   key's slug, so it links there even for a character not listed yet (a
+ *   new release; the user's point, 2026-11-05: Mitya showed "Search"); KQM
+ *   and Helper Team name pages by hand, so a character (or site) not listed
+ *   links to that site's search.
  * - `youtube`: a video (`watch?v=`, `youtu.be/` or `shorts/` link) with its
  *   `title` and `channel`; listed in this order.
  * - `link`: any other page, with a `title`; after the three sites.
@@ -536,6 +539,7 @@ export function guidesFor(
   const entries = table[key] ?? []
   const sites = SITES.map((type): ResolvedSite => {
     const entry = entries.find((guide) => guide.type === type)
+    if (!entry && type === 'prydwen') return { type, url: defaultUrl(type, key), found: true }
     if (!entry) return { type, url: SEARCH[type], found: false }
     return { type, url: entry.url ?? defaultUrl(type, key), found: true }
   })

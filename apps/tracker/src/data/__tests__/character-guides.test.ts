@@ -53,10 +53,10 @@ describe('guidesFor', () => {
     ])
   })
 
-  it('links a character not in the file to the sites search pages, no videos', () => {
-    const { sites, videos } = guidesFor('Nobody', table)
+  it("links a character not in the file to Prydwen's page by slug, the others' search, no videos", () => {
+    const { sites, videos } = guidesFor('Mitya', table)
     expect(sites.map((s) => [s.url, s.found])).toEqual([
-      ['https://www.prydwen.gg/genshin-impact/characters', false],
+      ['https://www.prydwen.gg/genshin-impact/characters/mitya', true],
       ['https://keqingmains.com/#search', false],
       ['https://genshin-impact-helper-team.github.io/genshin-builds/', false],
     ])

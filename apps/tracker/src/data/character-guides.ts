@@ -15,7 +15,9 @@
  *   `title` and `channel`; listed in this order.
  * - `link`: any other page, with a `title`; after the three sites.
  * The pages below were checked on 2026-10-28 (Prydwen's character list,
- * KQM's guides and quick guides, Helper Team's character pages).
+ * KQM's guides and quick guides, Helper Team's character pages). On
+ * 2026-11-05 Mitya and Valeriy (7.2) had no KQM page and Helper Team's
+ * were still WIP (404): add them here once those sites publish.
  */
 
 export type GuideType = 'prydwen' | 'kqm' | 'helper' | 'youtube' | 'link'
@@ -412,7 +414,12 @@ export const characterGuides: Record<string, Guide[]> = {
     { type: 'helper' },
   ],
   Venti: [{ type: 'prydwen' }, { type: 'kqm' }, { type: 'helper' }],
-  Vesna: [{ type: 'prydwen' }, { type: 'helper' }],
+  Vesna: [
+    { type: 'prydwen' },
+    // No quick guide yet; KQM's infographic (checked 2026-11-05).
+    { type: 'kqm', url: 'https://keqingmains.com/i/vesna/' },
+    { type: 'helper' },
+  ],
   Vodyanitsa: [
     { type: 'prydwen' },
     { type: 'kqm', url: 'https://keqingmains.com/q/vodyanitsa-quickguide/' },

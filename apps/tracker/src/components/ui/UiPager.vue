@@ -22,6 +22,9 @@ const props = defineProps<{
    * Pinned near the screen's foot (above the phone tab bar) while its list
    * scrolls: a solid card rounded on every corner, a little clear of the edge
    * (square bottom corners read as cut off where it rests under its list).
+   * Two solid shadows in the page's ground colour, 0.75rem and 1.5rem down
+   * (under its drop shadow, behind its rounded corners), fill that gap, so
+   * the rows scrolling under it never show below it.
    */
   sticky?: boolean
 }>()
@@ -64,7 +67,7 @@ const GAP =
     class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
     :class="
       sticky &&
-      'sticky bottom-[calc(3.5rem+1px+0.5rem+env(safe-area-inset-bottom))] z-10 rounded-xl border border-border-default bg-surface-raised px-3 py-2 shadow-overlay lg:bottom-3'
+      'sticky bottom-[calc(3.5rem+1px+0.5rem+env(safe-area-inset-bottom))] z-10 rounded-xl border border-border-default bg-surface-raised px-3 py-2 shadow-[var(--shadow-overlay),0_0.75rem_0_var(--color-surface-base),0_1.5rem_0_var(--color-surface-base)] lg:bottom-3'
     "
     :aria-label="label ?? $t('ui.pager.label')"
   >

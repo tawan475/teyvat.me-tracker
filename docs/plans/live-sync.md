@@ -634,6 +634,14 @@ the state, so the journal before it is covered.
 - `GET /api/accounts/:id/points?from=YYYY-MM-DD&to=YYYY-MM-DD` → the packed day rows
   (charts), immutable for past days (long cache), short for today.
 - Live socket event `{ type: 'live', accountId, seq }` → open tabs refetch `/live`.
+  Since 2026-11-06 the event also carries `batch` (LiveBatchPush: base, prev
+  seq, the batch's changes, touched base items, figures, updatedAt, bytes)
+  when its JSON is ≤ 32,000 characters; a tab holding the journal at `prev`
+  applies it (`applyLiveBatch`/`applyLivePoint`, packages/shared
+  `live/push.ts`, `src/data/live-known.ts`) and reads neither `/live` nor
+  `/points`. The `hello` carries `journals` (id, base, seq per open journal),
+  so a reconnect re-reads only journals that moved. `/live` reads were 22% of
+  the API's requests before.
 
 ### 7.8 Transparency and control
 

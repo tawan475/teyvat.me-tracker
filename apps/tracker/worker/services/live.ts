@@ -80,9 +80,10 @@ interface Attachment {
  * Capture's heartbeat interval (s): short while a page is in view, so a
  * command from the site is picked up soon; long otherwise (most of the day a
  * tab sits in the background: every 15 s was 6,000 requests a day per PC;
- * 120 s idle was still ~40% of the Worker's requests, 2026-11-02).
+ * 120 s idle was still ~40% of the Worker's requests, 2026-11-02; 30 s in
+ * view was still 16%, 2026-11-06: a command now waits up to a minute).
  */
-export const WATCHED_NEXT_S = 30
+export const WATCHED_NEXT_S = 60
 export const IDLE_NEXT_S = 300
 /**
  * A socket counts as in view while it connected or pinged this recently: a
@@ -141,6 +142,17 @@ export class LiveHub extends DurableObject<Env> {
       // On the primary (it writes); its bookmark goes in `hello`, so a page
       // that re-reads what hello says changed reads a replica that has it.
       const db = this.env.DB.withSession('first-primary')
+      // Beside it, on the live database: where each open journal stands, so a
+      // tab re-reads only the journals that moved while it had no socket.
+      const liveDb = (this.env as { LIVE_DB?: D1Database }).LIVE_DB
+      const journalsRead = liveDb
+        ? liveDb
+            .prepare('SELECT account_id, base_key, last_seq FROM live_journals WHERE user_id = ?1')
+            .bind(userId)
+            .all<{ account_id: number; base_key: string; last_seq: number }>()
+            .then((r) => r.results)
+            .catch(() => null)
+        : Promise.resolve(null)
       const [, user, accounts] = await this.serial(async () => {
         const results = await db.batch<Record<string, unknown>>([
           db
@@ -187,9 +199,19 @@ export class LiveHub extends DurableObject<Env> {
         at: Date.now(),
       } satisfies Attachment)
       const bookmark = readBookmark(db.getBookmark())
+      const journals = await journalsRead
       const hello: LiveEvent = {
         type: 'hello',
         ...(bookmark ? { d1: bookmark } : {}),
+        ...(journals
+          ? {
+              journals: journals.map((j) => ({
+                id: j.account_id,
+                base: j.base_key,
+                seq: j.last_seq,
+              })),
+            }
+          : {}),
         accounts: accounts!.results.map(
           (row): LiveAccount => ({
             id: row.id as number,

@@ -40,6 +40,7 @@ import {
   type Figures,
   type GoodDelta,
   type ItemIndex,
+  type LiveBatchPush,
   type LiveJournalResponse,
   type LivePoint,
   type SnapshotSummary,
@@ -144,7 +145,15 @@ export interface StoredBatch {
   seq: number
   collapse: boolean
   duplicate: boolean
+  /** The batch for the live event, when its JSON is at most PUSH_MAX_BYTES. */
+  batch?: LiveBatchPush
 }
+
+/**
+ * The largest batch the live event carries (JSON characters): tabs apply it
+ * without reading the journal. A bigger one is announced bare and re-read.
+ */
+export const PUSH_MAX_BYTES = 32_000
 
 /**
  * Stores one batch in the account's journal (POST /api/irminsul/changes).
@@ -280,7 +289,43 @@ export async function storeBatch(
   const collapse =
     (now - journal.opened_at > COLLAPSE_AFTER_MS && journalChanges > COLLAPSE_CHANGES) ||
     journalBytes > COLLAPSE_BYTES
-  return { seq: delta.seq, collapse, duplicate: false }
+  return {
+    seq: delta.seq,
+    collapse,
+    duplicate: false,
+    batch: pushOf(journal, delta, figures, now, journalBytes),
+  }
+}
+
+/** The batch as tabs apply it (LiveBatchPush), or undefined when too big. */
+function pushOf(
+  journal: JournalRow,
+  delta: GoodDelta,
+  figures: Figures,
+  now: number,
+  bytes: number,
+): LiveBatchPush | undefined {
+  const touched = touchedBaseItems(delta.changes)
+  const items: LiveBatchPush['items'] = []
+  // The item index is decoded only when the batch touches a base item.
+  if (touched.length > 0 && journal.items) {
+    const index = decodeItemIndex(toBytes(journal.items))
+    const lookup = { artifacts: new Map(index.artifacts), weapons: new Map(index.weapons) }
+    for (const { kind, guid } of touched) {
+      const fp = lookup[kind].get(guid)
+      if (fp !== undefined) items.push([kind, guid, fp])
+    }
+  }
+  const batch: LiveBatchPush = {
+    base: journal.base_key,
+    prev: journal.last_seq,
+    changes: [...delta.changes],
+    items,
+    figures,
+    updatedAt: now,
+    bytes,
+  }
+  return JSON.stringify(batch).length <= PUSH_MAX_BYTES ? batch : undefined
 }
 
 function emptyFigures(): Figures {

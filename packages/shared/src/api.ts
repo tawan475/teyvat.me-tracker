@@ -943,7 +943,12 @@ export interface ImportedAccount {
  * change, so open pages update without a reload:
  * - `hello`: first, on every connect: each account's id, data version and
  *   names as they are now, so a tab can tell whether it missed anything while
- *   it had no socket (and only then re-read the list).
+ *   it had no socket (and only then re-read the list); `journals`: the open
+ *   live journal of each of the user's own accounts (base key and seq), so a
+ *   tab re-reads only a journal that moved.
+ * - `live`: an account's live journal moved to `seq` (0: it was reset or
+ *   deleted). `batch`, when the batch was small enough, is the batch itself:
+ *   a tab holding the journal at `batch.prev` applies it without a read.
  * - `data`: an account's snapshots changed (an import, a capture seen again,
  *   a delete); `dataVersion` is the account's new version, `takenAt` the
  *   capture time for an import.
@@ -962,12 +967,12 @@ export interface ImportedAccount {
  * replica that already has that write answers them.
  */
 export type LiveEvent = (
-  | { type: 'hello'; accounts: LiveAccount[] }
+  | { type: 'hello'; accounts: LiveAccount[]; journals?: LiveJournalMark[] }
   | { type: 'data'; accountId: number; dataVersion: number | null; takenAt?: number }
   | { type: 'accounts' }
   | { type: 'planner'; accountId: number; tab?: string }
   | { type: 'wishes'; accountId: number; tab?: string }
-  | { type: 'live'; accountId: number; seq: number }
+  | { type: 'live'; accountId: number; seq: number; batch?: LiveBatchPush }
   | ({ type: 'presence'; accountId: number } & PresenceResponseForAccount)
 ) & { d1?: string; d1l?: string }
 
@@ -1011,6 +1016,32 @@ export interface LivePointsResponse {
  * and reconnects only if that works.
  */
 export const LIVE_SESSION_ENDED_CLOSE = 4003
+
+/** Where an account's open live journal stands (the live `hello`). */
+export interface LiveJournalMark {
+  id: number
+  /** The journal's base: the base snapshot's content key. */
+  base: string
+  seq: number
+}
+
+/**
+ * One live batch as the journal took it (the live `live` event): applied to
+ * the journal at `prev` it gives the journal at the event's `seq`, as
+ * `GET /api/accounts/:id/live` would answer it.
+ */
+export interface LiveBatchPush {
+  /** The journal's base key (LiveJournalResponse `base.contentKey`). */
+  base: string
+  prev: number
+  /** The batch's changes, merged onto the journal's with `mergeChanges`. */
+  changes: DeltaChange[]
+  /** Base items the batch touches (`items` of the journal response), added to it. */
+  items: ['artifacts' | 'weapons', string, number][]
+  figures: SnapshotSummary
+  updatedAt: number
+  bytes: number
+}
 
 /** An account as the live `hello` describes it. */
 export interface LiveAccount {

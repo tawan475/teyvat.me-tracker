@@ -1,4 +1,6 @@
 import {
+  applyLiveBatch,
+  applyLivePoint,
   type AccountCreatedResponse,
   type AccountResponse,
   type SnapshotResponse,
@@ -14,7 +16,10 @@ import {
   COLLAPSE_CHANGES,
   DAILY_BATCHES,
   MERGE_WINDOW_MS,
+  PUSH_MAX_BYTES,
   openJournal,
+  readJournal,
+  readPoints,
   storeBatch,
 } from '../services/live-sync'
 import { utcDay } from '../services/upload-limits'
@@ -191,6 +196,103 @@ describe('live sync on', () => {
     expect(await journalRow(account.id)).toMatchObject({ base_key: next.live!.base, last_seq: 0 })
     expect(await batchRows(account.id)).toHaveLength(0)
     expect(await errorCode(await send(importKey, delta(base, 3, [])))).toBe('resync')
+  })
+
+  it("a batch's push applied to the journal before it gives what a read answers", async () => {
+    const { account, userId, importKey } = await setup()
+    const answer = await snapshot(importKey, liveGood(), 1_000)
+    const base = answer.live!.base
+    const owner = { id: account.id, userId }
+    const now = Date.now()
+    const from = utcDay(now - 86_400_000)
+    const to = utcDay(now + 86_400_000)
+    // Base items as a set: the server lists them in merged-change order.
+    const sorted = (j: LiveJournalResponse) => ({
+      ...j,
+      items: [...(j.items ?? [])].sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0)),
+    })
+    let journal = (await readJournal(env.LIVE_DB, account.id)).response
+    let points = await readPoints(env.LIVE_DB, account.id, from, to)
+    // Past both the merge window and a chart point's spacing from the last one.
+    const later = 2 * MERGE_WINDOW_MS + 60_000
+    const steps: [number, GoodDelta['changes']][] = [
+      [
+        0,
+        [
+          ['set', ['materials', 'Mora'], 10],
+          ['set', ['artifacts', guid(100), 'lock'], false],
+        ],
+      ],
+      // Inside the merge window: the same stored row.
+      [
+        60_000,
+        [
+          ['set', ['artifacts', guid(101), 'level'], 20],
+          ['add', ['artifacts', guid(900)], { ...sampleGood().artifacts[1] }],
+        ],
+      ],
+      [
+        120_000,
+        [
+          ['set', ['artifacts', guid(900), 'lock'], true],
+          ['set', ['materials', 'Mora'], 20],
+          ['set', ['artifacts', guid(100), 'lock'], true],
+        ],
+      ],
+      // Past it: a new row and a new chart point; a base item deleted after a change to it.
+      [
+        later,
+        [
+          ['del', ['artifacts', guid(101)]],
+          ['set', ['weapons', guid(500), 'level'], 90],
+        ],
+      ],
+      [later + 1_000, []],
+    ]
+    for (const [i, [offset, changes]] of steps.entries()) {
+      const stored = await storeBatch(env.LIVE_DB, owner, delta(base, i + 1, changes), now + offset)
+      expect(stored.batch).toBeDefined()
+      const read = (await readJournal(env.LIVE_DB, account.id)).response
+      const applied = applyLiveBatch(journal, stored.seq, stored.batch!)
+      expect(applied && sorted(applied)).toEqual(sorted(read))
+      const readNow = await readPoints(env.LIVE_DB, account.id, from, to)
+      const pushed = { at: stored.batch!.updatedAt, figures: stored.batch!.figures }
+      expect(applyLivePoint(points, pushed)).toEqual(readNow)
+      journal = read
+      points = readNow
+    }
+    expect(await batchRows(account.id)).toHaveLength(2)
+    expect(points.length).toBeGreaterThanOrEqual(2)
+
+    // A batch that does not follow the journal held is refused.
+    const stale = await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, steps.length + 1, [['set', ['materials', 'Mora'], 30]]),
+      now + later + 2_000,
+    )
+    expect(applyLiveBatch({ ...journal, seq: 1 }, stale.seq, stale.batch!)).toBeNull()
+    expect(
+      applyLiveBatch(
+        { ...journal, base: { ...journal.base!, contentKey: 'x' } },
+        stale.seq,
+        stale.batch!,
+      ),
+    ).toBeNull()
+
+    // Too big to push: announced bare.
+    const many = Array.from(
+      { length: 1_000 },
+      (_, n) => ['set', ['materials', `Thing${String(n).padStart(6, '0')}`], 123_456] as const,
+    ) as GoodDelta['changes']
+    expect(JSON.stringify(many).length).toBeGreaterThan(PUSH_MAX_BYTES)
+    const big = await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, steps.length + 2, many),
+      now + later + 3_000,
+    )
+    expect(big.batch).toBeUndefined()
   })
 
   it('an unchanged snapshot (same inventory, later) also restarts the journal', async () => {

@@ -165,6 +165,63 @@ describe('live socket', () => {
           server: 'ASIA',
         },
       ],
+      // Every snapshot opens a journal: where it stands.
+      journals: [{ id: account.id, base: expect.any(String), seq: 0 }],
+    })
+    tab.socket.close(1000)
+  })
+
+  it("says where each open live journal stands, and a batch's event carries the batch", async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const top = 812345678n << 32n
+    const good = sampleGood(sampleExtras())
+    const answer = (await (
+      await importByKey(
+        importKey,
+        {
+          ...good,
+          artifacts: good.artifacts.map((a, i) => ({
+            ...a,
+            gi_guid: String(top + BigInt(100 + i)),
+          })),
+          weapons: good.weapons.map((w, i) => ({ ...w, gi_guid: String(top + BigInt(500 + i)) })),
+          gi_capture: {
+            v: 1,
+            reason: 'login',
+            session: 'SESSIONFORTEST01',
+            world: 1,
+            journal: { seq: 0 },
+          },
+        },
+        1_000,
+      )
+    ).json()) as ImportResponse
+    const base = answer.live!.base
+    const tab = await openTab(client)
+    expect(tab.hello).toMatchObject({ journals: [{ id: account.id, base, seq: 0 }] })
+
+    const sent = await SELF.fetch(`${ORIGIN}/api/irminsul/changes`, {
+      method: 'POST',
+      headers: { 'x-import-key': importKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        format: 'GOOD-X-delta',
+        v: 1,
+        uid: 812345678,
+        session: 'SESSIONFORTEST01',
+        seq: 1,
+        base,
+        at: 1_792_000_000_001,
+        changes: [['set', ['materials', 'Mora'], 7]],
+      }),
+    })
+    expect(sent.status).toBe(200)
+    const event = (await tab.next()) as LiveEvent
+    expect(event).toMatchObject({
+      type: 'live',
+      accountId: account.id,
+      seq: 1,
+      batch: { base, prev: 0, changes: [['set', ['materials', 'Mora'], 7]], items: [] },
     })
     tab.socket.close(1000)
   })

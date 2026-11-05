@@ -304,6 +304,16 @@ describe('sign in, upload, refresh, sign out', () => {
       server: 'ASIA',
       dashboardUrl: `${ORIGIN}/app/a/${account.id}`,
     })
+    // The presence answer carries the same, so Capture needs no whoami poll.
+    const beat = await bearer('/api/irminsul/presence', tokens.access_token, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ v: 1, state: 'running', uid: null }),
+    })
+    expect(beat.status).toBe(200)
+    expect(((await beat.json()) as { whoami: unknown }).whoami).toEqual(
+      (await whoami(tokens.access_token)).body,
+    )
     // No UID is fine here; another UID lands on the account too, with a warning.
     const plain = await upload(tokens.access_token, sampleGood(), 1_000)
     expect(plain.status).toBe(201)

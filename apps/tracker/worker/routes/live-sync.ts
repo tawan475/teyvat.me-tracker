@@ -113,7 +113,12 @@ export const liveChanges = new Hono<AppEnv>().post('/changes', async (c) => {
     server: account.server,
   })
   if (watching)
-    notifyAccount(c, listeners, { type: 'live', accountId: account.id, seq: stored.seq })
+    notifyAccount(c, listeners, {
+      type: 'live',
+      accountId: account.id,
+      seq: stored.seq,
+      ...(stored.batch ? { batch: stored.batch } : {}),
+    })
   return c.json<LiveChangesResponse>({
     ok: true,
     seq: stored.seq,

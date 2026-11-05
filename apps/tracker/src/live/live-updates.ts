@@ -49,7 +49,7 @@ import { setPresence } from './presence'
 import { onTabMessage, postToTabs, tabsCanTalk, type TabMessage } from './channel'
 import { importingAccounts, onApplyPending, updatesHeld } from './holds'
 import { requestLeadership } from './leader'
-import { liveSeenAt, noteLiveChange } from './journal'
+import { liveSeenAt, noteLiveChange, noteLiveMarks } from './journal'
 import { emitPlannerChange } from './planner-changes'
 import { emitWishChange } from './wish-changes'
 import {
@@ -215,13 +215,18 @@ export function useLiveUpdates(): void {
       void accounts.refreshInvitations()
     }
     if (event.type === 'hello') {
-      // Journals may have moved while there was no socket: re-read them (a 304 if not).
-      for (const account of accounts.list) if (account.liveSync) noteLiveChange(account.id)
+      // Journals may have moved while there was no socket: re-read those the
+      // hello does not show where this tab holds them.
+      noteLiveMarks(
+        accounts.list.filter((a) => a.liveSync).map((a) => a.id),
+        event.journals,
+      )
     }
     if (event.type === 'live') {
-      // Live sync: the account's journal moved; its "now" views re-read it.
+      // Live sync: the account's journal moved; its "now" views re-read it
+      // (from the batch the event carries, when it does).
       liveSeenAt.set(event.accountId, Date.now())
-      noteLiveChange(event.accountId)
+      noteLiveChange(event.accountId, event.seq, event.batch)
       return
     }
     if (event.type === 'presence') {

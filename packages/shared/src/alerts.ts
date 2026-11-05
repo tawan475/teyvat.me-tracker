@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod'
+import type { IrminsulWhoami } from './irminsul'
 
 /** What one device is alerted about (`user_sessions.alerts`). */
 export interface DeviceAlerts {
@@ -155,6 +156,12 @@ export interface PresenceResponse {
   commands: { id: string; kind: CaptureCommandKind }[]
   /** This device's alerts (signed in only; null with an import key or when never set). */
   alerts: DeviceAlerts | null
+  /**
+   * Signed in only: what `GET /api/irminsul/whoami` answers now (who, where
+   * uploads go, the Devices link), so Capture keeps it current without
+   * polling whoami. Absent with an import key or from an older tracker.
+   */
+  whoami?: IrminsulWhoami
 }
 
 /** Capture playing on one of the user's devices, as the website shows it. */

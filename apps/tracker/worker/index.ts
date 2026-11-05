@@ -98,7 +98,7 @@ const EVENTS_CRON = '7 * * * *'
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    // The landing page's files (its demo videos need byte ranges): the asset, sliced.
+    // The landing page's demo videos (wrangler.jsonc routes only those here): the asset, sliced.
     if (new URL(request.url).pathname.startsWith('/landing/')) {
       return env.ASSETS.fetch(request.url).then((asset) => withRange(request, asset))
     }

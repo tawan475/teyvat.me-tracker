@@ -23,12 +23,15 @@
   // an import's 2-3 round trips cost the distance to it.
 
   // The Vue app is served as static assets; only /api/* reaches the Worker,
-  // and /landing/* (the demo videos need byte ranges: worker/lib/byte-range.ts).
+  // and the landing page's two demo videos: browsers fetch a video in byte
+  // ranges, and static assets answer a Range request with the whole file
+  // (checked 2026-11-06; worker/lib/byte-range.ts slices it). Their posters
+  // need no ranges and stay static (they went through the Worker until then).
   // Unknown paths fall back to index.html for client-side routing.
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/landing/*"],
+    "run_worker_first": ["/api/*", "/landing/demo-pc.mp4", "/landing/demo-android.mp4"],
   },
 
   // Created with: wrangler d1 create gdt --location apac (2026-10-04).

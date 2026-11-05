@@ -30,9 +30,11 @@ import type { AppEnv } from '../env'
 import { ApiError, idParam, parseJson, rateLimit } from '../lib/http'
 import { bearerToken, readAccessToken } from '../lib/irminsul-auth'
 import { requireActiveSession, requireUser } from '../lib/session'
-import { keyOwner, sessionOwner, uploaderUserId } from '../lib/uploader'
+import { pageOrigin } from '../lib/email'
+import { keyOwner, sessionOwnerWith, uploaderUserId } from '../lib/uploader'
 import { vapidKeys, type VapidVars } from '../lib/web-push'
 import { loadAccount, pickByUid, type UploadOwner } from '../services/accounts'
+import { whoamiOf } from '../services/irminsul'
 import type { FactsUpdate } from '../services/alerts'
 import {
   devicesChanged,
@@ -122,14 +124,15 @@ async function captureOf(c: Context<AppEnv>, limiter: RateLimit | undefined, buc
       sid: null,
       device: 'Capture',
       alerts: null,
+      whoami: undefined,
     }
   }
   const claims = await readAccessToken(c, token)
   if (claims === 'expired') throw new ApiError(401, 'token_expired', 'Access token expired')
   if (claims === 'invalid') throw new ApiError(401, 'invalid_token', 'Not an irminsul token')
   await rateLimit(limiter, `irminsul-${bucket}:${claims.sid}`)
-  const [owner, row] = await Promise.all([
-    sessionOwner(c, claims),
+  const [{ owner, session }, row] = await Promise.all([
+    sessionOwnerWith(c, claims),
     c.env.DB.prepare('SELECT device_name, alerts FROM user_sessions WHERE id = ?1')
       .bind(claims.sid)
       .first<{ device_name: string | null; alerts: string | null }>(),
@@ -139,6 +142,8 @@ async function captureOf(c: Context<AppEnv>, limiter: RateLimit | undefined, buc
     sid: claims.sid,
     device: row?.device_name || 'Capture',
     alerts: row?.alerts ? readDeviceAlerts(JSON.parse(row.alerts)) : null,
+    // What GET /whoami answers, from the row read anyway: Capture needs no whoami poll.
+    whoami: whoamiOf(pageOrigin(c.env, c.req.url), claims.sid, session),
   }
 }
 
@@ -149,7 +154,7 @@ function accountOf(owner: UploadOwner, uid: string | null) {
 }
 
 export const captureLink = new Hono<AppEnv>().post('/presence', async (c) => {
-  const { owner, sid, device, alerts } = await captureOf(c, c.env.LIVE_LIMITER, 'presence')
+  const { owner, sid, device, alerts, whoami } = await captureOf(c, c.env.LIVE_LIMITER, 'presence')
   const body = await parseJson(c, presenceRequest)
   const uid = body.uid ? String(body.uid) : null
   const account = accountOf(owner, uid)
@@ -164,7 +169,7 @@ export const captureLink = new Hono<AppEnv>().post('/presence', async (c) => {
     app: body.app ?? null,
   })
   c.header('Cache-Control', 'no-store')
-  return c.json<PresenceResponse>({ next, commands, alerts })
+  return c.json<PresenceResponse>({ next, commands, alerts, ...(whoami ? { whoami } : {}) })
 })
 
 // ------------------------------------------------------------------ the website, per account

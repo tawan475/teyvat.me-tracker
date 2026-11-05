@@ -131,6 +131,39 @@ describe('events', () => {
       seq: 12,
     })
     expect(parseLiveEvent('{"type":"live","accountId":"3","seq":12}')).toBeNull()
+    // With the batch itself; a malformed one is dropped (the event stays, so the page re-reads).
+    const batch = {
+      base: 'k1',
+      prev: 11,
+      changes: [['set', ['materials', 'Mora'], 7]],
+      items: [['artifacts', '9', 42]],
+      figures: { mora: 7 },
+      updatedAt: 1000,
+      bytes: 80,
+    }
+    expect(parseLiveEvent(JSON.stringify({ type: 'live', accountId: 3, seq: 12, batch }))).toEqual({
+      type: 'live',
+      accountId: 3,
+      seq: 12,
+      batch,
+    })
+    for (const bad of [
+      { ...batch, prev: '11' },
+      { ...batch, changes: [['set', 'materials', 7]] },
+      { ...batch, figures: null },
+      'batch',
+    ]) {
+      expect(
+        parseLiveEvent(JSON.stringify({ type: 'live', accountId: 3, seq: 12, batch: bad })),
+      ).toEqual({ type: 'live', accountId: 3, seq: 12 })
+    }
+    // The hello says where each open journal stands.
+    expect(
+      parseLiveEvent('{"type":"hello","accounts":[],"journals":[{"id":1,"base":"k1","seq":4}]}'),
+    ).toEqual({ type: 'hello', accounts: [], journals: [{ id: 1, base: 'k1', seq: 4 }] })
+    expect(
+      parseLiveEvent('{"type":"hello","accounts":[],"journals":[{"id":1,"base":2,"seq":4}]}'),
+    ).toEqual({ type: 'hello', accounts: [] })
     // Wish history changed elsewhere (it was dropped here before).
     expect(parseLiveEvent('{"type":"wishes","accountId":3,"tab":"t1"}')).toEqual({
       type: 'wishes',

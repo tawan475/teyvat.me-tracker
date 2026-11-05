@@ -25,7 +25,7 @@ import {
   type KeyAccount,
   type UploadOwner,
 } from '../services/accounts'
-import { configUrl, loadUploadSession } from '../services/irminsul'
+import { configUrl, loadUploadSession, type LiveSession } from '../services/irminsul'
 import { pageOrigin } from './email'
 import { ApiError, clientIp, rateLimit } from './http'
 import type { D1Meter } from './meter'
@@ -63,6 +63,14 @@ export async function sessionOwner(
   c: Context<AppEnv>,
   claims: IrminsulClaims,
 ): Promise<UploadOwner> {
+  return (await sessionOwnerWith(c, claims)).owner
+}
+
+/** As sessionOwner, with the session row it read (what whoami answers from). */
+export async function sessionOwnerWith(
+  c: Context<AppEnv>,
+  claims: IrminsulClaims,
+): Promise<{ owner: UploadOwner; session: LiveSession }> {
   const found = await loadUploadSession(c.env.DB, claims)
   if (!found) throw irminsulSessionEnded()
   const { session, accounts } = found
@@ -79,9 +87,15 @@ export async function sessionOwner(
         `The account this PC uploads to was deleted. Choose where uploads go: ${where}`,
       )
     }
-    return { scope: 'account', account, userId: account.user_id ?? claims.userId }
+    return {
+      owner: { scope: 'account', account, userId: account.user_id ?? claims.userId },
+      session,
+    }
   }
-  return { scope: 'user', user: { id: claims.userId, username: session.username }, accounts }
+  return {
+    owner: { scope: 'user', user: { id: claims.userId, username: session.username }, accounts },
+    session,
+  }
 }
 
 /**

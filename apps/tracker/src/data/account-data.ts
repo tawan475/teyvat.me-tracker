@@ -11,6 +11,13 @@
 
 import { accountPlayer, type AccountPlayer } from '@/data/account-player'
 import { withJournal, type LiveApplied } from '@/data/live-now'
+import {
+  heldJournal,
+  heldPoints,
+  holdJournal,
+  holdPoints,
+  liveEventsSeen,
+} from '@/data/live-known'
 import { liveVersions } from '@/live/journal'
 import {
   artifactRows,
@@ -236,9 +243,16 @@ function liveVersion(account: AccountRef): number {
  */
 export function loadLive(account: AccountRef): Promise<LiveJournalResponse | null> {
   if (!account.liveSync) return Promise.resolve(null)
-  return cached(account, `live:${liveVersion(account)}`, () =>
-    account.source === 'staff' ? api.staff.live(account.id) : api.live(account.id),
-  )
+  return cached(account, `live:${liveVersion(account)}`, async () => {
+    if (account.source === 'staff') return api.staff.live(account.id)
+    // Kept current from the socket's batches (live-known): no request.
+    const held = heldJournal(account.id, account.dataVersion)
+    if (held) return held
+    const since = liveEventsSeen(account.id)
+    const journal = await api.live(account.id)
+    holdJournal(account.id, account.dataVersion, journal, since)
+    return journal
+  })
 }
 
 /**
@@ -251,8 +265,13 @@ export function loadPoints(
   if (!account.liveSync) return Promise.resolve([])
   return cached(account, `points:${liveVersion(account)}`, async () => {
     try {
-      const read = account.source === 'staff' ? api.staff.points : api.points
-      return (await read(account.id)).points
+      if (account.source === 'staff') return (await api.staff.points(account.id)).points
+      const held = heldPoints(account.id, account.dataVersion)
+      if (held) return held
+      const since = liveEventsSeen(account.id)
+      const { points } = await api.points(account.id)
+      holdPoints(account.id, account.dataVersion, points, since)
+      return points
     } catch {
       // The charts still have every snapshot.
       return []

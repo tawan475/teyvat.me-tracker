@@ -9,7 +9,7 @@ import {
 } from '@gdt/shared'
 import { env, runInDurableObject } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
-import { liveHub, type LiveHub } from '../services/live'
+import { WATCHED_NEXT_S, liveHub, type LiveHub } from '../services/live'
 import { RESIN_STEP_MS } from '../services/alerts'
 import { ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp, withEnv } from './client'
 
@@ -326,6 +326,7 @@ describe('Capture presence and commands', () => {
         platform: 'windows',
       })
     ).json()) as PresenceResponse
+    // With an import key: no whoami.
     expect(first).toEqual({ next: 300, commands: [], alerts: null })
 
     const shown = await client.json<PresenceResponseForAccount>(
@@ -380,7 +381,7 @@ describe('Capture presence and commands', () => {
     const socket = response.webSocket!
     socket.accept()
     // Just connected: in view.
-    expect(await beat()).toBe(30)
+    expect(await beat()).toBe(WATCHED_NEXT_S)
 
     // Connected long ago and never pinged since: a hidden tab.
     await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {

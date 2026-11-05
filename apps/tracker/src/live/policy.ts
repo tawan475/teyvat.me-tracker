@@ -6,7 +6,13 @@
  * (or wait while a dialog is open), and which of them is a new capture.
  */
 
-import type { AccountResponse, LiveAccount, LiveEvent } from '@gdt/shared'
+import type {
+  AccountResponse,
+  LiveAccount,
+  LiveBatchPush,
+  LiveEvent,
+  LiveJournalMark,
+} from '@gdt/shared'
 
 // ----------------------------------------------------------------- timing
 
@@ -115,7 +121,7 @@ export function parseLiveEvent(text: unknown): LiveEvent | null {
 
 function parseEventBody(event: Record<string, unknown>): LiveEvent | null {
   if (event.type === 'accounts') return { type: 'accounts' }
-  if (event.type === 'hello') return parseHello(event.accounts)
+  if (event.type === 'hello') return parseHello(event.accounts, event.journals)
   if (event.type === 'planner' || event.type === 'wishes') {
     if (!Number.isSafeInteger(event.accountId)) return null
     return {
@@ -126,10 +132,12 @@ function parseEventBody(event: Record<string, unknown>): LiveEvent | null {
   }
   if (event.type === 'live') {
     if (!Number.isSafeInteger(event.accountId)) return null
+    const batch = parseBatch(event.batch)
     return {
       type: 'live',
       accountId: event.accountId as number,
       seq: Number.isSafeInteger(event.seq) ? (event.seq as number) : 0,
+      ...(batch ? { batch } : {}),
     }
   }
   if (event.type === 'presence') {
@@ -162,7 +170,39 @@ function parseEventBody(event: Record<string, unknown>): LiveEvent | null {
   }
 }
 
-function parseHello(value: unknown): LiveEvent | null {
+/** A live event's batch, when it has the right shape (its changes are checked as applied). */
+function parseBatch(value: unknown): LiveBatchPush | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const b = value as Record<string, unknown>
+  if (
+    typeof b.base !== 'string' ||
+    !Number.isSafeInteger(b.prev) ||
+    !Array.isArray(b.changes) ||
+    !b.changes.every((c) => Array.isArray(c) && typeof c[0] === 'string' && Array.isArray(c[1])) ||
+    !Array.isArray(b.items) ||
+    !b.figures ||
+    typeof b.figures !== 'object' ||
+    typeof b.updatedAt !== 'number' ||
+    typeof b.bytes !== 'number'
+  ) {
+    return undefined
+  }
+  return b as unknown as LiveBatchPush
+}
+
+/** The hello's journal marks (absent: the server did not say). */
+function parseMarks(value: unknown): LiveJournalMark[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const marks: LiveJournalMark[] = []
+  for (const item of value as Record<string, unknown>[]) {
+    if (!item || !Number.isSafeInteger(item.id) || typeof item.base !== 'string') return undefined
+    if (!Number.isSafeInteger(item.seq)) return undefined
+    marks.push({ id: item.id as number, base: item.base, seq: item.seq as number })
+  }
+  return marks
+}
+
+function parseHello(value: unknown, journals?: unknown): LiveEvent | null {
   if (!Array.isArray(value)) return null
   const accounts: LiveAccount[] = []
   for (const item of value as Record<string, unknown>[]) {
@@ -177,7 +217,8 @@ function parseHello(value: unknown): LiveEvent | null {
       server: (item.server as LiveAccount['server']) ?? null,
     })
   }
-  return { type: 'hello', accounts }
+  const marks = parseMarks(journals)
+  return { type: 'hello', accounts, ...(marks ? { journals: marks } : {}) }
 }
 
 /** What a tab holds, as far as telling events apart goes. */

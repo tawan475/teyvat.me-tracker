@@ -274,7 +274,8 @@ const SUM_ROW =
   <UiModal :open="!!enemy || !!legend" :title="name" size="detail" bare @close="$emit('close')">
     <div v-if="enemy || legend" class="grid lg:grid-cols-[22rem_minmax(0,1fr)]">
       <!-- The game's item panel: picture, name, category, text. From lg the numbers' side
-           sets the height and a long text scrolls inside the panel. -->
+           sets the height and a long text scrolls inside the panel. The numbers' side is never shorter
+           than the picture, the name and a few lines of text (wildlife has no numbers). -->
       <div class="lg:relative">
         <aside
           class="flex flex-col border-border-default bg-surface-sunken lg:absolute lg:inset-0 lg:border-r"
@@ -359,7 +360,7 @@ const SUM_ROW =
         </aside>
       </div>
 
-      <section class="flex min-w-0 flex-col gap-4 p-4 sm:p-5 lg:pt-4">
+      <section class="flex min-w-0 flex-col gap-4 p-4 sm:p-5 lg:min-h-[30rem] lg:pt-4">
         <!-- Which monster: a Local Legend's member, or the entry's version; close (wide screens) -->
         <div class="flex items-center gap-3">
           <div

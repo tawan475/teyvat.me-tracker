@@ -14,7 +14,14 @@ defineProps<{ images: readonly string[] }>()
 <template>
   <div class="page-backdrop" aria-hidden="true">
     <div class="wall">
-      <img v-for="(src, i) in images" :key="`${src}-${i}`" :src="src" alt="" loading="lazy" />
+      <img
+        v-for="(src, i) in images"
+        :key="`${src}-${i}`"
+        :src="src"
+        alt=""
+        loading="lazy"
+        data-skeleton="off"
+      />
     </div>
     <div class="fade" />
   </div>

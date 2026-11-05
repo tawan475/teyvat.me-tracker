@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { ArrowDownUp, Clock, Sparkles } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -9,7 +9,6 @@ import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
-import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiStat from '@/components/ui/UiStat.vue'
 import WishBannerCard from '@/components/wishes/WishBannerCard.vue'
 import WishBannerHistory from '@/components/wishes/WishBannerHistory.vue'
@@ -22,7 +21,6 @@ import { WISH_BANNERS, bannerInfo, formatPity, wishMinute } from '@/components/w
 import { EXPECTED_PITY, PRIMOS_PER_PULL, monthlyPulls, type BannerStats } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { readStorage, writeStorage } from '@/lib/storage'
 import { loadLatestInventory } from '@/data/account-data'
 import { useResource } from '@/data/use-resource'
 import { useAccount, useAccountRoute, useReadOnly } from './context'
@@ -107,26 +105,13 @@ function retry() {
 
 const dialog = ref(false)
 
-/** My wishes, or every banner that has opened with the account's run on each (per device). */
-type View = 'mine' | 'banners'
-const VIEW_KEY = 'wishes:view'
-const view = ref<View>(readStorage(VIEW_KEY) === 'banners' ? 'banners' : 'mine')
-watch(view, (value) => writeStorage(VIEW_KEY, value === 'mine' ? null : value))
-const views = computed(() => [
-  { value: 'mine' as const, label: t('wishes.history.viewMine') },
-  { value: 'banners' as const, label: t('wishes.history.title') },
-])
-/** A run named in the URL (`?run=`, the banner page's links) opens in Banner history. */
+/**
+ * Banner history follows on the same page (the user's call, 2026-11-06: no
+ * tab to switch, the banners are seen at once). A run named in the URL
+ * (`?run=`, the banner page's links) opens and scrolls into view there.
+ */
 const route = useRoute()
-const router = useRouter()
 const openRun = computed(() => (typeof route.query.run === 'string' ? route.query.run : null))
-watch(openRun, (key) => key && (view.value = 'banners'), { immediate: true })
-// Leaving Banner history drops `?run=` again, so the same link opens the run
-// a second time (a click on the URL the page already has is no navigation).
-watch(view, (value) => {
-  if (value !== 'banners' && route.query.run !== undefined)
-    void router.replace({ query: { ...route.query, run: undefined } })
-})
 </script>
 
 <template>
@@ -161,22 +146,7 @@ watch(view, (value) => {
     />
 
     <template v-else-if="ready && history && stats">
-      <UiSegmented
-        v-model="view"
-        :options="views"
-        :label="$t('wishes.history.view')"
-        class="mb-4"
-      />
-      <WishBannerHistory
-        v-if="view === 'banners'"
-        :history="history"
-        :stats="stats"
-        :account="account"
-        :player-uid="capture.data.value?.good.gi_player?.uid ?? null"
-        :ar="capture.data.value?.good.gi_player?.ar ?? null"
-        :open-run="openRun"
-      />
-      <UiPanel v-else-if="history.total === 0" flush>
+      <UiPanel v-if="history.total === 0" flush>
         <div :title="$t('wishes.overview.syncHelp')">
           <UiEmpty :title="$t('wishes.overview.empty')" :body="$t('wishes.overview.emptyBody')">
             <template #icon><Sparkles aria-hidden="true" /></template>
@@ -187,7 +157,7 @@ watch(view, (value) => {
         </div>
       </UiPanel>
       <WishBargains
-        v-if="view === 'mine' && history.total === 0 && capture.data.value"
+        v-if="history.total === 0 && capture.data.value"
         class="mt-4"
         :bargains="bargains"
         :materials="bag"
@@ -195,7 +165,7 @@ watch(view, (value) => {
         :now="Date.now()"
       />
 
-      <div v-if="view === 'mine' && history.total > 0" class="flex flex-col gap-4">
+      <div v-if="history.total > 0" class="flex flex-col gap-4">
         <!-- Cards stretch to the row's tallest; an open card's list hangs below it (absolute). -->
         <section
           :aria-label="$t('wishes.overview.banners')"
@@ -274,6 +244,20 @@ watch(view, (value) => {
         </div>
         -->
       </div>
+
+      <section aria-labelledby="banner-history" class="mt-8 flex flex-col gap-3">
+        <h2 id="banner-history" class="text-lg font-semibold text-text-primary">
+          {{ $t('wishes.history.title') }}
+        </h2>
+        <WishBannerHistory
+          :history="history"
+          :stats="stats"
+          :account="account"
+          :player-uid="capture.data.value?.good.gi_player?.uid ?? null"
+          :ar="capture.data.value?.good.gi_player?.ar ?? null"
+          :open-run="openRun"
+        />
+      </section>
     </template>
 
     <div v-else aria-busy="true" :aria-label="$t('wishes.loading')" class="flex flex-col gap-4">

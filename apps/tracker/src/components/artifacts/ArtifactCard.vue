@@ -124,6 +124,7 @@ const wearer = computed(() => {
         :src="EMBLEM_URL"
         alt=""
         class="absolute max-w-none opacity-60"
+        data-skeleton="off"
         :style="BAND_EMBLEM_STYLE"
       />
       <img

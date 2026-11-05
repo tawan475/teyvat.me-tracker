@@ -41,8 +41,11 @@ const failed = ref<ReadonlySet<string>>(new Set())
 function fail(event: Event, src: string) {
   const img = event.target as HTMLImageElement
   const english = bannerArtFallback(img.src)
-  if (english) img.src = english
-  else failed.value = new Set([...failed.value, src])
+  if (english) {
+    // The English art loads in this <img>: it shows the loading look again (lib/image-loading).
+    delete img.dataset.loaded
+    img.src = english
+  } else failed.value = new Set([...failed.value, src])
 }
 
 const pct = (share: number) => `${(share * 100).toFixed(1)}%`

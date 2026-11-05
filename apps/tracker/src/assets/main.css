@@ -602,3 +602,23 @@ thead[data-stuck] {
     0 1px 0 var(--color-border-default),
     0 6px 10px -6px rgb(0 0 0 / 0.3);
 }
+
+/* Every image breathes on the skeleton colour until it has loaded or failed
+   (lib/image-loading.ts marks it data-loaded). The breathing is one animated
+   SVG used as the background, not a CSS animation per image: a page with
+   hundreds of lazy images waiting below the fold animates nothing off screen
+   (the browser repaints an animated image only where it shows), and no image
+   gets a compositor layer. Opacity is held at 1 meanwhile, so fade-in gates
+   (opacity 0 until loaded) show it too. data-skeleton="off" opts an image
+   out (backdrop art, decorative emblems). */
+img:not([data-loaded]):not([data-skeleton='off']) {
+  opacity: 1 !important;
+  background: var(--color-surface-overlay)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'%3E%3Crect width='1' height='1' fill='%23fff' opacity='0'%3E%3Canimate attributeName='opacity' values='0;.14;0' dur='2s' repeatCount='indefinite'/%3E%3C/rect%3E%3C/svg%3E")
+    center / 100% 100% no-repeat;
+}
+@media (prefers-reduced-motion: reduce) {
+  img:not([data-loaded]):not([data-skeleton='off']) {
+    background-image: none;
+  }
+}

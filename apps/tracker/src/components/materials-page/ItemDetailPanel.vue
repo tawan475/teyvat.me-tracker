@@ -58,6 +58,7 @@ const runColor = (color: string) => `color-mix(in oklab, ${color} 55%, var(--art
         :src="EMBLEM_URL"
         alt=""
         class="absolute max-w-none opacity-70"
+        data-skeleton="off"
         :style="EMBLEM_STYLE"
         aria-hidden="true"
       />

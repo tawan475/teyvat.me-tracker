@@ -7,8 +7,10 @@ import { i18n } from './i18n'
 import './i18n/game-names'
 import { applyLocale, resolveLocale, storedPreference, warnMissingKeys } from './i18n/apply'
 import { registerServiceWorker } from './pwa/register'
+import { watchImageLoading } from './lib/image-loading'
 import router from './router'
 
+watchImageLoading()
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)

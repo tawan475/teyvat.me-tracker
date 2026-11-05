@@ -145,11 +145,10 @@ export function nextMark(
   return { amount, at: reachedAt(reading, amount, now)! }
 }
 
-/**
- * The amounts the marks table lists (a Discord user's ask, 2026-11-05, like
- * paimon.moe's resin calculator): the game's costs and its own milestones.
- */
-export const RESIN_MARKS = [40, 60, 80, 100, 120, 160, 180, 200] as const
+/** At most this many "when resin reaches" amounts (account setting `planner.resinMarks`). */
+export const MAX_RESIN_MARKS = 12
+/** At most this many quick buttons (account setting `planner.resinSteps`). */
+export const MAX_RESIN_STEPS = 4
 
 export interface ResinMark {
   amount: number
@@ -159,15 +158,19 @@ export interface ResinMark {
   reached: boolean
 }
 
-/** Every mark with when resin reaches it, in amount order (reached ones come first by nature). */
+/**
+ * Each chosen amount (the account's `planner.resinMarks`) with when resin
+ * reaches it, in amount order (reached ones come first by nature).
+ */
 export function resinMarks(
   reading: Pick<ResinReading, 'value' | 'at'>,
   now: number,
-  amounts: readonly number[] = RESIN_MARKS,
+  amounts: readonly number[],
 ): ResinMark[] {
   const current = resinAt(reading, now)
-  return amounts
-    .filter((amount) => amount <= RESIN_MAX)
+  return [...new Set(amounts)]
+    .filter((amount) => Number.isInteger(amount) && amount > 0 && amount <= RESIN_MAX)
+    .sort((a, b) => a - b)
     .map((amount) => {
       const at = reachedAt(reading, amount, now)!
       return { amount, at, reached: current >= amount }
@@ -218,21 +221,36 @@ export function alertAt(
   return at === null || at <= now ? null : at
 }
 
-/** Quick buttons from a settings string ("-40, +60"): whole numbers, none zero, at most four. */
-export function parseSteps(text: string): number[] | null {
-  const parts = text
-    .split(/[,\s]+/)
-    .map((p) => p.trim())
-    .filter(Boolean)
-  if (parts.length > 4) return null
-  const steps: number[] = []
-  for (const p of parts) {
-    if (!/^[+-]?\d{1,3}$/.test(p)) return null
-    const n = Number(p)
-    if (n === 0 || n < -200 || n > 200) return null
-    steps.push(n)
-  }
-  return steps
+/**
+ * One typed amount ("-40", "+60", "60", "−20"): a whole number, sign
+ * optional; null when it isn't one.
+ */
+export function parseAmount(text: string): number | null {
+  const t = text.trim().replace(/^[−–]/, '-')
+  if (!/^[+-]?\d{1,3}$/.test(t)) return null
+  return Number(t)
+}
+
+/**
+ * The "when resin reaches" list with `amount` added: 1–200, each once,
+ * ascending, at most MAX_RESIN_MARKS. Null when it can't be added (out of
+ * range, already there, the list full).
+ */
+export function addMark(marks: readonly number[], amount: number): number[] | null {
+  if (!Number.isInteger(amount) || amount < 1 || amount > RESIN_MAX) return null
+  if (marks.includes(amount) || marks.length >= MAX_RESIN_MARKS) return null
+  return [...marks, amount].sort((a, b) => a - b)
+}
+
+/**
+ * The quick buttons with `step` added at the end (shown in the order
+ * chosen): −200 … 200, not zero, each once, at most MAX_RESIN_STEPS. Null
+ * when it can't be added.
+ */
+export function addStep(steps: readonly number[], step: number): number[] | null {
+  if (!Number.isInteger(step) || step === 0 || step < -RESIN_MAX || step > RESIN_MAX) return null
+  if (steps.includes(step) || steps.length >= MAX_RESIN_STEPS) return null
+  return [...steps, step]
 }
 
 export const formatStep = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`)

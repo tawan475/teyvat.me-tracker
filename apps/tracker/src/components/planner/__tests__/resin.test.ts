@@ -8,7 +8,9 @@ import {
   fullAt,
   manualReplaced,
   nextMark,
-  parseSteps,
+  parseAmount,
+  addMark,
+  addStep,
   reachedAt,
   resinAt,
   resinMarks,
@@ -104,7 +106,11 @@ describe('resin readings', () => {
   })
 
   it('lists every mark with when resin is there, reached ones flagged', () => {
-    const marks = resinMarks({ value: 95, at: T }, T + 2 * RESIN_STEP_MS)
+    const marks = resinMarks(
+      { value: 95, at: T },
+      T + 2 * RESIN_STEP_MS,
+      [40, 60, 80, 100, 120, 160, 180, 200],
+    )
     expect(marks.map((m) => m.amount)).toEqual([40, 60, 80, 100, 120, 160, 180, 200])
     expect(marks.map((m) => m.reached)).toEqual([
       true,
@@ -119,7 +125,16 @@ describe('resin readings', () => {
     expect(marks[0]!.at).toBe(T)
     expect(marks[3]!.at).toBe(T + 5 * RESIN_STEP_MS)
     expect(marks[7]!.at).toBe(T + 105 * RESIN_STEP_MS)
-    expect(resinMarks({ value: 200, at: T }, T).every((m) => m.reached)).toBe(true)
+    expect(
+      resinMarks({ value: 200, at: T }, T, [40, 60, 80, 100, 120, 160, 180, 200]).every(
+        (m) => m.reached,
+      ),
+    ).toBe(true)
+    // The account's own list: sorted, each once, out-of-range amounts left out.
+    expect(resinMarks({ value: 0, at: T }, T, [200, 20, 140, 20, 0]).map((m) => m.amount)).toEqual([
+      20, 140, 200,
+    ])
+    expect(resinMarks({ value: 0, at: T }, T, [])).toEqual([])
     expect(resinMarks({ value: 0, at: T }, T, [40, 250]).map((m) => m.amount)).toEqual([40])
   })
 
@@ -130,7 +145,7 @@ describe('resin readings', () => {
     expect(reachedAt(ahead, 160, T)).toBe(T + 5 * RESIN_STEP_MS)
     expect(reachedAt(ahead, 120, T)).toBe(T)
     expect(alertAt(ahead, 180, T)).toBe(T + 25 * RESIN_STEP_MS)
-    const marks = resinMarks(ahead, T)
+    const marks = resinMarks(ahead, T, [40, 60, 80, 100, 120, 160, 180, 200])
     expect(marks.map((m) => m.reached)).toEqual([true, true, true, true, true, false, false, false])
     expect(marks[5]!.at).toBe(T + 5 * RESIN_STEP_MS)
   })
@@ -149,14 +164,33 @@ describe('resin readings', () => {
     expect(setResin(r, 5000, now).value).toBe(2000)
   })
 
-  it('parses the quick buttons', () => {
-    expect(parseSteps('-40, +60')).toEqual([-40, 60])
-    expect(parseSteps('-20 -40 60')).toEqual([-20, -40, 60])
-    expect(parseSteps('')).toEqual([])
-    expect(parseSteps('0')).toBeNull()
-    expect(parseSteps('-40 abc')).toBeNull()
-    expect(parseSteps('1 2 3 4 5')).toBeNull()
-    expect(parseSteps('300')).toBeNull()
+  it('reads one typed amount', () => {
+    expect(parseAmount('-40')).toBe(-40)
+    expect(parseAmount(' +60 ')).toBe(60)
+    expect(parseAmount('140')).toBe(140)
+    expect(parseAmount('−20')).toBe(-20)
+    expect(parseAmount('')).toBeNull()
+    expect(parseAmount('4.5')).toBeNull()
+    expect(parseAmount('-40 60')).toBeNull()
+    expect(parseAmount('abc')).toBeNull()
+    expect(parseAmount('1000')).toBeNull()
+  })
+
+  it('adds a quick button at the end, a mark in order', () => {
+    expect(addStep([-40, -20], 60)).toEqual([-40, -20, 60])
+    expect(addStep([-40, -20, 60], -30)).toEqual([-40, -20, 60, -30])
+    expect(addStep([-40, -20, 60, -30], 10)).toBeNull()
+    expect(addStep([-40], -40)).toBeNull()
+    expect(addStep([], 0)).toBeNull()
+    expect(addStep([], 201)).toBeNull()
+    expect(addStep([], -200)).toEqual([-200])
+    expect(addMark([40, 200], 140)).toEqual([40, 140, 200])
+    expect(addMark([40, 200], 20)).toEqual([20, 40, 200])
+    expect(addMark([40, 200], 40)).toBeNull()
+    expect(addMark([], 0)).toBeNull()
+    expect(addMark([], 201)).toBeNull()
+    expect(addMark([], -40)).toBeNull()
+    expect(addMark([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 13)).toBeNull()
   })
 })
 

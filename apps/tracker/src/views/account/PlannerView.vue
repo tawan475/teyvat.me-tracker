@@ -1736,12 +1736,14 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
         :condensed="condensed.count"
         :condensed-max="condensed.max"
         :steps="settings.planner.resinSteps ?? []"
+        :marks="settings.planner.resinMarks ?? []"
         :spent="resinSpentToday(capturedTasks?.tasks, now, account.server)"
         :now="now"
         :account-id="account.id"
         :account-name="accountLabel"
         :url="plannerUrl"
         @set="(value) => void saveSettings({ resin: value })"
+        @settings="settingsOpen = true"
       />
       <TasksStrip
         :tasks="tasks.tasks.value"

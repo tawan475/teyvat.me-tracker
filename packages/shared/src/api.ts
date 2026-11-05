@@ -205,6 +205,8 @@ export const accountSettingsPatch = z
               .refine((n) => n !== 0, 'Not zero'),
           )
           .max(4),
+        /** The resin tracker's "when resin reaches" amounts (40, 200). */
+        resinMarks: z.array(z.number().int().min(1).max(200)).max(12),
         crafting: z.boolean(),
         gems: z.boolean(),
         solvent: z.boolean(),

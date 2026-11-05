@@ -49,8 +49,19 @@ export interface PlannerSettings {
   passives: boolean
   /** Original Resin refreshes a day (0–6, 60 resin each): the Farm view's days count them. */
   refreshes: number
-  /** The resin tracker's quick buttons: amounts to add (−40 spends a boss run). */
+  /**
+   * The resin tracker's quick buttons, in the order shown: amounts to add
+   * (−40 spends a boss run), up to four, chosen as chips in Planner settings.
+   */
   resinSteps: number[]
+  /**
+   * The amounts the resin tracker lists "when resin reaches" for (1–200,
+   * ascending, up to 12), chosen in Planner settings like Seelie's recovery
+   * times (Discord users' ask, 2026-11-05: the fixed 40 … 200 list missed
+   * 20 and 140). Empty: no list. Absent in settings saved before it: the
+   * default.
+   */
+  resinMarks: number[]
   /** Show the Crafting checklist on the Farm view (most craft on demand, so it can be hidden). */
   crafting: boolean
   /**
@@ -142,7 +153,8 @@ export const ACCOUNT_SETTINGS_DEFAULTS: AccountSettings = {
     azoth: false,
     passives: true,
     refreshes: 0,
-    resinSteps: [-40, 60],
+    resinSteps: [-40, -20, 60, -30],
+    resinMarks: [40, 200],
     crafting: true,
     gems: true,
     solvent: true,

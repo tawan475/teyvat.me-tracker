@@ -164,16 +164,24 @@ describe('account settings: hand-set resin and quick buttons', () => {
     const url = `/api/accounts/${account.id}/settings`
     const before = await client.json<AccountSettingsResponse>(url)
     expect(before.settings.resin).toBeNull()
-    expect(before.settings.planner.resinSteps).toEqual([-40, 60])
+    expect(before.settings.planner.resinSteps).toEqual([-40, -20, 60, -30])
+    expect(before.settings.planner.resinMarks).toEqual([40, 200])
 
     const live = await listen(client)
     const after = await client.json<AccountSettingsResponse>(url, {
       method: 'PATCH',
-      json: { resin: { value: 120, at: 1_791_000_000_000 }, planner: { resinSteps: [-20, -40] } },
+      json: {
+        resin: { value: 120, at: 1_791_000_000_000 },
+        planner: { resinSteps: [-20, -40], resinMarks: [20, 140] },
+      },
       headers: { 'x-gdt-tab': 'tab-3' },
     })
     expect(after.settings.resin).toEqual({ value: 120, at: 1_791_000_000_000 })
-    expect(after.settings.planner).toMatchObject({ resinSteps: [-20, -40], refreshes: 0 })
+    expect(after.settings.planner).toMatchObject({
+      resinSteps: [-20, -40],
+      resinMarks: [20, 140],
+      refreshes: 0,
+    })
     expect(await live.next()).toEqual<LiveEvent>({
       type: 'planner',
       accountId: account.id,
@@ -197,6 +205,10 @@ describe('account settings: hand-set resin and quick buttons', () => {
       { planner: { resinSteps: [0] } },
       { planner: { resinSteps: [201] } },
       { planner: { resinSteps: [1, 2, 3, 4, 5] } },
+      { planner: { resinMarks: [0] } },
+      { planner: { resinMarks: [201] } },
+      { planner: { resinMarks: [1.5] } },
+      { planner: { resinMarks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] } },
     ]) {
       const response = await client.fetch(url, { method: 'PATCH', json: bad })
       expect(response.status, JSON.stringify(bad)).toBe(400)

@@ -8,12 +8,14 @@ import UiSwitch from '@/components/ui/UiSwitch.vue'
 import type { PlannerOptions, PlannerOptionsPatch } from '@/data/planner-settings'
 import { t } from '@/i18n'
 import { MAX_REFRESHES, REFRESH_RESIN } from './farm-today'
-import { formatStep, parseSteps } from './resin'
+import AmountChips from './AmountChips.vue'
+import { addMark, addStep, formatStep } from './resin'
 
 /**
  * The planner's account settings: Adventure Rank, World Level, the daily
  * resin refreshes the Farm view counts days with, the resin tracker's quick
- * buttons, and three switches. Each
+ * buttons and "when resin reaches" amounts (chips, like Seelie's), and the
+ * switches. Each
  * change is saved as it is made (no Save button). AR and WL left empty
  * follow what irminsul read at the newest login, shown as the placeholder.
  */
@@ -73,27 +75,8 @@ function setRefreshes(value: number) {
   if (value !== props.settings.planner.refreshes) emit('change', { planner: { refreshes: value } })
 }
 
-const stepsText = (steps: readonly number[]) => steps.map(formatStep).join(' ').replaceAll('−', '-')
-const steps = ref('')
-const stepsInvalid = ref(false)
-watch(
-  () => [props.open, props.settings.planner.resinSteps] as const,
-  ([open, value]) => {
-    if (!open) return
-    steps.value = stepsText(value ?? [])
-    stepsInvalid.value = false
-  },
-  { immediate: true },
-)
-function commitSteps() {
-  const parsed = parseSteps(String(steps.value ?? ''))
-  stepsInvalid.value = parsed === null
-  if (!parsed) return
-  steps.value = stepsText(parsed)
-  if (stepsText(parsed) !== stepsText(props.settings.planner.resinSteps ?? [])) {
-    emit('change', { planner: { resinSteps: parsed } })
-  }
-}
+const setSteps = (resinSteps: number[]) => emit('change', { planner: { resinSteps } })
+const setMarks = (resinMarks: number[]) => emit('change', { planner: { resinMarks } })
 </script>
 
 <template>
@@ -156,17 +139,34 @@ function commitSteps() {
           />
         </label>
       </div>
-      <label class="flex flex-col gap-1" :title="$t('planner.settings.stepsTitle')">
-        <span class="text-sm text-text-secondary">{{ $t('planner.settings.steps') }}</span>
-        <UiInput
-          v-model="steps"
-          mono
-          placeholder="-40 +60"
-          :invalid="stepsInvalid"
-          @change="commitSteps"
-          @keydown.enter="commitSteps"
+      <div class="flex flex-col gap-1">
+        <span class="text-sm text-text-secondary" :title="$t('planner.settings.stepsTitle')">{{
+          $t('planner.settings.steps')
+        }}</span>
+        <AmountChips
+          :values="settings.planner.resinSteps ?? []"
+          :label="$t('planner.settings.steps')"
+          placeholder="-40"
+          :format="formatStep"
+          :add="addStep"
+          :hint="$t('planner.settings.stepsTitle')"
+          @change="setSteps"
         />
-      </label>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-sm text-text-secondary" :title="$t('planner.settings.marksTitle')">{{
+          $t('planner.settings.marks')
+        }}</span>
+        <AmountChips
+          :values="settings.planner.resinMarks ?? []"
+          :label="$t('planner.settings.marks')"
+          placeholder="140"
+          :format="String"
+          :add="addMark"
+          :hint="$t('planner.settings.marksTitle')"
+          @change="setMarks"
+        />
+      </div>
       <div class="flex flex-col border-t border-border-subtle pt-2">
         <div :title="$t('planner.settings.gemsTitle')">
           <UiSwitch

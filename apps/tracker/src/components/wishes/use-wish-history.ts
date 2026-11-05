@@ -29,7 +29,7 @@ function loadWishHistory(accountId: number): Promise<{ id: number; history: Wish
 /**
  * The account's wish history, re-read after an import here and when the
  * live socket says it changed elsewhere (irminsul's sync): once the page is
- * visible and no dialog holds updates.
+ * visible and no popover or tip holds updates.
  */
 export function useWishHistory(accountId: () => number) {
   const generation = shallowRef(0)

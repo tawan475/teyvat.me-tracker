@@ -4,7 +4,7 @@
  * network (artifact-prefs.ts stores the page's choices).
  */
 
-import { calculateCV, calculateRV, type GoodArtifact } from '@gdt/shared'
+import { calculateCV, calculateRV, type GoodArtifact, type LiveArtifact } from '@gdt/shared'
 import { characterName } from '@/i18n/game-names'
 import { inferArtifactRolls, maxLevel, type InferredRoll } from '@/utils/artifact-rolls'
 import { formatSetName, formatSlotName, formatStatName } from '@/utils/artifact-stats'
@@ -375,6 +375,21 @@ export function activeFilterCount(f: ArtifactFilters): number {
 /** True when the piece is not in the previous capture (`previous` null: none is). */
 export function isNewPiece(row: ArtifactRow, previous: ReadonlySet<number> | null): boolean {
   return previous !== null && row.catalogId >= 0 && !previous.has(row.catalogId)
+}
+
+/**
+ * The row in `rows` that is the same piece as `was` (from an older read of
+ * the inventory), or null when it is gone. Found by its catalog id, else by
+ * the game's item id (`gi_guid`: a piece that levelled up has a new catalog
+ * id). Keeps the artifact dialog on its piece across a live update.
+ */
+export function samePiece(rows: readonly ArtifactRow[], was: ArtifactRow): ArtifactRow | null {
+  if (was.catalogId >= 0) {
+    const byCatalog = rows.find((r) => r.catalogId === was.catalogId)
+    if (byCatalog) return byCatalog
+  }
+  const guid = (was.artifact as LiveArtifact).gi_guid
+  return guid ? (rows.find((r) => (r.artifact as LiveArtifact).gi_guid === guid) ?? null) : null
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { GoodArtifact } from '@gdt/shared'
+import type { GoodArtifact, LiveArtifact } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { artifactPotential, critRoll, upgradesLeft } from '@/data/artifact-potential'
 import {
@@ -9,6 +9,7 @@ import {
   isSparePreset,
   isZeroPreset,
   rarityGroups,
+  samePiece,
   sanitizeFilters,
   sanitizeView,
   sortRows,
@@ -18,7 +19,7 @@ import {
   type ArtifactFilters,
 } from '@/data/artifacts'
 
-function piece(rest: Partial<GoodArtifact> = {}): GoodArtifact {
+function piece(rest: Partial<LiveArtifact> = {}): GoodArtifact {
   return {
     setKey: 'GladiatorsFinale',
     slotKey: 'flower',
@@ -236,5 +237,26 @@ describe('stored state', () => {
     expect(f.fresh).toBe(false)
     expect(sanitizeView('bag')).toBe('bag')
     expect(sanitizeView('grid')).toBe('cards')
+  })
+})
+
+describe('samePiece', () => {
+  it('follows a piece across a re-read: catalog id, else the game item id, else gone', () => {
+    const before = buildArtifactRows(
+      [
+        piece({ gi_guid: '7' }),
+        piece({ slotKey: 'plume', gi_guid: '8' }),
+        piece({ slotKey: 'sands' }),
+      ],
+      [10, 11, 12],
+    )
+    // A new piece first, the plume levelled (new catalog id), the sands gone.
+    const after = buildArtifactRows(
+      [piece({ slotKey: 'goblet' }), piece(), piece({ slotKey: 'plume', level: 16, gi_guid: '8' })],
+      [13, 10, 14],
+    )
+    expect(samePiece(after, before[0]!)?.id).toBe(1)
+    expect(samePiece(after, before[1]!)?.id).toBe(2)
+    expect(samePiece(after, before[2]!)).toBeNull()
   })
 })

@@ -98,7 +98,7 @@ export function useHandMarks(marks: MarksApi, accountId: () => number, readOnly 
     return run
   }
 
-  // Changed elsewhere: re-read once the page is visible and no dialog holds updates.
+  // Changed elsewhere: re-read once the page is visible and no popover or tip holds updates.
   let stale = false
   function catchUp() {
     if (!stale || updatesHeld.value || document.visibilityState !== 'visible') return

@@ -1,8 +1,8 @@
 /**
  * Live sync in the browser (docs/plans/live-sync.md §8): a version per
  * account that moves whenever its journal changes (the live socket's `live`
- * event), so "now" views re-read `/live` and re-apply it. An open dialog holds
- * the move until it closes, as it holds snapshot updates (live/holds.ts).
+ * event), so "now" views re-read `/live` and re-apply it. An open popover or pinned
+ * tip holds the move until it closes, as it holds snapshot updates (live/holds.ts).
  */
 
 import { reactive, watch } from 'vue'
@@ -20,7 +20,7 @@ function bump(accountId: number): void {
   liveVersions.set(accountId, (liveVersions.get(accountId) ?? 0) + 1)
 }
 
-/** The account's journal changed: views of it re-read it (once no dialog holds them). */
+/** The account's journal changed: views of it re-read it (once no popover or tip holds them). */
 export function noteLiveChange(accountId: number): void {
   if (updatesHeld.value) waiting.add(accountId)
   else bump(accountId)

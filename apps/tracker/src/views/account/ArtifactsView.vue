@@ -46,6 +46,7 @@ import {
   isNewPiece,
   isSpare,
   rarityGroups,
+  samePiece,
   sortRows,
   summarizeSets,
   type ArtifactFilters,
@@ -354,7 +355,12 @@ const cardGroups = computed(() => {
 const openId = ref<number | null>(null)
 /** Opened from the lower-rarity strip: stepping then walks the strip. */
 const fromStrip = ref(false)
-watch(rows, () => (openId.value = null))
+// A live update re-reads the rows: the open piece stays open on its new row
+// (a levelled piece too), and closes only when it is gone or the account changed.
+watch([rows, () => account.value.id], ([now, id], [before, was]) => {
+  const open = openId.value === null || id !== was ? undefined : before?.[openId.value]
+  openId.value = open ? (samePiece(now, open)?.id ?? null) : null
+})
 const openRow = computed(() => (openId.value === null ? null : (rows.value[openId.value] ?? null)))
 function openPiece(id: number, strip = false) {
   fromStrip.value = strip

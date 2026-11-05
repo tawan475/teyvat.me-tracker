@@ -29,7 +29,8 @@
  *   read) and applies them when shown, so background tabs do not re-download
  *   data nobody is looking at; it reads only if something it was told about
  *   went unread, or the socket is down.
- * - Data never changes under an open dialog: see @/live/holds.
+ * - Data never changes under an open popover or pinned tip (dialogs update
+ *   live): see @/live/holds.
  * - "New capture" (a toast, the time in its tooltip) when the open account
  *   (or on the account list, any account) got a newer newest snapshot;
  *   nothing for seen-again captures, backfills or deletes.

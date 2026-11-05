@@ -18,7 +18,7 @@ import { useSession } from './session'
  *
  * Fresh rows (from the live updates, another tab, or a re-read here) go
  * through `merge`: an unchanged row keeps its identity, so nothing re-loads,
- * and while a dialog is open (see @/live/holds) newer versions wait in
+ * and while a popover or pinned tip is open (see @/live/holds) newer versions wait in
  * `pending` and apply when it closes.
  */
 export const useAccounts = defineStore('accounts', () => {

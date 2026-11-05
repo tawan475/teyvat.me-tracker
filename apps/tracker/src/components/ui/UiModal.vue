@@ -2,7 +2,6 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { ChevronLeft, ChevronRight, X } from 'lucide-vue-next'
 import { formatNumber } from '@/lib/format'
-import { useUpdateHold } from '@/live/holds'
 import UiIconButton from './UiIconButton.vue'
 
 /**
@@ -17,9 +16,10 @@ import UiIconButton from './UiIconButton.vue'
  *   title and close button and reaches the dialog's edges (the material
  *   dialog's game panel); `title` stays the dialog's accessible name.
  * Slots: default (body), `heading` (replaces the title), `footer`.
- * While open it holds live updates back (nothing changes under the user);
- * they land when it closes (the header has no Refresh: the user found it
- * confusing).
+ * Live updates reach an open dialog like any page (the user's call,
+ * 2026-11-06): what it shows must find its subject again in fresh data (by
+ * key, or like the artifact dialog's `samePiece`), and a form copies its
+ * values only when it opens.
  */
 const props = withDefaults(
   defineProps<{
@@ -34,7 +34,6 @@ const props = withDefaults(
   { size: 'md', index: undefined, total: undefined },
 )
 const emit = defineEmits<{ close: []; step: [delta: -1 | 1] }>()
-useUpdateHold(() => props.open)
 const dialog = ref<HTMLDialogElement>()
 const body = ref<HTMLElement>()
 

@@ -1,8 +1,8 @@
 /**
  * What may hold live updates back, so data never changes under the user:
- * - an open dialog (every UiModal holds while open): a newer version of any
- *   account waits until the last dialog closes, then applies by itself; the
- *   dialog's header offers "Refresh" to take it now;
+ * - an open popover (UiPopover) or a pinned character detail tip: a newer
+ *   version of any account waits until the last one closes, then applies by
+ *   itself. Dialogs (UiModal) do not hold: they update live like pages;
  * - this tab's own import run for an account: its updates wait for the run
  *   to end, when the import queue re-reads the account once, instead of every
  *   view re-loading its data after each uploaded file.
@@ -12,10 +12,10 @@
 
 import { computed, onScopeDispose, reactive, shallowRef, watch } from 'vue'
 
-const dialogs = shallowRef(0)
+const holders = shallowRef(0)
 
-/** True while a dialog is open. */
-export const updatesHeld = computed(() => dialogs.value > 0)
+/** True while a popover or a pinned tip is open. */
+export const updatesHeld = computed(() => holders.value > 0)
 
 /** Accounts with an import running in this tab. */
 export const importingAccounts = reactive(new Set<number>())
@@ -23,12 +23,12 @@ export const importingAccounts = reactive(new Set<number>())
 /** Accounts with a newer version waiting (kept by the accounts store). */
 export const pendingIds = shallowRef<ReadonlySet<number>>(new Set())
 
-/** Something waits that only a dialog holds back: what its "Refresh" would apply. */
+/** Something waits that only a popover or tip holds back. */
 export const updatePending = computed(() =>
   [...pendingIds.value].some((id) => !importingAccounts.has(id)),
 )
 
-/** Whether a newer version of account `id` must wait; `force` ignores dialogs. */
+/** Whether a newer version of account `id` must wait; `force` ignores popovers and tips. */
 export function isHeld(id: number, force = false): boolean {
   return importingAccounts.has(id) || (!force && updatesHeld.value)
 }
@@ -39,7 +39,7 @@ export function useUpdateHold(active: () => boolean): void {
   const set = (on: boolean) => {
     if (on === holding) return
     holding = on
-    dialogs.value += on ? 1 : -1
+    holders.value += on ? 1 : -1
   }
   watch(active, (on) => set(!!on), { immediate: true, flush: 'sync' })
   onScopeDispose(() => set(false))
@@ -47,7 +47,7 @@ export function useUpdateHold(active: () => boolean): void {
 
 let applier: (() => void) | null = null
 
-/** Registers what "Refresh" in a dialog does (the live-updates loop). */
+/** Registers what applies the waiting updates now (the live-updates loop). */
 export function onApplyPending(apply: () => void): () => void {
   applier = apply
   return () => {
@@ -55,7 +55,7 @@ export function onApplyPending(apply: () => void): () => void {
   }
 }
 
-/** Applies what waits now, dialogs or not. */
+/** Applies what waits now, holds or not. */
 export function applyPendingNow(): void {
   applier?.()
 }

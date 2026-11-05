@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { SnapshotResponse } from '@gdt/shared'
 import { useElementSize, useIntervalFn } from '@vueuse/core'
-import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { CalendarX, History, Repeat2, Upload } from 'lucide-vue-next'
 import { api } from '@/api'
-import BasePagination, { type PaginationMeta } from '@/components/legacy/BasePagination.vue'
 import BaseTable, { type TableLabel } from '@/components/legacy/BaseTable.vue'
 import ConfirmDialog from '@/components/snapshot-history/ConfirmDialog.vue'
 import ExportTargets from '@/components/snapshot-history/ExportTargets.vue'
@@ -19,6 +18,7 @@ import { inDayRange, snapshotChanges } from '@/components/snapshot-history/snaps
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
+import UiPager from '@/components/ui/UiPager.vue'
 import { useSnapshotSelection } from '@/composables/useSnapshotSelection'
 import LiveRow from '@/components/live/LiveRow.vue'
 import { loadLive, loadSnapshots } from '@/data/account-data'
@@ -28,7 +28,6 @@ import { currencyMissing, dayKey } from '@/data/overview'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { clock24, dateLocale, formatBytes, formatFullDateTime, formatNumber } from '@/lib/format'
-import { readStorage, writeStorage } from '@/lib/storage'
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
 import { useAccess, useAccount, useAccountMode } from './context'
@@ -44,7 +43,8 @@ const DELETE_BATCH = 1000
 const FULL_TABLE = 1150
 const COMPACT_TABLE = 975
 const NARROW_TABLE = 780
-const PER_PAGE_KEY = 'snapshot-history:per-page'
+/** Rows per page (the newer pages' fixed size; the old per-page picker is gone with its pager). */
+const PAGE_SIZE = 20
 
 const account = useAccount()
 const accounts = useAccounts()
@@ -109,17 +109,11 @@ const lastDay = computed(() => (list.value[0] ? dayKey(list.value[0].takenAt) : 
 // ------------------------------------------------------------------ pagination
 
 const page = ref(1)
-const storedLimit = Number(readStorage(PER_PAGE_KEY))
-const limit = ref([10, 20, 24, 50, 100].includes(storedLimit) ? storedLimit : 20)
-
-const meta = computed<PaginationMeta>(() => {
-  const total = filtered.value.length
-  const totalPages = Math.max(1, Math.ceil(total / limit.value))
-  return { page: Math.min(page.value, totalPages), limit: limit.value, totalPages, total }
-})
+const pageCount = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)))
+const currentPage = computed(() => Math.min(page.value, pageCount.value))
 const rows = computed(() => {
-  const start = (meta.value.page - 1) * meta.value.limit
-  return filtered.value.slice(start, start + meta.value.limit)
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return filtered.value.slice(start, start + PAGE_SIZE)
 })
 
 watch([from, to], () => (page.value = 1))
@@ -129,18 +123,14 @@ function clearDates() {
   to.value = ''
 }
 
-const baseTableRef = ref<InstanceType<typeof BaseTable> | null>(null)
 const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null)
 
-const onPageChange = (p: number) => {
-  page.value = p
-}
-
-const onLimitChange = (l: number) => {
-  limit.value = l
-  page.value = 1
-  writeStorage(PER_PAGE_KEY, String(l))
-  baseTableRef.value?.scrollToTop()
+/** Turns the page and brings the list's top back on screen when it scrolled off. */
+async function goToPage(n: number) {
+  page.value = n
+  await nextTick()
+  const top = host.value
+  if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView({ block: 'start' })
 }
 
 // --------------------------------------------------------------------- layout
@@ -590,28 +580,25 @@ function selectionClearance(): number {
               </UiEmpty>
             </template>
           </SnapshotCards>
-          <BasePagination
+          <UiPager
             v-if="rows.length > 0"
-            :meta="meta"
-            :is-loading="isLoading"
-            :scroll-anchor="host"
-            @page-change="onPageChange"
-            @limit-change="onLimitChange"
+            sticky
+            :model-value="currentPage"
+            :page-count="pageCount"
+            :page-size="PAGE_SIZE"
+            :total="filtered.length"
+            @update:model-value="goToPage"
           />
         </template>
       </template>
 
       <BaseTable
         v-else
-        ref="baseTableRef"
         :sticky-head="selectionClearance"
         :labels="tableLabels"
         :data="rows"
         :row-class="(row) => (isSelected(row.id) ? 'bg-accent/10' : undefined)"
         :is-loading="isLoading"
-        :meta="meta"
-        @page-change="onPageChange"
-        @limit-change="onLimitChange"
       >
         <template #header-select>
           <LegacyCheckbox
@@ -719,6 +706,15 @@ function selectionClearance(): number {
           </UiEmpty>
         </template>
       </BaseTable>
+      <UiPager
+        v-if="layout !== 'cards' && rows.length > 0"
+        sticky
+        :model-value="currentPage"
+        :page-count="pageCount"
+        :page-size="PAGE_SIZE"
+        :total="filtered.length"
+        @update:model-value="goToPage"
+      />
     </div>
 
     <ConfirmDialog ref="confirmDialog" />

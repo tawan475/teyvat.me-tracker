@@ -59,6 +59,7 @@
     "not_held": "Vous ne pouvez accorder ou retirer que les permissions que vous avez",
     "owner_only": "Seul le propriétaire du compte peut faire ceci",
     "owner_role": "Le rôle Owner ne se donne et ne se retire qu'en ligne de commande",
+    "partial_capture": "Cette capture est incomplète (pas encore de personnages) ; la suivante sera enregistrée",
     "pending_expired": "Cette connexion a expiré, recommencez",
     "provider_unavailable": "Cette connexion n'est pas disponible",
     "rate_limited": "Trop de requêtes, ralentissez",

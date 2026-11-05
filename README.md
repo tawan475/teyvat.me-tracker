@@ -362,7 +362,12 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   about 1.5× what the game holds: 200 characters, 3,000 weapons, 4,050
   artifacts, 11,100 material keys, 3,020 achievements, 6 substats; a key no
   dictionary knows and `source` at most 64 characters): over is a 422
-  `too_many_items` / `key_too_long`. Per user (`worker/services/upload-limits.ts`,
+  `too_many_items` / `key_too_long`. A packet capture (source Irminsul /
+  Teyvat.me, or any of `gi_player`, `gi_capture`, `gi_guid`) with items but no
+  characters was taken halfway through a login (older Capture builds and
+  irminsul can send one): 422 `partial_capture`, nothing stored, on every
+  upload path (`normalizeGood` → `parseUpload`); other GOOD tools may still
+  send artifacts alone. Per user (`worker/services/upload-limits.ts`,
   migration 0018): 1,000 new snapshots and 20 MB newly stored a UTC day (429
   `daily_upload_limit`, `Retry-After` to 00:00 UTC; counted in
   `user_upload_days` by the import's own batch) and 200 MB stored in all

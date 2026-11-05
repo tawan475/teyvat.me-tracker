@@ -59,6 +59,7 @@
     "not_held": "只能授予或移除你拥有的权限",
     "owner_only": "只有账号所有者可以执行此操作",
     "owner_role": "所有者身份组只能通过命令行授予或移除",
+    "partial_capture": "这次抓取不完整（还没有角色），下一次抓取会被保存",
     "pending_expired": "登录已过期，请重新开始",
     "provider_unavailable": "该登录方式不可用",
     "rate_limited": "请求过于频繁，请稍后再试",

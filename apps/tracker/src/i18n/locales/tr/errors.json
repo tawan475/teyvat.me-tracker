@@ -59,6 +59,7 @@
     "not_held": "Yalnızca sahip olduğun izinleri verebilir veya kaldırabilirsin",
     "owner_only": "Bunu yalnızca hesabın sahibi yapabilir",
     "owner_role": "Sahip rolü yalnızca komut satırından verilir ve alınır",
+    "partial_capture": "Bu yakalama eksik (henüz karakter yok); bir sonraki kaydedilecek",
     "pending_expired": "Bu girişin süresi doldu, yeniden başlat",
     "provider_unavailable": "Bu giriş yöntemi kullanılamıyor",
     "rate_limited": "Çok fazla istek, yavaşla",

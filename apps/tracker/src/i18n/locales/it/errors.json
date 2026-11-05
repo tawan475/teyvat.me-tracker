@@ -59,6 +59,7 @@
     "not_held": "Puoi assegnare o rimuovere solo i permessi che possiedi",
     "owner_only": "Solo il proprietario dell'account può farlo",
     "owner_role": "Il ruolo Owner si assegna e si toglie solo da riga di comando",
+    "partial_capture": "Questa cattura è incompleta (ancora nessun personaggio); verrà salvata la prossima",
     "pending_expired": "L'accesso è scaduto, ricomincia",
     "provider_unavailable": "Questo metodo di accesso non è disponibile",
     "rate_limited": "Troppe richieste, rallenta",

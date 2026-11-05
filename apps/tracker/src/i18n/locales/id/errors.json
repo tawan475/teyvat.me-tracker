@@ -59,6 +59,7 @@
     "not_held": "Kamu hanya bisa memberi atau mencabut izin yang kamu miliki",
     "owner_only": "Hanya pemilik akun yang bisa melakukan ini",
     "owner_role": "Owner hanya diberikan dan dicabut lewat command line",
+    "partial_capture": "Tangkapan ini belum lengkap (belum ada karakter); tangkapan berikutnya akan disimpan",
     "pending_expired": "Proses masuk itu kedaluwarsa, mulai lagi",
     "provider_unavailable": "Cara masuk itu tidak tersedia",
     "rate_limited": "Terlalu banyak permintaan, pelan-pelan",

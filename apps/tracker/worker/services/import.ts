@@ -27,6 +27,7 @@
 import {
   GoodFormatError,
   GoodLimitError,
+  GoodPartialCaptureError,
   SLOTS,
   serverFromUid,
   artifactKeyString,
@@ -526,7 +527,10 @@ function newWorld(capture: GiCapture | null | undefined, latestMeta: unknown): b
 
 /**
  * Parses and normalises a GOOD file; malformed input is a 400, a file over
- * GOOD_LIMITS (more items than the game holds, an overlong key) a 422.
+ * GOOD_LIMITS (more items than the game holds, an overlong key) a 422, and so
+ * is a capture taken halfway through a login (`partial_capture`: items but no
+ * characters, which older Capture builds and irminsul can still send). Every
+ * upload path (import key, Capture's Bearer, the website) comes through here.
  */
 export async function parseUpload(text: string): Promise<PreparedSnapshot> {
   let input: unknown
@@ -539,6 +543,7 @@ export async function parseUpload(text: string): Promise<PreparedSnapshot> {
     return await prepareSnapshot(input, { materials: MATERIALS })
   } catch (error) {
     if (error instanceof GoodLimitError) throw new ApiError(422, error.code, error.message)
+    if (error instanceof GoodPartialCaptureError) throw new ApiError(422, error.code, error.message)
     if (error instanceof GoodFormatError) throw new ApiError(400, 'invalid_good', error.message)
     throw error
   }

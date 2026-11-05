@@ -59,6 +59,7 @@
     "not_held": "Só é possível conceder ou remover permissões que se possui",
     "owner_only": "Só o dono da conta pode fazer isso",
     "owner_role": "O cargo de Dono só é dado e retirado pela linha de comando",
+    "partial_capture": "Esta captura está incompleta (ainda sem personagens); a próxima será salva",
     "pending_expired": "Esse login expirou, comece de novo",
     "provider_unavailable": "Esse login não está disponível",
     "rate_limited": "Solicitações demais, vá com calma",

@@ -59,6 +59,7 @@
     "not_held": "You can only grant or remove permissions you have",
     "owner_only": "Only the account's owner can do this",
     "owner_role": "Owner is given and taken only from the command line",
+    "partial_capture": "This capture is incomplete (no characters yet); the next one will be stored",
     "pending_expired": "That sign-in ran out, start it again",
     "provider_unavailable": "That sign-in is not available",
     "rate_limited": "Too many requests, slow down",

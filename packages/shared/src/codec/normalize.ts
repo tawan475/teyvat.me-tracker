@@ -124,6 +124,21 @@ export class GoodLimitError extends GoodFormatError {
   }
 }
 
+/**
+ * A packet capture (Teyvat.me Capture, irminsul) taken halfway through a
+ * login: the bag arrived but the character list did not. Every real account
+ * owns at least the Traveler, so storing it would blank the roster for that
+ * point in history. The API answers 422 `partial_capture`; nothing is stored
+ * and the next full capture goes through.
+ */
+export class GoodPartialCaptureError extends GoodFormatError {
+  readonly code = 'partial_capture'
+  constructor(message: string) {
+    super(message)
+    this.name = 'GoodPartialCaptureError'
+  }
+}
+
 export interface NormalizeOptions {
   /**
    * The material dictionary (kept out of the main entry point): a material
@@ -183,7 +198,43 @@ export function normalizeGood(input: unknown, options: NormalizeOptions = {}): N
   if (itemGuids) good.itemGuids = itemGuids
   if (input.gi_capture !== undefined) good.capture = readCapture(input.gi_capture)
   checkKeys(good, options)
+  checkWholeCapture(input, good)
   return good
+}
+
+// ------------------------------------------------------------ partial captures
+
+/** `source` of the two packet-capture apps (irminsul writes "Irminsul", Capture "Teyvat.me"). */
+const CAPTURE_SOURCES = /^(irminsul|teyvat\.me)\b/i
+
+/**
+ * Whether a file was written by a packet capture rather than an OCR scanner
+ * or an editor: its source, or any of the keys only the capture apps write.
+ * Other GOOD tools may export artifacts alone on purpose, so the empty-roster
+ * check is held to captures.
+ */
+function isPacketCapture(input: Json, good: NormalizedGood): boolean {
+  return (
+    CAPTURE_SOURCES.test(good.source) ||
+    isObject(input.gi_player) ||
+    input.gi_capture !== undefined ||
+    good.itemGuids !== undefined
+  )
+}
+
+/**
+ * Refuses a capture with no characters beside a non-empty bag (see
+ * GoodPartialCaptureError). Runs after normalising, so a roster whose every
+ * entry was dropped counts as empty too.
+ */
+function checkWholeCapture(input: Json, good: NormalizedGood): void {
+  if (good.characters.length > 0) return
+  const bag = good.weapons.length + good.artifacts.length + good.materials.size
+  if (bag === 0 || !isPacketCapture(input, good)) return
+  throw new GoodPartialCaptureError(
+    'This capture has items but no characters: it was taken before the game finished ' +
+      'sending the account. Nothing was stored; the next capture will be.',
+  )
 }
 
 // ---------------------------------------------------------------- GOOD_LIMITS

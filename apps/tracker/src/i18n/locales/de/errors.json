@@ -59,6 +59,7 @@
     "not_held": "Du kannst nur Berechtigungen vergeben oder entziehen, die du selbst hast",
     "owner_only": "Das kann nur der Besitzer des Kontos",
     "owner_role": "Owner wird nur über die Kommandozeile vergeben und entzogen",
+    "partial_capture": "Diese Aufnahme ist unvollständig (noch keine Figuren); die nächste wird gespeichert",
     "pending_expired": "Die Anmeldung ist abgelaufen, starte sie neu",
     "provider_unavailable": "Diese Anmeldung ist nicht verfügbar",
     "rate_limited": "Zu viele Anfragen, langsamer bitte",

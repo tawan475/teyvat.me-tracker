@@ -59,6 +59,7 @@
     "not_held": "Bạn chỉ có thể cấp hoặc gỡ những quyền mà bạn có",
     "owner_only": "Chỉ chủ sở hữu tài khoản mới làm được việc này",
     "owner_role": "Vai trò Owner chỉ được cấp và thu hồi qua dòng lệnh",
+    "partial_capture": "Lần chụp này chưa đầy đủ (chưa có nhân vật); lần sau sẽ được lưu",
     "pending_expired": "Phiên đăng nhập đó đã hết hạn, hãy bắt đầu lại",
     "provider_unavailable": "Cách đăng nhập đó không khả dụng",
     "rate_limited": "Quá nhiều yêu cầu, hãy chậm lại",

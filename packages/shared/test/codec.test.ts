@@ -34,6 +34,7 @@ import {
   GOOD_LIMITS,
   GoodFormatError,
   GoodLimitError,
+  GoodPartialCaptureError,
   inflateRaw,
   kindCode,
   normalizeGood,
@@ -450,6 +451,44 @@ describe('snapshot codec', () => {
       materials: await baseOf(tiny.encoded.materials),
     })
     expect(third.encoded.materialsBase).toBeNull()
+  })
+
+  it('refuses a capture with items but no characters, and nothing else', async () => {
+    const refused = (input: unknown) =>
+      expect(prepareSnapshot(input, { materials: MATERIALS })).rejects.toSatisfy(
+        (error) =>
+          error instanceof GoodPartialCaptureError &&
+          error instanceof GoodFormatError &&
+          error.code === 'partial_capture',
+      )
+    const capture = { ...sample, source: 'Teyvat.me', characters: [] }
+    // Any bag beside an empty roster: a login caught halfway.
+    await refused(capture)
+    await refused({ ...capture, artifacts: [], weapons: [] })
+    await refused({ ...capture, artifacts: [], materials: {} })
+    await refused({ ...sample, source: 'Irminsul', characters: undefined })
+    // Every character entry dropped as malformed counts as none.
+    await refused({ ...capture, characters: [{ level: 90 }] })
+    // Capture's own keys mark it whatever the source says.
+    const other = { ...sample, source: 'SomeTool', characters: [] }
+    await refused({ ...other, gi_player: { uid: 812345678, ar: 60 } })
+    await refused({ ...other, gi_capture: { reason: 'login', session: 1, world: 1, seq: 0 } })
+    await refused({
+      ...other,
+      weapons: sample.weapons.map((w, i) => ({ ...w, gi_guid: String(4_000_000 + i) })),
+    })
+
+    // An OCR scanner or an editor may export artifacts alone on purpose.
+    const scanner = await prepareSnapshot(other, { materials: MATERIALS })
+    expect(scanner.good.characters).toEqual([])
+    expect(scanner.good.artifacts.length).toBeGreaterThan(0)
+    // A capture with nothing in it at all has no bag to contradict.
+    const empty = { ...capture, artifacts: [], weapons: [], materials: {} }
+    expect((await prepareSnapshot(empty)).good.characters).toEqual([])
+    // A whole capture is untouched.
+    expect((await prepareSnapshot({ ...sample, source: 'Teyvat.me' })).good.characters).toEqual(
+      normalizeGood(sample).characters,
+    )
   })
 
   it('rejects JSON that is not a GOOD file', async () => {

@@ -66,7 +66,9 @@ describe('maintenance', () => {
         })
       ).json()) as ImportResponse
     const kept = await upload(sampleGood(sampleExtras()), 1_000)
-    const gone = await upload(sampleGood({ characters: [], materials: { Mora: 7 } }), 2_000)
+    // Its own roster and bag: sections only the trashed snapshot references.
+    const roster = sampleGood().characters.slice(0, 1)
+    const gone = await upload(sampleGood({ characters: roster, materials: { Mora: 7 } }), 2_000)
     await client.fetch(`/api/accounts/${account.id}/snapshots/${gone.snapshotId}`, {
       method: 'DELETE',
     })

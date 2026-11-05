@@ -808,3 +808,64 @@ describe('maintenance', () => {
     expect(await count()).toBe(0)
   })
 })
+
+describe('a capture taken halfway through a login', () => {
+  // Synthetic: the bag of sampleGood with no characters yet, as older Capture
+  // builds and irminsul can send when the connection drops between the two.
+  const partial = () => sampleGood({ ...sampleExtras(), characters: [] })
+
+  it('is refused with 422 partial_capture on every upload path, and stores nothing', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const expectRefused = async (response: Response) => {
+      expect(response.status).toBe(422)
+      const body = (await response.json()) as { error: { code: string; message: string } }
+      expect(body.error.code).toBe('partial_capture')
+      expect(body.error.message).toMatch(/no characters/)
+    }
+
+    // Account import key (irminsul's import-by-key).
+    await expectRefused(
+      await SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
+        method: 'POST',
+        headers: { 'x-import-key': importKey },
+        body: irminsulForm(partial(), 1_000),
+      }),
+    )
+    // User import key (routes by the file's UID, reads the file first).
+    const { importKey: userKey } = await client.json<{ importKey: string }>('/api/me/import-key', {
+      method: 'POST',
+    })
+    await expectRefused(
+      await SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
+        method: 'POST',
+        headers: { 'x-import-key': userKey },
+        body: irminsulForm(partial(), 1_000),
+      }),
+    )
+    // Teyvat.me Capture's Bearer upload, by UID and to one account.
+    await expectRefused(await upload((await signIn(client)).access_token, partial(), 1_000))
+    const toAccount = await signIn(client, { mode: 'account', account_id: account.id })
+    await expectRefused(await upload(toAccount.access_token, partial(), 1_000))
+    // The website's Import.
+    await expectRefused(
+      await client.fetch(`/api/accounts/${account.id}/import?timestamp=1000`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(partial()),
+      }),
+    )
+
+    const ours = await env.DB.prepare(
+      `SELECT count(*) AS n FROM snapshots s JOIN genshin_accounts a ON a.id = s.account_id
+       WHERE a.user_id = (SELECT user_id FROM genshin_accounts WHERE id = ?1)`,
+    )
+      .bind(account.id)
+      .first<{ n: number }>()
+    expect(ours!.n).toBe(0)
+
+    // The next, whole capture goes through and keeps the roster.
+    const whole = await upload(toAccount.access_token, sampleGood(sampleExtras()), 2_000)
+    expect(whole.status).toBe(201)
+  })
+})

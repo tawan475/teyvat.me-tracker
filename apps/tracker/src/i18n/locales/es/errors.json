@@ -59,6 +59,7 @@
     "not_held": "Solo puedes conceder o quitar permisos que tienes",
     "owner_only": "Solo el propietario de la cuenta puede hacer esto",
     "owner_role": "El rol de Propietario solo se da y se quita desde la línea de comandos",
+    "partial_capture": "Esta captura está incompleta (aún sin personajes); se guardará la siguiente",
     "pending_expired": "Ese inicio de sesión caducó, empieza de nuevo",
     "provider_unavailable": "Ese inicio de sesión no está disponible",
     "rate_limited": "Demasiadas solicitudes, ve más despacio",

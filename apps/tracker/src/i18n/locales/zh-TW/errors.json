@@ -59,6 +59,7 @@
     "not_held": "只能授予或移除你擁有的權限",
     "owner_only": "只有帳號擁有者可以執行此操作",
     "owner_role": "擁有者身分組只能透過命令列授予或移除",
+    "partial_capture": "這次擷取不完整（還沒有角色），下一次擷取會被儲存",
     "pending_expired": "登入已逾時，請重新開始",
     "provider_unavailable": "此登入方式無法使用",
     "rate_limited": "請求過於頻繁，請稍後再試",

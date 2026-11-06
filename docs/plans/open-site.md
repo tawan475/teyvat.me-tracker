@@ -84,44 +84,78 @@ languages are a selling point).
 
 ### What it is
 
-A read-only copy of one real account, frozen at a point in time, at its own
-public route, so anyone (and a crawler) can walk the actual app without
-signing up. The user's call: it uses the user's own account's data, it is
-static, it is its own separate page, the work is done by the client, going
-back changes nothing, export is off, and the header says plainly that it is
-a demo.
+A read-only account, frozen, at its own public route, so anyone (and a
+crawler) can walk the actual app without signing up. The user's calls
+(2026-11-06): it is **a made-up account, not the user's own** (a real
+roster with everything at C6 and built gives the planner nothing to show);
+it is static, its own separate page, the work is done by the client, going
+back changes nothing, export is off, the header says plainly that it is a
+demo, and any identity shown is masked.
+
+### The demo's data
+
+Built by a script, never captured from anyone: `scripts/demo-good.mjs`
+writes GOOD files from the game data and imports them into one reserved
+account owned by a `demo` user that no one can sign in as.
+
+- **A roster in progress**, so every page has work on it: about 12
+  characters at mixed states. Furina as the worked example: level 70/80,
+  talents 6/6/6, C0, a 4★ weapon, two good artifacts and three filler
+  ones, Golden Troupe half collected. Others at level 20, 40, 60, 80 and
+  90; a couple of C2–C6 so the constellation chips show; one or two 4★
+  characters fully built so "done" looks like something; the Traveler.
+- **Weapons**: a few 5★ at R1, 4★ at R1–R5, some unleveled.
+- **Artifacts**: ~150 pieces with plausible rolls made by the script (not
+  copied from any account): some strong, most filler, a few +20 on the
+  wrong character, so CV/RV, the sets and the bag all have something.
+- **Materials**: short of what Furina's goals need (books, boss drops, local
+  specialties, Mora, EXP), so the planner's Today view lists farms, the
+  Crafting card has steps and the domains show up on the right days.
+- **Planner goals**: Furina to 90/90 with talents 9/9/9 and her signature
+  weapon as a custom goal; two more characters queued below her, so
+  priority order and "Ready" show.
+- **Achievements**: ~40% done across categories, a few hand marks.
+- **Tasks**: `gi_tasks` with commissions half done, an expedition out,
+  the Realm jar near full.
+- **Endgame**: a Spiral Abyss run at floor 11, one Stygian record at
+  difficulty 4 (not Dire), a Theater act, so the Endgame page and the
+  Stygian card have something modest to show.
+- **Wishes**: a short made-up history (~300 pulls over two banners), enough
+  for the banner cards and pity figures without pretending to be anyone.
+- **History**: 8–10 snapshots over "six weeks" with small changes between
+  them (a level-up, a new piece, Mora spent), so Progression, the charts
+  and the character dialog's History have rows.
+- **Identity masked**: nickname "Traveler", a one-line signature, UID
+  `812345678`, a default name card, the Traveler's circle portrait with no
+  frame. Server "Asia".
+
+Re-run the script when the game data moves or the user wants a different
+roster; it rebuilds the account from scratch (delete, re-import).
 
 ### What I would do
 
-1. **A frozen copy in the database, never in the repo.** A staff command
-   (`admin:demo-freeze <accountId>`) copies the account's snapshots (a
-   chosen range, e.g. the last 60), section blobs, artifact chunks and wish
-   chunks into `demo_*` tables (or the same tables under a reserved demo
-   account id that no user owns), stamped with a frozen version. Re-run it
-   when the user wants the demo refreshed; nothing else writes there. The
-   copy is of the user's account, so **the demo should mask the identity**:
-   nickname → "Traveler", signature → a fixed line, UID → the placeholder
-   `812345678`, name card and profile picture kept (they are game art, not
-   identity). The user decides whether to show the real ones; my pick is
-   masked, since the page is public and indexed.
+1. **The reserved account**: a `demo` user and one account, created by the
+   script through the normal import path (so the stored form is exactly a
+   real account's); `site_settings` `demo.account` names it. Its
+   `dataVersion` is the frozen version.
 2. **A `demo` data source.** `AccountRef.source` already switches every
    loader in `src/data/account-data.ts` between own data and staff Inspect;
    a third value, `'demo'`, reads `GET /api/demo/{snapshots,catalog,bundle,
-   player,wishes}` with no cookie, an immutable ETag (the frozen version),
-   and `Cache-Control: public, max-age=1 day`, so the Worker answers once
-   and the edge and the browser's IndexedDB cache do the rest. The browser
-   decodes exactly as it does for a real account.
+   player,wishes,endgame}` with no cookie, an immutable ETag (the frozen
+   version) and `Cache-Control: public, max-age=1 day`, so the Worker
+   answers once and the edge and the browser's IndexedDB cache do the rest.
+   The browser decodes exactly as it does for a real account.
 3. **The route `/demo/*`**: the account layout mounted with
    `provideAccount(demoAccount, { readOnly: true, demo: true })`, every
    account page under it (`/demo/characters`, `/demo/planner`, …). A new
    `demo` flag beside `readOnly` in `views/account/context.ts`.
 4. **State in memory only.** The planner, achievement marks, anecdote marks,
    saved teams and account settings go through `api.*` today. For the demo,
-   a write adapter keeps changes in memory for the tab: you can tick a goal
-   or mark an achievement and watch the planner react, and leaving the page
-   (or reloading) drops it. The pages stay interactive, which is the point
-   of a demo, without storing anything. (`useReadOnly()` alone would grey
-   everything out; this is better.)
+   a write adapter keeps changes in memory for the tab: you can tick a goal,
+   mark an achievement or press Done on a level and watch the planner
+   react; leaving the page (or reloading) drops it. The pages stay
+   interactive, which is the point of a demo, without storing anything
+   (`useReadOnly()` alone would grey everything out).
 5. **Export off.** Save-Data, the zip export, wish export, GOOD download:
    hidden on the demo (the `demo` flag). Share cards stay on: a PNG saying
    teyvat.me is the best advert there is.
@@ -132,24 +166,23 @@ a demo.
 7. **Crawlable.** The demo's shell is prerendered like the public routes; the
    data pages render client-side (Google does render them, with a delay). If
    indexing matters more later, the Characters and Planner demo pages can be
-   prerendered at freeze time as well.
+   prerendered at build time as well.
 8. **Links to it** from the landing ("Try the demo"), the login and register
    pages.
 
 ### Touches
 
-`worker/routes/demo.ts` (new), a freeze command in `scripts/`, migration for
-the `demo_*` tables (or the reserved id), `data/account-data.ts` (`'demo'`
+`scripts/demo-good.mjs` (new; uses `@gdt/game-data` for keys, costs and
+sets), `worker/routes/demo.ts` (new), `data/account-data.ts` (`'demo'`
 source), `views/account/context.ts` (`demo` flag), `AccountLayout.vue` or a
 `DemoLayout.vue`, the six state composables (in-memory adapter), the export
 entry points (hide), `router/index.ts`, locale files for the bar's text.
 
 ### Open
 
-- Mask the identity or show the real name: the user's call (my pick: mask).
-- How many snapshots to freeze (my pick: the last 60, enough for every
-  chart; the whole history makes the bundle large for a first visit).
-- Whether the demo tracks Capture's live sync as a recorded replay (not now).
+- The roster: Furina is the worked example; the rest is my pick unless the
+  user names characters.
+- Whether the demo also shows Capture presence (no: nothing is live).
 
 ---
 
@@ -324,7 +357,7 @@ Migration, `worker/routes/passkeys.ts`, `worker/lib/webauthn.ts`,
 ## Order and why
 
 1. **SEO quick wins** — cheapest, fixes what Google says today.
-2. **Demo account** — lets people and crawlers see the product; a few days.
+2. **Demo account** — a made-up half-built roster so the planner has work to show; a few days.
 3. **Share pages** — turns every shared card into an inbound page.
 4. **Passkeys** — self-contained, a week, improves sign-up friction.
 5. **Guest mode** — the largest; decide after the demo whether it is

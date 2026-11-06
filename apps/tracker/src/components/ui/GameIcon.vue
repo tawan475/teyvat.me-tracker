@@ -13,7 +13,7 @@ const props = withDefaults(
     src: string
     name: string
     rarity?: number
-    size?: 'xs' | 'sm' | 'md' | 'lg'
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
     /** Load now rather than near the viewport (a page that shows them all, e.g. the roster). */
     eager?: boolean
     /** Fetch before (`high`: the first screen of a grid) or after the page's other images. */
@@ -43,7 +43,7 @@ const initials = computed(() =>
   <span
     class="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg"
     :class="[
-      { xs: 'size-7', sm: 'size-9', md: 'size-12', lg: 'size-16' }[size],
+      { xs: 'size-7', sm: 'size-9', md: 'size-12', lg: 'size-16', xl: 'size-22' }[size],
       'bg-surface-sunken',
     ]"
   >

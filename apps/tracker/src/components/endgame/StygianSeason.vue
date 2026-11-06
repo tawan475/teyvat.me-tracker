@@ -324,10 +324,11 @@ const bosses = computed(() => {
               <li
                 v-for="(f, i) in r.fights"
                 :key="i"
-                class="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
+                class="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
                 :class="i > 0 && 'border-t border-border-default'"
               >
-                <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="md" />
+                <!-- The boss as tall as the row's name, team and figures (the user's ask: fill the space). -->
+                <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="xl" />
                 <span class="flex min-w-0 flex-col gap-1">
                   <span class="truncate text-sm font-semibold" :title="f.full || undefined">{{
                     f.name

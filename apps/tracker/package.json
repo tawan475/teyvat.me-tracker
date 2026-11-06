@@ -24,7 +24,7 @@
     "admin:repack": "tsx scripts/repack.ts"
   },
   "dependencies": {
-    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.3",
+    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.4",
     "@gdt/shared": "workspace:*",
     "@noble/hashes": "^2.4.0",
     "@tailwindcss/vite": "^4.3.1",

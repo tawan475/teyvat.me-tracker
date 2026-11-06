@@ -394,7 +394,7 @@ is demand).
 
 ---
 
-## 6. Supporter tier — ON HOLD (the user's call, 2026-11-06); research kept
+## 6. Supporter tier — Ko-fi (the user's pick, 2026-11-06)
 
 The goal is "the site pays for itself" (under $10/month today), not profit.
 What was checked, with the official pages where they could be read; the
@@ -467,13 +467,50 @@ rest is marked as something to confirm in the platform's own dashboard.
    bank payout. Building memberships on it is the most code of any option;
    only if everything else fails.
 
-### Recommendation
+### What the user chose (2026-11-06)
 
-Start with **GitHub Sponsors (tiers + a goal of the monthly bill) and a
-PromptPay QR** on one "Support Teyvat.me" page. Grant the supporter perks
-through the GitHub webhook (linked account) and by hand for PromptPay.
-Revisit a merchant of record only if international non-GitHub supporters
-ask for a card option.
+The user set up **Ko-fi, paid out through their Stripe Thailand account**
+(GitHub Sponsors is set up too, also on Stripe). Ko-fi is the one to build
+on: Genshin players can pay without a GitHub account. Ko-fi charges nothing
+on one-time tips; memberships carry its 5% unless on Gold; Stripe Thailand
+takes 4.75% + ฿10 per international card, +2% on conversion.
+
+### How it connects (design, not built)
+
+- **Discord role: Ko-fi's own bot, no code.** Ko-fi → Settings → Discord
+  connects the server; the Ko-fi bot's role sits above the supporter role it
+  hands out; the role is a reward on one-time support or a membership tier.
+  Supporters link their Discord on Ko-fi after paying. The bot removes the
+  role when a monthly membership stops; one-time supporters keep it until
+  removed by hand. Ko-fi says Discord rewards need a "Contributor" account.
+- **Site perks: Ko-fi's webhook into the Worker.** `POST /api/kofi/webhook`
+  (form-encoded `data` JSON), checked against the `verification_token`
+  (Worker secret `KOFI_VERIFICATION_TOKEN`); each payment stored once by its
+  Ko-fi transaction id (`supporter_payments`: type, amount, currency, tier,
+  subscription flags, date, the matched user; never the email). Confirm the
+  field set with a real test payment from Ko-fi's webhook page first.
+- **Matching a payment to a user: a supporter code.** Settings → Support
+  shows "Your supporter code: TVM-XXXX" and a Support on Ko-fi button; the
+  supporter pastes the code in Ko-fi's message box (it reaches the webhook
+  even when the message is private). A payment carrying a code grants that
+  user. Never matched by email (the OAuth rule: never link by an unverified
+  email).
+- **By hand for the rest:** a `Supporter` role in the existing staff roles
+  system (`roles`/`user_roles`), given or removed from the staff user page
+  and audited, for a forgotten code or a PromptPay payment.
+
+### Rules
+
+- **Extra storage is a monthly perk** (the user's call, 2026-11-06): a
+  bigger quota than the 200 MB default for as long as a Ko-fi membership
+  runs, ending a few days after a missed payment (grace). When it ends,
+  nothing is deleted: uploads past the normal quota stop as they do today
+  (413 `storage_quota`), everything stored stays readable, and the user can
+  compact history or renew. Implemented as the per-user override
+  `users.storage_quota` (set while active, cleared when it ends) so the
+  upload path is unchanged.
+- **One-time payments:** open — a fixed time per payment, or a permanent
+  badge.
 
 ### What a supporter gets (the perks that fit the rules)
 

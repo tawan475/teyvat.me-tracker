@@ -23,8 +23,12 @@ import type {
 import banners from '../../src/data/wish-banners.json' with { type: 'json' }
 import wishItems from '../../../../packages/shared/src/wish/items.json' with { type: 'json' }
 
-/** The masked identity (the plan: same-length placeholder UID, no real name). */
-export const DEMO_UID = '812345678'
+/**
+ * The masked identity: no real name, and a UID whose owner agreed to it (the
+ * user's call, 2026-11-06: 812345678, the placeholder of tests and fixtures,
+ * turned out to be a stranger's real account, which a Discord user spotted).
+ */
+export const DEMO_UID = '888888888'
 export const DEMO_NAME = 'Demo'
 const NICKNAME = 'Traveler'
 const SIGNATURE = 'Exploring Teyvat, one domain at a time.'

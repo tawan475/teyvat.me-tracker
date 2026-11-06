@@ -51,7 +51,7 @@ export const KEY_DOCS: KeyDoc[] = [
   birthday?: { month: number; day: number }
 }`,
     example: {
-      uid: 812345678,
+      uid: 888888888,
       ar: 60,
       arExp: 0,
       wl: 8,
@@ -351,7 +351,7 @@ export const DELTA_ANSWERS: [string, string][] = [
 export const DELTA_EXAMPLE = {
   format: 'GOOD-X-delta',
   v: 1,
-  uid: 812345678,
+  uid: 888888888,
   session: '01J9ZK5Q8W3E7R2T',
   seq: 1,
   base: '1a2b3c4d5e',
@@ -383,7 +383,7 @@ export const FILE_EXAMPLE = {
   weapons: [],
   artifacts: [],
   materials: { Mora: 48211930 },
-  gi_player: { uid: 812345678, ar: 60, wl: 8 },
+  gi_player: { uid: 888888888, ar: 60, wl: 8 },
   gi_achievements: [80000, 80001],
 } satisfies Leyline
 

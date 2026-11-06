@@ -45,7 +45,7 @@ const IMPORT_ANSWER = showJson({
   takenAt: 1792000000000,
   rawSize: 612345,
   storedSize: 3120,
-  account: { id: 12, name: 'Main', uid: '812345678', created: false },
+  account: { id: 12, name: 'Main', uid: '888888888', created: false },
   contentKey: '1a2b3c4d5e',
   live: { base: '1a2b3c4d5e', watching: false },
 })

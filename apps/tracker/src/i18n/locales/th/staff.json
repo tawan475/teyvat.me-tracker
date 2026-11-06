@@ -35,7 +35,11 @@
     "uploadsBlocked": "บล็อกการอัปโหลดแล้ว",
     "uploadsUnblocked": "ยกเลิกการบล็อกการอัปโหลดแล้ว",
     "quotaSaved": "บันทึกโควตาแล้ว",
-    "d1Share": "{share} ของ 10 GB ของ D1"
+    "d1Share": "{share} ของ 10 GB ของ D1",
+    "wishes": "การอธิษฐาน",
+    "wishesTitle": "จำนวนครั้ง · ไบต์ที่จัดเก็บ",
+    "storedTitle": "สแนปช็อต · แคตตาล็อกอาร์ติแฟกต์ · การอธิษฐาน",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "ออกจากระบบทุกที่",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "ถูกระงับ",
     "uploadsBlocked": "บล็อกการอัปโหลด",
-    "new": "ใหม่"
+    "new": "ใหม่",
+    "wishesOnly": "เฉพาะการอธิษฐาน"
   },
   "history": {
     "suspend": "ระงับ",
@@ -167,7 +172,11 @@
       "suspended": "ถูกระงับ",
       "suspendedTitle": "ผู้ใช้ที่ถูกระงับ",
       "staff": "ทีมงาน",
-      "staffTitle": "ผู้ใช้ที่มีบทบาททีมงาน"
+      "staffTitle": "ผู้ใช้ที่มีบทบาททีมงาน",
+      "wishes": "การอธิษฐาน",
+      "wishesTitle": "มีประวัติการอธิษฐาน",
+      "wishesOnly": "เฉพาะการอธิษฐาน",
+      "wishesOnlyTitle": "มีประวัติการอธิษฐานแต่ไม่มีสแนปช็อต"
     },
     "sorts": {
       "newest": "ใหม่สุด",
@@ -176,7 +185,9 @@
       "storage": "พื้นที่จัดเก็บ",
       "snapshots": "สแนปช็อต",
       "name": "ชื่อ",
-      "column": "คอลัมน์"
+      "column": "คอลัมน์",
+      "wishes": "ข้อมูลการอธิษฐาน",
+      "raw": "ขนาดดิบ"
     },
     "shownOf": "แสดง {shown} จากผู้ใช้ {all} คน",
     "selected": "เลือก {n} รายการ",
@@ -212,7 +223,9 @@
       "growth": "การเติบโต",
       "stored": "จัดเก็บ",
       "quota": "โควตาที่ใช้",
-      "snapshots": "สแนปช็อต"
+      "snapshots": "สแนปช็อต",
+      "wishes": "การอธิษฐาน",
+      "raw": "ดิบ"
     },
     "newIn": "ใหม่ · {window}",
     "snapshotsIn": "สแนปช็อต · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "ขีดจำกัดรายวัน ×{n}",
     "dailyCapTitle": "ถึงขีดจำกัดการอัปโหลดรายวัน {n} วันใน 7 วันที่ผ่านมา",
     "accountLimit": "{n} บัญชี",
-    "accountLimitTitle": "ถึงจำนวนบัญชีที่คีย์ผู้ใช้สร้างได้"
+    "accountLimitTitle": "ถึงจำนวนบัญชีที่คีย์ผู้ใช้สร้างได้",
+    "siteSplit": "พื้นที่จัดเก็บของทั้งไซต์",
+    "snapshotCount": "{n} สแนปช็อต",
+    "rawOf": "ดิบ {size}",
+    "pieces": "{n} ชิ้น",
+    "histories": "{n} ประวัติ",
+    "perPull": "{n} B/ครั้ง"
   },
   "roles": {
     "title": "บทบาท",
@@ -376,7 +395,11 @@
     "unblockUploads": "ยกเลิกการบล็อกการอัปโหลด",
     "blockUploadsMenu": "บล็อกการอัปโหลด…",
     "resetImportKey": "รีเซ็ตคีย์นำเข้า",
-    "deleteDataMenu": "ลบข้อมูล…"
+    "deleteDataMenu": "ลบข้อมูล…",
+    "data": "ข้อมูล",
+    "lastWishSync": "ซิงก์การอธิษฐานล่าสุด",
+    "liveHint": "เจอร์นัลและจุดกราฟ",
+    "noJournal": "ไม่มีเจอร์นัล"
   },
   "inspect": {
     "account": "บัญชี",
@@ -471,5 +494,13 @@
     "syncNow": "ซิงก์ตอนนี้",
     "boardCount": "{n} บนกระดาน",
     "hoyolabCount": "{n} โพสต์ HoYoLAB"
+  },
+  "split": {
+    "sections": "สแนปช็อต",
+    "catalog": "แคตตาล็อกอาร์ติแฟกต์",
+    "wishes": "การอธิษฐาน",
+    "live": "ซิงก์สด",
+    "pulls": "{n} ครั้ง",
+    "of": "พื้นที่จัดเก็บของ {name}"
   }
 }

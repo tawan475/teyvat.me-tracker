@@ -35,7 +35,11 @@
     "uploadsBlocked": "업로드 차단됨",
     "uploadsUnblocked": "업로드 차단 해제됨",
     "quotaSaved": "할당량 저장됨",
-    "d1Share": "D1 10GB 중 {share}"
+    "d1Share": "D1 10GB 중 {share}",
+    "wishes": "기원",
+    "wishesTitle": "기원 횟수 · 저장 바이트",
+    "storedTitle": "스냅샷 · 성유물 목록 · 기원",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "모든 곳에서 로그아웃됩니다",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "정지됨",
     "uploadsBlocked": "업로드 차단됨",
-    "new": "신규"
+    "new": "신규",
+    "wishesOnly": "기원만"
   },
   "history": {
     "suspend": "정지함",
@@ -167,7 +172,11 @@
       "suspended": "정지됨",
       "suspendedTitle": "정지된 사용자",
       "staff": "스태프",
-      "staffTitle": "스태프 역할이 있는 사용자"
+      "staffTitle": "스태프 역할이 있는 사용자",
+      "wishes": "기원",
+      "wishesTitle": "기원 기록 있음",
+      "wishesOnly": "기원만",
+      "wishesOnlyTitle": "기원 기록은 있지만 스냅샷 없음"
     },
     "sorts": {
       "newest": "최신순",
@@ -176,7 +185,9 @@
       "storage": "저장 공간",
       "snapshots": "스냅샷",
       "name": "이름",
-      "column": "열"
+      "column": "열",
+      "wishes": "기원 데이터",
+      "raw": "원본 크기"
     },
     "shownOf": "사용자 {all}명 중 {shown}명 표시",
     "selected": "{n}명 선택됨",
@@ -212,7 +223,9 @@
       "growth": "증가량",
       "stored": "저장",
       "quota": "할당량 사용",
-      "snapshots": "스냅샷"
+      "snapshots": "스냅샷",
+      "wishes": "기원",
+      "raw": "원본"
     },
     "newIn": "신규 · {window}",
     "snapshotsIn": "스냅샷 · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "일일 한도 ×{n}",
     "dailyCapTitle": "최근 7일 중 {n}일 일일 업로드 한도 도달",
     "accountLimit": "계정 {n}개",
-    "accountLimitTitle": "사용자 키로 만들 수 있는 계정 수에 도달"
+    "accountLimitTitle": "사용자 키로 만들 수 있는 계정 수에 도달",
+    "siteSplit": "사이트 전체 저장 공간",
+    "snapshotCount": "스냅샷 {n}개",
+    "rawOf": "원본 {size}",
+    "pieces": "{n}개",
+    "histories": "기록 {n}개",
+    "perPull": "{n} B/회"
   },
   "roles": {
     "title": "역할",
@@ -376,7 +395,11 @@
     "unblockUploads": "업로드 차단 해제",
     "blockUploadsMenu": "업로드 차단…",
     "resetImportKey": "가져오기 키 초기화",
-    "deleteDataMenu": "데이터 삭제…"
+    "deleteDataMenu": "데이터 삭제…",
+    "data": "데이터",
+    "lastWishSync": "최근 기원 동기화",
+    "liveHint": "저널과 차트 점",
+    "noJournal": "저널 없음"
   },
   "inspect": {
     "account": "계정",
@@ -471,5 +494,13 @@
     "syncNow": "지금 동기화",
     "boardCount": "게시판 {n}개",
     "hoyolabCount": "HoYoLAB 게시물 {n}개"
+  },
+  "split": {
+    "sections": "스냅샷",
+    "catalog": "성유물 목록",
+    "wishes": "기원",
+    "live": "실시간 동기화",
+    "pulls": "{n}회",
+    "of": "{name}의 저장 공간"
   }
 }

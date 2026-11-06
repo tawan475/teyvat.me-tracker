@@ -35,7 +35,11 @@
     "uploadsBlocked": "Uploads blocked",
     "uploadsUnblocked": "Uploads unblocked",
     "quotaSaved": "Quota saved",
-    "d1Share": "{share} of D1's 10 GB"
+    "d1Share": "{share} of D1's 10 GB",
+    "wishes": "Wishes",
+    "wishesTitle": "Wish pulls · bytes stored",
+    "storedTitle": "Snapshots · artifact catalog · wishes",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Signs them out everywhere",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Suspended",
     "uploadsBlocked": "Uploads blocked",
-    "new": "New"
+    "new": "New",
+    "wishesOnly": "Wishes only"
   },
   "history": {
     "suspend": "suspended",
@@ -167,7 +172,11 @@
       "suspended": "Suspended",
       "suspendedTitle": "Suspended users",
       "staff": "Staff",
-      "staffTitle": "Users with a staff role"
+      "staffTitle": "Users with a staff role",
+      "wishes": "Wishes",
+      "wishesTitle": "Has a wish history",
+      "wishesOnly": "Wishes only",
+      "wishesOnlyTitle": "A wish history but no snapshot"
     },
     "sorts": {
       "newest": "Newest",
@@ -176,7 +185,9 @@
       "storage": "Storage",
       "snapshots": "Snapshots",
       "name": "Name",
-      "column": "Column"
+      "column": "Column",
+      "wishes": "Wish data",
+      "raw": "Raw size"
     },
     "shownOf": "{shown} shown of {all} users",
     "selected": "{n} selected",
@@ -212,7 +223,9 @@
       "growth": "Growth",
       "stored": "Stored",
       "quota": "Quota used",
-      "snapshots": "Snapshots"
+      "snapshots": "Snapshots",
+      "wishes": "Wishes",
+      "raw": "Raw"
     },
     "newIn": "New · {window}",
     "snapshotsIn": "Snapshots · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Daily cap ×{n}",
     "dailyCapTitle": "Reached the daily upload cap on {n} of the last 7 days",
     "accountLimit": "{n} accounts",
-    "accountLimitTitle": "At the number of accounts a user key makes"
+    "accountLimitTitle": "At the number of accounts a user key makes",
+    "siteSplit": "The site’s storage",
+    "snapshotCount": "{n} snapshots",
+    "rawOf": "{size} raw",
+    "pieces": "{n} pieces",
+    "histories": "{n} histories",
+    "perPull": "{n} B/pull"
   },
   "roles": {
     "title": "Roles",
@@ -376,7 +395,11 @@
     "unblockUploads": "Unblock uploads",
     "blockUploadsMenu": "Block uploads…",
     "resetImportKey": "Reset import key",
-    "deleteDataMenu": "Delete data…"
+    "deleteDataMenu": "Delete data…",
+    "data": "Data",
+    "lastWishSync": "Last wish sync",
+    "liveHint": "Journals and chart points",
+    "noJournal": "No journal"
   },
   "inspect": {
     "account": "Account",
@@ -471,5 +494,13 @@
     "syncNow": "Sync now",
     "boardCount": "{n} on the board",
     "hoyolabCount": "{n} HoYoLAB posts"
+  },
+  "split": {
+    "sections": "Snapshots",
+    "catalog": "Artifact catalog",
+    "wishes": "Wishes",
+    "live": "Live sync",
+    "pulls": "{n} pulls",
+    "of": "{name}’s storage"
   }
 }

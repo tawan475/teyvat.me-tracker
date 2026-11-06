@@ -449,11 +449,12 @@ export const staff = new Hono<AppEnv>()
     const row = userRowOf(user.row, context)
     const target = { userId: id, position: user.position }
     const privateOk = seesPrivate(context, id, user.position)
-    const [identities, sessions, history, usage] = await Promise.all([
+    const [identities, sessions, history, usage, liveBytes] = await Promise.all([
       privateOk ? identitiesOf(c.env.DB, id) : undefined,
       privateOk ? listUserSessions(c.env.DB, id) : undefined,
       can(actor, 'audit.view') ? userHistory(c.env.DB, id) : undefined,
       userUsage(c.env.DB, id, row.storedBytes),
+      liveBytesByUser(liveDb(c.env), [id]),
     ])
     const outranked = outranks(actor, target)
     const assignable =
@@ -476,6 +477,7 @@ export const staff = new Hono<AppEnv>()
       ...(sessions !== undefined ? { sessions } : {}),
       ...(history ? { history } : {}),
       usage,
+      liveBytes: liveBytes.get(id) ?? 0,
       outranked,
       assignable,
     })

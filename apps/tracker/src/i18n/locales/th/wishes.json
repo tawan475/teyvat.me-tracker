@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward และตัวติดตามการอธิษฐานส่วนใหญ่อ่านได้",
     "paimonTitle": "สำหรับ Local Importer ของ paimon.moe (Wish counter → Import → Local)",
     "delete": "ลบ",
-    "deleteHistory": "ลบประวัติ"
+    "deleteHistory": "ลบประวัติ",
+    "data": "ข้อมูล",
+    "synced": "ซิงก์ {when}",
+    "pullCount": "จำนวนครั้ง",
+    "bannerCount": "{n} แบนเนอร์",
+    "totalData": "ข้อมูลทั้งหมด",
+    "totalDataTitle": "ขนาดของไฟล์ UIGF ที่ส่งออกจากประวัตินี้",
+    "asUigf": "ในรูปแบบ UIGF",
+    "perPull": "{n} B/ครั้ง",
+    "stored": "จัดเก็บ",
+    "storedTitle": "สิ่งที่เซิร์ฟเวอร์เก็บไว้: ชิ้นข้อมูลที่บีบอัด",
+    "ofQuota": "{share}% จาก {size} ของคุณ"
   },
   "bannerPage": {
     "noPulls": "ไม่มีการสุ่มในแบนเนอร์นี้",

@@ -35,7 +35,11 @@
     "uploadsBlocked": "Загрузки запрещены",
     "uploadsUnblocked": "Загрузки разрешены",
     "quotaSaved": "Квота сохранена",
-    "d1Share": "{share} из 10 ГБ D1"
+    "d1Share": "{share} из 10 ГБ D1",
+    "wishes": "Молитвы",
+    "wishesTitle": "Молитв · байт сохранено",
+    "storedTitle": "Снимки · каталог артефактов · молитвы",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Выход на всех устройствах",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Заблокирован",
     "uploadsBlocked": "Загрузки запрещены",
-    "new": "Новый"
+    "new": "Новый",
+    "wishesOnly": "Только молитвы"
   },
   "history": {
     "suspend": "блокировка",
@@ -167,7 +172,11 @@
       "suspended": "Заблокированные",
       "suspendedTitle": "Заблокированные пользователи",
       "staff": "Персонал",
-      "staffTitle": "Пользователи с ролью персонала"
+      "staffTitle": "Пользователи с ролью персонала",
+      "wishes": "Молитвы",
+      "wishesTitle": "Есть история молитв",
+      "wishesOnly": "Только молитвы",
+      "wishesOnlyTitle": "История молитв есть, снимков нет"
     },
     "sorts": {
       "newest": "Сначала новые",
@@ -176,7 +185,9 @@
       "storage": "Хранилище",
       "snapshots": "Снимки",
       "name": "Имя",
-      "column": "Столбец"
+      "column": "Столбец",
+      "wishes": "Данные молитв",
+      "raw": "Исходный размер"
     },
     "shownOf": "Показано {shown} из {all}",
     "selected": "Выбрано: {n}",
@@ -212,7 +223,9 @@
       "growth": "Рост",
       "stored": "Хранится",
       "quota": "Квота",
-      "snapshots": "Снимки"
+      "snapshots": "Снимки",
+      "wishes": "Молитвы",
+      "raw": "Исходный"
     },
     "newIn": "Новое · {window}",
     "snapshotsIn": "Снимки · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Дневной лимит ×{n}",
     "dailyCapTitle": "Дневной лимит загрузок достигнут в {n} из последних 7 дней",
     "accountLimit": "Аккаунтов: {n}",
-    "accountLimitTitle": "Достигнуто число аккаунтов, которое создаёт ключ пользователя"
+    "accountLimitTitle": "Достигнуто число аккаунтов, которое создаёт ключ пользователя",
+    "siteSplit": "Хранилище сайта",
+    "snapshotCount": "Снимков: {n}",
+    "rawOf": "{size} исходных",
+    "pieces": "Предметов: {n}",
+    "histories": "Историй: {n}",
+    "perPull": "{n} Б/молитву"
   },
   "roles": {
     "title": "Роли",
@@ -376,7 +395,11 @@
     "unblockUploads": "Разрешить загрузки",
     "blockUploadsMenu": "Запретить загрузки…",
     "resetImportKey": "Сбросить ключ импорта",
-    "deleteDataMenu": "Удалить данные…"
+    "deleteDataMenu": "Удалить данные…",
+    "data": "Данные",
+    "lastWishSync": "Последняя синхронизация молитв",
+    "liveHint": "Журналы и точки графика",
+    "noJournal": "Нет журнала"
   },
   "inspect": {
     "account": "Аккаунт",
@@ -471,5 +494,13 @@
     "syncNow": "Синхронизировать",
     "boardCount": "На доске: {n}",
     "hoyolabCount": "Постов HoYoLAB: {n}"
+  },
+  "split": {
+    "sections": "Снимки",
+    "catalog": "Каталог артефактов",
+    "wishes": "Молитвы",
+    "live": "Live-синхронизация",
+    "pulls": "Молитв: {n}",
+    "of": "Хранилище {name}"
   }
 }

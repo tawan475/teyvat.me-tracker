@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1 : Snap Hutao, Starward et la plupart des trackers de vœux le lisent",
     "paimonTitle": "Pour le Local Importer de paimon.moe (Wish counter → Import → Local)",
     "delete": "Supprimer",
-    "deleteHistory": "Supprimer l'historique"
+    "deleteHistory": "Supprimer l'historique",
+    "data": "Données",
+    "synced": "Synchronisé {when}",
+    "pullCount": "Vœux",
+    "bannerCount": "{n} bannière | {n} bannières",
+    "totalData": "Données totales",
+    "totalDataTitle": "Taille du fichier UIGF exporté de cet historique",
+    "asUigf": "en UIGF",
+    "perPull": "{n} o/vœu",
+    "stored": "Stocké",
+    "storedTitle": "Ce que le serveur conserve : des blocs compressés",
+    "ofQuota": "{share}% de vos {size}"
   },
   "bannerPage": {
     "noPulls": "Aucun vœu sur cette bannière",

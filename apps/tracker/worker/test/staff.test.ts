@@ -18,6 +18,7 @@ import {
 } from '@gdt/shared'
 import { env, SELF } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
+import { syntheticWishRecords } from '../../../../packages/shared/test/wish-synthetic'
 import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
 
 const PASSWORD = 'correct horse battery staple'
@@ -301,6 +302,71 @@ describe('what staff see', () => {
     const sorted = await admin.client.json<StaffUsersResponse>('/api/staff/users?sort=name&dir=asc')
     const names = sorted.users.map((u) => u.username.toLowerCase())
     expect(names).toEqual([...names].sort())
+  })
+
+  it('shows wish data per user and account, finds wish-only users, and sorts by it', async () => {
+    const admin = await member('Admin')
+    const wisher = await member()
+    const uid = String(700_000_000 + Math.floor(Math.random() * 99_999_999))
+    const { account, importKey } = await createAccount(wisher.client, uid)
+    const records = syntheticWishRecords({ uid, pulls: { 301: 700, 302: 100 } })
+    const sync = await SELF.fetch(`${ORIGIN}/api/wishes/import`, {
+      method: 'POST',
+      headers: { 'x-import-key': importKey, 'content-type': 'application/json' },
+      body: JSON.stringify({ uid, region: 'os_asia', lang: 'en-us', timezone: 8, records }),
+    })
+    expect(sync.status).toBe(200)
+    const uploader = await member()
+    const second = await createAccount(uploader.client)
+    expect((await importByKey(second.importKey, sampleGood(), 1_000)).status).toBe(201)
+
+    // The list: the split, the pulls, the chips.
+    const found = await admin.client.json<StaffUsersResponse>(`/api/staff/users?q=${uid}`)
+    const row = found.users[0]!
+    expect(row.wishPulls).toBe(800)
+    expect(row.wishBytes).toBeGreaterThan(0)
+    expect(row.sectionBytes).toBe(0)
+    expect(row.catalogBytes).toBe(0)
+    expect(row.storedBytes).toBe(row.wishBytes)
+    expect(found.counts.wishes).toBe(1)
+    expect(found.counts.wishesOnly).toBe(1)
+    const only = await admin.client.json<StaffUsersResponse>('/api/staff/users?filter=wishesOnly')
+    expect(only.users.map((u) => u.id)).toContain(wisher.me.id)
+    expect(only.users.map((u) => u.id)).not.toContain(uploader.me.id)
+    const byWishes = await admin.client.json<StaffUsersResponse>(
+      '/api/staff/users?sort=wishes&dir=desc',
+    )
+    expect(byWishes.users[0]!.id).toBe(wisher.me.id)
+    const byRaw = await admin.client.json<StaffUsersResponse>('/api/staff/users?sort=raw&dir=desc')
+    expect(byRaw.users[0]!.id).toBe(uploader.me.id)
+    expect(byRaw.users[0]!.rawBytes).toBeGreaterThan(0)
+
+    // The user's page: the account row carries its wishes.
+    const detail = await admin.client.json<StaffUserDetailResponse>(
+      `/api/staff/users/${wisher.me.id}`,
+    )
+    expect(detail.accounts[0]).toMatchObject({
+      id: account.id,
+      snapshotCount: 0,
+      wishPulls: 800,
+      catalogCount: 0,
+    })
+    expect(detail.accounts[0]!.wishBytes).toBe(row.wishBytes)
+    expect(detail.accounts[0]!.wishUpdatedAt).toBeGreaterThan(0)
+    expect(detail.liveBytes).toBe(0)
+    expect(detail.usage?.storedBytes).toBe(row.wishBytes)
+
+    // The storage page: the same split, sorted by wishes, with the site's totals.
+    const storage = await admin.client.json<StaffStorageResponse>('/api/staff/storage?sort=wishes')
+    expect(storage.rows[0]).toMatchObject({ id: wisher.me.id, wishPulls: 800 })
+    expect(storage.totals.wishPulls).toBeGreaterThanOrEqual(800)
+    expect(storage.totals.histories).toBeGreaterThanOrEqual(1)
+    expect(storage.totals.sectionBytes).toBeGreaterThan(0)
+    const overview = await admin.client.json<StaffOverviewResponse>('/api/staff/overview')
+    expect(overview.storage.wishPulls).toBe(storage.totals.wishPulls)
+    expect(overview.storedBytes).toBe(
+      overview.storage.sectionBytes + overview.storage.catalogBytes + overview.storage.wishBytes,
+    )
   })
 })
 

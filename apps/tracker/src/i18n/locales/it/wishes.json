@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: lo leggono Snap Hutao, Starward e la maggior parte dei tracker di desideri",
     "paimonTitle": "Per il Local Importer di paimon.moe (Wish counter → Import → Local)",
     "delete": "Elimina",
-    "deleteHistory": "Elimina cronologia"
+    "deleteHistory": "Elimina cronologia",
+    "data": "Dati",
+    "synced": "Sincronizzato {when}",
+    "pullCount": "Tiri",
+    "bannerCount": "{n} banner | {n} banner",
+    "totalData": "Dati totali",
+    "totalDataTitle": "Dimensione del file UIGF esportato da questa cronologia",
+    "asUigf": "come UIGF",
+    "perPull": "{n} B/tiro",
+    "stored": "Salvato",
+    "storedTitle": "Ciò che il server conserva: blocchi compressi",
+    "ofQuota": "{share}% dei tuoi {size}"
   },
   "bannerPage": {
     "noPulls": "Nessun tiro su questo banner",

@@ -35,7 +35,11 @@
     "uploadsBlocked": "Unggahan diblokir",
     "uploadsUnblocked": "Blokir unggahan dibuka",
     "quotaSaved": "Kuota tersimpan",
-    "d1Share": "{share} dari 10 GB D1"
+    "d1Share": "{share} dari 10 GB D1",
+    "wishes": "Permohonan",
+    "wishesTitle": "Pull · byte tersimpan",
+    "storedTitle": "Snapshot · katalog artefak · permohonan",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Mengeluarkan mereka di mana saja",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Ditangguhkan",
     "uploadsBlocked": "Unggahan diblokir",
-    "new": "Baru"
+    "new": "Baru",
+    "wishesOnly": "Hanya permohonan"
   },
   "history": {
     "suspend": "menangguhkan",
@@ -167,7 +172,11 @@
       "suspended": "Ditangguhkan",
       "suspendedTitle": "Pengguna ditangguhkan",
       "staff": "Staf",
-      "staffTitle": "Pengguna dengan peran staf"
+      "staffTitle": "Pengguna dengan peran staf",
+      "wishes": "Permohonan",
+      "wishesTitle": "Punya riwayat permohonan",
+      "wishesOnly": "Hanya permohonan",
+      "wishesOnlyTitle": "Riwayat permohonan tanpa snapshot"
     },
     "sorts": {
       "newest": "Terbaru",
@@ -176,7 +185,9 @@
       "storage": "Penyimpanan",
       "snapshots": "Snapshot",
       "name": "Nama",
-      "column": "Kolom"
+      "column": "Kolom",
+      "wishes": "Data permohonan",
+      "raw": "Ukuran mentah"
     },
     "shownOf": "{shown} ditampilkan dari {all} pengguna",
     "selected": "{n} terpilih",
@@ -212,7 +223,9 @@
       "growth": "Pertumbuhan",
       "stored": "Disimpan",
       "quota": "Kuota terpakai",
-      "snapshots": "Snapshot"
+      "snapshots": "Snapshot",
+      "wishes": "Permohonan",
+      "raw": "Mentah"
     },
     "newIn": "Baru · {window}",
     "snapshotsIn": "Snapshot · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Batas harian ×{n}",
     "dailyCapTitle": "Mencapai batas unggahan harian pada {n} dari 7 hari terakhir",
     "accountLimit": "{n} akun",
-    "accountLimitTitle": "Di jumlah akun yang dibuat oleh kunci pengguna"
+    "accountLimitTitle": "Di jumlah akun yang dibuat oleh kunci pengguna",
+    "siteSplit": "Penyimpanan situs",
+    "snapshotCount": "{n} snapshot",
+    "rawOf": "{size} mentah",
+    "pieces": "{n} bagian",
+    "histories": "{n} riwayat",
+    "perPull": "{n} B/pull"
   },
   "roles": {
     "title": "Peran",
@@ -376,7 +395,11 @@
     "unblockUploads": "Buka blokir unggahan",
     "blockUploadsMenu": "Blokir unggahan…",
     "resetImportKey": "Atur ulang kunci impor",
-    "deleteDataMenu": "Hapus data…"
+    "deleteDataMenu": "Hapus data…",
+    "data": "Data",
+    "lastWishSync": "Sinkronisasi permohonan terakhir",
+    "liveHint": "Jurnal dan titik grafik",
+    "noJournal": "Tanpa jurnal"
   },
   "inspect": {
     "account": "Akun",
@@ -471,5 +494,13 @@
     "syncNow": "Sinkronkan sekarang",
     "boardCount": "{n} di papan",
     "hoyolabCount": "{n} postingan HoYoLAB"
+  },
+  "split": {
+    "sections": "Snapshot",
+    "catalog": "Katalog artefak",
+    "wishes": "Permohonan",
+    "live": "Sinkronisasi live",
+    "pulls": "{n} pull",
+    "of": "Penyimpanan {name}"
   }
 }

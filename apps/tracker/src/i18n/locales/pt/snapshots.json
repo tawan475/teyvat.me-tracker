@@ -91,7 +91,16 @@
     "snapshots": "Capturas",
     "raw": "Dados brutos",
     "stored": "Armazenado",
-    "saved": "Economizado"
+    "saved": "Economizado",
+    "allocated": "Alocado",
+    "of": "de {size}",
+    "quotaUsed": "Armazenamento usado",
+    "breakdown": "Detalhe",
+    "compact": "Compactar…",
+    "thisAccount": "Esta conta",
+    "allAccounts": "Todas as suas contas ({n})",
+    "inTrash": "{n} na lixeira (libertados após 30 dias)",
+    "liveNote": "A sincronização ao vivo guarda mais {size}"
   },
   "pagination": {
     "perPage": "Por página",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Nenhum dado disponível."
+  },
+  "compact": {
+    "title": "Compactar histórico",
+    "keep": "Manter",
+    "day": "Um por dia",
+    "week": "Um por semana",
+    "olderThan": "Mais antigos que",
+    "days": "{n} dias",
+    "year": "1 ano",
+    "all": "Todos",
+    "preview": "Mantém {kept}, remove {removed} de {total} snapshots",
+    "nothing": "Nada a remover",
+    "warning": "Removidos de imediato, sem lixeira. Os diários de sincronização ao vivo nesses snapshots terminam. Não pode ser desfeito.",
+    "confirm": "Compactar",
+    "done": "{n} snapshot removido | {n} snapshots removidos",
+    "failed": "Não compactado"
   }
 }

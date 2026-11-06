@@ -344,11 +344,6 @@ const footButton =
           :title="narrow ? session.me?.username : undefined"
         >
           <span
-            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-sm font-bold text-text-secondary"
-          >
-            {{ session.me?.username.charAt(0).toUpperCase() }}
-          </span>
-          <span
             class="nav-fade min-w-0 truncate text-sm font-semibold"
             :class="narrow ? 'opacity-0' : ''"
             >{{ session.me?.username }}</span

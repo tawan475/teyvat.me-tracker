@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1：Snap Hutao、Starward 和大多数抽卡记录工具都能读取",
     "paimonTitle": "用于 paimon.moe 的本地导入器（Wish counter → Import → Local）",
     "delete": "删除",
-    "deleteHistory": "删除记录"
+    "deleteHistory": "删除记录",
+    "data": "数据",
+    "synced": "同步于 {when}",
+    "pullCount": "抽数",
+    "bannerCount": "{n} 个卡池",
+    "totalData": "数据总量",
+    "totalDataTitle": "此记录导出为 UIGF 文件的大小",
+    "asUigf": "按 UIGF 计",
+    "perPull": "{n} B/抽",
+    "stored": "已存储",
+    "storedTitle": "服务器保存的内容：压缩块",
+    "ofQuota": "占你 {size} 的 {share}%"
   },
   "bannerPage": {
     "noPulls": "此卡池没有记录",

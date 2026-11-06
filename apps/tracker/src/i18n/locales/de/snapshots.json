@@ -91,7 +91,16 @@
     "snapshots": "Snapshots",
     "raw": "Rohdaten",
     "stored": "Gespeichert",
-    "saved": "Gespart"
+    "saved": "Gespart",
+    "allocated": "Zugeteilt",
+    "of": "von {size}",
+    "quotaUsed": "Belegter Speicher",
+    "breakdown": "Aufschlüsselung",
+    "compact": "Verdichten…",
+    "thisAccount": "Dieses Konto",
+    "allAccounts": "Alle deine Konten ({n})",
+    "inTrash": "{n} im Papierkorb (nach 30 Tagen frei)",
+    "liveNote": "Live-Sync hält daneben {size} mehr"
   },
   "pagination": {
     "perPage": "Pro Seite",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Keine Daten vorhanden."
+  },
+  "compact": {
+    "title": "Verlauf verdichten",
+    "keep": "Behalten",
+    "day": "Einen pro Tag",
+    "week": "Einen pro Woche",
+    "olderThan": "Älter als",
+    "days": "{n} Tage",
+    "year": "1 Jahr",
+    "all": "Alle",
+    "preview": "Behält {kept}, entfernt {removed} von {total} Snapshots",
+    "nothing": "Nichts zu entfernen",
+    "warning": "Sofort entfernt, ohne Papierkorb. Live-Sync-Journale auf entfernten Snapshots enden. Das lässt sich nicht rückgängig machen.",
+    "confirm": "Verdichten",
+    "done": "{n} Snapshot entfernt | {n} Snapshots entfernt",
+    "failed": "Nicht verdichtet"
   }
 }

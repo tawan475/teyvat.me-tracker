@@ -42,6 +42,9 @@ import type {
   SessionResponse,
   SessionUpload,
   SnapshotResponse,
+  CompactRequest,
+  CompactResponse,
+  UsageResponse,
   UploadTarget,
   UserSettingsPatch,
   VerifyEmailResponse,
@@ -420,6 +423,14 @@ export const api = {
     })
   },
   snapshots: (id: number) => requestJson<SnapshotResponse[]>(`/api/accounts/${id}/snapshots`),
+  /** Keeps one snapshot per day or week, deletes the rest at once (`dryRun`: counts only). */
+  compactSnapshots: (id: number, body: CompactRequest) =>
+    requestJson<CompactResponse>(`/api/accounts/${id}/snapshots/compact`, {
+      method: 'POST',
+      json: body,
+    }),
+  /** What the user stores against their quota, split by kind and account. */
+  usage: () => requestJson<UsageResponse>('/api/me/usage'),
   deleteSnapshot: (id: number, snapshotId: number) =>
     requestJson<void>(`/api/accounts/${id}/snapshots/${snapshotId}`, { method: 'DELETE' }),
   deleteSnapshots: (id: number, ids: number[]) =>

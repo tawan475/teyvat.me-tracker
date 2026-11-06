@@ -35,7 +35,11 @@
     "uploadsBlocked": "Subidas bloqueadas",
     "uploadsUnblocked": "Subidas desbloqueadas",
     "quotaSaved": "Cuota guardada",
-    "d1Share": "{share} de los 10 GB de D1"
+    "d1Share": "{share} de los 10 GB de D1",
+    "wishes": "Deseos",
+    "wishesTitle": "Deseos · bytes almacenados",
+    "storedTitle": "Instantáneas · catálogo de artefactos · deseos",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Cierra su sesión en todas partes",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Suspendido",
     "uploadsBlocked": "Subidas bloqueadas",
-    "new": "Nuevo"
+    "new": "Nuevo",
+    "wishesOnly": "Solo deseos"
   },
   "history": {
     "suspend": "suspendió",
@@ -167,7 +172,11 @@
       "suspended": "Suspendidos",
       "suspendedTitle": "Usuarios suspendidos",
       "staff": "Staff",
-      "staffTitle": "Usuarios con un rol de staff"
+      "staffTitle": "Usuarios con un rol de staff",
+      "wishes": "Deseos",
+      "wishesTitle": "Tiene historial de deseos",
+      "wishesOnly": "Solo deseos",
+      "wishesOnlyTitle": "Historial de deseos pero sin instantáneas"
     },
     "sorts": {
       "newest": "Más recientes",
@@ -176,7 +185,9 @@
       "storage": "Almacenamiento",
       "snapshots": "Capturas",
       "name": "Nombre",
-      "column": "Columna"
+      "column": "Columna",
+      "wishes": "Datos de deseos",
+      "raw": "Tamaño bruto"
     },
     "shownOf": "{shown} mostrados de {all} usuarios",
     "selected": "{n} seleccionados",
@@ -212,7 +223,9 @@
       "growth": "Crecimiento",
       "stored": "Guardado",
       "quota": "Cuota usada",
-      "snapshots": "Capturas"
+      "snapshots": "Capturas",
+      "wishes": "Deseos",
+      "raw": "Bruto"
     },
     "newIn": "Nuevo · {window}",
     "snapshotsIn": "Capturas · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Tope diario ×{n}",
     "dailyCapTitle": "Alcanzó el tope diario de subidas {n} de los últimos 7 días",
     "accountLimit": "{n} cuentas",
-    "accountLimitTitle": "En el número de cuentas que crea una clave de usuario"
+    "accountLimitTitle": "En el número de cuentas que crea una clave de usuario",
+    "siteSplit": "Almacenamiento del sitio",
+    "snapshotCount": "{n} instantáneas",
+    "rawOf": "{size} en bruto",
+    "pieces": "{n} piezas",
+    "histories": "{n} historiales",
+    "perPull": "{n} B/deseo"
   },
   "roles": {
     "title": "Roles",
@@ -376,7 +395,11 @@
     "unblockUploads": "Desbloquear subidas",
     "blockUploadsMenu": "Bloquear subidas…",
     "resetImportKey": "Restablecer clave de importación",
-    "deleteDataMenu": "Borrar datos…"
+    "deleteDataMenu": "Borrar datos…",
+    "data": "Datos",
+    "lastWishSync": "Última sincronización de deseos",
+    "liveHint": "Diarios y puntos de gráfica",
+    "noJournal": "Sin diario"
   },
   "inspect": {
     "account": "Cuenta",
@@ -471,5 +494,13 @@
     "syncNow": "Sincronizar ahora",
     "boardCount": "{n} en el tablón",
     "hoyolabCount": "{n} publicaciones de HoYoLAB"
+  },
+  "split": {
+    "sections": "Instantáneas",
+    "catalog": "Catálogo de artefactos",
+    "wishes": "Deseos",
+    "live": "Sincronización en vivo",
+    "pulls": "{n} deseos",
+    "of": "Almacenamiento de {name}"
   }
 }

@@ -35,7 +35,11 @@
     "uploadsBlocked": "Uploads blockiert",
     "uploadsUnblocked": "Uploads freigegeben",
     "quotaSaved": "Kontingent gespeichert",
-    "d1Share": "{share} der 10 GB von D1"
+    "d1Share": "{share} der 10 GB von D1",
+    "wishes": "Gebete",
+    "wishesTitle": "Gebete · gespeicherte Bytes",
+    "storedTitle": "Snapshots · Artefaktkatalog · Gebete",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Meldet die Person überall ab",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Gesperrt",
     "uploadsBlocked": "Uploads blockiert",
-    "new": "Neu"
+    "new": "Neu",
+    "wishesOnly": "Nur Gebete"
   },
   "history": {
     "suspend": "gesperrt",
@@ -167,7 +172,11 @@
       "suspended": "Gesperrt",
       "suspendedTitle": "Gesperrte Benutzer",
       "staff": "Team",
-      "staffTitle": "Benutzer mit einer Team-Rolle"
+      "staffTitle": "Benutzer mit einer Team-Rolle",
+      "wishes": "Gebete",
+      "wishesTitle": "Hat einen Gebetsverlauf",
+      "wishesOnly": "Nur Gebete",
+      "wishesOnlyTitle": "Gebetsverlauf, aber kein Snapshot"
     },
     "sorts": {
       "newest": "Neueste",
@@ -176,7 +185,9 @@
       "storage": "Speicher",
       "snapshots": "Snapshots",
       "name": "Name",
-      "column": "Spalte"
+      "column": "Spalte",
+      "wishes": "Gebetsdaten",
+      "raw": "Rohgröße"
     },
     "shownOf": "{shown} von {all} Benutzern angezeigt",
     "selected": "{n} ausgewählt",
@@ -212,7 +223,9 @@
       "growth": "Wachstum",
       "stored": "Gespeichert",
       "quota": "Kontingent genutzt",
-      "snapshots": "Snapshots"
+      "snapshots": "Snapshots",
+      "wishes": "Gebete",
+      "raw": "Roh"
     },
     "newIn": "Neu · {window}",
     "snapshotsIn": "Snapshots · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Tageslimit ×{n}",
     "dailyCapTitle": "Tageslimit für Uploads an {n} der letzten 7 Tage erreicht",
     "accountLimit": "{n} Konten",
-    "accountLimitTitle": "An der Kontenzahl, die ein Benutzerschlüssel anlegt"
+    "accountLimitTitle": "An der Kontenzahl, die ein Benutzerschlüssel anlegt",
+    "siteSplit": "Speicher der Seite",
+    "snapshotCount": "{n} Snapshots",
+    "rawOf": "{size} roh",
+    "pieces": "{n} Teile",
+    "histories": "{n} Verläufe",
+    "perPull": "{n} B/Gebet"
   },
   "roles": {
     "title": "Rollen",
@@ -376,7 +395,11 @@
     "unblockUploads": "Uploads freigeben",
     "blockUploadsMenu": "Uploads blockieren …",
     "resetImportKey": "Import-Schlüssel zurücksetzen",
-    "deleteDataMenu": "Daten löschen …"
+    "deleteDataMenu": "Daten löschen …",
+    "data": "Daten",
+    "lastWishSync": "Letzter Gebets-Sync",
+    "liveHint": "Journale und Diagrammpunkte",
+    "noJournal": "Kein Journal"
   },
   "inspect": {
     "account": "Konto",
@@ -471,5 +494,13 @@
     "syncNow": "Jetzt synchronisieren",
     "boardCount": "{n} in den Ankündigungen",
     "hoyolabCount": "{n} HoYoLAB-Beiträge"
+  },
+  "split": {
+    "sections": "Snapshots",
+    "catalog": "Artefaktkatalog",
+    "wishes": "Gebete",
+    "live": "Live-Sync",
+    "pulls": "{n} Gebete",
+    "of": "Speicher von {name}"
   }
 }

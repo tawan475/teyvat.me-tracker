@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward và hầu hết trình theo dõi cầu nguyện đọc được",
     "paimonTitle": "Cho Local Importer của paimon.moe (Wish counter → Import → Local)",
     "delete": "Xóa",
-    "deleteHistory": "Xóa lịch sử"
+    "deleteHistory": "Xóa lịch sử",
+    "data": "Dữ liệu",
+    "synced": "Đồng bộ {when}",
+    "pullCount": "Lượt",
+    "bannerCount": "{n} banner",
+    "totalData": "Tổng dữ liệu",
+    "totalDataTitle": "Kích thước tệp UIGF khi xuất lịch sử này",
+    "asUigf": "dạng UIGF",
+    "perPull": "{n} B/lượt",
+    "stored": "Đã lưu",
+    "storedTitle": "Máy chủ giữ gì: các khối đã nén",
+    "ofQuota": "{share}% trong {size} của bạn"
   },
   "bannerPage": {
     "noPulls": "Banner này chưa có lượt nào",

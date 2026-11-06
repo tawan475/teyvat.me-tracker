@@ -91,7 +91,16 @@
     "snapshots": "Snapshots",
     "raw": "Raw Data",
     "stored": "Stored",
-    "saved": "Saved"
+    "saved": "Saved",
+    "allocated": "Allocated",
+    "of": "of {size}",
+    "quotaUsed": "Storage used",
+    "breakdown": "Breakdown",
+    "compact": "Compact…",
+    "thisAccount": "This account",
+    "allAccounts": "All your accounts ({n})",
+    "inTrash": "{n} in the trash (freed after 30 days)",
+    "liveNote": "Live sync keeps {size} more beside this"
   },
   "pagination": {
     "perPage": "Per page",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "No data available."
+  },
+  "compact": {
+    "title": "Compact history",
+    "keep": "Keep",
+    "day": "One a day",
+    "week": "One a week",
+    "olderThan": "Older than",
+    "days": "{n} days",
+    "year": "1 year",
+    "all": "All",
+    "preview": "Keeps {kept}, removes {removed} of {total} snapshots",
+    "nothing": "Nothing to remove",
+    "warning": "Removed at once, no trash. Live sync journals on removed snapshots end. This cannot be undone.",
+    "confirm": "Compact",
+    "done": "Removed {n} snapshot | Removed {n} snapshots",
+    "failed": "Not compacted"
   }
 }

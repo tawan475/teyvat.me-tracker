@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1：Snap Hutao、Starward など多くの祈願トラッカーで読み込めます",
     "paimonTitle": "paimon.moe の Local Importer 用（Wish counter → Import → Local）",
     "delete": "削除",
-    "deleteHistory": "履歴を削除"
+    "deleteHistory": "履歴を削除",
+    "data": "データ",
+    "synced": "同期 {when}",
+    "pullCount": "祈願回数",
+    "bannerCount": "{n} バナー",
+    "totalData": "総データ量",
+    "totalDataTitle": "この履歴をエクスポートした UIGF ファイルのサイズ",
+    "asUigf": "UIGF 換算",
+    "perPull": "{n} B/回",
+    "stored": "保存量",
+    "storedTitle": "サーバーが保持するもの: 圧縮チャンク",
+    "ofQuota": "割り当て {size} の {share}%"
   },
   "bannerPage": {
     "noPulls": "この祈願での記録はありません",

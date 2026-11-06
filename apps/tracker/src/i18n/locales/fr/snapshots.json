@@ -91,7 +91,16 @@
     "snapshots": "Instantanés",
     "raw": "Données brutes",
     "stored": "Stocké",
-    "saved": "Économisé"
+    "saved": "Économisé",
+    "allocated": "Alloué",
+    "of": "sur {size}",
+    "quotaUsed": "Stockage utilisé",
+    "breakdown": "Détail",
+    "compact": "Compacter…",
+    "thisAccount": "Ce compte",
+    "allAccounts": "Tous vos comptes ({n})",
+    "inTrash": "{n} dans la corbeille (libérés après 30 jours)",
+    "liveNote": "La synchro en direct conserve {size} de plus"
   },
   "pagination": {
     "perPage": "Par page",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Aucune donnée disponible."
+  },
+  "compact": {
+    "title": "Compacter l’historique",
+    "keep": "Garder",
+    "day": "Un par jour",
+    "week": "Un par semaine",
+    "olderThan": "Plus vieux que",
+    "days": "{n} jours",
+    "year": "1 an",
+    "all": "Tous",
+    "preview": "Garde {kept}, retire {removed} des {total} instantanés",
+    "nothing": "Rien à retirer",
+    "warning": "Retirés immédiatement, sans corbeille. Les journaux de synchro en direct sur ces instantanés s’arrêtent. Cette action est irréversible.",
+    "confirm": "Compacter",
+    "done": "{n} instantané retiré | {n} instantanés retirés",
+    "failed": "Non compacté"
   }
 }

@@ -35,7 +35,11 @@
     "uploadsBlocked": "Đã chặn tải lên",
     "uploadsUnblocked": "Đã bỏ chặn tải lên",
     "quotaSaved": "Đã lưu hạn mức",
-    "d1Share": "{share} trên 10 GB của D1"
+    "d1Share": "{share} trên 10 GB của D1",
+    "wishes": "Cầu nguyện",
+    "wishesTitle": "Lượt · byte đã lưu",
+    "storedTitle": "Ảnh chụp · danh mục thánh di vật · cầu nguyện",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Đăng xuất họ khỏi mọi nơi",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Đã đình chỉ",
     "uploadsBlocked": "Đã chặn tải lên",
-    "new": "Mới"
+    "new": "Mới",
+    "wishesOnly": "Chỉ cầu nguyện"
   },
   "history": {
     "suspend": "đã đình chỉ",
@@ -167,7 +172,11 @@
       "suspended": "Đã đình chỉ",
       "suspendedTitle": "Người dùng bị đình chỉ",
       "staff": "Quản trị",
-      "staffTitle": "Người dùng có vai trò quản trị"
+      "staffTitle": "Người dùng có vai trò quản trị",
+      "wishes": "Cầu nguyện",
+      "wishesTitle": "Có lịch sử cầu nguyện",
+      "wishesOnly": "Chỉ cầu nguyện",
+      "wishesOnlyTitle": "Có lịch sử cầu nguyện nhưng không có ảnh chụp"
     },
     "sorts": {
       "newest": "Mới nhất",
@@ -176,7 +185,9 @@
       "storage": "Lưu trữ",
       "snapshots": "Bản chụp",
       "name": "Tên",
-      "column": "Cột"
+      "column": "Cột",
+      "wishes": "Dữ liệu cầu nguyện",
+      "raw": "Kích thước gốc"
     },
     "shownOf": "Đang hiện {shown} / {all} người dùng",
     "selected": "Đã chọn {n}",
@@ -212,7 +223,9 @@
       "growth": "Tăng trưởng",
       "stored": "Đã lưu",
       "quota": "Hạn mức đã dùng",
-      "snapshots": "Bản chụp"
+      "snapshots": "Bản chụp",
+      "wishes": "Cầu nguyện",
+      "raw": "Gốc"
     },
     "newIn": "Mới · {window}",
     "snapshotsIn": "Bản chụp · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Giới hạn ngày ×{n}",
     "dailyCapTitle": "Chạm giới hạn tải lên trong ngày {n} lần trong 7 ngày qua",
     "accountLimit": "{n} tài khoản",
-    "accountLimitTitle": "Đạt số tài khoản tối đa mà khóa người dùng tạo được"
+    "accountLimitTitle": "Đạt số tài khoản tối đa mà khóa người dùng tạo được",
+    "siteSplit": "Lưu trữ của trang",
+    "snapshotCount": "{n} ảnh chụp",
+    "rawOf": "{size} gốc",
+    "pieces": "{n} món",
+    "histories": "{n} lịch sử",
+    "perPull": "{n} B/lượt"
   },
   "roles": {
     "title": "Vai trò",
@@ -376,7 +395,11 @@
     "unblockUploads": "Bỏ chặn tải lên",
     "blockUploadsMenu": "Chặn tải lên…",
     "resetImportKey": "Đặt lại khóa nhập",
-    "deleteDataMenu": "Xóa dữ liệu…"
+    "deleteDataMenu": "Xóa dữ liệu…",
+    "data": "Dữ liệu",
+    "lastWishSync": "Đồng bộ cầu nguyện gần nhất",
+    "liveHint": "Nhật ký và điểm biểu đồ",
+    "noJournal": "Không có nhật ký"
   },
   "inspect": {
     "account": "Tài khoản",
@@ -471,5 +494,13 @@
     "syncNow": "Đồng bộ ngay",
     "boardCount": "{n} trên bảng",
     "hoyolabCount": "{n} bài HoYoLAB"
+  },
+  "split": {
+    "sections": "Ảnh chụp",
+    "catalog": "Danh mục thánh di vật",
+    "wishes": "Cầu nguyện",
+    "live": "Đồng bộ trực tiếp",
+    "pulls": "{n} lượt",
+    "of": "Lưu trữ của {name}"
   }
 }

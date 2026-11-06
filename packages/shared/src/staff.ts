@@ -19,6 +19,7 @@ import type {
   IdentityResponse,
   OAuthProvider,
   SessionResponse,
+  StorageSplit,
 } from './api'
 
 // Zod-free, for code that only checks nodes (the app's startup): ./permissions.
@@ -178,8 +179,17 @@ export interface StaffUserRow {
   roles: RoleRef[]
   accounts: number
   snapshots: number
-  /** Stored sections plus artifact catalog chunks: what the storage quota counts. */
+  /** Everything stored (`StorageSplit` summed): what the storage quota counts. */
   storedBytes: number
+  /** Snapshot sections. */
+  sectionBytes: number
+  /** Artifact catalog chunks. */
+  catalogBytes: number
+  /** Wish history chunks. */
+  wishBytes: number
+  wishPulls: number
+  /** The Leyline/GOOD files as uploaded. */
+  rawBytes: number
   suspendedAt: number | null
   uploadsBlockedAt: number | null
   signupCountry: string | null
@@ -193,11 +203,23 @@ export interface StaffUserCounts {
   new: number
   active: number
   none: number
+  wishes: number
+  wishesOnly: number
   suspended: number
   staff: number
 }
 
-export const STAFF_USER_FILTERS = ['all', 'new', 'active', 'none', 'suspended', 'staff'] as const
+export const STAFF_USER_FILTERS = [
+  'all',
+  'new',
+  'active',
+  'none',
+  // Appended 2026-11-06: a wish history (with or without snapshots), one without any snapshot.
+  'wishes',
+  'wishesOnly',
+  'suspended',
+  'staff',
+] as const
 export type StaffUserFilter = (typeof STAFF_USER_FILTERS)[number]
 
 export const STAFF_USER_SORTS = [
@@ -207,6 +229,9 @@ export const STAFF_USER_SORTS = [
   'accounts',
   'snapshots',
   'storage',
+  // Appended 2026-11-06: wish bytes, raw upload bytes.
+  'wishes',
+  'raw',
 ] as const
 export type StaffUserSort = (typeof STAFF_USER_SORTS)[number]
 
@@ -228,8 +253,16 @@ export interface StaffAccountRow {
   server: GenshinServer | null
   createdAt: number
   snapshotCount: number
+  /** Snapshot sections. */
   storedBytes: number
   rawBytes: number
+  /** The artifact catalog: its chunk bytes and the pieces it names. */
+  catalogBytes: number
+  catalogCount: number
+  /** The wish history: its chunk bytes, its pulls, and when pulls were last stored. */
+  wishBytes: number
+  wishPulls: number
+  wishUpdatedAt: number | null
   /** Snapshots in the trash (deleted, purged by maintenance after 30 days). */
   trash: number
   /** The newest capture's last sighting. */
@@ -278,6 +311,8 @@ export interface StaffUserDetailResponse {
   /** `audit.view` only: the newest staff actions on this user. */
   history?: AuditRow[]
   usage: StaffUsage | null
+  /** Bytes kept in gdt-live (live sync's journals and chart points). */
+  liveBytes: number
   /** Whether the caller outranks this user (every action on them needs it). */
   outranked: boolean
   /** Roles the caller may give or take from them. */
@@ -366,6 +401,8 @@ export interface StaffOverviewResponse {
   accounts: number
   snapshots: { total: number; today: number }
   storedBytes: number
+  /** What `storedBytes` is made of, plus the wish pulls and the raw upload bytes behind it. */
+  storage: StorageSplit & { wishPulls: number; rawBytes: number }
   suspended: number
   /** 30 UTC days, oldest first: `password`, `discord`, `google`. */
   signups: DayCount[]
@@ -379,10 +416,11 @@ export interface StaffOverviewResponse {
 export const STORAGE_WINDOWS = ['24h', '7d', '30d'] as const
 export type StorageWindow = (typeof STORAGE_WINDOWS)[number]
 
-export const STORAGE_SORTS = ['growth', 'stored', 'quota', 'snapshots'] as const
+// Appended 2026-11-06: `wishes` (wish bytes), `raw` (upload bytes).
+export const STORAGE_SORTS = ['growth', 'stored', 'quota', 'snapshots', 'wishes', 'raw'] as const
 export type StorageSort = (typeof STORAGE_SORTS)[number]
 
-export interface StaffStorageRow {
+export interface StaffStorageRow extends StorageSplit {
   id: number
   username: string
   accounts: number
@@ -390,7 +428,9 @@ export interface StaffStorageRow {
   /** Snapshots stored in the window. */
   newSnapshots: number
   newBytes: number
+  /** The split summed. */
   storedBytes: number
+  wishPulls: number
   rawBytes: number
   trash: number
   /** The quota that applies; `ownQuota` is theirs, null for the site's default. */
@@ -411,7 +451,19 @@ export interface StaffStorageResponse {
   total: number
   page: number
   pageSize: number
-  totals: { storedBytes: number; newBytes: number; newSnapshots: number; nearQuota: number }
+  totals: StorageSplit & {
+    storedBytes: number
+    newBytes: number
+    newSnapshots: number
+    nearQuota: number
+    /** Over every user, whatever the search: the site's figures. */
+    snapshots: number
+    rawBytes: number
+    catalogCount: number
+    wishPulls: number
+    /** Accounts with a wish history. */
+    histories: number
+  }
   flagged: number
   /** The site's storage quota. */
   defaultQuota: number

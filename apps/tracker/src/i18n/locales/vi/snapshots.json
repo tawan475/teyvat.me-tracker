@@ -91,7 +91,16 @@
     "snapshots": "Bản chụp",
     "raw": "Dữ liệu gốc",
     "stored": "Đã lưu",
-    "saved": "Tiết kiệm"
+    "saved": "Tiết kiệm",
+    "allocated": "Được cấp",
+    "of": "trong {size}",
+    "quotaUsed": "Dung lượng đã dùng",
+    "breakdown": "Chi tiết",
+    "compact": "Gọn lại…",
+    "thisAccount": "Tài khoản này",
+    "allAccounts": "Tất cả tài khoản của bạn ({n})",
+    "inTrash": "{n} trong thùng rác (giải phóng sau 30 ngày)",
+    "liveNote": "Đồng bộ trực tiếp lưu thêm {size}"
   },
   "pagination": {
     "perPage": "Mỗi trang",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Không có dữ liệu."
+  },
+  "compact": {
+    "title": "Gọn lại lịch sử",
+    "keep": "Giữ lại",
+    "day": "Mỗi ngày 1",
+    "week": "Mỗi tuần 1",
+    "olderThan": "Cũ hơn",
+    "days": "{n} ngày",
+    "year": "1 năm",
+    "all": "Tất cả",
+    "preview": "Giữ {kept}, xóa {removed} trong {total} ảnh chụp",
+    "nothing": "Không có gì để xóa",
+    "warning": "Xóa ngay, không qua thùng rác. Nhật ký đồng bộ trực tiếp trên các ảnh chụp bị xóa sẽ kết thúc. Không thể hoàn tác.",
+    "confirm": "Gọn lại",
+    "done": "Đã xóa {n} ảnh chụp",
+    "failed": "Không gọn lại được"
   }
 }

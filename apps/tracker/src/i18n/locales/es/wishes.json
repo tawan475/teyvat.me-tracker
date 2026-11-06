@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: lo leen Snap Hutao, Starward y la mayoría de trackers de deseos",
     "paimonTitle": "Para el Local Importer de paimon.moe (Wish counter → Import → Local)",
     "delete": "Borrar",
-    "deleteHistory": "Borrar historial"
+    "deleteHistory": "Borrar historial",
+    "data": "Datos",
+    "synced": "Sincronizado {when}",
+    "pullCount": "Deseos",
+    "bannerCount": "{n} banner | {n} banners",
+    "totalData": "Datos totales",
+    "totalDataTitle": "Tamaño del archivo UIGF al que se exporta este historial",
+    "asUigf": "como UIGF",
+    "perPull": "{n} B/deseo",
+    "stored": "Almacenado",
+    "storedTitle": "Lo que guarda el servidor: bloques comprimidos",
+    "ofQuota": "{share}% de tus {size}"
   },
   "bannerPage": {
     "noPulls": "No hay deseos en este gachapón",

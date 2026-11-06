@@ -31,11 +31,13 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiToolbar from '@/components/ui/UiToolbar.vue'
+import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import { api } from '@/api'
 import { useSnapshotSelection } from '@/composables/useSnapshotSelection'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { formatBytes, formatDate, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { vStickyHead } from '@/lib/sticky-head'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
 
@@ -87,7 +89,16 @@ const { data, error, loading, reload } = useResource(
 )
 const rows = computed<StaffUserRow[]>(() => data.value?.users ?? [])
 
-const CHIP_FILTERS: StaffUserFilter[] = ['all', 'new', 'active', 'none', 'suspended', 'staff']
+const CHIP_FILTERS: StaffUserFilter[] = [
+  'all',
+  'new',
+  'active',
+  'none',
+  'wishes',
+  'wishesOnly',
+  'suspended',
+  'staff',
+]
 const chips = computed(() =>
   CHIP_FILTERS.map((value) => ({
     value,
@@ -102,6 +113,8 @@ const SORTS: { value: string; key: string }[] = [
   { value: 'joined:asc', key: 'oldest' },
   { value: 'active:desc', key: 'lastActive' },
   { value: 'storage:desc', key: 'storage' },
+  { value: 'wishes:desc', key: 'wishes' },
+  { value: 'raw:desc', key: 'raw' },
   { value: 'snapshots:desc', key: 'snapshots' },
   { value: 'name:asc', key: 'name' },
 ]
@@ -128,6 +141,8 @@ const NATURAL: Record<StaffUserSort, 'asc' | 'desc'> = {
   accounts: 'desc',
   snapshots: 'desc',
   storage: 'desc',
+  wishes: 'desc',
+  raw: 'desc',
 }
 function sortBy(key: StaffUserSort) {
   if (sort.value === key) direction.value = direction.value === 'desc' ? 'asc' : 'desc'
@@ -324,8 +339,11 @@ const pageCount = computed(() =>
       class="overflow-x-auto rounded-xl border border-border-default bg-surface-raised shadow-sm"
       :aria-busy="loading"
     >
-      <table class="w-full min-w-[56rem] text-sm">
-        <thead class="border-b border-border-default bg-surface-overlay/50 text-text-secondary">
+      <table class="w-full min-w-[68rem] text-sm">
+        <thead
+          v-sticky-head
+          class="border-b border-border-default bg-surface-overlay/50 text-text-secondary [&_th]:whitespace-nowrap"
+        >
           <tr>
             <th v-if="selectable" scope="col" class="w-10 px-2 py-2">
               <LegacyCheckbox
@@ -335,6 +353,9 @@ const pageCount = computed(() =>
                 :label="$t('staff.users.selectPage')"
                 @toggle="toggleView(rows)"
               />
+            </th>
+            <th scope="col" class="px-3 py-2 text-right font-medium">
+              {{ $t('staff.common.id') }}
             </th>
             <th scope="col" class="px-3 py-2 text-left" :aria-sort="ariaSort('name')">
               <SortHeader
@@ -366,12 +387,31 @@ const pageCount = computed(() =>
                 @sort="sortBy('snapshots')"
               />
             </th>
+            <th scope="col" class="px-3 py-2 text-right" :aria-sort="ariaSort('wishes')">
+              <SortHeader
+                :label="$t('staff.common.wishes')"
+                :title="$t('staff.common.wishesTitle')"
+                :active="sort === 'wishes'"
+                :direction="direction"
+                @sort="sortBy('wishes')"
+              />
+            </th>
             <th scope="col" class="px-3 py-2 text-right" :aria-sort="ariaSort('storage')">
               <SortHeader
-                :label="$t('staff.common.storage')"
+                :label="$t('staff.common.stored')"
+                :title="$t('staff.common.storedTitle')"
                 :active="sort === 'storage'"
                 :direction="direction"
                 @sort="sortBy('storage')"
+              />
+            </th>
+            <th scope="col" class="px-3 py-2 text-right" :aria-sort="ariaSort('raw')">
+              <SortHeader
+                :label="$t('staff.storage.raw')"
+                :title="$t('staff.storage.rawTitle')"
+                :active="sort === 'raw'"
+                :direction="direction"
+                @sort="sortBy('raw')"
               />
             </th>
             <th scope="col" class="px-3 py-2 text-left" :aria-sort="ariaSort('joined')">
@@ -411,7 +451,8 @@ const pageCount = computed(() =>
                 @toggle="(event) => toggle(user.id, rows, event.shiftKey)"
               />
             </td>
-            <td class="max-w-64 px-3 py-1.5"><UserLink :user="user" /></td>
+            <td class="tabular px-3 py-1.5 text-right font-mono text-text-muted">{{ user.id }}</td>
+            <td class="max-w-64 px-3 py-1.5"><UserLink :user="user" no-id /></td>
             <td class="px-3 py-1.5"><MethodMarks :methods="user.methods" /></td>
             <td class="px-3 py-1.5">
               <span class="flex flex-wrap gap-1">
@@ -424,8 +465,36 @@ const pageCount = computed(() =>
             <td class="tabular px-3 py-1.5 text-right font-mono">
               {{ formatNumber(user.snapshots) }}
             </td>
+            <td
+              class="tabular px-3 py-1.5 text-right font-mono"
+              :title="
+                user.wishPulls
+                  ? `${$t('staff.split.pulls', { n: formatNumber(user.wishPulls) })} · ${formatBytes(user.wishBytes)}`
+                  : undefined
+              "
+            >
+              <span v-if="user.wishPulls" class="inline-flex flex-col items-end leading-tight">
+                <span>{{ formatNumber(user.wishPulls) }}</span>
+                <span class="text-xs text-text-muted">{{ formatBytes(user.wishBytes) }}</span>
+              </span>
+              <span v-else class="text-text-muted">—</span>
+            </td>
             <td class="tabular px-3 py-1.5 text-right font-mono">
-              {{ formatBytes(user.storedBytes) }}
+              <span class="inline-flex items-center justify-end gap-2.5">
+                <StorageSplitBar
+                  class="w-24 shrink-0"
+                  :split="user"
+                  :label="$t('staff.split.of', { name: user.username })"
+                />
+                <span class="min-w-[4.25rem] whitespace-nowrap">{{
+                  formatBytes(user.storedBytes)
+                }}</span>
+              </span>
+            </td>
+            <td
+              class="tabular px-3 py-1.5 text-right font-mono whitespace-nowrap text-text-secondary"
+            >
+              {{ user.rawBytes ? formatBytes(user.rawBytes) : '—' }}
             </td>
             <td
               class="tabular px-3 py-1.5 whitespace-nowrap text-text-secondary"
@@ -448,9 +517,17 @@ const pageCount = computed(() =>
               {{ user.lastActiveAt ? formatRelative(user.lastActiveAt) : '—' }}
             </td>
             <td class="px-3 py-1.5">
-              <UiBadge v-if="userStatus(user)" :tone="userStatus(user)!.tone">{{
-                userStatus(user)!.label
-              }}</UiBadge>
+              <span class="flex flex-wrap gap-1">
+                <UiBadge v-if="userStatus(user)" :tone="userStatus(user)!.tone">{{
+                  userStatus(user)!.label
+                }}</UiBadge>
+                <UiBadge
+                  v-if="user.wishPulls && user.snapshots === 0"
+                  tone="warning"
+                  :title="$t('staff.users.chips.wishesOnlyTitle')"
+                  >{{ $t('staff.status.wishesOnly') }}</UiBadge
+                >
+              </span>
             </td>
           </tr>
         </tbody>
@@ -460,6 +537,7 @@ const pageCount = computed(() =>
     <UiPager
       v-if="data"
       v-model="page"
+      sticky
       :page-count="pageCount"
       :total="data.total"
       :page-size="data.pageSize"

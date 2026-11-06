@@ -91,7 +91,16 @@
     "snapshots": "Anlık görüntüler",
     "raw": "Ham Veri",
     "stored": "Saklanan",
-    "saved": "Tasarruf"
+    "saved": "Tasarruf",
+    "allocated": "Ayrılan",
+    "of": "/ {size}",
+    "quotaUsed": "Kullanılan depolama",
+    "breakdown": "Ayrıntı",
+    "compact": "Sıkıştır…",
+    "thisAccount": "Bu hesap",
+    "allAccounts": "Tüm hesapların ({n})",
+    "inTrash": "Çöp kutusunda {n} (30 gün sonra boşalır)",
+    "liveNote": "Canlı senkronizasyon {size} daha tutuyor"
   },
   "pagination": {
     "perPage": "Sayfa başına",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Veri yok."
+  },
+  "compact": {
+    "title": "Geçmişi sıkıştır",
+    "keep": "Tut",
+    "day": "Günde bir",
+    "week": "Haftada bir",
+    "olderThan": "Şundan eski",
+    "days": "{n} gün",
+    "year": "1 yıl",
+    "all": "Tümü",
+    "preview": "{total} anlık görüntüden {kept} tutulur, {removed} silinir",
+    "nothing": "Silinecek bir şey yok",
+    "warning": "Çöp kutusu olmadan hemen silinir. Silinen anlık görüntülerdeki canlı senkronizasyon günlükleri sona erer. Geri alınamaz.",
+    "confirm": "Sıkıştır",
+    "done": "{n} anlık görüntü silindi",
+    "failed": "Sıkıştırılmadı"
   }
 }

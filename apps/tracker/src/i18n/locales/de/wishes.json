@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward und die meisten Gebets-Tracker lesen es",
     "paimonTitle": "Für den Local Importer von paimon.moe (Wish counter → Import → Local)",
     "delete": "Löschen",
-    "deleteHistory": "Verlauf löschen"
+    "deleteHistory": "Verlauf löschen",
+    "data": "Daten",
+    "synced": "Synchronisiert {when}",
+    "pullCount": "Gebete",
+    "bannerCount": "{n} Banner | {n} Banner",
+    "totalData": "Datenmenge",
+    "totalDataTitle": "Größe der UIGF-Datei, als die dieser Verlauf exportiert wird",
+    "asUigf": "als UIGF",
+    "perPull": "{n} B/Gebet",
+    "stored": "Gespeichert",
+    "storedTitle": "Was der Server behält: komprimierte Blöcke",
+    "ofQuota": "{share}% deiner {size}"
   },
   "bannerPage": {
     "noPulls": "Keine Gebete auf diesem Banner",

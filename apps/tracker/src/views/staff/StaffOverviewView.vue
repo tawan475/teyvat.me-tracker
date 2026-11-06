@@ -6,6 +6,7 @@ import DomainEventsDialog from '@/components/staff/DomainEventsDialog.vue'
 import LimitsDialog, { type LimitsPatch } from '@/components/staff/LimitsDialog.vue'
 import MethodMarks from '@/components/staff/MethodMarks.vue'
 import StackedBars from '@/components/staff/StackedBars.vue'
+import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import UserLink from '@/components/staff/UserLink.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
@@ -142,7 +143,7 @@ const syncCounts = computed(() => {
 const storedShare = computed(() => {
   const bytes = data.value?.storedBytes ?? 0
   // D1's 10 GB.
-  return `${((bytes / (10 * 1024 ** 3)) * 100).toFixed(1)}%`
+  return `${((bytes / (10 * 1024 ** 3)) * 100).toFixed(2)}%`
 })
 
 const emailTone = (state: StaffSiteResponse['email']) =>
@@ -195,7 +196,15 @@ const emailTone = (state: StaffSiteResponse['email']) =>
         :value="formatBytes(data.storedBytes)"
         :hint="$t('staff.common.d1Share', { share: storedShare })"
       >
-        <span class="tabular font-mono text-sm text-text-muted">{{ storedShare }}</span>
+        <StorageSplitBar
+          class="mt-1"
+          :split="data.storage"
+          :label="$t('staff.storage.siteSplit')"
+        />
+        <span class="tabular font-mono text-sm text-text-muted"
+          >{{ storedShare }} ·
+          {{ $t('staff.split.pulls', { n: formatNumber(data.storage.wishPulls) }) }}</span
+        >
       </UiStat>
       <RouterLink
         v-if="session.can('users.view')"

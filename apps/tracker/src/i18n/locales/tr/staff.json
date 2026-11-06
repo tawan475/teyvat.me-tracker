@@ -35,7 +35,11 @@
     "uploadsBlocked": "Yüklemeler engellendi",
     "uploadsUnblocked": "Yükleme engeli kaldırıldı",
     "quotaSaved": "Kota kaydedildi",
-    "d1Share": "D1'in 10 GB'ının {share} kadarı"
+    "d1Share": "D1'in 10 GB'ının {share} kadarı",
+    "wishes": "Dilekler",
+    "wishesTitle": "Dilek · saklanan bayt",
+    "storedTitle": "Anlık görüntüler · yapıt kataloğu · dilekler",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Her yerden çıkış yaptırır",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Askıda",
     "uploadsBlocked": "Yüklemeler engelli",
-    "new": "Yeni"
+    "new": "Yeni",
+    "wishesOnly": "Yalnızca dilekler"
   },
   "history": {
     "suspend": "askıya aldı",
@@ -167,7 +172,11 @@
       "suspended": "Askıda",
       "suspendedTitle": "Askıdaki kullanıcılar",
       "staff": "Yetkili",
-      "staffTitle": "Yetkili rolü olan kullanıcılar"
+      "staffTitle": "Yetkili rolü olan kullanıcılar",
+      "wishes": "Dilekler",
+      "wishesTitle": "Dilek geçmişi var",
+      "wishesOnly": "Yalnızca dilekler",
+      "wishesOnlyTitle": "Dilek geçmişi var ama anlık görüntü yok"
     },
     "sorts": {
       "newest": "En yeni",
@@ -176,7 +185,9 @@
       "storage": "Depolama",
       "snapshots": "Anlık görüntüler",
       "name": "Ad",
-      "column": "Sütun"
+      "column": "Sütun",
+      "wishes": "Dilek verisi",
+      "raw": "Ham boyut"
     },
     "shownOf": "{all} kullanıcıdan {shown} gösteriliyor",
     "selected": "{n} seçili",
@@ -212,7 +223,9 @@
       "growth": "Büyüme",
       "stored": "Saklanan",
       "quota": "Kullanılan kota",
-      "snapshots": "Anlık görüntüler"
+      "snapshots": "Anlık görüntüler",
+      "wishes": "Dilekler",
+      "raw": "Ham"
     },
     "newIn": "Yeni · {window}",
     "snapshotsIn": "Anlık görüntüler · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Günlük sınır ×{n}",
     "dailyCapTitle": "Son 7 günün {n} gününde günlük yükleme sınırına ulaştı",
     "accountLimit": "{n} hesap",
-    "accountLimitTitle": "Bir kullanıcı anahtarının oluşturduğu hesap sayısı sınırında"
+    "accountLimitTitle": "Bir kullanıcı anahtarının oluşturduğu hesap sayısı sınırında",
+    "siteSplit": "Sitenin depolaması",
+    "snapshotCount": "{n} anlık görüntü",
+    "rawOf": "{size} ham",
+    "pieces": "{n} parça",
+    "histories": "{n} geçmiş",
+    "perPull": "{n} B/dilek"
   },
   "roles": {
     "title": "Roller",
@@ -376,7 +395,11 @@
     "unblockUploads": "Yükleme engelini kaldır",
     "blockUploadsMenu": "Yüklemeleri engelle…",
     "resetImportKey": "İçe aktarma anahtarını sıfırla",
-    "deleteDataMenu": "Verileri sil…"
+    "deleteDataMenu": "Verileri sil…",
+    "data": "Veri",
+    "lastWishSync": "Son dilek senkronizasyonu",
+    "liveHint": "Günlükler ve grafik noktaları",
+    "noJournal": "Günlük yok"
   },
   "inspect": {
     "account": "Hesap",
@@ -471,5 +494,13 @@
     "syncNow": "Şimdi senkronize et",
     "boardCount": "Panoda {n}",
     "hoyolabCount": "{n} HoYoLAB gönderisi"
+  },
+  "split": {
+    "sections": "Anlık görüntüler",
+    "catalog": "Yapıt kataloğu",
+    "wishes": "Dilekler",
+    "live": "Canlı senkronizasyon",
+    "pulls": "{n} dilek",
+    "of": "{name} depolaması"
   }
 }

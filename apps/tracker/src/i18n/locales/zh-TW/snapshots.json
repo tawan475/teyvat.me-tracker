@@ -91,7 +91,16 @@
     "snapshots": "快照",
     "raw": "原始資料",
     "stored": "已儲存",
-    "saved": "節省"
+    "saved": "節省",
+    "allocated": "已分配",
+    "of": "/ {size}",
+    "quotaUsed": "已用儲存空間",
+    "breakdown": "明細",
+    "compact": "精簡…",
+    "thisAccount": "此帳號",
+    "allAccounts": "你的全部帳號（{n}）",
+    "inTrash": "資源回收筒中 {n} 個（30 天後釋放）",
+    "liveNote": "即時同步另占 {size}"
   },
   "pagination": {
     "perPage": "每頁",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "尚無資料。"
+  },
+  "compact": {
+    "title": "精簡歷史",
+    "keep": "保留",
+    "day": "每天 1 個",
+    "week": "每週 1 個",
+    "olderThan": "早於",
+    "days": "{n} 天",
+    "year": "1 年",
+    "all": "全部",
+    "preview": "保留 {kept} 個，刪除 {removed} 個（共 {total} 個快照）",
+    "nothing": "沒有可刪除的",
+    "warning": "立即刪除，不進入資源回收筒。被刪除快照上的即時同步日誌將結束。此操作無法復原。",
+    "confirm": "精簡",
+    "done": "已刪除 {n} 個快照",
+    "failed": "未能精簡"
   }
 }

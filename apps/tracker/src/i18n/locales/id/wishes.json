@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward dan kebanyakan pelacak permohonan bisa membacanya",
     "paimonTitle": "Untuk Local Importer paimon.moe (Wish counter → Import → Local)",
     "delete": "Hapus",
-    "deleteHistory": "Hapus riwayat"
+    "deleteHistory": "Hapus riwayat",
+    "data": "Data",
+    "synced": "Disinkronkan {when}",
+    "pullCount": "Pull",
+    "bannerCount": "{n} banner",
+    "totalData": "Total data",
+    "totalDataTitle": "Ukuran berkas UIGF hasil ekspor riwayat ini",
+    "asUigf": "sebagai UIGF",
+    "perPull": "{n} B/pull",
+    "stored": "Tersimpan",
+    "storedTitle": "Yang disimpan server: potongan terkompresi",
+    "ofQuota": "{share}% dari {size} milikmu"
   },
   "bannerPage": {
     "noPulls": "Tidak ada pull di banner ini",

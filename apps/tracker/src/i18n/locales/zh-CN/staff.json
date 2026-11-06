@@ -35,7 +35,11 @@
     "uploadsBlocked": "已禁止上传",
     "uploadsUnblocked": "已恢复上传",
     "quotaSaved": "配额已保存",
-    "d1Share": "占 D1 10 GB 的 {share}"
+    "d1Share": "占 D1 10 GB 的 {share}",
+    "wishes": "祈愿",
+    "wishesTitle": "抽数 · 已存储字节",
+    "storedTitle": "快照 · 圣遗物目录 · 祈愿",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "在所有设备上登出",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "已停用",
     "uploadsBlocked": "已禁止上传",
-    "new": "新用户"
+    "new": "新用户",
+    "wishesOnly": "仅祈愿"
   },
   "history": {
     "suspend": "停用了该用户",
@@ -167,7 +172,11 @@
       "suspended": "已停用",
       "suspendedTitle": "已停用的用户",
       "staff": "管理员",
-      "staffTitle": "拥有管理身份组的用户"
+      "staffTitle": "拥有管理身份组的用户",
+      "wishes": "祈愿",
+      "wishesTitle": "有祈愿记录",
+      "wishesOnly": "仅祈愿",
+      "wishesOnlyTitle": "有祈愿记录但没有快照"
     },
     "sorts": {
       "newest": "最新",
@@ -176,7 +185,9 @@
       "storage": "存储",
       "snapshots": "快照",
       "name": "名称",
-      "column": "按列"
+      "column": "按列",
+      "wishes": "祈愿数据",
+      "raw": "原始大小"
     },
     "shownOf": "显示 {shown} / 共 {all} 名用户",
     "selected": "已选 {n} 名",
@@ -212,7 +223,9 @@
       "growth": "增长",
       "stored": "已存储",
       "quota": "配额用量",
-      "snapshots": "快照"
+      "snapshots": "快照",
+      "wishes": "祈愿",
+      "raw": "原始"
     },
     "newIn": "新增 · {window}",
     "snapshotsIn": "快照 · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "每日上限 ×{n}",
     "dailyCapTitle": "最近 7 天中有 {n} 天达到每日上传上限",
     "accountLimit": "{n} 个账号",
-    "accountLimitTitle": "已达到用户密钥可创建的账号数量"
+    "accountLimitTitle": "已达到用户密钥可创建的账号数量",
+    "siteSplit": "全站存储",
+    "snapshotCount": "{n} 个快照",
+    "rawOf": "原始 {size}",
+    "pieces": "{n} 件",
+    "histories": "{n} 份记录",
+    "perPull": "{n} B/抽"
   },
   "roles": {
     "title": "身份组",
@@ -376,7 +395,11 @@
     "unblockUploads": "恢复上传",
     "blockUploadsMenu": "禁止上传…",
     "resetImportKey": "重置导入密钥",
-    "deleteDataMenu": "删除数据…"
+    "deleteDataMenu": "删除数据…",
+    "data": "数据",
+    "lastWishSync": "最近祈愿同步",
+    "liveHint": "日志与图表点",
+    "noJournal": "无日志"
   },
   "inspect": {
     "account": "账号",
@@ -471,5 +494,13 @@
     "syncNow": "立即同步",
     "boardCount": "公告 {n} 条",
     "hoyolabCount": "HoYoLAB 帖子 {n} 篇"
+  },
+  "split": {
+    "sections": "快照",
+    "catalog": "圣遗物目录",
+    "wishes": "祈愿",
+    "live": "实时同步",
+    "pulls": "{n} 抽",
+    "of": "{name} 的存储"
   }
 }

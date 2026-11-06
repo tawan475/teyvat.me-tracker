@@ -91,7 +91,16 @@
     "snapshots": "快照",
     "raw": "原始数据",
     "stored": "已存储",
-    "saved": "节省"
+    "saved": "节省",
+    "allocated": "已分配",
+    "of": "/ {size}",
+    "quotaUsed": "已用存储",
+    "breakdown": "明细",
+    "compact": "精简…",
+    "thisAccount": "此账号",
+    "allAccounts": "你的全部账号（{n}）",
+    "inTrash": "回收站中 {n} 个（30 天后释放）",
+    "liveNote": "实时同步另占 {size}"
   },
   "pagination": {
     "perPage": "每页",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "暂无数据。"
+  },
+  "compact": {
+    "title": "精简历史",
+    "keep": "保留",
+    "day": "每天 1 个",
+    "week": "每周 1 个",
+    "olderThan": "早于",
+    "days": "{n} 天",
+    "year": "1 年",
+    "all": "全部",
+    "preview": "保留 {kept} 个，删除 {removed} 个（共 {total} 个快照）",
+    "nothing": "没有可删除的",
+    "warning": "立即删除，不进入回收站。被删除快照上的实时同步日志将结束。此操作无法撤销。",
+    "confirm": "精简",
+    "done": "已删除 {n} 个快照",
+    "failed": "未能精简"
   }
 }

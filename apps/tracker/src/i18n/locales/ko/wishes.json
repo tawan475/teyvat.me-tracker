@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward 및 대부분의 기원 트래커가 읽을 수 있습니다",
     "paimonTitle": "paimon.moe의 Local Importer용 (Wish counter → Import → Local)",
     "delete": "삭제",
-    "deleteHistory": "기록 삭제"
+    "deleteHistory": "기록 삭제",
+    "data": "데이터",
+    "synced": "{when} 동기화",
+    "pullCount": "기원 횟수",
+    "bannerCount": "배너 {n}개",
+    "totalData": "전체 데이터",
+    "totalDataTitle": "이 기록을 UIGF 파일로 내보냈을 때의 크기",
+    "asUigf": "UIGF 기준",
+    "perPull": "{n} B/회",
+    "stored": "저장됨",
+    "storedTitle": "서버가 보관하는 것: 압축된 청크",
+    "ofQuota": "내 {size} 중 {share}%"
   },
   "bannerPage": {
     "noPulls": "이 배너에 기원 없음",

@@ -53,29 +53,40 @@ class Args {
   }
 }
 
-/** Per user: accounts, snapshots, stored and raw bytes, plus their catalog and wish chunks. */
+/**
+ * Per user: accounts, snapshots, stored sections and raw bytes (`totals`),
+ * their artifact catalog chunks (`catalog`) and their wish history chunks
+ * with the pulls in them (`wishes`).
+ */
 const USER_TOTALS = `
   totals AS (SELECT user_id, count(*) AS accounts, sum(snapshot_count) AS snapshots,
                sum(stored_bytes) AS stored, sum(raw_bytes) AS raw
              FROM genshin_accounts GROUP BY user_id),
-  chunks AS (SELECT g.user_id, sum(length(c.data)) AS bytes
-             FROM (SELECT account_id, data FROM artifact_chunks
-                   UNION ALL SELECT account_id, data FROM wish_chunks) AS c
-             JOIN genshin_accounts AS g ON g.id = c.account_id
+  catalog AS (SELECT g.user_id, sum(length(c.data)) AS bytes, sum(c.count) AS pieces
+              FROM artifact_chunks AS c JOIN genshin_accounts AS g ON g.id = c.account_id
+              GROUP BY g.user_id),
+  wishes AS (SELECT g.user_id, sum(length(w.data)) AS bytes, sum(w.count) AS pulls
+             FROM wish_chunks AS w JOIN genshin_accounts AS g ON g.id = w.account_id
              GROUP BY g.user_id)`
 
-/** The columns a StaffUserRow is built from (`u` the user, `t` / `ch` the totals). */
+/** The storage columns of `USER_TOTALS` joined as `t` / `ca` / `wi`: the split and its sum. */
+const STORAGE_COLUMNS = `coalesce(t.stored, 0) AS sections, coalesce(ca.bytes, 0) AS catalog,
+  coalesce(wi.bytes, 0) AS wish, coalesce(wi.pulls, 0) AS pulls,
+  coalesce(t.stored, 0) + coalesce(ca.bytes, 0) + coalesce(wi.bytes, 0) AS stored,
+  coalesce(t.raw, 0) AS raw`
+
+/** The columns a StaffUserRow is built from (`u` the user, `t` / `ca` / `wi` the totals). */
 const USER_COLUMNS = `u.id, u.username, u.created_at, ${lastActiveSql('u')} AS last_active_at,
   u.suspended_at, u.suspended_reason, u.uploads_blocked_at, u.password_hash <> '' AS has_password,
   u.import_key_hash IS NOT NULL AS has_import_key, u.email, u.email_verified,
   ${signupIpSql('u')} AS signup_ip, ${signupCountrySql('u')} AS signup_country,
-  coalesce(t.accounts, 0) AS accounts, coalesce(t.snapshots, 0) AS snapshots,
-  coalesce(t.stored, 0) + coalesce(ch.bytes, 0) AS stored, coalesce(t.raw, 0) AS raw,
+  coalesce(t.accounts, 0) AS accounts, coalesce(t.snapshots, 0) AS snapshots, ${STORAGE_COLUMNS},
   (SELECT group_concat(provider) FROM user_identities AS i WHERE i.user_id = u.id) AS providers,
   (SELECT json_group_array(role_id) FROM user_roles AS ur WHERE ur.user_id = u.id) AS role_ids`
 
-const FROM_USERS =
-  'FROM users AS u LEFT JOIN totals AS t ON t.user_id = u.id LEFT JOIN chunks AS ch ON ch.user_id = u.id'
+const TOTALS_JOINS = `LEFT JOIN totals AS t ON t.user_id = u.id
+  LEFT JOIN catalog AS ca ON ca.user_id = u.id LEFT JOIN wishes AS wi ON wi.user_id = u.id`
+const FROM_USERS = `FROM users AS u ${TOTALS_JOINS}`
 
 /** Where a user stands given their role ids (NO_ROLE without one). */
 export function positionOf(
@@ -140,6 +151,11 @@ export function userRowOf(row: Record<string, unknown>, context: UserRowContext)
     accounts: Number(row.accounts),
     snapshots: Number(row.snapshots),
     storedBytes: Number(row.stored),
+    sectionBytes: Number(row.sections),
+    catalogBytes: Number(row.catalog),
+    wishBytes: Number(row.wish),
+    wishPulls: Number(row.pulls),
+    rawBytes: Number(row.raw),
     suspendedAt: num(row.suspended_at),
     uploadsBlockedAt: num(row.uploads_blocked_at),
     signupCountry: (row.signup_country as string | null) ?? null,
@@ -183,6 +199,8 @@ const SORT_SQL: Record<StaffUserSort, string> = {
   accounts: 'accounts',
   snapshots: 'snapshots',
   storage: 'stored',
+  wishes: 'wish',
+  raw: 'raw',
 }
 
 /**
@@ -206,6 +224,10 @@ function filterSql(filter: StaffUserFilter, args: Args, now: number): string | n
       return activeSql(args, now - 7 * DAY)
     case 'none':
       return 'coalesce(t.snapshots, 0) = 0'
+    case 'wishes':
+      return 'coalesce(wi.pulls, 0) > 0'
+    case 'wishesOnly':
+      return '(coalesce(wi.pulls, 0) > 0 AND coalesce(t.snapshots, 0) = 0)'
     case 'suspended':
       return 'u.suspended_at IS NOT NULL'
     case 'staff':
@@ -247,7 +269,9 @@ export async function listUsers(
   // The chips count with the search applied, each with its own condition.
   const countArgs = new Args()
   const countSearch = searchSql(query.q, countArgs, context.private)
-  const chips = (['new', 'active', 'none', 'suspended', 'staff'] as const).map(
+  const chips = (
+    ['new', 'active', 'none', 'wishes', 'wishesOnly', 'suspended', 'staff'] as const
+  ).map(
     (filter) =>
       `sum(CASE WHEN ${filterSql(filter, countArgs, now)} THEN 1 ELSE 0 END) AS ${filter}`,
   )
@@ -294,6 +318,8 @@ export async function listUsers(
       new: Number(c.new ?? 0),
       active: Number(c.active ?? 0),
       none: Number(c.none ?? 0),
+      wishes: Number(c.wishes ?? 0),
+      wishesOnly: Number(c.wishesOnly ?? 0),
       suspended: Number(c.suspended ?? 0),
       staff: Number(c.staff ?? 0),
     } satisfies StaffUserCounts,
@@ -307,7 +333,16 @@ export function accountsStatement(d1: D1Database, userId: number): D1PreparedSta
       `SELECT g.id, g.name, g.uid, g.server, g.created_at, g.snapshot_count, g.stored_bytes,
          g.raw_bytes, s.last_seen_at,
          (SELECT count(*) FROM snapshots AS d WHERE d.account_id = g.id AND d.deleted_at IS NOT NULL)
-           AS trash
+           AS trash,
+         (SELECT coalesce(sum(length(c.data)), 0) FROM artifact_chunks AS c WHERE c.account_id = g.id)
+           AS catalog_bytes,
+         (SELECT coalesce(sum(c.count), 0) FROM artifact_chunks AS c WHERE c.account_id = g.id)
+           AS catalog_count,
+         (SELECT coalesce(sum(length(w.data)), 0) FROM wish_chunks AS w WHERE w.account_id = g.id)
+           AS wish_bytes,
+         (SELECT coalesce(sum(w.count), 0) FROM wish_chunks AS w WHERE w.account_id = g.id)
+           AS wish_pulls,
+         (SELECT h.updated_at FROM wish_histories AS h WHERE h.account_id = g.id) AS wish_updated_at
        FROM genshin_accounts AS g LEFT JOIN snapshots AS s ON s.id = g.latest_snapshot_id
        WHERE g.user_id = ?1 ORDER BY g.id`,
     )
@@ -324,6 +359,11 @@ export function accountRowOf(row: Record<string, unknown>): StaffAccountRow {
     snapshotCount: Number(row.snapshot_count),
     storedBytes: Number(row.stored_bytes),
     rawBytes: Number(row.raw_bytes),
+    catalogBytes: Number(row.catalog_bytes ?? 0),
+    catalogCount: Number(row.catalog_count ?? 0),
+    wishBytes: Number(row.wish_bytes ?? 0),
+    wishPulls: Number(row.wish_pulls ?? 0),
+    wishUpdatedAt: num(row.wish_updated_at),
     trash: Number(row.trash ?? 0),
     lastUploadAt: num(row.last_seen_at),
   }
@@ -482,9 +522,11 @@ export async function overview(
            (SELECT count(*) FROM genshin_accounts) AS accounts,
            (SELECT coalesce(sum(snapshot_count), 0) FROM genshin_accounts) AS snapshots,
            (SELECT count(*) FROM snapshots WHERE created_at >= ?1) AS snapshots_today,
-           (SELECT coalesce(sum(stored_bytes), 0) FROM genshin_accounts)
-             + (SELECT coalesce(sum(length(data)), 0) FROM artifact_chunks)
-             + (SELECT coalesce(sum(length(data)), 0) FROM wish_chunks) AS stored`,
+           (SELECT coalesce(sum(stored_bytes), 0) FROM genshin_accounts) AS sections,
+           (SELECT coalesce(sum(raw_bytes), 0) FROM genshin_accounts) AS raw,
+           (SELECT coalesce(sum(length(data)), 0) FROM artifact_chunks) AS catalog,
+           (SELECT coalesce(sum(length(data)), 0) FROM wish_chunks) AS wish,
+           (SELECT coalesce(sum(count), 0) FROM wish_chunks) AS pulls`,
       )
       .bind(startOfToday),
     d1.prepare(`SELECT count(*) AS n FROM users AS u WHERE ${active}`).bind(...activeArgs.values),
@@ -567,7 +609,14 @@ export async function overview(
     active7d: Number(activeCount!.results[0]?.n ?? 0),
     accounts: Number(t.accounts ?? 0),
     snapshots: { total: Number(t.snapshots ?? 0), today: Number(t.snapshots_today ?? 0) },
-    storedBytes: Number(t.stored ?? 0),
+    storedBytes: Number(t.sections ?? 0) + Number(t.catalog ?? 0) + Number(t.wish ?? 0),
+    storage: {
+      sectionBytes: Number(t.sections ?? 0),
+      catalogBytes: Number(t.catalog ?? 0),
+      wishBytes: Number(t.wish ?? 0),
+      wishPulls: Number(t.pulls ?? 0),
+      rawBytes: Number(t.raw ?? 0),
+    },
     suspended: Number(t.suspended ?? 0),
     signups: signupDays,
     uploads: uploadDays,
@@ -584,6 +633,8 @@ const STORAGE_SORT_SQL: Record<StorageSort, string> = {
   stored: 'stored DESC',
   quota: 'stored * 1.0 / max(quota, 1) DESC',
   snapshots: 'snapshots DESC',
+  wishes: 'wish DESC, pulls DESC',
+  raw: 'raw DESC',
 }
 
 /** A user is near their quota from this share of it. */
@@ -634,19 +685,18 @@ export async function storage(
     per_user AS (SELECT u.id, u.username, u.uploads_blocked_at, u.suspended_at,
                u.storage_quota AS own_quota,
                coalesce(t.accounts, 0) AS accounts, coalesce(t.snapshots, 0) AS snapshots,
-               coalesce(t.stored, 0) + coalesce(ch.bytes, 0) AS stored, coalesce(t.raw, 0) AS raw,
+               ${STORAGE_COLUMNS},
                coalesce(f.n, 0) AS new_snapshots, coalesce(f.bytes, 0) AS new_bytes,
                coalesce(tr.n, 0) AS trash, ${quota} AS quota,
                ${caps ? 'coalesce(cp.days, 0)' : '0'} AS cap_days
-             FROM users AS u JOIN totals AS t ON t.user_id = u.id
-             LEFT JOIN chunks AS ch ON ch.user_id = u.id
+             FROM users AS u ${TOTALS_JOINS}
              LEFT JOIN fresh AS f ON f.user_id = u.id
              LEFT JOIN trash AS tr ON tr.user_id = u.id
              ${caps ? 'LEFT JOIN caps AS cp ON cp.user_id = u.id' : ''}
              ${where.length ? `WHERE ${where.join(' AND ')}` : ''})`
   const limit = args.add(STAFF_PAGE_SIZE)
   const offset = args.add((page - 1) * STAFF_PAGE_SIZE)
-  const [rows, totals] = await d1.batch<Record<string, unknown>>([
+  const [rows, totals, site] = await d1.batch<Record<string, unknown>>([
     d1
       .prepare(
         `${base} SELECT *, count(*) OVER () AS total FROM per_user
@@ -663,8 +713,20 @@ export async function storage(
          FROM per_user`,
       )
       .bind(...args.values.slice(0, -2)),
+    // The site's split, whatever the search: the tiles above the table.
+    d1.prepare(
+      `SELECT (SELECT coalesce(sum(stored_bytes), 0) FROM genshin_accounts) AS sections,
+         (SELECT coalesce(sum(raw_bytes), 0) FROM genshin_accounts) AS raw,
+         (SELECT coalesce(sum(snapshot_count), 0) FROM genshin_accounts) AS snapshots,
+         (SELECT coalesce(sum(length(data)), 0) FROM artifact_chunks) AS catalog,
+         (SELECT coalesce(sum(count), 0) FROM artifact_chunks) AS pieces,
+         (SELECT coalesce(sum(length(data)), 0) FROM wish_chunks) AS wish,
+         (SELECT coalesce(sum(count), 0) FROM wish_chunks) AS pulls,
+         (SELECT count(*) FROM wish_histories) AS histories`,
+    ),
   ])
   const t = totals!.results[0] ?? {}
+  const s = site!.results[0] ?? {}
   const result = rows!.results
   return {
     rows: result.map((row): StaffStorageRow => {
@@ -684,6 +746,10 @@ export async function storage(
         newSnapshots: Number(row.new_snapshots),
         newBytes: Number(row.new_bytes),
         storedBytes: stored,
+        sectionBytes: Number(row.sections),
+        catalogBytes: Number(row.catalog),
+        wishBytes: Number(row.wish),
+        wishPulls: Number(row.pulls),
         rawBytes: Number(row.raw),
         trash: Number(row.trash),
         quota: quotaBytes,
@@ -702,6 +768,14 @@ export async function storage(
       newBytes: Number(t.new_bytes ?? 0),
       newSnapshots: Number(t.new_snapshots ?? 0),
       nearQuota: Number(t.near_quota ?? 0),
+      sectionBytes: Number(s.sections ?? 0),
+      catalogBytes: Number(s.catalog ?? 0),
+      wishBytes: Number(s.wish ?? 0),
+      snapshots: Number(s.snapshots ?? 0),
+      rawBytes: Number(s.raw ?? 0),
+      catalogCount: Number(s.pieces ?? 0),
+      wishPulls: Number(s.pulls ?? 0),
+      histories: Number(s.histories ?? 0),
     },
     flagged: Number(t.flagged ?? 0),
     defaultQuota: limits.storageQuota,

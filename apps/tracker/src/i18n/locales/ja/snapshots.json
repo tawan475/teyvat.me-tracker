@@ -91,7 +91,16 @@
     "snapshots": "スナップショット",
     "raw": "元データ",
     "stored": "保存済み",
-    "saved": "節約"
+    "saved": "節約",
+    "allocated": "割り当て",
+    "of": "/ {size}",
+    "quotaUsed": "使用容量",
+    "breakdown": "内訳",
+    "compact": "圧縮…",
+    "thisAccount": "このアカウント",
+    "allAccounts": "すべてのアカウント ({n})",
+    "inTrash": "ゴミ箱に {n} 件（30日後に解放）",
+    "liveNote": "ライブ同期はこれとは別に {size} を保持"
   },
   "pagination": {
     "perPage": "表示件数",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "データがありません。"
+  },
+  "compact": {
+    "title": "履歴を圧縮",
+    "keep": "残す",
+    "day": "1日1件",
+    "week": "週1件",
+    "olderThan": "対象: 次より古い",
+    "days": "{n}日",
+    "year": "1年",
+    "all": "すべて",
+    "preview": "{total}件中 {kept}件を残し、{removed}件を削除",
+    "nothing": "削除対象なし",
+    "warning": "ゴミ箱を経由せず今すぐ削除します。削除されたスナップショットのライブ同期ジャーナルは終了します。元に戻せません。",
+    "confirm": "圧縮する",
+    "done": "スナップショット{n}件を削除しました",
+    "failed": "圧縮できませんでした"
   }
 }

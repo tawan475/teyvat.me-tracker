@@ -35,7 +35,11 @@
     "uploadsBlocked": "アップロードをブロックしました",
     "uploadsUnblocked": "アップロードのブロックを解除しました",
     "quotaSaved": "上限を保存しました",
-    "d1Share": "D1の10 GBのうち{share}"
+    "d1Share": "D1の10 GBのうち{share}",
+    "wishes": "祈願",
+    "wishesTitle": "祈願回数 · 保存バイト数",
+    "storedTitle": "スナップショット · 聖遺物カタログ · 祈願",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "すべての場所でログアウトさせます",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "停止中",
     "uploadsBlocked": "アップロードブロック中",
-    "new": "新規"
+    "new": "新規",
+    "wishesOnly": "祈願のみ"
   },
   "history": {
     "suspend": "停止しました",
@@ -167,7 +172,11 @@
       "suspended": "停止中",
       "suspendedTitle": "停止中のユーザー",
       "staff": "スタッフ",
-      "staffTitle": "スタッフロールを持つユーザー"
+      "staffTitle": "スタッフロールを持つユーザー",
+      "wishes": "祈願",
+      "wishesTitle": "祈願履歴あり",
+      "wishesOnly": "祈願のみ",
+      "wishesOnlyTitle": "祈願履歴はあるがスナップショットなし"
     },
     "sorts": {
       "newest": "新しい順",
@@ -176,7 +185,9 @@
       "storage": "ストレージ",
       "snapshots": "スナップショット",
       "name": "名前",
-      "column": "列"
+      "column": "列",
+      "wishes": "祈願データ",
+      "raw": "元サイズ"
     },
     "shownOf": "{all}人中{shown}人を表示",
     "selected": "{n}件選択中",
@@ -212,7 +223,9 @@
       "growth": "増加量",
       "stored": "保存量",
       "quota": "上限の使用率",
-      "snapshots": "スナップショット"
+      "snapshots": "スナップショット",
+      "wishes": "祈願",
+      "raw": "元サイズ"
     },
     "newIn": "新規 · {window}",
     "snapshotsIn": "スナップショット · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "1日の上限 ×{n}",
     "dailyCapTitle": "過去7日間のうち{n}日で1日のアップロード上限に到達",
     "accountLimit": "{n}アカウント",
-    "accountLimitTitle": "ユーザーキーで作成できるアカウント数の上限に到達"
+    "accountLimitTitle": "ユーザーキーで作成できるアカウント数の上限に到達",
+    "siteSplit": "サイト全体のストレージ",
+    "snapshotCount": "{n} スナップショット",
+    "rawOf": "元サイズ {size}",
+    "pieces": "{n} 個",
+    "histories": "{n} 件の履歴",
+    "perPull": "{n} B/回"
   },
   "roles": {
     "title": "ロール",
@@ -376,7 +395,11 @@
     "unblockUploads": "アップロードのブロックを解除",
     "blockUploadsMenu": "アップロードをブロック…",
     "resetImportKey": "インポートキーをリセット",
-    "deleteDataMenu": "データを削除…"
+    "deleteDataMenu": "データを削除…",
+    "data": "データ",
+    "lastWishSync": "最終祈願同期",
+    "liveHint": "ジャーナルとグラフの点",
+    "noJournal": "ジャーナルなし"
   },
   "inspect": {
     "account": "アカウント",
@@ -471,5 +494,13 @@
     "syncNow": "今すぐ同期",
     "boardCount": "お知らせ{n}件",
     "hoyolabCount": "HoYoLAB投稿{n}件"
+  },
+  "split": {
+    "sections": "スナップショット",
+    "catalog": "聖遺物カタログ",
+    "wishes": "祈願",
+    "live": "ライブ同期",
+    "pulls": "{n} 回",
+    "of": "{name} のストレージ"
   }
 }

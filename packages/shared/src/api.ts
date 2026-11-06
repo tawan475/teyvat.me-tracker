@@ -160,6 +160,54 @@ export const snapshotIdsRequest = z.object({
   ids: z.array(z.number().int().positive()).min(1).max(1000),
 })
 
+/**
+ * `POST /api/accounts/:id/snapshots/compact`: keep one snapshot per day or
+ * week (the newest of each, on the viewer's clock) and delete the rest at
+ * once, no trash (see ./compact). `dryRun` only counts.
+ */
+export const compactRequest = z.object({
+  keep: z.enum(['day', 'week']),
+  offsetMinutes: z.number().int().min(-900).max(900),
+  before: z.number().int().min(0).nullish(),
+  dryRun: z.boolean().optional(),
+})
+export type CompactRequest = z.infer<typeof compactRequest>
+
+export interface CompactResponse {
+  kept: number
+  removed: number
+  dryRun: boolean
+}
+
+/** What is stored, by kind: snapshot sections, the artifact catalog, wish history. */
+export interface StorageSplit {
+  sectionBytes: number
+  catalogBytes: number
+  wishBytes: number
+}
+
+export interface UsageAccount extends StorageSplit {
+  id: number
+  snapshots: number
+  /** Snapshots in the trash (they still hold their sections until purged). */
+  trash: number
+  wishPulls: number
+  rawBytes: number
+}
+
+/**
+ * `GET /api/me/usage`: what the user's own accounts store against their
+ * storage quota (shared accounts count on their owner), the split, and the
+ * bytes live sync keeps beside it.
+ */
+export interface UsageResponse extends StorageSplit {
+  /** The split summed: what the quota counts. */
+  storedBytes: number
+  storageQuota: number
+  liveBytes: number
+  accounts: UsageAccount[]
+}
+
 /** A GOOD key (character, weapon or material), as irminsul writes them. */
 export const goodKeySchema = z.string().regex(/^[A-Za-z0-9]{1,64}$/, 'Not a GOOD key')
 

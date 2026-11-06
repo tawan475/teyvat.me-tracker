@@ -426,11 +426,6 @@ function removeMember(member: { id: number; username: string }) {
               :key="member.id"
               class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border-default bg-surface-raised py-1 pr-1 pl-1.5 text-sm font-medium"
             >
-              <span
-                class="flex size-6 items-center justify-center rounded-full bg-surface-overlay text-xs font-semibold text-text-secondary"
-                aria-hidden="true"
-                >{{ member.username.charAt(0).toUpperCase() }}</span
-              >
               <RouterLink
                 :to="{ name: 'staff-user', params: { userId: member.id } }"
                 class="hover:text-accent-text"

@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: lido pelo Snap Hutao, Starward e pela maioria dos rastreadores de Orações",
     "paimonTitle": "Para o Local Importer do paimon.moe (Wish counter → Import → Local)",
     "delete": "Excluir",
-    "deleteHistory": "Excluir histórico"
+    "deleteHistory": "Excluir histórico",
+    "data": "Dados",
+    "synced": "Sincronizado {when}",
+    "pullCount": "Orações",
+    "bannerCount": "{n} banner | {n} banners",
+    "totalData": "Dados totais",
+    "totalDataTitle": "Tamanho do ficheiro UIGF exportado deste histórico",
+    "asUigf": "em UIGF",
+    "perPull": "{n} B/oração",
+    "stored": "Guardado",
+    "storedTitle": "O que o servidor guarda: blocos comprimidos",
+    "ofQuota": "{share}% dos seus {size}"
   },
   "bannerPage": {
     "noPulls": "Nenhuma oração neste banner",

@@ -91,7 +91,16 @@
     "snapshots": "Capturas",
     "raw": "Datos brutos",
     "stored": "Guardado",
-    "saved": "Ahorrado"
+    "saved": "Ahorrado",
+    "allocated": "Asignado",
+    "of": "de {size}",
+    "quotaUsed": "Almacenamiento usado",
+    "breakdown": "Desglose",
+    "compact": "Compactar…",
+    "thisAccount": "Esta cuenta",
+    "allAccounts": "Todas tus cuentas ({n})",
+    "inTrash": "{n} en la papelera (se liberan a los 30 días)",
+    "liveNote": "La sincronización en vivo guarda {size} más"
   },
   "pagination": {
     "perPage": "Por página",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "No hay datos."
+  },
+  "compact": {
+    "title": "Compactar historial",
+    "keep": "Conservar",
+    "day": "Uno al día",
+    "week": "Uno a la semana",
+    "olderThan": "Más antiguos que",
+    "days": "{n} días",
+    "year": "1 año",
+    "all": "Todos",
+    "preview": "Conserva {kept}, elimina {removed} de {total} instantáneas",
+    "nothing": "Nada que eliminar",
+    "warning": "Se eliminan de inmediato, sin papelera. Los diarios de sincronización en vivo de esas instantáneas terminan. No se puede deshacer.",
+    "confirm": "Compactar",
+    "done": "{n} instantánea eliminada | {n} instantáneas eliminadas",
+    "failed": "No compactado"
   }
 }

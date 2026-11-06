@@ -1,4 +1,9 @@
-import { deepMerge, userSettingsPatch, type ImportKeyResponse } from '@gdt/shared'
+import {
+  deepMerge,
+  userSettingsPatch,
+  type ImportKeyResponse,
+  type UsageResponse,
+} from '@gdt/shared'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { getDb } from '../db/client'
@@ -7,10 +12,17 @@ import type { AppEnv } from '../env'
 import { ApiError, parseJson } from '../lib/http'
 import { requireActiveSession, requireUser } from '../lib/session'
 import { newImportKey } from '../services/accounts'
+import { liveDb } from '../services/live-sync'
+import { userUsage } from '../services/usage'
 import { meOf } from './auth'
 
 export const me = new Hono<AppEnv>()
   .use(requireUser)
+
+  /** What the user stores against their quota, split by kind, per account. */
+  .get('/usage', async (c) =>
+    c.json<UsageResponse>(await userUsage(c.env.DB, liveDb(c.env), c.get('userId'))),
+  )
 
   .patch('/settings', async (c) => {
     const patch = await parseJson(c, userSettingsPatch)

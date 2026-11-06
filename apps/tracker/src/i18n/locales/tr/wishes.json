@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: Snap Hutao, Starward ve çoğu dilek takipçisi okur",
     "paimonTitle": "paimon.moe'nun Local Importer'ı için (Wish counter → Import → Local)",
     "delete": "Sil",
-    "deleteHistory": "Geçmişi sil"
+    "deleteHistory": "Geçmişi sil",
+    "data": "Veri",
+    "synced": "{when} senkronize edildi",
+    "pullCount": "Dilek",
+    "bannerCount": "{n} afiş",
+    "totalData": "Toplam veri",
+    "totalDataTitle": "Bu geçmişin dışa aktarıldığı UIGF dosyasının boyutu",
+    "asUigf": "UIGF olarak",
+    "perPull": "{n} B/dilek",
+    "stored": "Saklanan",
+    "storedTitle": "Sunucunun tuttuğu: sıkıştırılmış parçalar",
+    "ofQuota": "{size} alanının %{share}’i"
   },
   "bannerPage": {
     "noPulls": "Bu afişte dilek yok",

@@ -91,7 +91,16 @@
     "snapshots": "Istantanee",
     "raw": "Dati grezzi",
     "stored": "Salvati",
-    "saved": "Risparmiati"
+    "saved": "Risparmiati",
+    "allocated": "Assegnato",
+    "of": "di {size}",
+    "quotaUsed": "Spazio usato",
+    "breakdown": "Dettaglio",
+    "compact": "Compatta…",
+    "thisAccount": "Questo account",
+    "allAccounts": "Tutti i tuoi account ({n})",
+    "inTrash": "{n} nel cestino (liberati dopo 30 giorni)",
+    "liveNote": "La sincronizzazione live salva altri {size}"
   },
   "pagination": {
     "perPage": "Per pagina",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Nessun dato disponibile."
+  },
+  "compact": {
+    "title": "Compatta cronologia",
+    "keep": "Mantieni",
+    "day": "Uno al giorno",
+    "week": "Uno a settimana",
+    "olderThan": "Più vecchi di",
+    "days": "{n} giorni",
+    "year": "1 anno",
+    "all": "Tutti",
+    "preview": "Mantiene {kept}, rimuove {removed} di {total} snapshot",
+    "nothing": "Niente da rimuovere",
+    "warning": "Rimossi subito, senza cestino. I giornali di sincronizzazione live su quegli snapshot terminano. Non si può annullare.",
+    "confirm": "Compatta",
+    "done": "{n} snapshot rimosso | {n} snapshot rimossi",
+    "failed": "Non compattato"
   }
 }

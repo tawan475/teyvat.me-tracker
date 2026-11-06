@@ -35,7 +35,11 @@
     "uploadsBlocked": "Envois bloqués",
     "uploadsUnblocked": "Envois débloqués",
     "quotaSaved": "Quota enregistré",
-    "d1Share": "{share} des 10 Go de D1"
+    "d1Share": "{share} des 10 Go de D1",
+    "wishes": "Vœux",
+    "wishesTitle": "Vœux · octets stockés",
+    "storedTitle": "Instantanés · catalogue d’artéfacts · vœux",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "Le déconnecte partout",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "Suspendu",
     "uploadsBlocked": "Envois bloqués",
-    "new": "Nouveau"
+    "new": "Nouveau",
+    "wishesOnly": "Vœux seulement"
   },
   "history": {
     "suspend": "a suspendu",
@@ -167,7 +172,11 @@
       "suspended": "Suspendus",
       "suspendedTitle": "Utilisateurs suspendus",
       "staff": "Équipe",
-      "staffTitle": "Utilisateurs avec un rôle d'équipe"
+      "staffTitle": "Utilisateurs avec un rôle d'équipe",
+      "wishes": "Vœux",
+      "wishesTitle": "A un historique des vœux",
+      "wishesOnly": "Vœux seulement",
+      "wishesOnlyTitle": "Historique des vœux mais aucun instantané"
     },
     "sorts": {
       "newest": "Plus récents",
@@ -176,7 +185,9 @@
       "storage": "Stockage",
       "snapshots": "Instantanés",
       "name": "Nom",
-      "column": "Colonne"
+      "column": "Colonne",
+      "wishes": "Données de vœux",
+      "raw": "Taille brute"
     },
     "shownOf": "{shown} affichés sur {all} utilisateurs",
     "selected": "{n} sélectionné(s)",
@@ -212,7 +223,9 @@
       "growth": "Croissance",
       "stored": "Stocké",
       "quota": "Quota utilisé",
-      "snapshots": "Instantanés"
+      "snapshots": "Instantanés",
+      "wishes": "Vœux",
+      "raw": "Brut"
     },
     "newIn": "Nouveau · {window}",
     "snapshotsIn": "Instantanés · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "Plafond quotidien ×{n}",
     "dailyCapTitle": "A atteint le plafond d'envoi quotidien {n} des 7 derniers jours",
     "accountLimit": "{n} comptes",
-    "accountLimitTitle": "Au nombre de comptes qu'une clé utilisateur peut créer"
+    "accountLimitTitle": "Au nombre de comptes qu'une clé utilisateur peut créer",
+    "siteSplit": "Stockage du site",
+    "snapshotCount": "{n} instantanés",
+    "rawOf": "{size} brut",
+    "pieces": "{n} pièces",
+    "histories": "{n} historiques",
+    "perPull": "{n} o/vœu"
   },
   "roles": {
     "title": "Rôles",
@@ -376,7 +395,11 @@
     "unblockUploads": "Débloquer les envois",
     "blockUploadsMenu": "Bloquer les envois…",
     "resetImportKey": "Réinitialiser la clé d'import",
-    "deleteDataMenu": "Supprimer des données…"
+    "deleteDataMenu": "Supprimer des données…",
+    "data": "Données",
+    "lastWishSync": "Dernière synchro des vœux",
+    "liveHint": "Journaux et points de graphique",
+    "noJournal": "Aucun journal"
   },
   "inspect": {
     "account": "Compte",
@@ -471,5 +494,13 @@
     "syncNow": "Synchroniser",
     "boardCount": "{n} sur le tableau",
     "hoyolabCount": "{n} publications HoYoLAB"
+  },
+  "split": {
+    "sections": "Instantanés",
+    "catalog": "Catalogue d’artéfacts",
+    "wishes": "Vœux",
+    "live": "Synchro en direct",
+    "pulls": "{n} vœux",
+    "of": "Stockage de {name}"
   }
 }

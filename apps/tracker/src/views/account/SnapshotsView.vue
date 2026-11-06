@@ -5,6 +5,7 @@ import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { CalendarX, History, Repeat2, Upload } from 'lucide-vue-next'
 import { api } from '@/api'
 import BaseTable, { type TableLabel } from '@/components/legacy/BaseTable.vue'
+import CompactDialog from '@/components/snapshot-history/CompactDialog.vue'
 import ConfirmDialog from '@/components/snapshot-history/ConfirmDialog.vue'
 import ExportTargets from '@/components/snapshot-history/ExportTargets.vue'
 import FigureCell from '@/components/snapshot-history/FigureCell.vue'
@@ -30,6 +31,7 @@ import { t } from '@/i18n'
 import { clock24, dateLocale, formatBytes, formatFullDateTime, formatNumber } from '@/lib/format'
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
+import { invalidateUsage, loadUsage, usageVersion } from '@/data/usage'
 import { useAccess, useAccount, useAccountMode } from './context'
 
 /** The bulk delete endpoint takes at most this many ids per request. */
@@ -93,6 +95,37 @@ async function discardLive() {
   }
 }
 const changes = computed(() => snapshotChanges(list.value))
+
+// --------------------------------------------------------------- storage/usage
+
+/** The owner's usage (quota, split); shared and inspected accounts show the counters alone. */
+const usage = useResource(
+  () => (owner && !readOnly ? [account.value.dataVersion, usageVersion.value] : null),
+  (key) => (key ? loadUsage() : Promise.resolve(null)),
+)
+const compactOpen = ref(false)
+const compacting = ref(false)
+async function compact(options: {
+  keep: 'day' | 'week'
+  offsetMinutes: number
+  before: number | null
+}) {
+  compacting.value = true
+  try {
+    const result = await api.compactSnapshots(account.value.id, options)
+    compactOpen.value = false
+    invalidateUsage()
+    feedback.toast({
+      tone: 'success',
+      title: t('snapshots.compact.done', { n: formatNumber(result.removed) }, result.removed),
+    })
+    await reload()
+  } catch (cause) {
+    feedback.error(t('snapshots.compact.failed'), cause)
+  } finally {
+    compacting.value = false
+  }
+}
 
 // ----------------------------------------------------------------- date filter
 
@@ -433,10 +466,14 @@ function selectionClearance(): number {
     <ExportTargets v-if="!readOnly" :account="account" />
 
     <StorageStrip
+      :account-id="account.id"
       :snapshots="account.snapshotCount"
       :raw-bytes="account.rawBytes"
       :stored-bytes="account.storedBytes"
       :loading="!snapshots && !error"
+      :usage="usage.data.value ?? null"
+      :can-compact="owner && !readOnly && list.length > 1"
+      @compact="compactOpen = true"
     />
 
     <div ref="host" class="space-y-3">
@@ -718,5 +755,12 @@ function selectionClearance(): number {
     </div>
 
     <ConfirmDialog ref="confirmDialog" />
+    <CompactDialog
+      :open="compactOpen"
+      :snapshots="list"
+      :busy="compacting"
+      @close="compactOpen = false"
+      @confirm="compact"
+    />
   </div>
 </template>

@@ -230,11 +230,6 @@ async function leave() {
           class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border-subtle py-2.5"
           :class="member.acceptedAt === null ? 'opacity-80' : ''"
         >
-          <span
-            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-sm font-semibold"
-            aria-hidden="true"
-            >{{ (Array.from(member.username)[0] ?? '?').toUpperCase() }}</span
-          >
           <div class="min-w-0 flex-[999_1_10rem]">
             <p class="flex min-w-0 items-center gap-2">
               <span class="truncate font-medium">{{ member.username }}</span>

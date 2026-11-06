@@ -13,6 +13,7 @@ import { Flag, HardDrive, Search } from 'lucide-vue-next'
 import ActionMenu, { type MenuItem } from '@/components/staff/ActionMenu.vue'
 import QuotaDialog from '@/components/staff/QuotaDialog.vue'
 import ReasonDialog from '@/components/staff/ReasonDialog.vue'
+import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import UserLink from '@/components/staff/UserLink.vue'
 import FilterChip from '@/components/ui/FilterChip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -33,6 +34,7 @@ import { api } from '@/api'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { formatBytes, formatNumber } from '@/lib/format'
+import { vStickyHead } from '@/lib/sticky-head'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
 
@@ -113,6 +115,9 @@ const FLAG_TEXT = {
 
 const share = (row: StaffStorageRow) =>
   Math.min(100, (row.storedBytes / Math.max(1, row.quota)) * 100)
+/** Stored bytes per wish pull, one decimal ("2.1"). */
+const perPull = (x: { wishBytes: number; wishPulls: number }) =>
+  x.wishPulls ? (x.wishBytes / x.wishPulls).toFixed(1) : '—'
 
 // ------------------------------------------------------------------- actions
 
@@ -226,22 +231,53 @@ const pageCount = computed(() =>
     <template v-else>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3">
         <UiStat
+          class="col-span-2"
           :label="$t('staff.common.stored')"
           :value="formatBytes(data.totals.storedBytes)"
           :hint="
             $t('staff.common.d1Share', {
-              share: `${((data.totals.storedBytes / (10 * 1024 ** 3)) * 100).toFixed(1)}%`,
+              share: `${((data.totals.storedBytes / (10 * 1024 ** 3)) * 100).toFixed(2)}%`,
             })
           "
-        />
+        >
+          <StorageSplitBar
+            class="mt-1"
+            :split="data.totals"
+            :label="$t('staff.storage.siteSplit')"
+            :pulls="data.totals.wishPulls"
+            legend
+          />
+        </UiStat>
+        <UiStat
+          :label="$t('staff.split.sections')"
+          :value="formatBytes(data.totals.sectionBytes)"
+          :hint="$t('staff.storage.rawTitle')"
+        >
+          <span class="tabular font-mono text-sm text-text-muted"
+            >{{ $t('staff.storage.snapshotCount', { n: formatNumber(data.totals.snapshots) }) }} ·
+            {{ $t('staff.storage.rawOf', { size: formatBytes(data.totals.rawBytes) }) }}</span
+          >
+        </UiStat>
+        <UiStat :label="$t('staff.split.catalog')" :value="formatBytes(data.totals.catalogBytes)">
+          <span class="tabular font-mono text-sm text-text-muted">{{
+            $t('staff.storage.pieces', { n: formatNumber(data.totals.catalogCount) })
+          }}</span>
+        </UiStat>
+        <UiStat :label="$t('staff.split.wishes')" :value="formatBytes(data.totals.wishBytes)">
+          <span class="tabular font-mono text-sm text-text-muted"
+            >{{ $t('staff.split.pulls', { n: formatNumber(data.totals.wishPulls) }) }} ·
+            {{ $t('staff.storage.histories', { n: formatNumber(data.totals.histories) }) }} ·
+            {{ $t('staff.storage.perPull', { n: perPull(data.totals) }) }}</span
+          >
+        </UiStat>
         <UiStat
           :label="$t('staff.storage.newIn', { window: windowLabel })"
           :value="formatBytes(data.totals.newBytes)"
-        />
-        <UiStat
-          :label="$t('staff.storage.snapshotsIn', { window: windowLabel })"
-          :value="data.totals.newSnapshots"
-        />
+        >
+          <span class="tabular font-mono text-sm text-text-muted">{{
+            $t('staff.storage.snapshotCount', { n: formatNumber(data.totals.newSnapshots) })
+          }}</span>
+        </UiStat>
         <UiStat
           :label="$t('staff.storage.nearQuota')"
           :value="data.totals.nearQuota"
@@ -263,9 +299,15 @@ const pageCount = computed(() =>
         class="overflow-x-auto rounded-xl border border-border-default bg-surface-raised shadow-sm"
         :aria-busy="loading"
       >
-        <table class="w-full min-w-[62rem] text-sm">
-          <thead class="border-b border-border-default bg-surface-overlay/50 text-text-secondary">
+        <table class="w-full min-w-[70rem] text-sm">
+          <thead
+            v-sticky-head
+            class="border-b border-border-default bg-surface-overlay/50 text-text-secondary [&_th]:whitespace-nowrap"
+          >
             <tr>
+              <th scope="col" class="px-3 py-2 text-right font-medium">
+                {{ $t('staff.common.id') }}
+              </th>
               <th scope="col" class="px-3 py-2 text-left font-medium">
                 {{ $t('staff.common.user') }}
               </th>
@@ -282,7 +324,20 @@ const pageCount = computed(() =>
               >
                 {{ $t('staff.storage.newIn', { window: windowLabel }) }}
               </th>
-              <th scope="col" class="px-3 py-2 text-right font-medium">
+              <th
+                scope="col"
+                class="px-3 py-2 text-right font-medium"
+                :class="sort === 'wishes' ? 'text-text-primary' : ''"
+                :title="$t('staff.common.wishesTitle')"
+              >
+                {{ $t('staff.common.wishes') }}
+              </th>
+              <th
+                scope="col"
+                class="px-3 py-2 text-right font-medium"
+                :class="sort === 'stored' ? 'text-text-primary' : ''"
+                :title="$t('staff.common.storedTitle')"
+              >
                 {{ $t('staff.common.stored') }}
               </th>
               <th scope="col" class="w-40 px-3 py-2 text-left font-medium">
@@ -291,6 +346,7 @@ const pageCount = computed(() =>
               <th
                 scope="col"
                 class="px-3 py-2 text-right font-medium"
+                :class="sort === 'raw' ? 'text-text-primary' : ''"
                 :title="$t('staff.storage.rawTitle')"
               >
                 {{ $t('staff.storage.raw') }}
@@ -308,7 +364,8 @@ const pageCount = computed(() =>
           </thead>
           <tbody class="divide-y divide-border-subtle">
             <tr v-for="row in data.rows" :key="row.id" class="hover:bg-surface-overlay/60">
-              <td class="max-w-56 px-3 py-1.5"><UserLink :user="row" /></td>
+              <td class="tabular px-3 py-1.5 text-right font-mono text-text-muted">{{ row.id }}</td>
+              <td class="max-w-56 px-3 py-1.5"><UserLink :user="row" no-id /></td>
               <td class="tabular px-3 py-1.5 text-right font-mono">
                 {{ formatNumber(row.accounts) }}
               </td>
@@ -324,12 +381,28 @@ const pageCount = computed(() =>
               <td
                 class="tabular px-3 py-1.5 text-right font-mono"
                 :title="
-                  row.liveBytes
-                    ? $t('live.staffBytes', { size: formatBytes(row.liveBytes) })
+                  row.wishPulls
+                    ? `${$t('staff.split.pulls', { n: formatNumber(row.wishPulls) })} · ${formatBytes(row.wishBytes)}`
                     : undefined
                 "
               >
-                {{ formatBytes(row.storedBytes) }}
+                <span v-if="row.wishPulls" class="inline-flex flex-col items-end leading-tight">
+                  <span>{{ formatNumber(row.wishPulls) }}</span>
+                  <span class="text-xs text-text-muted">{{ formatBytes(row.wishBytes) }}</span>
+                </span>
+                <span v-else class="text-text-muted">—</span>
+              </td>
+              <td class="tabular px-3 py-1.5 text-right font-mono">
+                <span class="inline-flex items-center justify-end gap-2.5">
+                  <StorageSplitBar
+                    class="w-24 shrink-0"
+                    :split="row"
+                    :label="$t('staff.split.of', { name: row.username })"
+                  />
+                  <span class="min-w-[4.25rem] whitespace-nowrap">{{
+                    formatBytes(row.storedBytes)
+                  }}</span>
+                </span>
               </td>
               <td class="px-3 py-1.5">
                 <span
@@ -348,7 +421,9 @@ const pageCount = computed(() =>
                   >
                 </span>
               </td>
-              <td class="tabular px-3 py-1.5 text-right font-mono text-text-secondary">
+              <td
+                class="tabular px-3 py-1.5 text-right font-mono whitespace-nowrap text-text-secondary"
+              >
                 {{ formatBytes(row.rawBytes) }}
               </td>
               <td class="tabular px-3 py-1.5 text-right font-mono text-text-secondary">
@@ -400,6 +475,7 @@ const pageCount = computed(() =>
 
       <UiPager
         v-model="page"
+        sticky
         :page-count="pageCount"
         :total="data.total"
         :page-size="data.pageSize"

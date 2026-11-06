@@ -259,7 +259,18 @@
     "uigfTitle": "UIGF v4.1: читают Snap Hutao, Starward и большинство трекеров молитв",
     "paimonTitle": "Для Local Importer на paimon.moe (Wish counter → Import → Local)",
     "delete": "Удалить",
-    "deleteHistory": "Удалить историю"
+    "deleteHistory": "Удалить историю",
+    "data": "Данные",
+    "synced": "Синхронизировано {when}",
+    "pullCount": "Молитв",
+    "bannerCount": "Баннеров: {n}",
+    "totalData": "Всего данных",
+    "totalDataTitle": "Размер файла UIGF, в который экспортируется эта история",
+    "asUigf": "как UIGF",
+    "perPull": "{n} Б/молитву",
+    "stored": "Сохранено",
+    "storedTitle": "Что хранит сервер: сжатые блоки",
+    "ofQuota": "{share}% из ваших {size}"
   },
   "bannerPage": {
     "noPulls": "На этом баннере молитв нет",

@@ -15,13 +15,16 @@ import FilterChip from '@/components/ui/FilterChip.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
+import UiStat from '@/components/ui/UiStat.vue'
 import WishCaptureImport from './WishCaptureImport.vue'
 import WishLinkImport from './WishLinkImport.vue'
 import type { WishHistory } from '@/data/wish-history'
 import { saveBlob } from '@/data/export'
 import { t } from '@/i18n'
-import { formatNumber } from '@/lib/format'
+import { formatBytes, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
 import { useFeedback } from '@/stores/feedback'
+import { loadUsage, usageVersion } from '@/data/usage'
+import { useResource } from '@/data/use-resource'
 
 /**
  * Wish history in and out: import a UIGF v4 JSON (or older UIGF), a
@@ -59,6 +62,23 @@ const failure = ref('')
 const file = shallowRef<WishFile | null>(null)
 
 const uid = computed(() => props.account.uid?.trim() || null)
+
+/** The user's allocated space, read while the dialog is open (shared accounts count on their owner). */
+const usage = useResource(
+  () =>
+    props.open && !props.readOnly && (props.account.access ?? 'owner') === 'owner'
+      ? usageVersion.value
+      : null,
+  (key) => (key === null ? Promise.resolve(null) : loadUsage()),
+)
+const quotaShare = computed(() => {
+  const u = usage.data.value
+  if (!u || !props.history) return null
+  return {
+    share: ((props.history.bytes / Math.max(1, u.storageQuota)) * 100).toFixed(2),
+    size: u.storageQuota,
+  }
+})
 
 /** How to import: the capture app, the game's wish link (paimon.moe's way), or a file. */
 const mode = ref<'capture' | 'link' | 'file'>('capture')
@@ -166,15 +186,41 @@ const pulls = computed(() => (props.history ? [...props.history.banners.values()
 const stamp = () => new Date().toISOString().slice(0, 10)
 const fileUid = () => uid.value ?? `account${props.account.id}`
 
-function exportUigf() {
+/** The UIGF file as the Export button writes it. */
+function uigfText(): string {
   const history = props.history
-  if (!history) return
+  if (!history) return ''
   const json = buildUigf(
     [{ uid: uid.value ?? '', timezone: history.timezone, pulls: pulls.value }],
     { name: 'Teyvat.me', version: '1' },
   )
+  return JSON.stringify(json, null, 2)
+}
+
+/**
+ * What the history weighs: the pulls, the UIGF file they export as (built
+ * only while the dialog is open: a long history is a few MB of text) and
+ * the compressed chunks the server keeps.
+ */
+const figures = computed(() => {
+  const history = props.history
+  if (!props.open || !history || history.total === 0) return null
+  const total = new TextEncoder().encode(uigfText()).length
+  return {
+    pulls: history.total,
+    banners: history.banners.size,
+    total,
+    stored: history.bytes,
+    perPullTotal: (total / history.total).toFixed(0),
+    perPullStored: (history.bytes / history.total).toFixed(1),
+    updatedAt: history.updatedAt,
+  }
+})
+
+function exportUigf() {
+  if (!props.history) return
   saveBlob(
-    new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }),
+    new Blob([uigfText()], { type: 'application/json' }),
     `wishes-uigf-${fileUid()}-${stamp()}.json`,
   )
 }
@@ -287,6 +333,50 @@ async function remove() {
             >{{ $t('wishes.import') }}</UiButton
           >
         </template>
+      </section>
+
+      <section v-if="figures" class="flex flex-col gap-2" :aria-label="$t('wishes.transfer.data')">
+        <div class="flex items-baseline justify-between gap-3">
+          <h3 class="text-sm font-semibold">{{ $t('wishes.transfer.data') }}</h3>
+          <span
+            v-if="figures.updatedAt"
+            class="tabular text-xs text-text-muted"
+            :title="formatDateTime(figures.updatedAt)"
+            >{{ $t('wishes.transfer.synced', { when: formatRelative(figures.updatedAt) }) }}</span
+          >
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <UiStat :label="$t('wishes.transfer.pullCount')" :value="figures.pulls" exact>
+            <span class="tabular font-mono text-xs text-text-muted">{{
+              $t('wishes.transfer.bannerCount', { n: figures.banners }, figures.banners)
+            }}</span>
+          </UiStat>
+          <UiStat
+            :label="$t('wishes.transfer.totalData')"
+            :value="formatBytes(figures.total)"
+            :hint="$t('wishes.transfer.totalDataTitle')"
+          >
+            <span class="tabular font-mono text-xs text-text-muted"
+              >{{ $t('wishes.transfer.asUigf') }} ·
+              {{ $t('wishes.transfer.perPull', { n: figures.perPullTotal }) }}</span
+            >
+          </UiStat>
+          <UiStat
+            :label="$t('wishes.transfer.stored')"
+            :value="formatBytes(figures.stored)"
+            :hint="$t('wishes.transfer.storedTitle')"
+          >
+            <span class="tabular font-mono text-xs text-text-muted">{{
+              $t('wishes.transfer.perPull', { n: figures.perPullStored })
+            }}</span>
+            <span v-if="quotaShare" class="tabular font-mono text-xs text-text-muted">{{
+              $t('wishes.transfer.ofQuota', {
+                share: quotaShare.share,
+                size: formatBytes(quotaShare.size),
+              })
+            }}</span>
+          </UiStat>
+        </div>
       </section>
 
       <section class="flex flex-col gap-2" :aria-label="$t('wishes.export')">

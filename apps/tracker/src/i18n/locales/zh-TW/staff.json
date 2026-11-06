@@ -35,7 +35,11 @@
     "uploadsBlocked": "已禁止上傳",
     "uploadsUnblocked": "已恢復上傳",
     "quotaSaved": "配額已儲存",
-    "d1Share": "佔 D1 10 GB 的 {share}"
+    "d1Share": "佔 D1 10 GB 的 {share}",
+    "wishes": "祈願",
+    "wishesTitle": "抽數 · 已儲存位元組",
+    "storedTitle": "快照 · 聖遺物目錄 · 祈願",
+    "id": "ID"
   },
   "effects": {
     "signsOut": "在所有裝置上登出",
@@ -47,7 +51,8 @@
   "status": {
     "suspended": "已停權",
     "uploadsBlocked": "已禁止上傳",
-    "new": "新使用者"
+    "new": "新使用者",
+    "wishesOnly": "僅祈願"
   },
   "history": {
     "suspend": "將該使用者停權",
@@ -167,7 +172,11 @@
       "suspended": "已停權",
       "suspendedTitle": "已停權的使用者",
       "staff": "管理員",
-      "staffTitle": "擁有管理身分組的使用者"
+      "staffTitle": "擁有管理身分組的使用者",
+      "wishes": "祈願",
+      "wishesTitle": "有祈願紀錄",
+      "wishesOnly": "僅祈願",
+      "wishesOnlyTitle": "有祈願紀錄但沒有快照"
     },
     "sorts": {
       "newest": "最新",
@@ -176,7 +185,9 @@
       "storage": "儲存空間",
       "snapshots": "快照",
       "name": "名稱",
-      "column": "依欄位"
+      "column": "依欄位",
+      "wishes": "祈願資料",
+      "raw": "原始大小"
     },
     "shownOf": "顯示 {shown} / 共 {all} 位使用者",
     "selected": "已選 {n} 位",
@@ -212,7 +223,9 @@
       "growth": "成長",
       "stored": "已儲存",
       "quota": "配額用量",
-      "snapshots": "快照"
+      "snapshots": "快照",
+      "wishes": "祈願",
+      "raw": "原始"
     },
     "newIn": "新增 · {window}",
     "snapshotsIn": "快照 · {window}",
@@ -236,7 +249,13 @@
     "dailyCapTimes": "每日上限 ×{n}",
     "dailyCapTitle": "最近 7 天中有 {n} 天達到每日上傳上限",
     "accountLimit": "{n} 個帳號",
-    "accountLimitTitle": "已達到使用者金鑰可建立的帳號數量"
+    "accountLimitTitle": "已達到使用者金鑰可建立的帳號數量",
+    "siteSplit": "全站儲存空間",
+    "snapshotCount": "{n} 個快照",
+    "rawOf": "原始 {size}",
+    "pieces": "{n} 件",
+    "histories": "{n} 份紀錄",
+    "perPull": "{n} B/抽"
   },
   "roles": {
     "title": "身分組",
@@ -376,7 +395,11 @@
     "unblockUploads": "恢復上傳",
     "blockUploadsMenu": "禁止上傳…",
     "resetImportKey": "重設匯入金鑰",
-    "deleteDataMenu": "刪除資料…"
+    "deleteDataMenu": "刪除資料…",
+    "data": "資料",
+    "lastWishSync": "最近祈願同步",
+    "liveHint": "日誌與圖表點",
+    "noJournal": "無日誌"
   },
   "inspect": {
     "account": "帳號",
@@ -471,5 +494,13 @@
     "syncNow": "立即同步",
     "boardCount": "公告 {n} 則",
     "hoyolabCount": "HoYoLAB 貼文 {n} 篇"
+  },
+  "split": {
+    "sections": "快照",
+    "catalog": "聖遺物目錄",
+    "wishes": "祈願",
+    "live": "即時同步",
+    "pulls": "{n} 抽",
+    "of": "{name} 的儲存空間"
   }
 }

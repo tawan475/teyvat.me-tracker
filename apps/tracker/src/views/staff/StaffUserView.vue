@@ -26,6 +26,7 @@ import ReasonDialog from '@/components/staff/ReasonDialog.vue'
 import RenameDialog from '@/components/staff/RenameDialog.vue'
 import ResetLinkDialog from '@/components/staff/ResetLinkDialog.vue'
 import RoleBadge from '@/components/staff/RoleBadge.vue'
+import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import { deviceName, onPhone } from '@/components/settings/devices'
 import { auditPhrase, userStatus } from '@/components/staff/status'
 import { serverName } from '@/components/user/servers'
@@ -310,6 +311,9 @@ async function removeRole(roleId: number) {
 // -------------------------------------------------------------------- accounts
 
 const showAll = ref(false)
+const catalogCount = computed(() =>
+  (detail.value?.accounts ?? []).reduce((sum, a) => sum + a.catalogCount, 0),
+)
 const ACCOUNTS_SHOWN = 4
 const accounts = computed(() => {
   const list = detail.value?.accounts ?? []
@@ -343,6 +347,14 @@ const usage = computed(() => detail.value?.usage ?? null)
 const quotaShare = computed(() =>
   usage.value ? Math.min(1, usage.value.storedBytes / Math.max(1, usage.value.storageQuota)) : 0,
 )
+/** Stored bytes per wish pull, one decimal ("2.1"). */
+const perPull = (x: { wishBytes: number; wishPulls: number }) =>
+  x.wishPulls ? (x.wishBytes / x.wishPulls).toFixed(1) : '—'
+/** A wish history and not one snapshot: the account list alone would show nothing stored. */
+const wishesOnly = computed(
+  () => !!user.value && user.value.snapshots === 0 && user.value.wishPulls > 0,
+)
+
 const capHit = computed(
   () =>
     !!usage.value &&
@@ -398,16 +410,17 @@ const identities = computed(() =>
 
   <div v-else class="flex flex-col gap-6">
     <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-      <span
-        class="flex size-14 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-xl font-semibold text-text-secondary"
-        aria-hidden="true"
-        >{{ user.username.charAt(0).toUpperCase() }}</span
-      >
       <div class="flex min-w-0 flex-[1_1_12rem] flex-col gap-1">
         <div class="flex flex-wrap items-center gap-2">
+          <span class="tabular font-mono text-xl text-text-muted">#{{ user.id }}</span>
           <h2 class="truncate text-2xl font-semibold">{{ user.username }}</h2>
-          <span class="tabular font-mono text-text-muted">#{{ user.id }}</span>
           <UiBadge v-if="status" :tone="status.tone">{{ status.label }}</UiBadge>
+          <UiBadge
+            v-if="wishesOnly"
+            tone="warning"
+            :title="$t('staff.users.chips.wishesOnlyTitle')"
+            >{{ $t('staff.status.wishesOnly') }}</UiBadge
+          >
         </div>
         <div class="flex flex-wrap items-center gap-2 text-sm">
           <span class="text-text-muted">{{ $t('staff.common.roles') }}</span>
@@ -545,6 +558,60 @@ const identities = computed(() =>
 
     <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div class="flex min-w-0 flex-col gap-6">
+        <UiPanel :title="$t('staff.user.data')">
+          <template #actions>
+            <span
+              class="tabular font-mono text-sm text-text-muted"
+              :title="$t('staff.storage.rawTitle')"
+              >{{ formatBytes(user.storedBytes + detail.liveBytes) }} ·
+              {{ $t('staff.storage.rawOf', { size: formatBytes(user.rawBytes) }) }}</span
+            >
+          </template>
+          <div class="flex flex-col gap-4">
+            <StorageSplitBar
+              :split="{ ...user, liveBytes: detail.liveBytes }"
+              :label="$t('staff.split.of', { name: user.username })"
+            />
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <UiStat :label="$t('staff.split.sections')" :value="formatBytes(user.sectionBytes)">
+                <template #icon>
+                  <span class="size-2.5 rounded-sm bg-chart-1" aria-hidden="true" />
+                </template>
+                <span class="tabular font-mono text-sm text-text-muted">{{
+                  $t('staff.storage.snapshotCount', { n: formatNumber(user.snapshots) })
+                }}</span>
+              </UiStat>
+              <UiStat :label="$t('staff.split.catalog')" :value="formatBytes(user.catalogBytes)">
+                <template #icon>
+                  <span class="size-2.5 rounded-sm bg-chart-4" aria-hidden="true" />
+                </template>
+                <span class="tabular font-mono text-sm text-text-muted">{{
+                  $t('staff.storage.pieces', { n: formatNumber(catalogCount) })
+                }}</span>
+              </UiStat>
+              <UiStat :label="$t('staff.split.wishes')" :value="formatBytes(user.wishBytes)">
+                <template #icon>
+                  <span class="size-2.5 rounded-sm bg-chart-2" aria-hidden="true" />
+                </template>
+                <span class="tabular font-mono text-sm text-text-muted"
+                  >{{ $t('staff.split.pulls', { n: formatNumber(user.wishPulls) })
+                  }}<template v-if="user.wishPulls">
+                    · {{ $t('staff.storage.perPull', { n: perPull(user) }) }}</template
+                  ></span
+                >
+              </UiStat>
+              <UiStat :label="$t('staff.split.live')" :value="formatBytes(detail.liveBytes)">
+                <template #icon>
+                  <span class="size-2.5 rounded-sm bg-text-muted" aria-hidden="true" />
+                </template>
+                <span class="tabular font-mono text-sm text-text-muted">{{
+                  detail.liveBytes ? $t('staff.user.liveHint') : $t('staff.user.noJournal')
+                }}</span>
+              </UiStat>
+            </div>
+          </div>
+        </UiPanel>
+
         <UiPanel flush>
           <template #header>
             <h2 class="text-base font-semibold">{{ $t('staff.user.genshinAccounts') }}</h2>
@@ -556,7 +623,7 @@ const identities = computed(() =>
             {{ $t('staff.common.none') }}
           </p>
           <div v-else class="overflow-x-auto">
-            <table class="w-full min-w-[34rem] text-sm">
+            <table class="w-full min-w-[44rem] text-sm">
               <thead
                 class="border-b border-border-default bg-surface-overlay/50 text-text-secondary"
               >
@@ -574,7 +641,21 @@ const identities = computed(() =>
                   <th scope="col" class="px-3 py-2 text-left font-medium">
                     {{ $t('staff.user.lastUpload') }}
                   </th>
-                  <th scope="col" class="px-3 py-2 text-right font-medium">
+                  <th
+                    scope="col"
+                    class="px-3 py-2 text-right font-medium"
+                    :title="$t('staff.common.wishesTitle')"
+                  >
+                    {{ $t('staff.common.wishes') }}
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left font-medium">
+                    {{ $t('staff.user.lastWishSync') }}
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-3 py-2 text-right font-medium"
+                    :title="$t('staff.common.storedTitle')"
+                  >
                     {{ $t('staff.common.stored') }}
                   </th>
                   <th scope="col" class="px-3 py-2">
@@ -609,8 +690,46 @@ const identities = computed(() =>
                   >
                     {{ account.lastUploadAt ? formatRelative(account.lastUploadAt) : '—' }}
                   </td>
-                  <td class="tabular px-3 py-1.5 text-right font-mono">
-                    {{ formatBytes(account.storedBytes) }}
+                  <td
+                    class="tabular px-3 py-1.5 text-right font-mono"
+                    :title="
+                      account.wishPulls
+                        ? `${$t('staff.split.pulls', { n: formatNumber(account.wishPulls) })} · ${formatBytes(account.wishBytes)}`
+                        : undefined
+                    "
+                  >
+                    <span
+                      v-if="account.wishPulls"
+                      class="inline-flex flex-col items-end leading-tight"
+                    >
+                      <span>{{ formatNumber(account.wishPulls) }}</span>
+                      <span class="text-xs text-text-muted">{{
+                        formatBytes(account.wishBytes)
+                      }}</span>
+                    </span>
+                    <span v-else class="text-text-muted">—</span>
+                  </td>
+                  <td
+                    class="tabular px-3 py-1.5 whitespace-nowrap text-text-secondary"
+                    :title="
+                      account.wishUpdatedAt ? formatDateTime(account.wishUpdatedAt) : undefined
+                    "
+                  >
+                    {{ account.wishUpdatedAt ? formatRelative(account.wishUpdatedAt) : '—' }}
+                  </td>
+                  <td
+                    class="tabular px-3 py-1.5 text-right font-mono"
+                    :title="
+                      [
+                        `${$t('staff.split.sections')} ${formatBytes(account.storedBytes)}`,
+                        `${$t('staff.split.catalog')} ${formatBytes(account.catalogBytes)}`,
+                        `${$t('staff.split.wishes')} ${formatBytes(account.wishBytes)}`,
+                      ].join(' · ')
+                    "
+                  >
+                    {{
+                      formatBytes(account.storedBytes + account.catalogBytes + account.wishBytes)
+                    }}
                   </td>
                   <td class="px-2 py-1 text-right whitespace-nowrap">
                     <span class="inline-flex items-center gap-1">

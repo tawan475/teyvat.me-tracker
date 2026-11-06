@@ -4,6 +4,9 @@ import {
   accountSettingsPatch,
   deepMerge,
   snapshotIdsRequest,
+  compactPlan,
+  compactRequest,
+  type CompactResponse,
   type AccountCreatedResponse,
   type AccountSettingsResponse,
   type SnapshotResponse,
@@ -43,6 +46,7 @@ import {
 } from '../services/live'
 import { snapshotFacts } from '../services/alerts'
 import { deleteLiveData, endJournalOn, liveDb } from '../services/live-sync'
+import { collectAccountBlobs } from '../services/maintenance'
 
 /** Work that must not hold the response (or fail it): logged when it fails. */
 function afterResponse(c: Context<AppEnv>, work: Promise<unknown>): void {
@@ -276,6 +280,54 @@ export const accounts = new Hono<AppEnv>()
     )
     // meta.changes would also count the counter trigger's updates.
     return c.json({ deleted: deleted!.results.length })
+  })
+
+  /**
+   * Keeps one snapshot per day or week (the newest of each, on the caller's
+   * clock) and deletes the rest at once: no trash, their sections collected
+   * in the same batch, so the space is free immediately (`dryRun` only
+   * counts). Owner only; `@gdt/shared` compactPlan decides, so the page's
+   * preview and this agree.
+   */
+  .post('/:id/snapshots/compact', async (c) => {
+    const id = idParam(c, 'id')
+    const body = await parseJson(c, compactRequest)
+    await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
+    const { results } = await c.env.DB.prepare(
+      'SELECT id, taken_at FROM snapshots WHERE account_id = ?1 AND deleted_at IS NULL',
+    )
+      .bind(id)
+      .all<{ id: number; taken_at: number }>()
+    const plan = compactPlan(
+      results.map((row) => ({ id: row.id, takenAt: row.taken_at })),
+      { keep: body.keep, offsetMinutes: body.offsetMinutes, before: body.before ?? null },
+    )
+    const answer = (removed: number): CompactResponse => ({
+      kept: results.length - removed,
+      removed,
+      dryRun: body.dryRun === true,
+    })
+    if (body.dryRun || plan.removed.length === 0)
+      return c.json(answer(body.dryRun ? plan.removed.length : 0))
+    const [deleted, recomputed, , listening] = await c.env.DB.batch([
+      c.env.DB.prepare(
+        `DELETE FROM snapshots WHERE account_id = ?1 AND deleted_at IS NULL
+         AND id IN (SELECT value FROM json_each(?2)) RETURNING id`,
+      ).bind(id, JSON.stringify(plan.removed)),
+      recomputeAccount(c.env.DB, id),
+      collectAccountBlobs(c.env.DB, id),
+      listenerStatement(c.env.DB, id),
+    ])
+    notifyData(c, id, recomputed, listening)
+    afterResponse(
+      c,
+      endJournalOn(
+        liveDb(c.env),
+        id,
+        deleted!.results.map((row) => Number((row as { id: number }).id)),
+      ),
+    )
+    return c.json(answer(deleted!.results.length))
   })
 
   .delete('/:id/snapshots/:snapshotId', async (c) => {

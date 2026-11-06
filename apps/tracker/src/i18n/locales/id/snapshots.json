@@ -91,7 +91,16 @@
     "snapshots": "Snapshot",
     "raw": "Data Asli",
     "stored": "Disimpan",
-    "saved": "Dihemat"
+    "saved": "Dihemat",
+    "allocated": "Dialokasikan",
+    "of": "dari {size}",
+    "quotaUsed": "Penyimpanan terpakai",
+    "breakdown": "Rincian",
+    "compact": "Padatkan…",
+    "thisAccount": "Akun ini",
+    "allAccounts": "Semua akunmu ({n})",
+    "inTrash": "{n} di sampah (dibebaskan setelah 30 hari)",
+    "liveNote": "Sinkronisasi live menyimpan {size} lagi"
   },
   "pagination": {
     "perPage": "Per halaman",
@@ -104,5 +113,21 @@
   },
   "table": {
     "noData": "Tidak ada data."
+  },
+  "compact": {
+    "title": "Padatkan riwayat",
+    "keep": "Simpan",
+    "day": "Satu per hari",
+    "week": "Satu per minggu",
+    "olderThan": "Lebih lama dari",
+    "days": "{n} hari",
+    "year": "1 tahun",
+    "all": "Semua",
+    "preview": "Menyimpan {kept}, menghapus {removed} dari {total} snapshot",
+    "nothing": "Tidak ada yang dihapus",
+    "warning": "Dihapus seketika, tanpa sampah. Jurnal sinkronisasi live pada snapshot yang dihapus berakhir. Tidak bisa dibatalkan.",
+    "confirm": "Padatkan",
+    "done": "{n} snapshot dihapus",
+    "failed": "Tidak dipadatkan"
   }
 }

@@ -250,34 +250,6 @@ const bosses = computed(() => {
       </UiButton>
     </div>
 
-    <div
-      role="radiogroup"
-      :aria-label="$t('endgame.stygian.difficulty')"
-      class="grid grid-cols-3 gap-1.5 sm:grid-cols-6"
-    >
-      <button
-        v-for="d in season.difficulties"
-        :key="d.difficulty"
-        type="button"
-        role="radio"
-        :aria-checked="d.difficulty === difficulty"
-        class="flex min-h-12 flex-col items-center justify-center rounded-lg border px-2 py-1.5 text-sm transition-colors"
-        :class="
-          d.difficulty === difficulty
-            ? 'border-rarity-4 bg-surface-overlay font-semibold text-text-primary ring-1 ring-rarity-4'
-            : 'border-border-default bg-surface-raised text-text-secondary hover:bg-surface-overlay'
-        "
-        @click="difficulty = d.difficulty"
-      >
-        <span class="truncate">{{
-          text.get(`stygianDifficulty.${d.difficulty}`) || String(d.difficulty)
-        }}</span>
-        <span class="tabular font-mono text-xs font-normal text-text-muted">{{
-          $t('endgame.level', { n: d.level })
-        }}</span>
-      </button>
-    </div>
-
     <section v-if="recordSlots.length" class="flex flex-col gap-2">
       <h3 class="text-xs font-semibold tracking-wide text-text-muted uppercase">
         {{ $t('endgame.captured.records') }}
@@ -434,6 +406,34 @@ const bosses = computed(() => {
         </template>
       </div>
     </section>
+
+    <div
+      role="radiogroup"
+      :aria-label="$t('endgame.stygian.difficulty')"
+      class="grid grid-cols-3 gap-1.5 sm:grid-cols-6"
+    >
+      <button
+        v-for="d in season.difficulties"
+        :key="d.difficulty"
+        type="button"
+        role="radio"
+        :aria-checked="d.difficulty === difficulty"
+        class="flex min-h-12 flex-col items-center justify-center rounded-lg border px-2 py-1.5 text-sm transition-colors"
+        :class="
+          d.difficulty === difficulty
+            ? 'border-rarity-4 bg-surface-overlay font-semibold text-text-primary ring-1 ring-rarity-4'
+            : 'border-border-default bg-surface-raised text-text-secondary hover:bg-surface-overlay'
+        "
+        @click="difficulty = d.difficulty"
+      >
+        <span class="truncate">{{
+          text.get(`stygianDifficulty.${d.difficulty}`) || String(d.difficulty)
+        }}</span>
+        <span class="tabular font-mono text-xs font-normal text-text-muted">{{
+          $t('endgame.level', { n: d.level })
+        }}</span>
+      </button>
+    </div>
 
     <div class="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-3">
       <article

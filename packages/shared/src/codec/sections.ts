@@ -14,6 +14,7 @@ import type { ArtifactIdentity, ArtifactState } from '../artifact'
 import { CHARACTERS, WEAPONS, fromRef, toRef, type KeyDictionary, type KeyRef } from '../dictionary'
 import type {
   ArchiveTab,
+  GiAbyssRecord,
   GiAnecdotes,
   GiAranaraState,
   GiCharacter,
@@ -1312,14 +1313,28 @@ export interface ExtrasSection {
  * none)] as its sixth cell (co-op records that have them), and a fight's
  * players' teams [position, [character ref, level (0: unknown),
  * constellation + 1 (0: unknown)]] as its sixth (the figures then always
- * written, 0 when absent).
+ * written, 0 when absent). `a` Capture 1.17.21's Spiral Abyss record book
+ * in the order sent: [season, floor, chamber, stars, the five figures
+ * (defeats, strike, damage taken, skills, bursts) each [value, by (0: no
+ * character)] or 0 when absent, picked [[character ref, times]]].
  */
 export interface EndgameSection {
   t?: [season: number, difficulty: number, level: number, acts: number]
   s?: StygianRecordRow[]
   r?: [stars: number, maxStars: number]
   x?: number[]
+  a?: AbyssRecordRow[]
 }
+export type AbyssRecordRow = [
+  season: number,
+  floor: number,
+  chamber: number,
+  stars: number,
+  figures: FigureCell[],
+  picked: [key: KeyRef, times: number][],
+]
+/** The record book's figures, in the order a row holds them. */
+export const ABYSS_FIGURE_KEYS = ['defeats', 'strike', 'damageTaken', 'skills', 'bursts'] as const
 export type StygianRecordRow =
   | [season: number, difficulty: number, at: number, coop: number, fights: StygianFightRow[]]
   | [
@@ -1370,7 +1385,7 @@ export function encodeExtras(parts: GiExtrasParts): ExtrasSection | null {
 
 export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
   const section: EndgameSection = {}
-  const { theater, stygian } = endgame
+  const { theater, stygian, abyss } = endgame
   if (theater) {
     section.t = [theater.season, theater.difficulty ?? 0, theater.level ?? 0, theater.acts]
   }
@@ -1397,6 +1412,18 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
       const head = [r.season, r.difficulty, r.at, r.coop ? 1 : 0] as const
       return r.players ? [...head, fights, r.players.map(playerRow)] : [...head, fights]
     })
+  }
+  if (abyss) {
+    section.a = abyss.periods.map(
+      (p): AbyssRecordRow => [
+        p.season,
+        p.floor,
+        p.chamber,
+        p.stars,
+        ABYSS_FIGURE_KEYS.map((key) => figureCell(p[key])),
+        p.picked.map((pick) => [toRef(CHARACTERS, pick.key), pick.times]),
+      ],
+    )
   }
   return Object.keys(section).length > 0 ? section : null
 }
@@ -1485,6 +1512,24 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
           ...(players ? { players: players.map(playerOf) } : {}),
         }),
       ),
+    }
+  }
+  if (section.a) {
+    endgame.abyss = {
+      periods: section.a.map(([season, floor, chamber, stars, figures, picked]): GiAbyssRecord => {
+        const period: GiAbyssRecord = {
+          season,
+          floor,
+          chamber,
+          stars,
+          picked: picked.map(([ref, times]) => ({ key: fromRef(CHARACTERS, ref), times })),
+        }
+        ABYSS_FIGURE_KEYS.forEach((key, i) => {
+          const figure = figureOf(figures[i])
+          if (figure) period[key] = figure
+        })
+        return period
+      }),
     }
   }
   return endgame

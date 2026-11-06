@@ -13,6 +13,7 @@ import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import type { AbyssPeriod } from '@gdt/game-data/endgame'
 import {
   ENDGAME_MODES,
+  abyssRecordFor,
   abyssRunFor,
   daysLeft,
   isEndgameMode,
@@ -120,7 +121,10 @@ const seasonCapture = computed(() => {
   const s = season.value
   if (!s) return {}
   if (mode.value === 'abyss') {
-    return { run: abyssRunFor(s as AbyssPeriod, yours.value, server.value) }
+    return {
+      run: abyssRunFor(s as AbyssPeriod, yours.value, server.value),
+      record: abyssRecordFor(s as AbyssPeriod, yours.value),
+    }
   }
   if (mode.value === 'theater') return { run: yours.value.theater.get(s.id) ?? null }
   if (mode.value === 'stygian') return { records: yours.value.stygian.get(s.id) ?? null }

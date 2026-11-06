@@ -123,6 +123,9 @@ export const GOOD_LIMITS = {
    */
   stygianRecords: 200,
   stygianFights: 6,
+  /** Capture 1.17.21's Spiral Abyss record book: periods (24 at 7.2, the last two years) and picks per period (4). */
+  abyssPeriods: 200,
+  abyssPicked: 32,
   /** UTF-16 units of a deck or team name the player typed. */
   playerText: 100,
   /** An artifact has at most 4 substats (and unactivated ones). */

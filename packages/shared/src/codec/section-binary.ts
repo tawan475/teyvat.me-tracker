@@ -1028,9 +1028,14 @@ const comfortPart: TaggedPart = {
 // team is unordered), a byte of figure flags (bit 0 strike, 1 damage, 2 the
 // players' teams follow) and each present figure's value + its character as a
 // KeyRef cell (0: none), then the teams as count + per team its position and
-// members as count + [KeyRef cell, level, constellation + 1]. The keys keep
-// the encoder's order (t, r, x, s): blobs written before `r` hold `t`/`s` only.
-const ENDGAME_KEYS = ['t', 'r', 'x', 's'] as const
+// members as count + [KeyRef cell, level, constellation + 1]; `a` (bit 5,
+// Capture 1.17.21) the Abyss record book as count, then per period season,
+// floor, chamber, stars, a byte of figure flags (bit i = the i-th of the
+// five figures) and each present figure's value + its character as a KeyRef
+// cell (0: none), then the picks as count + [KeyRef cell, times]. The keys
+// keep the encoder's order (t, r, x, s, a): blobs written before `r` hold
+// `t`/`s` only.
+const ENDGAME_KEYS = ['t', 'r', 'x', 's', 'a'] as const
 
 const endgamePart: TaggedPart = {
   write(w, value) {
@@ -1042,7 +1047,8 @@ const endgamePart: TaggedPart = {
         (v.s !== undefined ? 2 : 0) |
         (v.r !== undefined ? 4 : 0) |
         (v.x !== undefined ? 8 : 0) |
-        (withPlayers ? 16 : 0),
+        (withPlayers ? 16 : 0) |
+        (v.a !== undefined ? 32 : 0),
     )
     if (v.t !== undefined) for (const n of row(v.t, 4)) w.uint(uint(n))
     if (v.r !== undefined) for (const n of row(v.r, 2)) w.uint(uint(n))
@@ -1111,10 +1117,32 @@ const endgamePart: TaggedPart = {
         }
       }
     }
+    if (v.a !== undefined) {
+      const periods = array(v.a)
+      w.uint(periods.length)
+      for (const period of periods) {
+        const [season, floor, chamber, stars, figures, picked] = row(period, 6)
+        w.uint(uint(season)).uint(uint(floor)).uint(uint(chamber)).uint(uint(stars))
+        const cells = row(figures, 5).map((f) => (f === 0 ? null : row(f, 2)))
+        w.byte(cells.reduce((flags, f, i) => flags | (f ? 1 << i : 0), 0))
+        for (const figure of cells) {
+          if (!figure) continue
+          w.uint(uint(figure[0]))
+          writeRef(w, figure[1] as KeyRef, 0)
+        }
+        const picks = array(picked)
+        w.uint(picks.length)
+        for (const pick of picks) {
+          const [ref, times] = row(pick, 2)
+          writeRef(w, ref as KeyRef, 0)
+          w.uint(uint(times))
+        }
+      }
+    }
   },
   read(r) {
     const flags = r.byte()
-    if (flags >= 32) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
+    if (flags >= 64) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
     const section: Record<string, unknown> = {}
     if (flags & 1) section.t = [r.uint(), r.uint(), r.uint(), r.uint()]
     if (flags & 4) section.r = [r.uint(), r.uint()]
@@ -1163,6 +1191,18 @@ const endgamePart: TaggedPart = {
           return fight
         })
         return players ? [...head, fights, players] : [...head, fights]
+      })
+    }
+    if (flags & 32) {
+      section.a = Array.from({ length: checkedCount(r) }, () => {
+        const head = [r.uint(), r.uint(), r.uint(), r.uint()]
+        const present = r.byte()
+        if (present >= 32) throw new CorruptDataError(`Unknown period figures ${present}`)
+        const figures = Array.from({ length: 5 }, (_, i) =>
+          present & (1 << i) ? [r.uint(), readRef(r, 0)[0]] : 0,
+        )
+        const picked = Array.from({ length: checkedCount(r) }, () => [readRef(r, 0)[0], r.uint()])
+        return [...head, figures, picked]
       })
     }
     return section

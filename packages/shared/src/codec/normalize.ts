@@ -20,6 +20,7 @@ import type {
   GiMiliastra,
   GiSignIn,
   GiFateStock,
+  GiAbyssRecord,
   GiStygianFight,
   GiStygianMember,
   GiStygianPlayer,
@@ -1380,6 +1381,13 @@ const PICTURE_ID = [1, 99_999_999] as const
 /** The game allows 14; Capture sends up to 64 characters. */
 const NICKNAME_CHARS = 64
 const CHARACTER_LEVEL = [1, 120] as const
+/** The Spiral Abyss record book (Capture 1.17.21): TowerSchedule ids, floors 9-12, chambers 1-3, stars ≤ 36, each with room. */
+const ABYSS_SEASON = [1, 1_000_000] as const
+const ABYSS_FLOOR = [1, 99] as const
+const ABYSS_CHAMBER = [1, 9] as const
+const ABYSS_STARS = [0, 999] as const
+const PICK_TIMES = [0, 1_000_000] as const
+const ABYSS_FIGURES = ['defeats', 'strike', 'damageTaken', 'skills', 'bursts'] as const
 
 /**
  * `gi_endgame` (Capture 1.17.12): the Theater run and the Stygian records,
@@ -1392,7 +1400,53 @@ function toEndgame(raw: unknown): GiEndgame | null {
   if (theater) endgame.theater = theater
   const records = toStygianRecords(isObject(raw.stygian) ? raw.stygian.records : undefined)
   if (records) endgame.stygian = { records }
+  const periods = toAbyssPeriods(isObject(raw.abyss) ? raw.abyss.periods : undefined)
+  if (periods) endgame.abyss = { periods }
   return Object.keys(endgame).length > 0 ? endgame : null
+}
+
+/** The record book's periods in the order sent; one bad period drops the book. */
+function toAbyssPeriods(raw: unknown): GiAbyssRecord[] | null {
+  if (!Array.isArray(raw) || raw.length > GOOD_LIMITS.abyssPeriods) return null
+  const out: GiAbyssRecord[] = []
+  for (const p of raw) {
+    if (
+      !isObject(p) ||
+      !isIntIn(p.season, ...ABYSS_SEASON) ||
+      !isIntIn(p.floor, ...ABYSS_FLOOR) ||
+      !isIntIn(p.chamber, ...ABYSS_CHAMBER) ||
+      !isIntIn(p.stars, ...ABYSS_STARS) ||
+      !Array.isArray(p.picked) ||
+      p.picked.length > GOOD_LIMITS.abyssPicked
+    ) {
+      return null
+    }
+    const period: GiAbyssRecord = {
+      season: p.season,
+      floor: p.floor,
+      chamber: p.chamber,
+      stars: p.stars,
+      picked: [],
+    }
+    for (const name of ABYSS_FIGURES) {
+      const figure = toFigure(p[name])
+      if (figure === null) return null
+      if (figure) period[name] = figure
+    }
+    for (const pick of p.picked) {
+      if (
+        !isObject(pick) ||
+        typeof pick.key !== 'string' ||
+        !GOOD_KEY.test(pick.key) ||
+        !isIntIn(pick.times, ...PICK_TIMES)
+      ) {
+        return null
+      }
+      period.picked.push({ key: pick.key, times: pick.times })
+    }
+    out.push(period)
+  }
+  return out
 }
 
 function toTheaterRun(raw: unknown): GiTheaterRun | null {

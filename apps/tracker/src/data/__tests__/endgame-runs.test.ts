@@ -134,4 +134,23 @@ describe('captured Abyss periods', () => {
     // Abyss figures alone make a capture count.
     expect(capturedEndgame([{ takenAt: 1, endgame: null, abyss: abyss(1, 1) }]).takenAt).toBe(1)
   })
+
+  it('keeps the record book by period, from the newest capture that lists it', () => {
+    const period = (season: number, stars: number) => ({
+      season,
+      floor: 12,
+      chamber: 3,
+      stars,
+      picked: [{ key: 'Mavuika', times: 17 }],
+    })
+    const got = capturedEndgame([
+      { takenAt: 20, endgame: { abyss: { periods: [period(122, 36), period(123, 30)] } } },
+      { takenAt: 10, endgame: { abyss: { periods: [period(123, 36)] } } },
+      { takenAt: 30, endgame: { theater: { season: 31, acts: 1 } } },
+    ])
+    expect([...got.abyssBook.keys()].sort()).toEqual([122, 123])
+    expect(got.abyssBook.get(123)).toEqual({ record: period(123, 30), takenAt: 20 })
+    expect(got.takenAt).toBe(30)
+    expect(capturedEndgame([]).abyssBook.size).toBe(0)
+  })
 })

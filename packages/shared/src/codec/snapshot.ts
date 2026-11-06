@@ -219,6 +219,12 @@ export interface EncodedSnapshot extends ExtraSections {
    */
   pre21ContentHash: string
   /**
+   * The content hash a tracker from before Capture 1.17.21's Spiral Abyss
+   * record book gave this file (`gi_endgame.abyss` left out), so
+   * re-uploading it stays a no-op.
+   */
+  pre22ContentHash: string
+  /**
    * The content hash with the recipes left out of collections2 (equal to
    * `contentHash` without recipes): what a tracker from before Capture
    * 1.5.0's recipes stored such a file as, so re-uploading it stays a no-op.
@@ -520,29 +526,33 @@ export async function completeSnapshot(
   const pre18ContentHash = await asOf(18)
   const pre19ContentHash = await asOf(19)
   const pre20ContentHash = await asOf(20)
-  // Capture 1.17.20's co-op players live inside the endgame: what the extras
-  // section was for trackers that dropped them.
+  // Capture 1.17.20's co-op players and 1.17.21's Abyss record book live
+  // inside the endgame: what the extras section was for trackers that
+  // dropped them (before 1.17.20, both; before 1.17.21, the book).
   const coop = endgame?.stygian?.records.some(
     (r) => r.players !== undefined || r.fights.some((f) => f.players !== undefined),
   )
-  const pre21ContentHash = coop
-    ? (
-        await chain(
-          sections.tasks,
-          sections.collections2,
-          sections.exploration,
-          sections.progress,
-          await optionalSection(
-            'extras',
-            encodeExtras({
-              ...(prepared.good.teapot ? { teapot: prepared.good.teapot } : {}),
-              ...(prepared.good.miliastra ? { miliastra: prepared.good.miliastra } : {}),
-              endgame: withoutCoop(endgame!),
-            }),
-          ),
-        )
-      ).content
-    : contentHash
+  const book = endgame?.abyss !== undefined
+  const hashWithEndgame = async (older: GiEndgame) =>
+    (
+      await chain(
+        sections.tasks,
+        sections.collections2,
+        sections.exploration,
+        sections.progress,
+        await optionalSection(
+          'extras',
+          encodeExtras({
+            ...(prepared.good.teapot ? { teapot: prepared.good.teapot } : {}),
+            ...(prepared.good.miliastra ? { miliastra: prepared.good.miliastra } : {}),
+            endgame: older,
+          }),
+        ),
+      )
+    ).content
+  const pre21ContentHash =
+    coop || book ? await hashWithEndgame(withoutCoop(withoutBook(endgame!))) : contentHash
+  const pre22ContentHash = book ? await hashWithEndgame(withoutBook(endgame!)) : contentHash
   return {
     ...sections,
     artifacts,
@@ -563,7 +573,15 @@ export async function completeSnapshot(
     pre19ContentHash,
     pre20ContentHash,
     pre21ContentHash,
+    pre22ContentHash,
   }
+}
+
+/** The endgame as trackers before Capture 1.17.21's Abyss record book stored it. */
+function withoutBook(endgame: GiEndgame): GiEndgame {
+  if (!endgame.abyss) return endgame
+  const { abyss: _abyss, ...rest } = endgame
+  return rest
 }
 
 /** The endgame as trackers before Capture 1.17.20's co-op players stored it. */

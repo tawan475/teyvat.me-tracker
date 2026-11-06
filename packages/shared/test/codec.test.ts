@@ -2743,3 +2743,102 @@ describe("Teyvat.me Capture 1.17.20's Stygian co-op players", () => {
     }
   })
 })
+
+// ------------------------------------------------------ Capture 1.17.21
+
+describe("Teyvat.me Capture 1.17.21's Spiral Abyss record book", () => {
+  const plain = syntheticEndgame(11)
+  const base = { ...sample, gi_tasks: { welkin: { days: 30 } } }
+  const book = {
+    periods: [
+      {
+        season: 122,
+        floor: 9,
+        chamber: 1,
+        stars: 3,
+        picked: [],
+      },
+      {
+        season: 123,
+        floor: 12,
+        chamber: 3,
+        stars: 36,
+        defeats: { value: 111, by: 'Mavuika' },
+        strike: { value: 6_424_192, by: 'Mavuika' },
+        skills: { value: 85 },
+        bursts: { value: 24, by: 'Columbina' },
+        picked: [
+          { key: 'Xilonen', times: 17 },
+          { key: 'Citlali', times: 17 },
+        ],
+      },
+    ],
+  }
+  const withBook = { ...plain, abyss: book }
+
+  it('round-trips the book, in JSON and in the binary layout', async () => {
+    const { encoded, decoded } = await roundTrip({ ...base, gi_endgame: withBook })
+    expect(decoded.gi_endgame).toEqual(withBook)
+    const rows = JSON.parse(encoded.extras!.json).e.a as unknown[][]
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toEqual([122, 9, 1, 3, [0, 0, 0, 0, 0], []])
+    expect(rows[1]!.slice(0, 4)).toEqual([123, 12, 3, 36])
+    // The five figures in order, 0 where absent; the character a ref (0: none).
+    const figures = rows[1]![4] as unknown[]
+    expect(figures[0]).toEqual([111, expect.anything()])
+    expect(figures[2]).toBe(0)
+    expect(figures[3]).toEqual([85, expect.anything()])
+    expect(rows[1]![5]).toEqual([
+      [expect.anything(), 17],
+      [expect.anything(), 17],
+    ])
+    const value = JSON.parse(
+      JSON.stringify(
+        encodeExtras({ endgame: normalizeGood({ ...base, gi_endgame: withBook }).endgame! }),
+      ),
+    )
+    expect(Object.keys(value.e)).toEqual(['t', 's', 'a'])
+    const blob = encodeSectionBlob('extras', value, false, null)
+    expect(blob.payload[0]).toBe(0x10)
+    const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+    expect(JSON.stringify(back.value)).toBe(JSON.stringify(value))
+    // A book alone makes an endgame.
+    const alone = await roundTrip({ ...base, gi_endgame: { abyss: book } })
+    expect(alone.decoded.gi_endgame).toEqual({ abyss: book })
+  })
+
+  it('hashes as before for the trackers that dropped it', async () => {
+    const catalog = new Catalog()
+    const before = await roundTrip({ ...base, gi_endgame: plain }, catalog)
+    const after = await roundTrip({ ...base, gi_endgame: withBook }, catalog)
+    expect(after.encoded.contentHash).not.toBe(before.encoded.contentHash)
+    expect(after.encoded.pre22ContentHash).toBe(before.encoded.contentHash)
+    // Before the co-op players, the book was unknown too.
+    expect(after.encoded.pre21ContentHash).toBe(before.encoded.pre21ContentHash)
+    expect(after.encoded.pre20ContentHash).toBe(before.encoded.pre20ContentHash)
+    expect(before.encoded.pre22ContentHash).toBe(before.encoded.contentHash)
+  })
+
+  it('drops a bad period with the book and keeps the rest', () => {
+    const read = (patch: object) =>
+      normalizeGood({
+        ...base,
+        gi_endgame: { ...withBook, abyss: { periods: [{ ...book.periods[1]!, ...patch }] } },
+      }).endgame!
+    expect(read({}).abyss!.periods).toHaveLength(1)
+    for (const bad of [
+      { floor: 0 },
+      { chamber: 10 },
+      { stars: -1 },
+      { season: 'x' },
+      { strike: { value: -5 } },
+      { skills: { value: 1, by: 'not a key' } },
+      { picked: [{ key: 'Mavuika', times: 1.5 }] },
+      { picked: Array.from({ length: 33 }, () => ({ key: 'Mavuika', times: 1 })) },
+    ]) {
+      const endgame = read(bad)
+      expect(endgame.abyss).toBeUndefined()
+      expect(endgame.stygian).toEqual(plain.stygian)
+    }
+  })
+})

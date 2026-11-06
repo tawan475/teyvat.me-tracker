@@ -406,6 +406,42 @@ export interface GiEndgame {
   theater?: GiTheaterRun
   /** The Stygian Onslaught's own records, as listed when its menu is opened. */
   stygian?: { records: GiStygianRecord[] }
+  /** The Spiral Abyss's record book, as listed when its Challenge Summary opens (Capture 1.17.21+). */
+  abyss?: GiAbyssBook
+}
+
+export interface GiAbyssBook {
+  /** One per period played, oldest first (the game keeps the last two years). */
+  periods: GiAbyssRecord[]
+}
+
+/** One Spiral Abyss period's record, as the game's Challenge Summary shows it. */
+export interface GiAbyssRecord {
+  /** TowerSchedule id (the period). */
+  season: number
+  /** The deepest descent: floor (9-12) and chamber (1-3). */
+  floor: number
+  chamber: number
+  /** Stars earned that period (36 at a full clear). */
+  stars: number
+  /** Most Defeats. Each figure is absent when the game sent it empty or Capture could not label the message's layout. */
+  defeats?: GiFigure
+  /** Strongest Single Strike. */
+  strike?: GiFigure
+  /** Most Damage Taken. */
+  damageTaken?: GiFigure
+  /** Elemental Skills Unleashed. */
+  skills?: GiFigure
+  /** Elemental Bursts Unleashed. */
+  bursts?: GiFigure
+  /** The characters the game lists as picked that period (the four most used), with how often. */
+  picked: GiAbyssPick[]
+}
+
+export interface GiAbyssPick {
+  /** GOOD character key. */
+  key: string
+  times: number
 }
 
 export interface GiTheaterRun {

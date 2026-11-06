@@ -5,9 +5,10 @@ import { Zap } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import type { EndgameData } from '@/data/endgame'
-import type { CapturedAbyss } from '@/data/endgame-capture'
-import { abyssArt, abyssArtFailed } from '@/lib/assets'
-import { formatDate } from '@/lib/format'
+import type { CapturedAbyss, CapturedAbyssRecord } from '@/data/endgame-capture'
+import { abyssArt, abyssArtFailed, characterIcon } from '@/lib/assets'
+import { formatDate, formatNumber } from '@/lib/format'
+import { characterName } from '@/i18n/game-names'
 import { t } from '@/i18n'
 import EnemyTile from './EnemyTile.vue'
 
@@ -16,7 +17,11 @@ import EnemyTile from './EnemyTile.vue'
  * (Floor 12 first, the one that matters): its Ley Line Disorders and three
  * chambers, each half's enemies with their HP at the chamber's level. With a
  * capture of this period (`run`: gi_tasks.abyss at a login) the header says
- * the account's stars.
+ * the account's stars; with the record book (`record`: gi_endgame.abyss,
+ * Capture 1.17.21, when the Challenge Summary was opened) a card under it
+ * shows the period's record as the game's screen does: the deepest
+ * descent, the stars, the five figures with their characters, the
+ * characters picked most.
  */
 const props = defineProps<{
   season: AbyssPeriod
@@ -25,6 +30,7 @@ const props = defineProps<{
   period: string
   left: number
   run?: CapturedAbyss | null
+  record?: CapturedAbyssRecord | null
 }>()
 defineEmits<{
   /** An enemy to open, at its level, with its HP in this fight (0 unknown; `before`: before the bonus). */
@@ -45,6 +51,46 @@ const yourRun = computed(() =>
       }
     : null,
 )
+/** The period's record, laid out for the card. */
+const yourRecord = computed(() => {
+  if (!props.record) return null
+  const r = props.record.record
+  const figures = (
+    [
+      ['defeats', t('endgame.captured.defeats')],
+      ['strike', t('endgame.share.strike')],
+      ['damageTaken', t('endgame.captured.damageTaken')],
+      ['skills', t('endgame.captured.skills')],
+      ['bursts', t('endgame.captured.bursts')],
+    ] as const
+  ).flatMap(([key, label]) => {
+    const figure = r[key]
+    if (!figure) return []
+    const by = figure.by ? characterName(figure.by) : ''
+    return [
+      {
+        key,
+        label,
+        value: formatNumber(figure.value),
+        by: figure.by ?? '',
+        byName: by,
+        title: `${label}: ${formatNumber(figure.value)}${by ? ` · ${by}` : ''}`,
+      },
+    ]
+  })
+  return {
+    deepest: `${t('endgame.abyss.floor', { n: r.floor })} · ${t('endgame.abyss.chamber', { n: r.chamber })}`,
+    stars: t('endgame.captured.starsN', { n: r.stars }),
+    from: t('endgame.captured.fromCapture', { date: formatDate(props.record.takenAt) }),
+    figures,
+    picked: r.picked.map((p) => ({
+      key: p.key,
+      name: characterName(p.key),
+      times: p.times,
+      title: `${characterName(p.key)} · ×${p.times}`,
+    })),
+  }
+})
 const floorNo = ref(0)
 watch(
   () => props.season.id,
@@ -124,6 +170,76 @@ const chambers = computed(() =>
         :sprite-name="sprite"
         class="px-4 py-3.5 text-sm leading-relaxed text-text-secondary sm:px-6"
       />
+    </section>
+
+    <!-- The period's record from the game's Challenge Summary (Capture 1.17.21). -->
+    <section
+      v-if="yourRecord"
+      class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+      :title="yourRecord.from"
+    >
+      <header
+        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-border-default px-4 py-2.5"
+      >
+        <h3 class="text-xs font-semibold tracking-wide text-text-muted uppercase">
+          {{ $t('endgame.captured.record') }}
+        </h3>
+        <span class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+          <span class="text-text-secondary">{{ $t('endgame.captured.deepest') }}</span>
+          <b class="tabular font-mono">{{ yourRecord.deepest }}</b>
+          <span class="tabular font-mono font-semibold">{{ yourRecord.stars }}</span>
+        </span>
+      </header>
+      <div class="grid min-w-0 gap-x-6 gap-y-3 px-4 py-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <ul v-if="yourRecord.figures.length" class="flex min-w-0 flex-col gap-1.5">
+          <li
+            v-for="g in yourRecord.figures"
+            :key="g.key"
+            class="flex min-w-0 items-center justify-between gap-3 text-sm"
+            :title="g.title"
+          >
+            <span class="truncate text-text-secondary">{{ g.label }}</span>
+            <span class="flex shrink-0 items-center gap-2">
+              <b class="tabular font-mono">{{ g.value }}</b>
+              <img
+                v-if="g.by"
+                :src="characterIcon(g.by)"
+                :alt="g.byName"
+                loading="lazy"
+                class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
+              />
+              <span v-if="g.byName" class="hidden min-w-24 truncate text-text-primary sm:inline">{{
+                g.byName
+              }}</span>
+            </span>
+          </li>
+        </ul>
+        <div v-if="yourRecord.picked.length" class="flex min-w-0 flex-col gap-1.5">
+          <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">{{
+            $t('endgame.captured.picked')
+          }}</span>
+          <ul class="flex flex-wrap gap-2">
+            <li
+              v-for="p in yourRecord.picked"
+              :key="p.key"
+              class="relative size-12 shrink-0"
+              :title="p.title"
+            >
+              <img
+                :src="characterIcon(p.key)"
+                :alt="p.name"
+                loading="lazy"
+                class="size-12 rounded-full border border-border-strong bg-surface-overlay object-cover"
+              />
+              <!-- How often: a count, not a colour. -->
+              <span
+                class="tabular absolute -right-1 -bottom-1 rounded-md border border-border-strong bg-surface-overlay px-1 font-mono text-[10px] font-semibold leading-4"
+                >×{{ p.times }}</span
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <div class="scroll-hide scroll-fade-x -mx-4 min-w-0 overflow-x-auto px-4 sm:mx-0 sm:px-0">

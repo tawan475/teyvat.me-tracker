@@ -29,6 +29,7 @@ import {
   formatFightTime,
   recordTotal,
   type CapturedAbyss,
+  type CapturedAbyssRecord,
   type CapturedEndgame,
   type GiAbyssRun,
 } from './endgame-runs'
@@ -275,6 +276,14 @@ export function abyssRunFor(
   const end = seasonTime(period.end, server) / 1000
   for (const [at, run] of captured.abyss) if (at >= start && at <= end) return run
   return null
+}
+
+/** The account's record of a period from the Spiral Abyss's record book (by TowerSchedule id). */
+export function abyssRecordFor(
+  period: AbyssPeriod,
+  captured: CapturedEndgame,
+): CapturedAbyssRecord | null {
+  return captured.abyssBook.get(period.id) ?? null
 }
 
 /** "★ 27/36": a period's stars as the capture counted them. */

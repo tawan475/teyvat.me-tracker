@@ -1,4 +1,4 @@
-import type { GiEndgame, GiStygianRecord, GiTasks, GiTheaterRun } from '@gdt/shared'
+import type { GiAbyssRecord, GiEndgame, GiStygianRecord, GiTasks, GiTheaterRun } from '@gdt/shared'
 import { formatSeconds } from '@/lib/format'
 
 /**
@@ -33,9 +33,17 @@ export interface CapturedAbyss {
 }
 export type GiAbyssRun = NonNullable<GiTasks['abyss']>
 
+/** A period's record from the Spiral Abyss's record book (gi_endgame.abyss, Capture 1.17.21). */
+export interface CapturedAbyssRecord {
+  record: GiAbyssRecord
+  takenAt: number
+}
+
 export interface CapturedEndgame {
   /** By the period's start (unix seconds, the game's own figure). */
   abyss: ReadonlyMap<number, CapturedAbyss>
+  /** The record book by TowerSchedule id: a period's record comes from the newest capture that lists it. */
+  abyssBook: ReadonlyMap<number, CapturedAbyssRecord>
   /** By RoleCombatSchedule id. */
   theater: ReadonlyMap<number, CapturedTheater>
   /** By LeyLineChallenge schedule id. */
@@ -46,6 +54,7 @@ export interface CapturedEndgame {
 
 export const NO_CAPTURED_ENDGAME: CapturedEndgame = {
   abyss: new Map(),
+  abyssBook: new Map(),
   theater: new Map(),
   stygian: new Map(),
   takenAt: null,
@@ -61,6 +70,7 @@ export interface EndgameSnapshot {
 
 export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): CapturedEndgame {
   const abyss = new Map<number, CapturedAbyss>()
+  const abyssBook = new Map<number, CapturedAbyssRecord>()
   const theater = new Map<number, CapturedTheater>()
   const stygian = new Map<number, CapturedStygian>()
   let takenAt: number | null = null
@@ -74,6 +84,11 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
     if (!e) continue
     takenAt = s.takenAt
     if (e.theater) theater.set(e.theater.season, { run: e.theater, takenAt: s.takenAt })
+    if (e.abyss) {
+      for (const record of e.abyss.periods) {
+        abyssBook.set(record.season, { record, takenAt: s.takenAt })
+      }
+    }
     if (e.stygian) {
       const bySeason = new Map<number, GiStygianRecord[]>()
       for (const r of e.stygian.records) {
@@ -86,7 +101,7 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
       }
     }
   }
-  return takenAt === null ? NO_CAPTURED_ENDGAME : { abyss, theater, stygian, takenAt }
+  return takenAt === null ? NO_CAPTURED_ENDGAME : { abyss, abyssBook, theater, stygian, takenAt }
 }
 
 /** A fight's seconds as the game's record shows them: bare seconds with the unit, "51s" (the language's unit elsewhere). */

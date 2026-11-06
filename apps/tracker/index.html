@@ -94,7 +94,17 @@
       property="og:description"
       content="Track your Genshin Impact account over time: characters, artifacts, materials, wishes and a planner, kept up to date by the Teyvat.me Capture app."
     />
-    <meta name="twitter:card" content="summary" />
+    <!-- The link preview picture lives on gi-cdn (it holds game art, which the repo never does). -->
+    <meta property="og:image" content="https://gi-cdn.ley-courier.workers.dev/og/teyvat-me.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Teyvat.me: play Genshin, the rest tracks itself. A wish history card and an artifact card from the site."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://gi-cdn.ley-courier.workers.dev/og/teyvat-me.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />

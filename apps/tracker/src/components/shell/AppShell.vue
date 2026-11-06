@@ -339,17 +339,34 @@ const footButton =
         <div class="mt-auto">
           <SectionLabel :label="$t('shell.section.system')" :collapsed="narrow" />
           <nav class="space-y-0.5" :aria-label="$t('shell.section.system')">
-            <RouterLink
+            <!-- The theme button sits beside the last link of the section: Settings,
+                 or in the demo (no Settings) Accounts, so it never has a row alone
+                 while a link is there to sit beside (the user's call, 2026-11-06). -->
+            <div
               v-if="!demoMode || session.status === 'signed-in'"
-              :to="{ name: 'home' }"
-              class="flex items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
-              :class="navClass(isActive('home'))"
-              :aria-current="isActive('home') ? 'page' : undefined"
-              :title="narrow ? $t('shell.accounts') : undefined"
+              class="flex"
+              :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'"
             >
-              <LayoutGrid class="size-5 shrink-0" aria-hidden="true" />
-              <span :class="labelClass">{{ $t('shell.accounts') }}</span>
-            </RouterLink>
+              <RouterLink
+                :to="{ name: 'home' }"
+                class="flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
+                :class="navClass(isActive('home'))"
+                :aria-current="isActive('home') ? 'page' : undefined"
+                :title="narrow ? $t('shell.accounts') : undefined"
+              >
+                <LayoutGrid class="size-5 shrink-0" aria-hidden="true" />
+                <span :class="labelClass">{{ $t('shell.accounts') }}</span>
+              </RouterLink>
+              <UiIconButton
+                v-if="demoMode"
+                :label="theme === 'dark' ? $t('shell.lightTheme') : $t('shell.darkTheme')"
+                :class="compact ? 'self-center' : ''"
+                @click="toggleTheme"
+              >
+                <Moon v-if="theme === 'dark'" class="size-5" aria-hidden="true" />
+                <Sun v-else class="size-5" aria-hidden="true" />
+              </UiIconButton>
+            </div>
             <RouterLink
               v-if="!demoMode && session.can('staff.view')"
               :to="{ name: 'staff-overview' }"
@@ -361,7 +378,11 @@ const footButton =
               <ShieldCheck class="size-5 shrink-0" aria-hidden="true" />
               <span :class="labelClass">{{ $t('shell.staff') }}</span>
             </RouterLink>
-            <div class="flex" :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'">
+            <div
+              v-if="!demoMode || session.status !== 'signed-in'"
+              class="flex"
+              :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'"
+            >
               <RouterLink
                 v-if="!demoMode"
                 :to="{ name: 'settings' }"

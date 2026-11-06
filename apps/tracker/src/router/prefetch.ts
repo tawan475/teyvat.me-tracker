@@ -38,7 +38,8 @@ export function installLinkPrefetch(router: Router): void {
   const onIntent = (event: Event) => {
     const link = (event.target as Element | null)?.closest?.('a[href]')
     if (!(link instanceof HTMLAnchorElement) || link.origin !== window.location.origin) return
-    if (!link.pathname.startsWith('/app')) return
+    // The app's pages and the public demo's (the same pages under /demo).
+    if (!link.pathname.startsWith('/app') && !link.pathname.startsWith('/demo')) return
     prefetchRoute(router, link.pathname)
   }
   document.addEventListener('pointerover', onIntent, { passive: true })

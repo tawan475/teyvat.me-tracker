@@ -53,6 +53,6 @@ export const irminsul = new Hono<AppEnv>()
     const owner = await sessionOwner(c, claims)
     const where = configUrl(pageOrigin(c.env, c.req.url), claims.sid)
     return uploadAs(c, owner, await readUpload(c), {
-      uidRequired: `This file has no UID (gi_player.uid), so it can't be matched to an account. Update Irminsul, or choose one account for this PC: ${where}`,
+      uidRequired: `This file has no UID (gi_player.uid), so it can't be matched to an account. Update Teyvat.me Capture, or choose one account for this PC: ${where}`,
     })
   })

@@ -198,7 +198,7 @@ const changeTitle = computed(() =>
         v-if="propertyCount > 0"
         v-model="includeProperties"
         label="Player stats"
-        title="Account stats (world level, stamina, Property IDs) that older Irminsul builds saved as materials. Not items."
+        title="Account stats (world level, stamina, Property IDs) that older capture app builds saved as materials. Not items."
         class="w-full"
       />
     </div>

@@ -10,10 +10,11 @@ import {
 import type { Good } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { characterParts, costChanges, doneCost, spendExp, weaponPart } from '../done'
-import { characterGoalView, weaponGoalView } from '../model'
+import { characterGoalView, inWholeBooks, weaponGoalView } from '../model'
 
 const planner = decodePlanner(plannerJson as unknown as PlannerFile)
-const cache = createRequirementCache(planner)
+// As the Planner costs: character EXP in whole Hero's Wit.
+const cache = inWholeBooks(createRequirementCache(planner), planner)
 const book = planner.expItems.character
 const ore = planner.expItems.weapon
 const craftMora = (key: string, tier: number) =>
@@ -152,8 +153,8 @@ describe('what a Done takes out of the bag', () => {
       MysticEnhancementOre: 2,
       WanderersAdvice: 3,
     })
-    // 17,000 EXP short: three Adventurer's Experience and two Wanderer's Advice.
-    expect(entries(cost.short)).toEqual({ AdventurersExperience: 3, WanderersAdvice: 2 })
+    // 17,000 EXP short: one Hero's Wit (never the smaller books).
+    expect(entries(cost.short)).toEqual({ HerosWit: 1 })
   })
 
   it('counts ore forged from chunks before it is ever in the bag', () => {

@@ -51,6 +51,20 @@ export function stepIndex(grid: readonly LevelStep[], pair: Pair): number {
   return found
 }
 
+/**
+ * The buttons as `pair` really is: a level between two buttons (a capture's
+ * 71) shows on the one below it as 71, not as its 70✦ (picking it still
+ * picks that button's step).
+ */
+export function shownSteps(grid: readonly LevelStep[], pair: Pair): LevelStep[] {
+  const chosen = stepIndex(grid, pair)
+  return grid.map((step, index) =>
+    index === chosen && pair.level !== step.level
+      ? { level: pair.level, ascension: pair.ascension, ascended: false, label: `${pair.level}` }
+      : step,
+  )
+}
+
 /** Whether `a` is past `b`: a higher phase, or the same phase at a higher level. */
 export function pairAbove(a: Pair, b: Pair): boolean {
   return a.ascension > b.ascension || (a.ascension === b.ascension && a.level > b.level)

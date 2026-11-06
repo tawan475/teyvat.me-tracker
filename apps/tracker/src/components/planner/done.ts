@@ -29,7 +29,13 @@ import {
   type Requirement,
 } from '@gdt/game-data/planner-math'
 import type { CharacterCurrent, InventoryChange, WeaponCurrent } from '@gdt/shared'
-import type { CharacterGoalView, WeaponGoalView } from './model'
+import {
+  heroBook,
+  roundedToBooks,
+  wholeBooks,
+  type CharacterGoalView,
+  type WeaponGoalView,
+} from './model'
 
 type Bag = Readonly<Record<string, number>>
 
@@ -111,9 +117,9 @@ export function doneCost(
 
   const books = spendExp(requirement.characterExp, planner.expItems.character, have)
   for (const [key, n] of books.use) add(take, key, n)
-  for (const item of expItemMix(books.short, planner.expItems.character)) {
-    add(short, item.material.key, item.count)
-  }
+  // What is short, as whole Hero's Wit only (model.ts `inWholeBooks`).
+  const hero = heroBook(planner)
+  if (hero && books.short > 0) add(short, hero.material.key, wholeBooks(planner, books.short))
 
   // Ore forged from chunks (when that is on) is used before it ever is in the bag.
   const forge = totals.forge
@@ -172,7 +178,10 @@ export function characterParts(planner: PlannerData, c: CharacterGoalView): Done
     (target.ascension === now.ascension && target.level > now.level)
   ) {
     const to = { level: target.level, ascension: target.ascension, talents: { ...now.talents } }
-    const requirement = characterRequirement(planner, c.key, now, to, { talentCaps: false })
+    const requirement = roundedToBooks(
+      planner,
+      characterRequirement(planner, c.key, now, to, { talentCaps: false }),
+    )
     if (requirement && !isDone(requirement)) {
       parts.push({
         id: `${c.id}|level`,
@@ -187,7 +196,10 @@ export function characterParts(planner: PlannerData, c: CharacterGoalView): Done
     const talents = { ...now.talents }
     for (const t of TALENTS) talents[t] = Math.max(now.talents[t], target.talents[t])
     const to = { level: now.level, ascension: now.ascension, talents }
-    const requirement = characterRequirement(planner, c.key, now, to, { talentCaps: false })
+    const requirement = roundedToBooks(
+      planner,
+      characterRequirement(planner, c.key, now, to, { talentCaps: false }),
+    )
     if (requirement && !isDone(requirement)) {
       parts.push({
         id: `${c.id}|talents`,

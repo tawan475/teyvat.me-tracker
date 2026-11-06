@@ -45,3 +45,19 @@ describe('the cost legend', () => {
     expect(cells).toEqual([])
   })
 })
+
+describe('character EXP in the cost', () => {
+  it("is whole Hero's Wit only, every book held counting as Hero's Wit", () => {
+    const cells = costCells({
+      planner,
+      // 4,890,000 EXP: 244.5 Hero's Wit.
+      requirements: [requirement({}, { characterExp: 4_890_000 })],
+      others: [],
+      inventory: { HerosWit: 10, AdventurersExperience: 9, WanderersAdvice: 7 },
+      options: {},
+    })
+    expect(cells.map((c) => c.key)).toEqual(['HerosWit'])
+    // 200,000 + 45,000 + 7,000 EXP held = 12 Hero's Wit.
+    expect(cells[0]).toMatchObject({ count: 245, have: 12, status: 'short' })
+  })
+})

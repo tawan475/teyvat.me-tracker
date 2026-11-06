@@ -55,7 +55,7 @@ const rows = computed(() =>
     inventory: props.inventory,
     options: props.options,
   }).map((cell) => {
-    const have = props.inventory[cell.key] ?? 0
+    const have = cell.have ?? props.inventory[cell.key] ?? 0
     return {
       ...cell,
       have,

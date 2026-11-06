@@ -6,6 +6,7 @@ import {
   clampTalent,
   goalAtLeast,
   levelGrid,
+  shownSteps,
   stepIndex,
   talentGap,
   weaponGoalAtLeast,
@@ -113,5 +114,18 @@ describe('talents and ascension', () => {
     expect(clampTalent(11)).toBe(10)
     expect(clampTalent(7.6)).toBe(7)
     expect(clampTalent(Number.NaN)).toBe(1)
+  })
+})
+
+describe('the now grid', () => {
+  it('shows a level between two buttons as it is (71, not 70✦)', () => {
+    const grid = levelGrid(huTao)
+    const shown = shownSteps(grid, { level: 71, ascension: 5 })
+    const at = stepIndex(grid, { level: 71, ascension: 5 })
+    expect(grid[at]!.label).toBe('70✦')
+    expect(shown[at]).toMatchObject({ level: 71, ascension: 5, label: '71', ascended: false })
+    // Only that button changes; a level on a button shows as the button.
+    expect(shown.filter((s, i) => s !== grid[i])).toHaveLength(1)
+    expect(shownSteps(grid, { level: 70, ascension: 5 })).toEqual(grid)
   })
 })

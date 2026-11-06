@@ -300,7 +300,15 @@ const capturedText = computed(() => {
   if (!ch) return ''
   if (!ch.owned) return ch.custom ? t('planner.card.custom') : t('planner.editor.notOwned')
   const s = ch.captured
-  return `${levelLabel(props.planner, 'character', ch.key, s.level, s.ascension)} · ${s.talents.auto}/${s.talents.skill}/${s.talents.burst}`
+  const level = levelLabel(props.planner, 'character', ch.key, s.level, s.ascension)
+  const talents = `${s.talents.auto}/${s.talents.skill}/${s.talents.burst}`
+  // The EXP into the level, as the Characters page shows it (the costs count from it).
+  const need = props.planner.characterExp[s.level - 1]
+  const exp =
+    s.exp && need
+      ? ` · ${t('game.expProgress', { exp: formatCompact(s.exp), need: formatCompact(need) })}`
+      : ''
+  return `${level}${exp} · ${talents}`
 })
 const levelEdited = computed(() => {
   const ch = c.value

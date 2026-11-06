@@ -10,6 +10,7 @@ import { materialName } from '@/utils/materials'
 import type { PlannerData, PlannerMaterial } from '@gdt/game-data'
 import { goalStatus, type StockStatus } from '@gdt/game-data/planner-goals'
 import {
+  expHeld,
   expItemMix,
   passiveDiscount,
   type PlanGoal,
@@ -21,7 +22,7 @@ import { formatNumber } from '@/lib/format'
 import { materialRarity } from '@/utils/materials'
 import { t } from '@/i18n'
 import { STOCK_MEANING } from './farm-format'
-import { characterName, mergeRequirements } from './model'
+import { characterName, heroBook, mergeRequirements, wholeBooks } from './model'
 
 const KIND_ORDER = [
   'gem',
@@ -45,6 +46,8 @@ export interface CostCell {
   count: number
   status: StockStatus
   title: string
+  /** What the bag holds of it, when that is not the bag's count (EXP: every book, as Hero's Wit). */
+  have?: number
 }
 
 export interface CostInput {
@@ -91,8 +94,17 @@ export function costCells(input: CostInput): CostCell[] {
   const list = materials.map(({ material, count }) =>
     cell(material, count, status.items.get(material.key) ?? 'all'),
   )
-  for (const item of expItemMix(merged.characterExp, planner.expItems.character)) {
-    list.push(cell(item.material, item.count, status.characterExp ?? 'all'))
+  // Character EXP as whole Hero's Wit only (inWholeBooks); every book held counts, as Hero's Wit.
+  const book = heroBook(planner)
+  if (book && merged.characterExp > 0) {
+    list.push({
+      ...cell(
+        book.material,
+        wholeBooks(planner, merged.characterExp),
+        status.characterExp ?? 'all',
+      ),
+      have: Math.floor(expHeld(planner.expItems.character, inventory) / book.exp),
+    })
   }
   for (const item of expItemMix(merged.weaponExp, planner.expItems.weapon)) {
     list.push(cell(item.material, item.count, status.weaponExp ?? 'all'))

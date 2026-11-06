@@ -739,6 +739,58 @@ export function entryInputs(
   return list
 }
 
+/** Mora for `exp` character EXP points (planner-math's rounding: up, after 3 decimals). */
+const expMora = (exp: number, rate: number) => Math.ceil(Math.round(exp * rate * 1000) / 1000)
+
+/** The largest character EXP book (Hero's Wit), null when the data has none. */
+export function heroBook(planner: PlannerData) {
+  return planner.expItems.character.at(-1) ?? null
+}
+
+/** Character EXP points as whole largest books (Hero's Wit), rounded up. */
+export function wholeBooks(planner: PlannerData, exp: number): number {
+  const book = heroBook(planner)
+  return book && exp > 0 ? Math.ceil(exp / book.exp) : 0
+}
+
+/**
+ * `requirement` with its character EXP rounded up to whole Hero's Wit and
+ * the Mora for those books (user's rule, 2026-11-07: the Planner never
+ * lists Adventurer's Experience or Wanderer's Advice for a remainder).
+ */
+export function roundedToBooks<R extends Requirement | null>(
+  planner: PlannerData,
+  requirement: R,
+): R {
+  const book = heroBook(planner)
+  if (!book || !requirement || requirement.characterExp % book.exp === 0) return requirement
+  const rate = planner.moraPerExp.character
+  const exp = wholeBooks(planner, requirement.characterExp) * book.exp
+  const mora = requirement.mora - expMora(requirement.characterExp, rate) + expMora(exp, rate)
+  return { ...requirement, characterExp: exp, mora }
+}
+
+/**
+ * The requirement cache with each character goal's EXP in whole Hero's Wit
+ * (`roundedToBooks`). Each requirement maps to one rounded object.
+ */
+export function inWholeBooks(cache: RequirementCache, planner: PlannerData): RequirementCache {
+  const rounded = new WeakMap<Requirement, Requirement>()
+  const round = (requirement: Requirement | null) => {
+    if (!requirement) return requirement
+    let out = rounded.get(requirement)
+    if (!out) {
+      out = roundedToBooks(planner, requirement)
+      rounded.set(requirement, out)
+    }
+    return out
+  }
+  return {
+    character: (key, current, target) => round(cache.character(key, current, target)),
+    weapon: (key, current, target) => cache.weapon(key, current, target),
+  }
+}
+
 /**
  * The requirement cache with ascension gemstones left out of every cost (the
  * Planner setting "Gemstones" off). Each requirement maps to one stripped

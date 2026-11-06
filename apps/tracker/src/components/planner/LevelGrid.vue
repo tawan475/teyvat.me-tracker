@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AscensionPhase } from '@gdt/game-data'
 import { computed, useTemplateRef } from 'vue'
-import { levelGrid, pairAbove, stepIndex, type LevelStep } from './level-grid'
+import { levelGrid, pairAbove, shownSteps, stepIndex, type LevelStep } from './level-grid'
 
 /**
  * One-click level buttons (level-grid.ts): 1, 20, 20✦ … 90, a level and
@@ -30,6 +30,10 @@ const chosen = computed(() =>
   stepIndex(steps.value, { level: props.level, ascension: props.ascension }),
 )
 const start = computed(() => (props.from ? stepIndex(steps.value, props.from) : -1))
+/** The chosen button shows the level as it is (a capture's 71, not 70✦). */
+const buttons = computed(() =>
+  shownSteps(steps.value, { level: props.level, ascension: props.ascension }),
+)
 
 const floor = computed(() => (props.min ? stepIndex(steps.value, props.min) : 0))
 const blocked = (index: number) => index < floor.value
@@ -77,8 +81,8 @@ function onKey(event: KeyboardEvent, index: number) {
     class="grid grid-cols-7 gap-1 rounded-lg bg-surface-sunken p-1"
   >
     <button
-      v-for="(step, index) in steps"
-      :key="`${step.level}/${step.ascension}`"
+      v-for="(step, index) in buttons"
+      :key="index"
       type="button"
       role="radio"
       :aria-checked="index === chosen"

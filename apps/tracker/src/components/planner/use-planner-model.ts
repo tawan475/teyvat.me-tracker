@@ -22,7 +22,7 @@ import { withCustomCharacters } from './custom-character'
 import { setCustomProfiles } from './custom-registry'
 import { withCustomWeapons } from './custom-weapon'
 import { keepUnchanged } from './keep-unchanged'
-import { buildBoard, withoutGems, type Board } from './model'
+import { buildBoard, inWholeBooks, withoutGems, type Board } from './model'
 import { usePlannerState } from './use-planner-state'
 import { usePlannerTargets } from './use-planner-targets'
 import { usePlannerTasks } from './use-planner-tasks'
@@ -223,8 +223,9 @@ export function usePlannerModel(
   }))
 
   // One per planner data (new only when a custom character changes): each goal's cost once per state.
+  // Character EXP in whole Hero's Wit (model.ts `inWholeBooks`).
   const fullRequirements = computed(() =>
-    planner.value ? createRequirementCache(planner.value) : null,
+    planner.value ? inWholeBooks(createRequirementCache(planner.value), planner.value) : null,
   )
   /** Without gemstones when the setting says so (bosses then farm only their boss materials). */
   const requirementCache = computed(() => {

@@ -179,6 +179,61 @@ export function familyName(family: MaterialFamily): string {
 
 // ------------------------------------------------------------ replace
 
+/** A name as it is compared: case, spaces and symbols ignored. */
+const nameForm = (name: string) =>
+  name
+    .normalize('NFKC')
+    .toLocaleLowerCase('en')
+    .replace(/[^\p{L}\p{N}]+/gu, '')
+
+/**
+ * The released character a custom one turned out to be, or null: the one
+ * real character whose name is the custom one's (its GOOD key, or the name
+ * `shownName` gives it) with the same rarity, element and weapon type.
+ */
+export function releasedCharacter(
+  planner: PlannerData,
+  custom: CustomCharacter,
+  shownName: (key: string) => string = () => '',
+): string | null {
+  const name = nameForm(custom.name)
+  if (!name) return null
+  let found: string | null = null
+  for (const c of planner.characters.values()) {
+    if (isCustomKey(c.key)) continue
+    if (c.rarity !== custom.rarity || c.element !== custom.element) continue
+    if (c.weapon !== custom.weapon) continue
+    if (nameForm(c.key) !== name && nameForm(shownName(c.key)) !== name) continue
+    if (found) return null // Two alike: not sure which.
+    found = c.key
+  }
+  return found
+}
+
+/**
+ * The custom goals to swap for the real character now (user's rule: when
+ * the account owns it, no click): each custom character whose released one
+ * (`releasedCharacter`) the capture has (`owned`) and that is no goal yet
+ * (`taken`), one custom goal per real character.
+ */
+export function releasedSwaps(
+  planner: PlannerData,
+  customs: Iterable<readonly [key: string, custom: CustomCharacter]>,
+  owned: ReadonlySet<string>,
+  taken: ReadonlySet<string>,
+  shownName?: (key: string) => string,
+): { key: string; real: string }[] {
+  const swaps: { key: string; real: string }[] = []
+  const claimed = new Set(taken)
+  for (const [key, custom] of customs) {
+    const real = releasedCharacter(planner, custom, shownName)
+    if (!real || !owned.has(real) || claimed.has(real)) continue
+    claimed.add(real)
+    swaps.push({ key, real })
+  }
+  return swaps
+}
+
 /** What a custom character stops being once it is a real one: the profile goes, the goal stays. */
 export function realTarget(target: CustomTarget): Omit<CustomTarget, 'custom'> {
   const { custom: _, ...rest } = target

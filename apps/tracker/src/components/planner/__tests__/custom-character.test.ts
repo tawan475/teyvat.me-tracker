@@ -15,6 +15,8 @@ import {
   gemFamily,
   isCustomKey,
   newCustomKey,
+  releasedCharacter,
+  releasedSwaps,
   replaceCustom,
   withCustomCharacters,
 } from '../custom-character'
@@ -155,5 +157,86 @@ describe('custom characters', () => {
       current: [{ kind: 'character', key: 'Arlecchino', current: now }],
     })
     expect(replaceCustom('cnova0001', target, 'Arlecchino', [], null).current).toEqual([])
+  })
+})
+
+describe('released custom characters', () => {
+  /** A pre-release preset of Valeriy (some materials not known yet). */
+  const valeriy: CustomCharacter = {
+    name: 'Valeriy',
+    rarity: 4,
+    element: 'Electro',
+    weapon: 'sword',
+    book: 'TeachingsOfGlory',
+  }
+
+  it('are found by name, rarity, element and weapon type', () => {
+    expect(releasedCharacter(planner, valeriy)).toBe('Valeriy')
+    expect(releasedCharacter(planner, { ...valeriy, name: '  valeriy ' })).toBe('Valeriy')
+    expect(releasedCharacter(planner, { ...likeHuTao, name: 'Hu Tao' })).toBe('HuTao')
+    expect(releasedCharacter(planner, { ...valeriy, element: 'Cryo' })).toBeNull()
+    expect(releasedCharacter(planner, { ...valeriy, rarity: 5 })).toBeNull()
+    expect(releasedCharacter(planner, { ...valeriy, weapon: 'bow' })).toBeNull()
+    expect(releasedCharacter(planner, likeHuTao)).toBeNull()
+  })
+
+  it('are found by the name the site shows too', () => {
+    const shown = (key: string) => (key === 'Valeriy' ? 'Валерий' : key)
+    expect(releasedCharacter(planner, { ...valeriy, name: 'Валерий' }, shown)).toBe('Valeriy')
+    expect(releasedCharacter(planner, { ...valeriy, name: 'Валерий' })).toBeNull()
+  })
+
+  it('swap for the real one once the capture has it, unless it is a goal already', () => {
+    const customs = [['cvaleriy001', valeriy] as const]
+    const owned = new Set(['Valeriy'])
+    expect(releasedSwaps(planner, customs, owned, new Set())).toEqual([
+      { key: 'cvaleriy001', real: 'Valeriy' },
+    ])
+    expect(releasedSwaps(planner, customs, new Set(), new Set())).toEqual([])
+    expect(releasedSwaps(planner, customs, owned, new Set(['Valeriy']))).toEqual([])
+    const twice = [...customs, ['cvaleriy002', valeriy] as const]
+    expect(releasedSwaps(planner, twice, owned, new Set())).toHaveLength(1)
+  })
+
+  it('start from the capture once swapped (was Lv. 1 while custom)', () => {
+    const good = {
+      format: 'GOOD',
+      version: 2,
+      source: 'test',
+      characters: [
+        {
+          key: 'Valeriy',
+          level: 71,
+          constellation: 0,
+          ascension: 5,
+          talent: { auto: 1, skill: 6, burst: 6 },
+        },
+      ],
+      weapons: [],
+      artifacts: [],
+      materials: {},
+    } as unknown as Good
+    const goal = { ...max, talents: { auto: 9, skill: 9, burst: 9 }, active: true }
+    const p = withCustomCharacters(planner, [['cvaleriy001', valeriy]])
+    const before = buildBoard(
+      p,
+      good,
+      {},
+      [
+        { kind: 'custom', key: 'cvaleriy001', target: { ...goal, custom: valeriy } },
+      ] as PlannerTarget[],
+      createRequirementCache(p),
+    )
+    expect(before.characterGoals.get('cvaleriy001')?.current.level).toBe(1)
+    const [swap] = releasedSwaps(p, [['cvaleriy001', valeriy]], new Set(['Valeriy']), new Set())
+    const r = replaceCustom('cvaleriy001', { ...goal, custom: valeriy }, swap!.real, [], null)
+    const after = buildBoard(
+      planner,
+      good,
+      {},
+      r.upsert as PlannerTarget[],
+      createRequirementCache(planner),
+    )
+    expect(after.characterGoals.get('Valeriy')?.current).toMatchObject({ level: 71, ascension: 5 })
   })
 })

@@ -66,7 +66,7 @@ import {
   reprioritize,
 } from '@/components/planner/allocation'
 import { allocatedTotals } from '@/components/planner/allocated-totals'
-import { newCustomKey, replaceCustom } from '@/components/planner/custom-character'
+import { newCustomKey, releasedSwaps, replaceCustom } from '@/components/planner/custom-character'
 import { craftChanges, rowText, type CraftRow } from '@/components/planner/crafting'
 import { costChanges, doneCost, type DoneCost, type DonePart } from '@/components/planner/done'
 import { READINESS } from '@/components/planner/farm-format'
@@ -1365,10 +1365,15 @@ function removeEntry() {
   void removeGoals(entryRefs(e), t('planner.view.removed', { name: e.name }))
 }
 
-async function replaceWith(real: string) {
+function replaceWith(real: string) {
   const e = editorEntry.value
-  const c = e?.character
-  if (!e || !c?.custom) return
+  if (e) void replaceEntry(e, real, true)
+}
+
+/** Custom character goal `e` becomes real character `real` (custom-character.ts `replaceCustom`). */
+async function replaceEntry(e: NonNullable<typeof editorEntry.value>, real: string, open: boolean) {
+  const c = e.character
+  if (!c?.custom) return
   const stored = (store.targets.value ?? []).find((t) => t.kind === 'custom' && t.key === c.key)
   if (stored?.kind !== 'custom') return
   const override = (state.overrides.value?.get(c.id) as CharacterCurrent | undefined) ?? null
@@ -1385,9 +1390,44 @@ async function replaceWith(real: string) {
   } catch {
     return // Reported by the stores.
   }
-  openEditor(characterGoalId(real))
+  // The editor follows the goal when it was open on it.
+  if (open || editorEntry.value?.id === e.id) openEditor(characterGoalId(real))
   feedback.toast({ tone: 'success', title: `${c.name} → ${characterName(real)}` })
 }
+
+/**
+ * A custom character that came out and that the capture has becomes the
+ * real one by itself (user's rule, 2026-11-07: a pre-release Valeriy stayed
+ * at Lv. 1 beside the captured one): `releasedSwaps`, once per goal per
+ * page; never for viewers, Inspect or the demo.
+ */
+const swapsTried = new Set<string>()
+const releasedNow = computed(() => {
+  if (presenceReadOnly || demo) return []
+  const p = basePlanner.value
+  const g = good.value
+  if (!p || !g || !board.value || !store.targets.value || !state.overrides.value) return []
+  const customs = entries.value.flatMap((e) =>
+    e.character?.custom ? [[e.character.key, e.character.custom] as const] : [],
+  )
+  if (customs.length === 0) return []
+  const owned = new Set(g.characters.map((c) => c.key))
+  return releasedSwaps(p, customs, owned, takenCharacters.value, characterName).filter(
+    (s) => !swapsTried.has(s.key),
+  )
+})
+watch(
+  releasedNow,
+  async (swaps) => {
+    for (const { key, real } of swaps) {
+      if (swapsTried.has(key)) continue
+      swapsTried.add(key)
+      const e = entries.value.find((x) => x.character?.key === key)
+      if (e) await replaceEntry(e, real, false)
+    }
+  },
+  { immediate: true },
+)
 
 // ------------------------------------------------------------- add, import
 

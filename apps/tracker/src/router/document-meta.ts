@@ -42,8 +42,12 @@ export function documentMeta(route: RouteLocationNormalizedLoaded): DocumentMeta
   return { title, description, canonical }
 }
 
-/** The signed-in user's account the page is about ("a/:accountId"), by its shown name. */
+/**
+ * The signed-in user's account the page is about ("a/:accountId"), by its
+ * shown name; on the public demo's pages, "Demo".
+ */
 function accountName(route: RouteLocationNormalizedLoaded): string | null {
+  if (route.meta.demo) return t('demo.account')
   const id = Number(route.params.accountId)
   if (!Number.isInteger(id) || id <= 0) return null
   const accounts = useAccounts()

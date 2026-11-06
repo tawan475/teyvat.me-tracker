@@ -17,7 +17,7 @@ const session = useSession()
           <span class="e-kind">{{ $t('landing.hero.title') }}</span>
         </h1>
         <p class="lead">{{ $t('landing.hero.lead') }}</p>
-        <!-- The tracker first, the capture app second; a "Try the demo" link joins this row. -->
+        <!-- The tracker first, then the demo (no sign-up), the capture app last. -->
         <div class="acts">
           <RouterLink
             v-if="session.status === 'signed-in'"
@@ -28,6 +28,9 @@ const session = useSession()
           </RouterLink>
           <RouterLink v-else :to="{ name: 'register' }" class="btn btn-p">
             {{ $t('landing.hero.track') }}
+          </RouterLink>
+          <RouterLink :to="{ name: 'demo-overview' }" class="btn btn-g" :title="$t('demo.tryHint')">
+            {{ $t('demo.try') }}
           </RouterLink>
           <a class="btn btn-g" :href="DOWNLOAD_URL">
             <Download class="ic" aria-hidden="true" />{{ $t('landing.hero.download') }}

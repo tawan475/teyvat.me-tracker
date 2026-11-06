@@ -48,7 +48,9 @@ function onHeader(event: MouseEvent) {
         v-if="title || $slots.actions || $slots.header"
         class="flex min-h-[calc(3.75rem+1px)] flex-wrap items-center justify-between gap-3 px-5 py-3.5"
         :class="[
-          (!collapsible || open) && !(sticky && !$slots.toolbar)
+          (!collapsible || open) &&
+          !(sticky && !$slots.toolbar) &&
+          ($slots.default || $slots.toolbar)
             ? 'border-b border-border-default'
             : '',
           collapsible ? 'cursor-pointer' : '',
@@ -104,7 +106,8 @@ function onHeader(event: MouseEvent) {
         <slot name="toolbar" />
       </div>
     </div>
-    <div v-show="!collapsible || open" :class="flush ? '' : 'p-5'">
+    <!-- No body given (a header-only panel): no empty padded box under the header. -->
+    <div v-if="$slots.default" v-show="!collapsible || open" :class="flush ? '' : 'p-5'">
       <slot />
     </div>
   </section>

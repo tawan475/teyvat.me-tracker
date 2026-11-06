@@ -241,5 +241,10 @@
     "app": "安装和服务器状态",
     "danger": "危险操作",
     "dangerUser": "删除你的用户"
+  },
+  "support": {
+    "title": "支持 Teyvat.me",
+    "body": "Teyvat.me 免费使用，由一个人维护。如果它对你有帮助，可以在 Ko-fi 上帮忙分担服务器费用。",
+    "button": "在 Ko-fi 上支持"
   }
 }

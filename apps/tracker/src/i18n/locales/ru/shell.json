@@ -191,5 +191,6 @@
     "developers": "Для разработчиков: формат экспорта Leyline и API загрузки Teyvat.me.",
     "leyline": "Формат Leyline, который экспортирует Teyvat.me Capture: GOOD плюс всё остальное в вашем аккаунте Genshin Impact, и API загрузки Teyvat.me.",
     "endgame": "Витая Бездна, Театр «Воображариум» и Мрачный натиск: враги каждого сезона и ваши рекорды."
-  }
+  },
+  "support": "Поддержать Teyvat.me на Ko-fi"
 }

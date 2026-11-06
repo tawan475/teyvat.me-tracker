@@ -241,5 +241,10 @@
     "app": "Kurulum ve sunucu durumu",
     "danger": "Tehlikeli bölge",
     "dangerUser": "Kullanıcını sil"
+  },
+  "support": {
+    "title": "Teyvat.me'yi destekle",
+    "body": "Teyvat.me ücretsizdir ve tek bir kişi tarafından yürütülür. İşine yarıyorsa Ko-fi'de sunucu masraflarına yardım edebilirsin.",
+    "button": "Ko-fi'de destekle"
   }
 }

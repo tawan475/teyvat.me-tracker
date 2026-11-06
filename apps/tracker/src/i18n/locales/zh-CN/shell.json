@@ -191,5 +191,6 @@
     "developers": "面向开发者：Leyline 导出格式与 Teyvat.me 上传 API。",
     "leyline": "Leyline 格式是 Teyvat.me Capture 的导出格式：GOOD 加上你原神账号中的其余一切，另附 Teyvat.me 上传 API。",
     "endgame": "深境螺旋、幻想真境剧诗和幽境危战：每期的敌人和你自己的记录。"
-  }
+  },
+  "support": "在 Ko-fi 上支持 Teyvat.me"
 }

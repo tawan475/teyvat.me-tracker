@@ -241,5 +241,10 @@
     "app": "Install and server status",
     "danger": "Danger zone",
     "dangerUser": "Delete your user"
+  },
+  "support": {
+    "title": "Support Teyvat.me",
+    "body": "Teyvat.me is free and run by one person. If it helps you, you can help pay for the servers on Ko-fi.",
+    "button": "Support on Ko-fi"
   }
 }

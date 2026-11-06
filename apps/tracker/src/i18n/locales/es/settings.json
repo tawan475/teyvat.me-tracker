@@ -241,5 +241,10 @@
     "app": "Instalación y estado del servidor",
     "danger": "Zona de peligro",
     "dangerUser": "Eliminar tu usuario"
+  },
+  "support": {
+    "title": "Apoya a Teyvat.me",
+    "body": "Teyvat.me es gratis y lo mantiene una sola persona. Si te resulta útil, puedes ayudar a pagar los servidores en Ko-fi.",
+    "button": "Apoyar en Ko-fi"
   }
 }

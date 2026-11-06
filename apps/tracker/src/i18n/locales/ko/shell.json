@@ -191,5 +191,6 @@
     "developers": "개발자용: Leyline 내보내기 형식과 Teyvat.me 업로드 API.",
     "leyline": "Teyvat.me Capture가 내보내는 Leyline 형식: GOOD에 원신 계정의 나머지 모든 정보를 더한 것, 그리고 Teyvat.me 업로드 API.",
     "endgame": "나선 비경, 현실 속 환상극, 지맥 제압전: 시즌별 적과 나의 기록."
-  }
+  },
+  "support": "Ko-fi에서 Teyvat.me 후원하기"
 }

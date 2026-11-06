@@ -241,5 +241,10 @@
     "app": "Instalasi dan status server",
     "danger": "Zona bahaya",
     "dangerUser": "Hapus penggunamu"
+  },
+  "support": {
+    "title": "Dukung Teyvat.me",
+    "body": "Teyvat.me gratis dan dikelola satu orang. Jika bermanfaat, kamu bisa membantu biaya server di Ko-fi.",
+    "button": "Dukung di Ko-fi"
   }
 }

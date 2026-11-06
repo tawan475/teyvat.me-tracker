@@ -241,5 +241,10 @@
     "app": "Cài đặt và trạng thái máy chủ",
     "danger": "Vùng nguy hiểm",
     "dangerUser": "Xóa người dùng của bạn"
+  },
+  "support": {
+    "title": "Ủng hộ Teyvat.me",
+    "body": "Teyvat.me miễn phí và do một người duy trì. Nếu thấy hữu ích, bạn có thể góp phí máy chủ trên Ko-fi.",
+    "button": "Ủng hộ trên Ko-fi"
   }
 }

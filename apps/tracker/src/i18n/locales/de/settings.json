@@ -241,5 +241,10 @@
     "app": "Installation und Serverstatus",
     "danger": "Gefahrenbereich",
     "dangerUser": "Deinen Benutzer löschen"
+  },
+  "support": {
+    "title": "Teyvat.me unterstützen",
+    "body": "Teyvat.me ist kostenlos und wird von einer Person betrieben. Wenn es dir hilft, kannst du auf Ko-fi bei den Serverkosten helfen.",
+    "button": "Auf Ko-fi unterstützen"
   }
 }

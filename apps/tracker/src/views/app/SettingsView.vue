@@ -7,6 +7,7 @@ import DevicesSummary from '@/components/settings/DevicesSummary.vue'
 import PasswordPanel from '@/components/settings/PasswordPanel.vue'
 import ProfilePanel from '@/components/settings/ProfilePanel.vue'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
+import SupportPanel from '@/components/settings/SupportPanel.vue'
 import UserImportKeyPanel from '@/components/settings/UserImportKeyPanel.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
@@ -42,6 +43,7 @@ import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
       :icon="AppWindow"
     >
       <AppPanel class="col-span-full" />
+      <SupportPanel class="col-span-full" />
     </SettingsSection>
     <SettingsSection
       :label="$t('settings.sections.danger')"

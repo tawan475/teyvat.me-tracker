@@ -241,5 +241,10 @@
     "app": "설치 및 서버 상태",
     "danger": "위험 구역",
     "dangerUser": "사용자 삭제"
+  },
+  "support": {
+    "title": "Teyvat.me 후원",
+    "body": "Teyvat.me는 무료이며 한 사람이 운영합니다. 도움이 되었다면 Ko-fi에서 서버 비용을 보태 주세요.",
+    "button": "Ko-fi에서 후원하기"
   }
 }

@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Golpe mais forte",
-    "damage": "Maior dano"
+    "damage": "Maior dano",
+    "noRecord": "Sem recorde"
+  },
+  "share": {
+    "title": "Compartilhar recorde",
+    "bestRecord": "Melhor Recorde",
+    "battlefield": "Arena {n}",
+    "strike": "Ataque mais forte",
+    "damage": "Maior Dano total",
+    "battleTime": "Tempo de batalha",
+    "fastest": "Mais rápido"
   }
 }

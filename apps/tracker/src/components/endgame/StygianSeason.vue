@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
-import { Check, ExternalLink, Minus, User, Users } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
+import { Check, ExternalLink, Minus, Share2, User, Users } from 'lucide-vue-next'
+import type { GiStygianRecord } from '@gdt/shared'
 import type { EndgameText, StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
@@ -98,6 +99,7 @@ const yourRecords = computed(() => {
     const total = recordTotal(r)
     return {
       key: `${r.coop ? 'c' : 's'}-${r.difficulty}-${r.at}`,
+      record: r,
       coop: r.coop,
       label: stygianDifficultyName(r.difficulty, text.value),
       level: row?.level ?? 0,
@@ -136,6 +138,29 @@ const yourRecords = computed(() => {
     }
   })
 })
+
+/**
+ * Solo and co-op side by side whenever there is any record: a kind without
+ * one this season gets an empty "No record" card in its place (the grid
+ * stretches it to the other's height; the user's ask, 2026-11-06).
+ */
+const recordSlots = computed(() => {
+  if (!yourRecords.value.length) return []
+  const kinds = [false, true].map((coop) => {
+    const own = yourRecords.value.filter((r) => r.coop === coop)
+    return own.length ? own : [{ key: coop ? 'c-none' : 's-none', coop, empty: true as const }]
+  })
+  return kinds.flat()
+})
+
+/** The record whose share card is open (the dialog loads on first use). */
+const StygianShareModal = defineAsyncComponent(() => import('./StygianShareModal.vue'))
+const sharing = shallowRef<GiStygianRecord | null>(null)
+const shareOpened = ref(false)
+function share(record: GiStygianRecord) {
+  shareOpened.value = true
+  sharing.value = record
+}
 
 const bosses = computed(() => {
   const level = chosen.value?.level ?? 0
@@ -209,103 +234,125 @@ const bosses = computed(() => {
       </button>
     </div>
 
-    <section v-if="yourRecords.length" class="flex flex-col gap-2">
+    <section v-if="recordSlots.length" class="flex flex-col gap-2">
       <h3 class="text-xs font-semibold tracking-wide text-text-muted uppercase">
         {{ $t('endgame.captured.records') }}
       </h3>
       <div class="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
-        <article
-          v-for="r in yourRecords"
-          :key="r.key"
-          class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
-          :title="r.from"
-        >
-          <header
-            class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border-default px-4 py-2.5"
+        <template v-for="r in recordSlots" :key="r.key">
+          <article
+            v-if="'empty' in r"
+            class="flex min-w-0 flex-col rounded-xl border border-dashed border-border-default bg-surface-raised/60"
           >
-            <span class="flex min-w-0 flex-wrap items-center gap-2">
+            <header class="flex items-center gap-2 border-b border-border-default px-4 py-2.5">
               <UiBadge>
                 <component :is="r.coop ? Users : User" class="size-3.5" aria-hidden="true" />
                 {{ r.coop ? $t('endgame.captured.coop') : $t('endgame.captured.solo') }}
               </UiBadge>
-              <span class="truncate text-sm font-semibold">{{ r.label }}</span>
-              <span v-if="r.level" class="tabular font-mono text-xs text-text-muted">{{
-                $t('endgame.level', { n: r.level })
-              }}</span>
-            </span>
-            <span class="tabular font-mono text-xs text-text-muted">{{ r.date }}</span>
-          </header>
-          <ol class="flex flex-col px-4">
-            <li
-              v-for="(f, i) in r.fights"
-              :key="i"
-              class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
-              :class="i > 0 && 'border-t border-border-default'"
+            </header>
+            <p class="flex flex-1 items-center justify-center px-4 py-8 text-sm text-text-muted">
+              {{ $t('endgame.captured.noRecord') }}
+            </p>
+          </article>
+          <article
+            v-else
+            class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+            :title="r.from"
+          >
+            <header
+              class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border-default px-4 py-2.5"
             >
-              <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="sm" />
-              <span class="flex min-w-0 flex-col gap-1">
-                <span class="truncate text-sm font-semibold" :title="f.full || undefined">{{
-                  f.name
+              <span class="flex min-w-0 flex-wrap items-center gap-2">
+                <UiBadge>
+                  <component :is="r.coop ? Users : User" class="size-3.5" aria-hidden="true" />
+                  {{ r.coop ? $t('endgame.captured.coop') : $t('endgame.captured.solo') }}
+                </UiBadge>
+                <span class="truncate text-sm font-semibold">{{ r.label }}</span>
+                <span v-if="r.level" class="tabular font-mono text-xs text-text-muted">{{
+                  $t('endgame.level', { n: r.level })
                 }}</span>
-                <span v-if="f.team.length" class="flex flex-wrap gap-1">
-                  <img
-                    v-for="key in f.team"
-                    :key="key"
-                    :src="characterIcon(key)"
-                    :alt="characterName(key)"
-                    :title="characterName(key)"
-                    loading="lazy"
-                    class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
-                  />
-                </span>
-                <span v-if="f.figures.length" class="flex flex-wrap gap-x-3 gap-y-1">
-                  <span
-                    v-for="g in f.figures"
-                    :key="g.kind"
-                    class="flex items-center gap-1 text-xs text-text-secondary"
-                    :title="g.title"
-                  >
-                    {{ g.label }}
-                    <b class="tabular font-mono text-text-primary">{{ g.short }}</b>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="tabular font-mono text-xs text-text-muted">{{ r.date }}</span>
+                <UiButton size="sm" :title="$t('endgame.share.title')" @click="share(r.record)">
+                  <Share2 class="size-4" aria-hidden="true" />{{ $t('share.export.share') }}
+                </UiButton>
+              </span>
+            </header>
+            <ol class="flex flex-col px-4">
+              <li
+                v-for="(f, i) in r.fights"
+                :key="i"
+                class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
+                :class="i > 0 && 'border-t border-border-default'"
+              >
+                <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="sm" />
+                <span class="flex min-w-0 flex-col gap-1">
+                  <span class="truncate text-sm font-semibold" :title="f.full || undefined">{{
+                    f.name
+                  }}</span>
+                  <span v-if="f.team.length" class="flex flex-wrap gap-1">
                     <img
-                      v-if="g.by"
-                      :src="characterIcon(g.by)"
-                      :alt="g.byName"
+                      v-for="key in f.team"
+                      :key="key"
+                      :src="characterIcon(key)"
+                      :alt="characterName(key)"
+                      :title="characterName(key)"
                       loading="lazy"
-                      class="size-5 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                      class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
                     />
                   </span>
+                  <span v-if="f.figures.length" class="flex flex-wrap gap-x-3 gap-y-1">
+                    <span
+                      v-for="g in f.figures"
+                      :key="g.kind"
+                      class="flex items-center gap-1 text-xs text-text-secondary"
+                      :title="g.title"
+                    >
+                      {{ g.label }}
+                      <b class="tabular font-mono text-text-primary">{{ g.short }}</b>
+                      <img
+                        v-if="g.by"
+                        :src="characterIcon(g.by)"
+                        :alt="g.byName"
+                        loading="lazy"
+                        class="size-5 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                      />
+                    </span>
+                  </span>
                 </span>
-              </span>
-              <!-- Done or not is a mark and a struck time, never the colour alone. -->
-              <span
-                class="flex items-center gap-1.5 justify-self-end"
-                :title="f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')"
-              >
+                <!-- Done or not is a mark and a struck time, never the colour alone. -->
                 <span
-                  class="tabular font-mono text-sm font-semibold"
-                  :class="f.done ? '' : 'text-text-muted line-through'"
-                  >{{ f.time }}</span
+                  class="flex items-center gap-1.5 justify-self-end"
+                  :title="
+                    f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')
+                  "
                 >
-                <Check v-if="f.done" class="size-4 text-success-text" aria-hidden="true" />
-                <Minus v-else class="size-4 text-text-muted" aria-hidden="true" />
-                <span class="sr-only">{{
-                  f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')
-                }}</span>
-              </span>
-            </li>
-          </ol>
-          <footer
-            class="flex items-center justify-between gap-3 border-t border-border-default px-4 py-2 text-sm"
-          >
-            <span class="text-text-secondary">{{
-              r.total
-                ? $t('endgame.captured.total')
-                : $t('endgame.captured.clearedOf', { n: r.done, total: r.fights.length })
-            }}</span>
-            <span v-if="r.total" class="tabular font-mono font-semibold">{{ r.total }}</span>
-          </footer>
-        </article>
+                  <span
+                    class="tabular font-mono text-sm font-semibold"
+                    :class="f.done ? '' : 'text-text-muted line-through'"
+                    >{{ f.time }}</span
+                  >
+                  <Check v-if="f.done" class="size-4 text-success-text" aria-hidden="true" />
+                  <Minus v-else class="size-4 text-text-muted" aria-hidden="true" />
+                  <span class="sr-only">{{
+                    f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')
+                  }}</span>
+                </span>
+              </li>
+            </ol>
+            <footer
+              class="flex items-center justify-between gap-3 border-t border-border-default px-4 py-2 text-sm"
+            >
+              <span class="text-text-secondary">{{
+                r.total
+                  ? $t('endgame.captured.total')
+                  : $t('endgame.captured.clearedOf', { n: r.done, total: r.fights.length })
+              }}</span>
+              <span v-if="r.total" class="tabular font-mono font-semibold">{{ r.total }}</span>
+            </footer>
+          </article>
+        </template>
       </div>
     </section>
 
@@ -392,5 +439,14 @@ const bosses = computed(() => {
         </a>
       </article>
     </div>
+    <StygianShareModal
+      v-if="shareOpened"
+      :open="!!sharing"
+      :record="sharing"
+      :season="season"
+      :data="data"
+      :season-name="name"
+      @close="sharing = null"
+    />
   </div>
 </template>

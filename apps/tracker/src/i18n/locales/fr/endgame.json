@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Coup le plus fort",
-    "damage": "Dégâts les plus élevés"
+    "damage": "Dégâts les plus élevés",
+    "noRecord": "Aucun record"
+  },
+  "share": {
+    "title": "Partager le score",
+    "bestRecord": "Meilleur score",
+    "battlefield": "Champ de bataille {n}",
+    "strike": "Coup le plus puissant",
+    "damage": "Meilleur total de DGT",
+    "battleTime": "Temps de combat",
+    "fastest": "Le plus rapide"
   }
 }

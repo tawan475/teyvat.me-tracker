@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Serangan terkuat",
-    "damage": "Damage tertinggi"
+    "damage": "Damage tertinggi",
+    "noRecord": "Belum ada rekor"
+  },
+  "share": {
+    "title": "Bagikan rekor",
+    "bestRecord": "Rekor Terbaik",
+    "battlefield": "Arena {n}",
+    "strike": "Serangan Terkuat",
+    "damage": "Total DMG Tertinggi",
+    "battleTime": "Waktu Pertarungan",
+    "fastest": "Tercepat"
   }
 }

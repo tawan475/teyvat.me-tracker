@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "最大単発ダメージ",
-    "damage": "最大累計ダメージ"
+    "damage": "最大累計ダメージ",
+    "noRecord": "記録なし"
+  },
+  "share": {
+    "title": "記録をシェア",
+    "bestRecord": "最高記録",
+    "battlefield": "フィールド{n}",
+    "strike": "最強の一撃",
+    "damage": "最大合計ダメージ",
+    "battleTime": "戦闘時間",
+    "fastest": "最速"
   }
 }

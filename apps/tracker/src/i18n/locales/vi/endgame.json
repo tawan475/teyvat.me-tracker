@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Đòn mạnh nhất",
-    "damage": "Sát thương cao nhất"
+    "damage": "Sát thương cao nhất",
+    "noRecord": "Chưa có kỷ lục"
+  },
+  "share": {
+    "title": "Chia sẻ thành tích",
+    "bestRecord": "Thành tích cao nhất",
+    "battlefield": "Chiến Trường {n}",
+    "strike": "Tấn công mạnh nhất",
+    "damage": "Sát Thương Cao Nhất",
+    "battleTime": "Thời gian chiến đấu",
+    "fastest": "Nhanh nhất"
   }
 }

@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "En güçlü vuruş",
-    "damage": "En yüksek hasar"
+    "damage": "En yüksek hasar",
+    "noRecord": "Kayıt yok"
+  },
+  "share": {
+    "title": "Rekoru paylaş",
+    "bestRecord": "Rekor",
+    "battlefield": "{n}. Savaş Alanı",
+    "strike": "Tek Vuruşta Verilen En Fazla Hasar",
+    "damage": "Verilen En Yüksek Toplam Hasar",
+    "battleTime": "Savaş süresi",
+    "fastest": "En hızlı"
   }
 }

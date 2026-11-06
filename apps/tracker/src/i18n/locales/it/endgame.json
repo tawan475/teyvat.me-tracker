@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Colpo più forte",
-    "damage": "Danno maggiore"
+    "damage": "Danno maggiore",
+    "noRecord": "Nessun record"
+  },
+  "share": {
+    "title": "Condividi record",
+    "bestRecord": "Miglior punteggio",
+    "battlefield": "Campo di battaglia {n}",
+    "strike": "Colpo singolo più forte",
+    "damage": "Maggior quantità di danni totali inflitta",
+    "battleTime": "Tempo di battaglia",
+    "fastest": "Più veloce"
   }
 }

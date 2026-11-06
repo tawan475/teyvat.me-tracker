@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Stärkster Treffer",
-    "damage": "Höchster Schaden"
+    "damage": "Höchster Schaden",
+    "noRecord": "Kein Rekord"
+  },
+  "share": {
+    "title": "Rekord teilen",
+    "bestRecord": "Rekord",
+    "battlefield": "Schlachtfeld {n}",
+    "strike": "Stärkster Einzelschlag",
+    "damage": "Höchster Gesamtschaden",
+    "battleTime": "Kampfzeit",
+    "fastest": "Am schnellsten"
   }
 }

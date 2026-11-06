@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "최강 일격",
-    "damage": "최대 누적 피해"
+    "damage": "최대 누적 피해",
+    "noRecord": "기록 없음"
+  },
+  "share": {
+    "title": "기록 공유",
+    "bestRecord": "최고 기록",
+    "battlefield": "전장 {n}",
+    "strike": "최강 일격",
+    "damage": "최고 총 피해",
+    "battleTime": "전투 시간",
+    "fastest": "최단"
   }
 }

@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "最強一擊",
-    "damage": "最高總傷害"
+    "damage": "最高總傷害",
+    "noRecord": "暫無紀錄"
+  },
+  "share": {
+    "title": "分享紀錄",
+    "bestRecord": "最佳紀錄",
+    "battlefield": "戰場{n}",
+    "strike": "最強一擊",
+    "damage": "最高總傷害",
+    "battleTime": "戰鬥用時",
+    "fastest": "最快"
   }
 }

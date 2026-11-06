@@ -70,6 +70,16 @@
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
     "strike": "Strongest strike",
-    "damage": "Most damage"
+    "damage": "Most damage",
+    "noRecord": "No record"
+  },
+  "share": {
+    "title": "Share record",
+    "bestRecord": "Best Record",
+    "battlefield": "Battlefield {n}",
+    "strike": "Strongest Single Strike",
+    "damage": "Highest Total Damage Dealt",
+    "battleTime": "Battle time",
+    "fastest": "Fastest"
   }
 }

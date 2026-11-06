@@ -69,6 +69,8 @@
     "fight": "{n}. Dövüş",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Yıldız Mücadelesi Yıldızı kazanıldı",
+    "starMissing": "Yıldız Mücadelesi Yıldızı kazanılmadı",
     "strike": "En güçlü vuruş",
     "damage": "En yüksek hasar",
     "noRecord": "Kayıt yok"

@@ -69,6 +69,8 @@
     "fight": "Combat {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Astre de défi de vedette obtenu",
+    "starMissing": "Astre de défi de vedette non obtenu",
     "strike": "Coup le plus fort",
     "damage": "Dégâts les plus élevés",
     "noRecord": "Aucun record"

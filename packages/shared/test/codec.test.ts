@@ -2443,6 +2443,19 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     expect(read({ season: 31, acts: 1, stars: 3 })).toEqual({
       theater: { season: 31, acts: 1, stars: 3 },
     })
+    // The acts starred (1.17.19+): kept in order; an act not cleared, out of
+    // order or twice drops the run.
+    const acts = { ...starred, stars: 7, acts: 8, starredActs: [1, 2, 3, 4, 6, 7, 8] }
+    const withActs = await roundTrip({ ...base, gi_endgame: { theater: acts } }, catalog)
+    expect(withActs.decoded.gi_endgame).toEqual({ theater: acts })
+    expect(JSON.parse(withActs.encoded.extras!.json).e).toEqual({
+      t: [31, 129, 5, 8],
+      r: [7, 12],
+      x: [1, 2, 3, 4, 6, 7, 8],
+    })
+    expect(read({ season: 31, acts: 8, stars: 7, starredActs: [1, 9] })).toBeNull()
+    expect(read({ season: 31, acts: 8, stars: 7, starredActs: [2, 1] })).toBeNull()
+    expect(read({ season: 31, acts: 8, stars: 7, starredActs: [1, 1] })).toBeNull()
   })
 
   it("keeps each fight's strongest strike and top damage, with the character when named", async () => {

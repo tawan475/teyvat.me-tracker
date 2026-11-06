@@ -69,6 +69,8 @@
     "fight": "Trận {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Đã nhận Huy Hiệu Khiêu Chiến Minh Tinh",
+    "starMissing": "Chưa nhận Huy Hiệu Khiêu Chiến Minh Tinh",
     "strike": "Đòn mạnh nhất",
     "damage": "Sát thương cao nhất",
     "noRecord": "Chưa có kỷ lục"

@@ -1304,12 +1304,14 @@ export interface ExtrasSection {
  * character dictionary refs, then only when the fight has a figure: the
  * strongest strike and the top damage, each [value, by (0: no character)] or
  * 0 when absent]]; `r` the run's stars [earned, possible (0: not sent)],
- * only when the capture has them.
+ * only when the capture has them; `x` the acts whose star was earned, only
+ * when the capture lists them.
  */
 export interface EndgameSection {
   t?: [season: number, difficulty: number, level: number, acts: number]
   s?: StygianRecordRow[]
   r?: [stars: number, maxStars: number]
+  x?: number[]
 }
 export type StygianRecordRow = [
   season: number,
@@ -1352,6 +1354,7 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
     section.t = [theater.season, theater.difficulty ?? 0, theater.level ?? 0, theater.acts]
   }
   if (theater?.stars !== undefined) section.r = [theater.stars, theater.maxStars ?? 0]
+  if (theater?.starredActs) section.x = theater.starredActs
   if (stygian) {
     section.s = stygian.records.map((r) => [
       r.season,
@@ -1391,6 +1394,7 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
       acts,
       ...(section.r ? { stars: section.r[0] } : {}),
       ...(section.r?.[1] ? { maxStars: section.r[1] } : {}),
+      ...(section.x ? { starredActs: section.x } : {}),
     }
   }
   if (section.s) {

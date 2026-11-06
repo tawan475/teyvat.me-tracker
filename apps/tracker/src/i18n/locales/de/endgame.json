@@ -69,6 +69,8 @@
     "fight": "Kampf {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Star-Abzeichen erhalten",
+    "starMissing": "Star-Abzeichen nicht erhalten",
     "strike": "Stärkster Treffer",
     "damage": "Höchster Schaden",
     "noRecord": "Kein Rekord"

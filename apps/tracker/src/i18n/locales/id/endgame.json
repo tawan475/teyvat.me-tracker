@@ -69,6 +69,8 @@
     "fight": "Pertarungan {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Stella Tantangan Bintang diperoleh",
+    "starMissing": "Stella Tantangan Bintang belum diperoleh",
     "strike": "Serangan terkuat",
     "damage": "Damage tertinggi",
     "noRecord": "Belum ada rekor"

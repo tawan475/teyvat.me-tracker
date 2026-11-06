@@ -69,6 +69,8 @@
     "fight": "第{n}戰",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "已獲得明星挑戰星章",
+    "starMissing": "未獲得明星挑戰星章",
     "strike": "最強一擊",
     "damage": "最高總傷害",
     "noRecord": "暫無紀錄"

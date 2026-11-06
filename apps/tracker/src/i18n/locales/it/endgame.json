@@ -69,6 +69,8 @@
     "fight": "Scontro {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Stella per Sfida magistrale ottenuta",
+    "starMissing": "Stella per Sfida magistrale non ottenuta",
     "strike": "Colpo più forte",
     "damage": "Danno maggiore",
     "noRecord": "Nessun record"

@@ -421,6 +421,8 @@ export interface GiTheaterRun {
   stars?: number
   /** Stars possible, when the game says; else the difficulty's acts and extra bouts. */
   maxStars?: number
+  /** The acts whose star was earned, ascending (Capture 1.17.19+, with `stars`; the extra bouts' stars count in `stars` only). */
+  starredActs?: number[]
 }
 
 /** One Stygian Onslaught record: a season and a run kind (solo or co-op). */

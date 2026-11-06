@@ -1393,7 +1393,8 @@ function toTheaterRun(raw: unknown): GiTheaterRun | null {
     (raw.difficulty !== undefined && !isIntIn(raw.difficulty, ...ENDGAME_DIFFICULTY)) ||
     (raw.level !== undefined && !isIntIn(raw.level, 1, 50)) ||
     (raw.stars !== undefined && !isIntIn(raw.stars, 0, THEATER_STARS)) ||
-    (raw.maxStars !== undefined && !isIntIn(raw.maxStars, 1, THEATER_STARS))
+    (raw.maxStars !== undefined && !isIntIn(raw.maxStars, 1, THEATER_STARS)) ||
+    (raw.starredActs !== undefined && !isStarredActs(raw.starredActs, raw.acts))
   ) {
     return null
   }
@@ -1404,7 +1405,17 @@ function toTheaterRun(raw: unknown): GiTheaterRun | null {
     acts: raw.acts,
     ...(raw.stars !== undefined ? { stars: raw.stars } : {}),
     ...(raw.maxStars !== undefined ? { maxStars: raw.maxStars } : {}),
+    ...(raw.starredActs !== undefined ? { starredActs: raw.starredActs as number[] } : {}),
   }
+}
+
+/** Acts in order, each one cleared (1..acts), none twice. */
+function isStarredActs(raw: unknown, acts: number): raw is number[] {
+  return (
+    Array.isArray(raw) &&
+    raw.length <= acts &&
+    raw.every((act, i) => isIntIn(act, 1, acts) && (i === 0 || act > (raw[i - 1] as number)))
+  )
 }
 
 /** The records in the order sent (one per season and run kind, oldest first). */

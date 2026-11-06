@@ -69,6 +69,8 @@
     "fight": "戦闘{n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "スター挑戦星章を獲得",
+    "starMissing": "スター挑戦星章は未獲得",
     "strike": "最大単発ダメージ",
     "damage": "最大累計ダメージ",
     "noRecord": "記録なし"

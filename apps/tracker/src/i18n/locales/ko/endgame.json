@@ -69,6 +69,8 @@
     "fight": "전투 {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "스타 도전의 별 획득",
+    "starMissing": "스타 도전의 별 미획득",
     "strike": "최강 일격",
     "damage": "최대 누적 피해",
     "noRecord": "기록 없음"

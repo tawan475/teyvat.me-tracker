@@ -114,6 +114,17 @@ const acts = computed(() =>
     : [],
 )
 const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
+/**
+ * Whether the account earned this act's Star Challenge Stella: null when
+ * the capture does not list the starred acts, the list shown is not the
+ * run's difficulty, the act is an extra bout or one not cleared yet.
+ */
+const starOf = (a: { act: number; extra: boolean }): boolean | null => {
+  const run = props.run?.run
+  if (!run?.starredActs || a.extra || a.act > run.acts || yourRun.value?.level !== difficulty.value)
+    return null
+  return run.starredActs.includes(a.act)
+}
 </script>
 
 <template>
@@ -272,9 +283,28 @@ const firstExtra = computed(() => acts.value.findIndex((a) => a.extra))
                 {{ a.extra ? '' : $t('endgame.theater.act', { n: a.act })
                 }}{{ a.named && !a.extra ? ' · ' : '' }}{{ a.title }}
               </h4>
-              <span class="tabular shrink-0 font-mono text-xs text-text-muted">{{
-                $t('endgame.level', { n: a.level })
-              }}</span>
+              <span class="flex shrink-0 items-baseline gap-2">
+                <!-- The star earned (filled) or not (outlined): the glyph says it, not the colour alone. -->
+                <span
+                  v-if="starOf(a) !== null"
+                  class="text-sm leading-none"
+                  :class="starOf(a) ? 'text-warning-text' : 'text-text-muted'"
+                  :title="
+                    starOf(a)
+                      ? $t('endgame.captured.starEarned')
+                      : $t('endgame.captured.starMissing')
+                  "
+                  :aria-label="
+                    starOf(a)
+                      ? $t('endgame.captured.starEarned')
+                      : $t('endgame.captured.starMissing')
+                  "
+                  >{{ starOf(a) ? '★' : '☆' }}</span
+                >
+                <span class="tabular font-mono text-xs text-text-muted">{{
+                  $t('endgame.level', { n: a.level })
+                }}</span>
+              </span>
             </header>
             <div v-if="a.named" class="flex min-w-0 items-start gap-4 p-3 sm:px-4">
               <EnemyTile

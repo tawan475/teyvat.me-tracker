@@ -69,6 +69,8 @@
     "fight": "Combate {n}",
     "stars": "★ {n}/{total}",
     "starsN": "★ {n}",
+    "starEarned": "Stella do Desafio da Estrela obtida",
+    "starMissing": "Stella do Desafio da Estrela não obtida",
     "strike": "Golpe mais forte",
     "damage": "Maior dano",
     "noRecord": "Sem recorde"

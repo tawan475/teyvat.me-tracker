@@ -410,6 +410,16 @@ export async function reorderAccount(d1: D1Database, accountId: number): Promise
 export const REORDER_CURSOR = 'storage.reorder_after'
 /** The accounts the cursor passed while they were busy (a JSON id list), retried once quiet. */
 export const REORDER_SKIPPED = 'storage.reorder_skipped'
+/**
+ * The account a run is repacking (set before it starts, cleared after). A
+ * run the platform kills (past `limits.cpu_ms`: account 11's 864 snapshots
+ * went over 300 s on 2026-11-06, 17 s on a PC) leaves it set; the next run
+ * then gives that account up (`REORDER_GAVE_UP`) instead of retrying it
+ * every hour.
+ */
+export const REORDER_RUNNING = 'storage.reorder_running'
+/** Accounts given up on (a JSON id list); staff can clear it to try again. */
+export const REORDER_GAVE_UP = 'storage.reorder_gave_up'
 /** An account that uploaded this recently is left for a later run. */
 const QUIET_MS = 30 * 60_000
 
@@ -445,6 +455,32 @@ export async function reorderStorage(
 ): Promise<ReorderResult[]> {
   const started = Date.now()
   const done: ReorderResult[] = []
+  const list = async (key: string): Promise<number[]> => {
+    try {
+      const parsed: unknown = JSON.parse((await setting(d1, key)) ?? '[]')
+      return Array.isArray(parsed) ? parsed.filter((id): id is number => Number.isInteger(id)) : []
+    } catch {
+      return []
+    }
+  }
+  // The last run was killed inside an account: give it up and walk on.
+  const killed = Number(await setting(d1, REORDER_RUNNING))
+  if (Number.isInteger(killed) && killed > 0) {
+    const gaveUp = await list(REORDER_GAVE_UP)
+    const cursor = Number((await setting(d1, REORDER_CURSOR)) ?? 0) || 0
+    await d1.batch([
+      saveSetting(d1, REORDER_GAVE_UP, JSON.stringify([...new Set([...gaveUp, killed])]), now),
+      saveSetting(
+        d1,
+        REORDER_SKIPPED,
+        JSON.stringify((await list(REORDER_SKIPPED)).filter((id) => id !== killed)),
+        now,
+      ),
+      saveSetting(d1, REORDER_CURSOR, String(Math.max(cursor, killed)), now),
+      d1.prepare('DELETE FROM site_settings WHERE key = ?1').bind(REORDER_RUNNING),
+    ])
+    console.warn('reorder gave up on', killed)
+  }
   const lastSeen = async (ids: readonly number[]) => {
     if (!ids.length) return new Map<number, number | null>()
     const { results } = await d1
@@ -460,13 +496,7 @@ export async function reorderStorage(
     seen === null || seen === undefined || now - seen >= QUIET_MS
   for (;;) {
     const after = Number((await setting(d1, REORDER_CURSOR)) ?? 0) || 0
-    let skipped: number[] = []
-    try {
-      const parsed: unknown = JSON.parse((await setting(d1, REORDER_SKIPPED)) ?? '[]')
-      if (Array.isArray(parsed)) skipped = parsed.filter((id): id is number => Number.isInteger(id))
-    } catch {
-      skipped = []
-    }
+    let skipped = await list(REORDER_SKIPPED)
     // A remembered account that has gone quiet (or is gone) first.
     const seenSkipped = await lastSeen(skipped)
     const gone = skipped.filter((id) => !seenSkipped.has(id))
@@ -497,7 +527,9 @@ export async function reorderStorage(
       }
       id = next.id
     }
+    await saveSetting(d1, REORDER_RUNNING, String(id), now).run()
     const result = await reorderAccount(d1, id)
+    await d1.prepare('DELETE FROM site_settings WHERE key = ?1').bind(REORDER_RUNNING).run()
     done.push(result)
     console.log('reorder', JSON.stringify(result))
     // A guard that stopped the write leaves it for the next run.

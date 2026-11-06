@@ -75,6 +75,7 @@ function initials(name: string): string {
         :loading="priority ? 'eager' : 'lazy'"
         :fetchpriority="priority ? 'high' : undefined"
         decoding="async"
+        :data-skeleton="rarity ? 'off' : undefined"
         :src="src"
         alt=""
         class="absolute inset-x-0 top-0 aspect-square w-full object-contain p-[3cqw]"

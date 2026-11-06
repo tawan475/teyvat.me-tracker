@@ -4,7 +4,11 @@
  * one animated SVG background, nothing per image)
  * until it has loaded or failed, when this marks it `data-loaded`. One
  * capture listener on the document for the whole app, nothing per image.
- * `data-skeleton="off"` on an <img> opts it out (backdrop art, decorative emblems).
+ * `data-skeleton="off"` on an <img> opts it out: backdrop art, decorative
+ * emblems, and cut-out art laid on the game's own ground (an icon on a bag
+ * cell or a rarity band, a side portrait over the Equipped bar), where that
+ * ground is the placeholder: a grey box over it read as broken (the user,
+ * 2026-11-07), and a side portrait's box is larger than the art it shows.
  */
 export function watchImageLoading(root: Document = document): void {
   const mark = (event: Event) => {

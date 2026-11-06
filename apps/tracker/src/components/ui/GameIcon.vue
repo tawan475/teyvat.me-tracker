@@ -56,6 +56,7 @@ const initials = computed(() =>
       :loading="eager ? 'eager' : 'lazy'"
       :fetchpriority="priority"
       decoding="async"
+      :data-skeleton="rarity ? 'off' : undefined"
       :src="src"
       :alt="name"
       class="relative size-full object-contain"

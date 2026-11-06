@@ -119,6 +119,7 @@ const wearer = computed(() => {
         :src="qualityArt(artifact.rarity)"
         alt=""
         class="absolute inset-0 size-full"
+        data-skeleton="off"
       />
       <img
         :src="EMBLEM_URL"
@@ -130,6 +131,7 @@ const wearer = computed(() => {
       <img
         :src="artifactIcon(artifact.setKey, artifact.slotKey)"
         alt=""
+        data-skeleton="off"
         class="absolute top-1/2 -translate-y-1/2 [filter:drop-shadow(0_3px_6px_rgba(70,36,6,0.35))]"
         :style="{
           right: `${BAND_ICON_RIGHT}px`,
@@ -249,6 +251,7 @@ const wearer = computed(() => {
         v-if="wearer"
         :src="wearer"
         alt=""
+        data-skeleton="off"
         class="absolute bottom-0 left-1.5 size-13 object-contain object-bottom [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.25))]"
         @error="sideFailed = true"
       />

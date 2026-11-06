@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { loadAchievements } from '@gdt/game-data'
-import { loadCollections } from '@gdt/game-data/collections'
 import { decodeTasks, type SnapshotResponse, type TasksSection } from '@gdt/shared'
 import { computed, shallowRef, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
@@ -39,7 +38,7 @@ import {
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { travelerGender } from '@/data/traveler'
-import { gameIcon } from '@/lib/assets'
+import { loadProfileArt, buildProfileCard } from '@/data/profile-card'
 import type { AccountRef } from '@/data/account-data'
 import { useAccounts } from '@/stores/accounts'
 import CapturePresence from '@/components/live/CapturePresence.vue'
@@ -102,23 +101,7 @@ const player = useResource(
   async (a) => (a.latest ? (await loadAccountPlayer(a)).profile : null),
 )
 // The AR table and the name cards' art (the wardrobe chunk, ~30 KB).
-const playerData = useResource(
-  () => 'player,wardrobe',
-  async () => {
-    const data = await loadCollections(['player', 'wardrobe'])
-    const icons = (rows: { id: number; icon: unknown }[]) =>
-      new Map(rows.flatMap((r) => (typeof r.icon === 'string' && r.icon ? [[r.id, r.icon]] : [])))
-    const pictures = new Map<number, string>()
-    for (const row of data.namecards)
-      if (typeof row.picture === 'string') pictures.set(row.id, row.picture)
-    return {
-      arLevels: data.arLevels,
-      nameCards: pictures,
-      avatars: icons(data.profilePictures),
-      frames: icons(data.profileFrames),
-    }
-  },
-)
+const playerData = useResource(() => 'player,wardrobe', loadProfileArt)
 const traveler = computed(() => {
   const profile = player.data.value
   if (!profile || (profile.ar === undefined && profile.wl === undefined)) return null
@@ -133,22 +116,15 @@ const traveler = computed(() => {
  * topic). Older captures stand in with the account's name, the Traveler's
  * circle portrait (the account's twin) and the default name card.
  */
-const profileCard = computed(() => {
-  const p = player.data.value
-  const data = playerData.data.value
-  const picture = p?.nameCard ? data?.nameCards.get(p.nameCard) : undefined
-  const avatar = p?.profilePicture?.id ? data?.avatars.get(p.profilePicture.id) : undefined
-  const frame = p?.profilePicture?.frameId ? data?.frames.get(p.profilePicture.frameId) : undefined
-  const twin = travelerGender.value === 'M' ? 'PlayerBoy' : 'PlayerGirl'
-  return {
-    name: p?.nickname || accounts.displayName(account.value),
-    signature: p?.signature || null,
-    nameCard: gameIcon(picture ?? 'UI_NameCardPic_0_P'),
-    avatar: gameIcon(avatar ?? `UI_AvatarIcon_${twin}_Circle`),
-    frame: frame && avatar ? gameIcon(frame) : '',
-    uid: account.value.uid ? String(account.value.uid) : null,
-  }
-})
+const profileCard = computed(() => ({
+  ...buildProfileCard(
+    player.data.value,
+    playerData.data.value,
+    accounts.displayName(account.value),
+    travelerGender.value,
+  ),
+  uid: account.value.uid ? String(account.value.uid) : null,
+}))
 
 // The card's figures: achievements as the Achievements page counts them
 // (newest capture plus hand marks); from the newest snapshot alone, the

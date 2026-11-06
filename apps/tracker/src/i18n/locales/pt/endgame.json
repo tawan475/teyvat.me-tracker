@@ -76,10 +76,9 @@
   "share": {
     "title": "Compartilhar recorde",
     "bestRecord": "Melhor Recorde",
-    "battlefield": "Arena {n}",
     "strike": "Ataque mais forte",
     "damage": "Maior Dano total",
-    "battleTime": "Tempo de batalha",
-    "fastest": "Mais rápido"
+    "fastest": "Mais rápido",
+    "recordSet": "Recorde em {date}"
   }
 }

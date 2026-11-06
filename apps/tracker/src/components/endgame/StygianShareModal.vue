@@ -9,7 +9,9 @@ import UiModal from '@/components/ui/UiModal.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { loadLatestInventory } from '@/data/account-data'
 import { shareUid } from '@/data/character-build'
-import { stygianBossPicture, stygianDifficultyName, type EndgameData } from '@/data/endgame'
+import { stygianBossPicture, type EndgameData } from '@/data/endgame'
+import { buildProfileCard, loadProfileArt } from '@/data/profile-card'
+import { travelerGender } from '@/data/traveler'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
@@ -18,17 +20,24 @@ import { canvasPng } from '@/lib/card-canvas'
 import { readJson, writeJson } from '@/lib/storage'
 import { resolvedTheme } from '@/lib/theme'
 import { useCardExport } from '@/lib/use-card-export'
+import { useAccounts } from '@/stores/accounts'
 import { useAccount } from '@/views/account/context'
-import type { CardOwner } from '../characters/share-card'
-import { STYGIAN_CARD, stygianFileName } from './stygian-card'
-import { drawStygianCard, type DrawnStygian, type StygianBossArt } from './stygian-card-canvas'
+import { STYGIAN_CARD, seasonVersion, stygianFileName } from './stygian-card'
+import {
+  drawStygianCard,
+  type DrawnStygian,
+  type StygianBossArt,
+  type StygianProfile,
+} from './stygian-card-canvas'
 
 /**
  * A Stygian Onslaught record's share card (one record: solo or co-op):
  * drawn on a canvas once per change, the preview is that canvas; the share
  * cards' one remembered option set (theme, name, UID) and PNG / Copy /
- * Share in the header, like the banner card. The team's levels and
- * constellations, the UID and AR come from the newest capture.
+ * Share in the header, like the banner card. The owner's in-game profile
+ * (name card, picture and frame, name, signature), the UID and the team's
+ * levels and constellations come from the newest capture; the season's
+ * version from the wish banners' dated versions.
  */
 const props = defineProps<{
   open: boolean
@@ -46,6 +55,26 @@ const latest = useResource(
   (a) => (a?.latest ? loadLatestInventory(a) : Promise.resolve(null)),
 )
 const good = computed(() => latest.data.value?.good ?? null)
+const accounts = useAccounts()
+// The name cards' and profile pictures' art, and the banners' versions (both lazy, cached).
+const extras = useResource(
+  () => (props.open ? 'stygian-card' : null),
+  async (key) => {
+    if (!key) return null
+    const [art, banners] = await Promise.all([
+      loadProfileArt(),
+      import('@/data/wish-banners.json').then(
+        (m) => (m.default as unknown as { banners: unknown[][] }).banners,
+      ),
+    ])
+    const dated = banners.map((row) => ({
+      kind: String(row[0]),
+      start: String(row[1]),
+      version: String(row[6]),
+    }))
+    return { art, banners: dated }
+  },
+)
 
 interface Prefs {
   theme?: 'light' | 'dark'
@@ -65,11 +94,24 @@ watch([theme, showName, showUid], () =>
   }),
 )
 
-const owner = computed<CardOwner>(() => ({
-  name: showName.value ? account.value.name : null,
-  uid: showUid.value ? shareUid(account.value.uid, good.value?.gi_player?.uid ?? null) : null,
-  ar: showName.value ? (good.value?.gi_player?.ar ?? null) : null,
-}))
+const profile = computed<StygianProfile>(() => {
+  const player = good.value?.gi_player ?? null
+  const card = buildProfileCard(
+    player,
+    extras.data.value?.art,
+    accounts.displayName(account.value),
+    travelerGender.value,
+  )
+  return {
+    ...card,
+    name: showName.value ? card.name : null,
+    signature: showName.value ? card.signature : null,
+    uid: showUid.value ? shareUid(account.value.uid, player?.uid ?? null) : null,
+  }
+})
+const version = computed(() =>
+  extras.data.value ? seasonVersion(props.season.start, extras.data.value.banners) : null,
+)
 const roster = computed(
   () =>
     new Map(
@@ -115,18 +157,18 @@ watch([shown, host], ([drawn, el]) => {
 
 function redraw() {
   const record = props.record
-  if (!props.open || !record || latest.loading.value) return
+  if (!props.open || !record || latest.loading.value || extras.loading.value) return
   const promise = (async (): Promise<Drawing> => ({
     drawn: await drawStygianCard({
       record,
       seasonName: props.seasonName,
       start: props.season.start,
-      difficultyName: stygianDifficultyName(record.difficulty, props.data.text),
-      level: row.value?.level ?? 0,
+      end: props.season.end,
+      version: version.value,
       bosses: bosses.value,
       roster: roster.value,
       theme: theme.value,
-      owner: owner.value,
+      profile: profile.value,
     }),
     png: null,
   }))()
@@ -143,10 +185,12 @@ watch(
     props.open,
     props.record,
     theme.value,
-    owner.value,
+    profile.value,
+    version.value,
     roster.value,
     locale.value,
     latest.loading.value,
+    extras.loading.value,
   ],
   redraw,
   { immediate: true },
@@ -166,7 +210,7 @@ const exporter = useCardExport({
     return { blob: await done.png, missing: done.drawn.missing }
   },
   open: () => props.open && !!props.record,
-  state: () => [props.record, theme.value, owner.value, roster.value, locale.value],
+  state: () => [props.record, theme.value, profile.value, roster.value, locale.value],
   filename: () => stygianFileName(props.season.start, props.record?.coop ?? false),
   title: () => title.value,
   pngLabel: () => t('share.export.downloadSized', { size }),

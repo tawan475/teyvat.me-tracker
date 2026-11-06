@@ -76,10 +76,9 @@
   "share": {
     "title": "Chia sẻ thành tích",
     "bestRecord": "Thành tích cao nhất",
-    "battlefield": "Chiến Trường {n}",
     "strike": "Tấn công mạnh nhất",
     "damage": "Sát Thương Cao Nhất",
-    "battleTime": "Thời gian chiến đấu",
-    "fastest": "Nhanh nhất"
+    "fastest": "Nhanh nhất",
+    "recordSet": "Lập kỷ lục ngày {date}"
   }
 }

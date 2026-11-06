@@ -76,10 +76,9 @@
   "share": {
     "title": "分享紀錄",
     "bestRecord": "最佳紀錄",
-    "battlefield": "戰場{n}",
     "strike": "最強一擊",
     "damage": "最高總傷害",
-    "battleTime": "戰鬥用時",
-    "fastest": "最快"
+    "fastest": "最快",
+    "recordSet": "紀錄達成於 {date}"
   }
 }

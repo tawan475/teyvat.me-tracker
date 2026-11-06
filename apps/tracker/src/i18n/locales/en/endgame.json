@@ -76,10 +76,9 @@
   "share": {
     "title": "Share record",
     "bestRecord": "Best Record",
-    "battlefield": "Battlefield {n}",
     "strike": "Strongest Single Strike",
     "damage": "Highest Total Damage Dealt",
-    "battleTime": "Battle time",
-    "fastest": "Fastest"
+    "fastest": "Fastest",
+    "recordSet": "Record set {date}"
   }
 }

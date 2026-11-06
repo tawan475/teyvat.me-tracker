@@ -76,10 +76,9 @@
   "share": {
     "title": "Bagikan rekor",
     "bestRecord": "Rekor Terbaik",
-    "battlefield": "Arena {n}",
     "strike": "Serangan Terkuat",
     "damage": "Total DMG Tertinggi",
-    "battleTime": "Waktu Pertarungan",
-    "fastest": "Tercepat"
+    "fastest": "Tercepat",
+    "recordSet": "Rekor dicapai {date}"
   }
 }

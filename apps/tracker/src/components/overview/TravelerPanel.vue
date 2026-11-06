@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { GiPlayer } from '@gdt/shared'
 import { computed, ref, watch } from 'vue'
+import { FRAME_HOLE } from '@/data/profile-card'
 import { Cake, Compass, Heart, Mountain, Swords, Trophy } from 'lucide-vue-next'
 import { dateLocale, formatNumber } from '@/lib/format'
 
@@ -43,14 +44,7 @@ const props = defineProps<{
   }
 }>()
 
-/**
- * The game draws a profile frame at its own pixel size around a picture
- * about 222 px across: every frame's hole is ~111 px in radius in its own
- * pixels, whatever the image's size (272-360 px wide, game data 7.2). So a
- * frame scales by its width / 222 against the picture and reaches past it,
- * as in game; stretched to the picture's box it sat inside the picture.
- */
-const FRAME_HOLE = 222
+// A frame is drawn at the game's own scale around the picture (FRAME_HOLE).
 const frameScale = ref<number | null>(null)
 watch(
   () => props.profile.frame,

@@ -1,29 +1,39 @@
 /**
  * The Stygian Onslaught record card drawn on a canvas, for its PNG and its
- * preview (stygian-card.ts says what is on it and where). The ground is the
- * game's Stygian purple; panels are the share cards' glass (card-paint), in
- * the chosen card theme. Done or not is a mark and a struck time, never
- * the colour alone.
+ * preview (stygian-card.ts says what is on it and where; design F). The
+ * ground is the game's Stygian purple. Done or not is never the colour
+ * alone: a fight not done has its time struck through.
  */
 
 import type { GiFigure, GiStygianRecord } from '@gdt/shared'
 import { recordTotal } from '@/data/endgame-runs'
 import { characterMeta } from '@/data/game-meta'
-import { characterName } from '@/i18n/game-names'
+import { frameSize } from '@/data/profile-card'
 import { t } from '@/i18n'
-import { characterIcon, giCdnArt } from '@/lib/assets'
+import { characterIcon, elementIcon, giCdnArt } from '@/lib/assets'
 import { CARD_CORNER, CardImages, Painter, cardFonts, roundCorners } from '@/lib/card-canvas'
-import { formatDate, formatNumber, formatSeconds } from '@/lib/format'
+import { dateFormat, formatDate, formatNumber, formatSeconds } from '@/lib/format'
 import { qualityCell } from '@/lib/item-art'
-import { CardPaint, parseFilterShadow } from '../characters/card-paint'
-import type { CardOwner, CardTheme } from '../characters/share-card'
-import { ownerParts } from '../characters/share-card-model'
+import { CardPaint, goldChip } from '../characters/card-paint'
+import type { CardTheme } from '../characters/share-card'
 import {
+  COLUMN,
+  MEDAL_PILL,
+  PROFILE,
+  PROFILE_DIM,
+  PROFILE_FADE,
+  SEASON_DIM,
+  SEASON_FADE,
   STYGIAN_CARD,
+  bagCell,
+  columnFootH,
   fastestFight,
   seasonMonth,
-  stygianCardLayout,
+  splitBossName,
+  stygianColumns,
+  stygianHeader,
   stygianMedal,
+  wrapLines,
 } from './stygian-card'
 
 export interface StygianBossArt {
@@ -33,19 +43,30 @@ export interface StygianBossArt {
   art: string
 }
 
+/** The owner's in-game profile on the card; null parts are left out (the share options). */
+export interface StygianProfile {
+  name: string | null
+  signature: string | null
+  nameCard: string
+  avatar: string
+  frame: string
+  uid: string | null
+}
+
 export interface StygianDrawing {
   record: GiStygianRecord
   seasonName: string
-  /** The season's start, "YYYY-MM-DD hh:mm:ss" (its month on the card). */
+  /** The season's start and end, "YYYY-MM-DD hh:mm:ss" (month, dates). */
   start: string
-  difficultyName: string
-  level: number
+  end: string
+  /** The game version it ran in ("7.1"); null unknown. */
+  version: string | null
   /** Per fight, the boss of that slot on the record's difficulty. */
   bosses: readonly (StygianBossArt | null)[]
   /** The account's characters now (newest capture): level and constellation by key. */
   roster: ReadonlyMap<string, { level: number; constellation: number }>
   theme: CardTheme
-  owner: CardOwner
+  profile: StygianProfile
 }
 
 export interface DrawnStygian {
@@ -53,43 +74,97 @@ export interface DrawnStygian {
   missing: number
 }
 
-/** The ground: the game's Stygian purple, a glow behind the rows. */
-const GROUND = {
-  dark: { base: '#140d26', glow: 'rgba(139,92,246,0.30)', warm: 'rgba(219,39,119,0.16)' },
-  light: { base: '#f3eefb', glow: 'rgba(139,92,246,0.22)', warm: 'rgba(236,72,153,0.12)' },
+/** Design F's colours per card theme. */
+const PALETTE = {
+  dark: {
+    base: [20, 13, 38],
+    glow: 'rgba(139,92,246,0.26)',
+    season: ['rgba(52,34,92,0.95)', 'rgba(30,20,56,0.95)'],
+    panel: 'rgba(23,17,42,0.92)',
+    chip: 'rgba(255,255,255,0.06)',
+    pill: 'rgba(255,255,255,0.07)',
+    line: 'rgba(255,255,255,0.12)',
+    text: '#f1f5f9',
+    sub: '#cbd5e1',
+    muted: '#a3a0b8',
+    accent: '#c4b5fd',
+    time: '#ffd57a',
+    boss: '#ff9a7a',
+    artGround: ['#3a2063', '#17112a'],
+    fastBg: 'rgba(45,212,191,0.22)',
+    fastInk: '#5eead4',
+    fastLine: 'rgba(94,234,212,0.5)',
+    fade: [23, 17, 42],
+  },
+  light: {
+    base: [245, 240, 252],
+    glow: 'rgba(139,92,246,0.16)',
+    season: ['rgba(255,255,255,0.95)', 'rgba(233,222,251,0.95)'],
+    panel: 'rgba(255,255,255,0.92)',
+    chip: 'rgba(124,77,196,0.07)',
+    pill: 'rgba(255,255,255,0.92)',
+    line: 'rgba(76,29,149,0.14)',
+    text: '#1f1533',
+    sub: '#4c3d68',
+    muted: '#6f6288',
+    accent: '#6d28d9',
+    time: '#a15c07',
+    boss: '#b4360b',
+    artGround: ['#e4d6fa', '#fbf8ff'],
+    fastBg: 'rgba(13,148,136,0.12)',
+    fastInk: '#0f766e',
+    fastLine: 'rgba(13,148,136,0.45)',
+    fade: [253, 251, 255],
+  },
 } as const
-/** The boss art's own ground, under its picture (the game's swirl is transparent at the edges). */
-const ART_GROUND = ['#2a1748', '#120a24'] as const
+
+/** The profile's text: white with the share card's hero shadow, on both themes. */
+const HERO_SHADOWS = [
+  { x: 0, y: 2, blur: 10, color: 'rgba(0,0,0,0.65)' },
+  { x: 0, y: 1, blur: 2, color: 'rgba(0,0,0,0.6)' },
+]
 const CREAM = '#e9e5dc'
-const CREAM_INK = '#3f3a33'
-const TILE = { w: 112, h: 138, gap: 14, strip: 26, r: 12 } as const
-const FIGURE_H = 62
+const CREAM_INK = '#4a5366'
+
+const rgba = (rgb: readonly number[], a: number) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`
 
 export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise<DrawnStygian> {
-  const layout = stygianCardLayout(input.record.fights.length)
+  const fights = input.record.fights
   const keys = [
-    ...new Set(
-      input.record.fights.flatMap((f) => [...f.team, f.strike?.by ?? '', f.damage?.by ?? '']),
-    ),
+    ...new Set(fights.flatMap((f) => [...f.team, f.strike?.by ?? '', f.damage?.by ?? ''])),
   ].filter(Boolean)
   const rarities = [...new Set(keys.map((key) => characterMeta(key)?.[0] ?? 4))]
+  const elements = [...new Set(keys.map((key) => characterMeta(key)?.[1] ?? null))].filter(
+    (e) => e !== null,
+  )
+  const { profile } = input
   const urls = [
     giCdnArt(stygianMedal(input.record)),
+    profile.nameCard,
+    profile.avatar,
+    profile.frame,
     ...input.bosses.map((b) => b?.art ?? ''),
     ...keys.map((key) => characterIcon(key)),
     ...rarities.map((r) => qualityCell(r)),
+    ...elements.map((e) => elementIcon(e)),
   ].filter(Boolean)
   const [images, fonts] = await Promise.all([
     CardImages.load(urls),
     cardFonts([400, 600, 700, 800]),
   ])
-  const p = new Painter(layout.width, layout.height, scale)
+  const { width, height } = STYGIAN_CARD
+  const p = new Painter(width, height, scale)
   try {
     const card = new StygianPainter(p, input, images, fonts.tabular)
-    card.ground(layout.width, layout.height)
-    card.header()
-    card.side(layout.side)
-    layout.rows.forEach((row, i) => card.fight(i, row))
+    card.ground()
+    const pill = card.pillWidth()
+    const header = stygianHeader(pill)
+    card.profile(header.profile)
+    card.best(header.pill)
+    card.season(header.season)
+    const { columns, foot } = stygianColumns(fights.length)
+    columns.forEach((box, i) => card.fight(i, box))
+    card.foot(foot)
     roundCorners(p.canvas, CARD_CORNER, scale)
     return { canvas: p.canvas, missing: images.missing }
   } finally {
@@ -101,6 +176,7 @@ export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise
 type Box = { x: number; y: number; w: number; h: number }
 
 class StygianPainter extends CardPaint {
+  private readonly c: (typeof PALETTE)['dark' | 'light']
   private readonly fastest: number
   private readonly total: number | null
 
@@ -111,358 +187,428 @@ class StygianPainter extends CardPaint {
     family: string,
   ) {
     super(p, input.theme, images, family)
+    this.c = PALETTE[input.theme]
     this.fastest = fastestFight(input.record)
     this.total = recordTotal(input.record)
   }
 
-  private get hero() {
-    return {
-      color: this.v('--card-hero'),
-      shadows: [parseFilterShadow(this.v('--card-hero-shadow'))],
-    }
-  }
-
-  ground(width: number, height: number) {
-    const { ctx, p } = this
-    const g = GROUND[this.cardTheme]
-    ctx.fillStyle = g.base
+  ground() {
+    const { ctx } = this.p
+    const { width, height } = STYGIAN_CARD
+    ctx.fillStyle = rgba(this.c.base, 1)
     ctx.fillRect(0, 0, width, height)
-    const glow = (x: number, y: number, r: number, color: string) => {
-      const radial = ctx.createRadialGradient(x, y, 0, x, y, r)
-      radial.addColorStop(0, color)
-      radial.addColorStop(1, 'rgba(0,0,0,0)')
-      ctx.fillStyle = radial
-      ctx.fillRect(0, 0, width, height)
-    }
-    glow(width * 0.72, height * 0.18, 900, g.glow)
-    glow(width * 0.12, height * 0.95, 700, g.warm)
-    this.backdropCopy = p.snapshot()
+    // `radial-gradient(circle at 50% 0%, glow 0%, transparent 45%)`: the
+    // circle reaches the farthest corner.
+    const r = Math.hypot(width / 2, height) * 0.45
+    const glow = ctx.createRadialGradient(width / 2, 0, 0, width / 2, 0, r)
+    glow.addColorStop(0, this.c.glow)
+    glow.addColorStop(1, 'rgba(139,92,246,0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(0, 0, width, height)
   }
 
-  /** The mode, the season's name; at the right the run kind, difficulty and month as pills. */
-  header() {
-    const { pad, headerTop, width } = STYGIAN_CARD
-    this.line(t('endgame.modes.stygian'), pad, headerTop, 20, 700, this.v('--card-secondary'), {
-      lineHeight: 26,
+  /**
+   * Paints `draw` on a layer of its own, then keeps it only as much as the
+   * fade says (alpha by x across `box`, `fromRight` mirrors it): the part
+   * fades to transparent, showing the ground, as CSS `mask-image` does.
+   */
+  private faded(
+    box: Box,
+    fade: readonly (readonly [number, number])[],
+    fromRight: boolean,
+    draw: () => void,
+  ) {
+    const p = this.p
+    const main = p.ctx
+    const layer = document.createElement('canvas')
+    layer.width = p.canvas.width
+    layer.height = p.canvas.height
+    const ctx = layer.getContext('2d')!
+    ctx.scale(layer.width / STYGIAN_CARD.width, layer.height / STYGIAN_CARD.height)
+    ctx.imageSmoothingQuality = 'high'
+    p.ctx = ctx
+    try {
+      p.clipped(box.x, box.y, box.w, box.h, 22, draw)
+      const mask = fromRight
+        ? ctx.createLinearGradient(box.x + box.w, 0, box.x, 0)
+        : ctx.createLinearGradient(box.x, 0, box.x + box.w, 0)
+      for (const [at, alpha] of fade) mask.addColorStop(at, `rgba(0,0,0,${alpha})`)
+      ctx.globalCompositeOperation = 'destination-in'
+      ctx.fillStyle = mask
+      ctx.fillRect(box.x, box.y, box.w, box.h)
+    } finally {
+      p.ctx = main
+    }
+    main.drawImage(layer, 0, 0, STYGIAN_CARD.width, STYGIAN_CARD.height)
+    layer.width = layer.height = 0
+  }
+
+  /** The ground's colour laid over a fading part, more toward its far end (it dims as it fades). */
+  private dim(box: Box, stops: readonly (readonly [number, number])[], fromRight: boolean) {
+    const ctx = this.p.ctx
+    const g = fromRight
+      ? ctx.createLinearGradient(box.x + box.w, 0, box.x, 0)
+      : ctx.createLinearGradient(box.x, 0, box.x + box.w, 0)
+    for (const [at, alpha] of stops) g.addColorStop(at, rgba(this.c.base, alpha))
+    ctx.fillStyle = g
+    ctx.fillRect(box.x, box.y, box.w, box.h)
+  }
+
+  /** The owner: name card fading out, the profile picture in its frame, name, signature, UID. */
+  profile(box: Box) {
+    const p = this.p
+    const { profile } = this.input
+    const nameCard = this.images.get(profile.nameCard)
+    this.faded(box, PROFILE_FADE, false, () => {
+      if (nameCard) p.cover(nameCard, box.x, box.y, box.w, box.h)
+      else p.fill(box.x, box.y, box.w, box.h, 0, this.c.season[0])
+      this.dim(box, PROFILE_DIM, false)
     })
-    const hero = this.hero
-    const pills = [
-      this.input.record.coop ? t('endgame.captured.coop') : t('endgame.captured.solo'),
-      this.input.level
-        ? `${this.input.difficultyName} · ${t('endgame.level', { n: this.input.level })}`
-        : this.input.difficultyName,
-      seasonMonth(this.input.start),
-    ].filter(Boolean)
-    const widths = pills.map((text) => this.textWidth(text, 18, 700) + 32)
-    let px = width - pad - widths.reduce((sum, w) => sum + w + 10, -10)
-    const pillsLeft = px
-    pills.forEach((text, i) => {
-      const w = widths[i]!
-      this.p.fill(px, headerTop + 38, w, 40, 20, this.v('--card-pill'))
-      this.p.insetRing(px, headerTop + 38, w, 40, 20, 1, this.ring)
-      this.line(
-        text,
-        px + 16,
-        headerTop + 46,
-        18,
-        700,
-        i === 0 ? this.v('--card-text') : this.v('--card-secondary'),
-        {
-          lineHeight: 24,
-        },
+
+    const pic = PROFILE.picture
+    const px = box.x + pic.x
+    const py = box.y + pic.y
+    const avatar = this.images.get(profile.avatar)
+    if (avatar)
+      p.clipped(px, py, pic.d, pic.d, pic.d / 2, () => p.cover(avatar, px, py, pic.d, pic.d))
+    const frame = profile.frame ? this.images.get(profile.frame) : null
+    if (frame) {
+      // At the game's scale, centred on the picture; the card's edge cuts it.
+      const size = frameSize(pic.d, frame.width)
+      const cx = px + pic.d / 2
+      const cy = py + pic.d / 2
+      p.clipped(box.x, box.y, box.w, box.h, 22, () =>
+        p.contain(frame, cx - size / 2, cy - size / 2, size, size),
       )
-      px += w + 10
-    })
-    this.line(this.input.seasonName, pad, headerTop + 28, 44, 800, hero.color, {
-      lineHeight: 54,
-      shadows: hero.shadows,
-      max: pillsLeft - pad - 24,
-    })
-  }
-
-  private get ring() {
-    return this.cardTheme === 'dark' ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.12)'
-  }
-
-  /** The owner, the best record (medal, total), the battle synopsis, the date and the site. */
-  side(box: Box) {
-    const { x, y, w, h } = box
-    this.glass(x, y, w, h, 24, 'panel')
-    const inner = 28
-    const cx = x + w / 2
-    const text = this.v('--card-text')
-    const muted = this.v('--card-muted')
-    const secondary = this.v('--card-secondary')
-    let cy = y + inner
-
-    const owner = this.input.owner
-    if (owner.name || owner.uid || owner.ar) {
-      if (owner.name) {
-        const [name] = ownerParts({ name: owner.name, uid: null, ar: null })
-        this.line(name!, x + inner, cy, 28, 700, text, { lineHeight: 36, max: w - inner * 2 })
-        cy += 38
-      }
-      const meta = ownerParts({ name: null, uid: owner.uid, ar: owner.ar })
-      if (meta.length) {
-        this.line(meta.join(' · '), x + inner, cy, 17, 400, muted, { lineHeight: 24 })
-        cy += 26
-      }
-      cy += 14
-      this.p.fill(x + inner, cy, w - inner * 2, 1, 0, this.v('--card-divider'))
-      cy += 22
+    } else if (avatar) {
+      p.insetRing(px, py, pic.d, pic.d, pic.d / 2, 3, 'rgba(255,255,255,0.85)')
     }
 
-    // The synopsis sits on the foot (above the date and the site); the best
-    // record is centred in what is left above it.
-    const fights = this.input.record.fights.length
-    const footY = y + h - inner - 24
-    const synopsisTop = footY - 26 - fights * 46
-    const medalSize = 176
-    const totalH = this.total !== null ? 84 : 56
-    const bestH = 34 + medalSize + 6 + totalH
-    const room = synopsisTop - 22 - cy
-    cy += Math.max(0, (room - bestH) / 2)
-
-    // The best record: the medal and the total time.
-    this.line(t('endgame.share.bestRecord'), cx, cy, 20, 700, secondary, {
-      lineHeight: 26,
-      align: 'center',
-    })
-    cy += 34
-    const medal = this.images.get(giCdnArt(stygianMedal(this.input.record)))
-    if (medal) this.p.contain(medal, cx - medalSize / 2, cy, medalSize, medalSize)
-    cy += medalSize + 6
-    const hero = this.hero
-    const totalText =
-      this.total !== null
-        ? formatSeconds(this.total)
-        : t('endgame.captured.clearedOf', {
-            n: this.input.record.fights.filter((f) => f.done).length,
-            total: this.input.record.fights.length,
+    const { text } = PROFILE
+    const x = box.x + text.left
+    const max = box.w - text.left - text.right
+    let y = box.y + text.top
+    if (profile.name) {
+      this.line(profile.name, x, y, 34, 800, '#ffffff', {
+        lineHeight: 39,
+        shadows: HERO_SHADOWS,
+        max,
+      })
+      y += 39 + 6
+      if (profile.signature) {
+        this.p.font(400, 18, this.family)
+        const lines = wrapLines(profile.signature, max, (s) => this.p.measure(s), 2)
+        for (const line of lines) {
+          this.line(line, x, y, 18, 400, 'rgba(255,255,255,0.92)', {
+            lineHeight: 24.3,
+            shadows: HERO_SHADOWS,
           })
-    this.line(totalText, cx, cy, this.total !== null ? 64 : 36, 800, hero.color, {
-      lineHeight: this.total !== null ? 76 : 48,
-      align: 'center',
-      shadows: hero.shadows,
-    })
-    this.p.fill(x + inner, synopsisTop - 22, w - inner * 2, 1, 0, this.v('--card-divider'))
-    cy = synopsisTop
-
-    // The battle synopsis: each fight's time, the fastest marked.
-    this.input.record.fights.forEach((fight, i) => {
-      const rowY = cy + i * 46
-      this.line(t('endgame.share.battlefield', { n: i + 1 }), x + inner, rowY + 6, 20, 600, text, {
-        lineHeight: 28,
-        max: w - inner * 2 - 170,
-      })
-      const time = formatSeconds(fight.time)
-      const right = x + w - inner
-      this.line(time, right, rowY + 4, 24, 800, fight.done ? text : muted, {
-        lineHeight: 32,
-        align: 'right',
-      })
-      const timeW = this.textWidth(time, 24, 800)
-      if (!fight.done) {
-        this.p.fill(right - timeW - 2, rowY + 21, timeW + 4, 2, 1, muted)
+          y += 24.3
+        }
       }
-      if (i === this.fastest) {
-        const label = t('endgame.share.fastest')
-        const lw = this.textWidth(label, 15, 700) + 20
-        const lx = right - timeW - 12 - lw
-        this.p.fill(
-          lx,
-          rowY + 6,
-          lw,
-          28,
-          14,
-          this.cardTheme === 'dark' ? 'rgba(45,212,191,0.22)' : 'rgba(13,148,136,0.14)',
-        )
-        this.p.insetRing(
-          lx,
-          rowY + 6,
-          lw,
-          28,
-          14,
-          1,
-          this.cardTheme === 'dark' ? 'rgba(94,234,212,0.55)' : 'rgba(13,148,136,0.45)',
-        )
-        this.line(
-          label,
-          lx + 10,
-          rowY + 9,
-          15,
-          700,
-          this.cardTheme === 'dark' ? '#99f6e4' : '#0f766e',
-          { lineHeight: 22 },
-        )
-      }
-    })
-
-    // The foot: when the record was set, and the site.
-    this.line(formatDate(this.input.record.at * 1000), x + inner, footY, 17, 400, muted, {
-      lineHeight: 24,
-    })
-    this.line('teyvat.me', x + w - inner, footY, 17, 700, secondary, {
-      lineHeight: 24,
-      align: 'right',
-    })
+    }
+    if (profile.uid)
+      this.line(
+        t('overview.traveler.uid', { uid: profile.uid }),
+        x,
+        box.y + box.h - text.bottom - 27,
+        18,
+        400,
+        'rgba(255,255,255,0.92)',
+        { lineHeight: 27, shadows: HERO_SHADOWS },
+      )
   }
 
-  /** One battlefield: the boss's art and level, its name, the time, the team and the two figures. */
+  private get bestText(): { label: string; value: string; size: number } {
+    const fights = this.input.record.fights
+    return this.total !== null
+      ? { label: t('endgame.share.bestRecord'), value: formatSeconds(this.total), size: 84 }
+      : {
+          label: t('endgame.share.bestRecord'),
+          value: t('endgame.captured.clearedOf', {
+            n: fights.filter((f) => f.done).length,
+            total: fights.length,
+          }),
+          size: 48,
+        }
+  }
+
+  /** The medal pill's width: the medal, then the label and the time, as wide as the wider. */
+  pillWidth(): number {
+    const { label, value, size } = this.bestText
+    const textW = Math.max(this.textWidth(label, 20, 700), this.textWidth(value, size, 800))
+    return MEDAL_PILL.padLeft + MEDAL_PILL.medal + MEDAL_PILL.gap + textW + MEDAL_PILL.padRight
+  }
+
+  /** The best record: the medal and the total time, in a pill. */
+  best(box: Box) {
+    const p = this.p
+    p.fill(box.x, box.y, box.w, box.h, box.h / 2, this.c.pill)
+    p.insetRing(box.x, box.y, box.w, box.h, box.h / 2, 1, this.c.line)
+    const medal = this.images.get(giCdnArt(stygianMedal(this.input.record)))
+    const m = MEDAL_PILL.medal
+    if (medal) p.contain(medal, box.x + MEDAL_PILL.padLeft, box.y + (box.h - m) / 2, m, m)
+    const { label, value, size } = this.bestText
+    const valueH = size
+    const top = box.y + (box.h - 30 - valueH) / 2
+    const x = box.x + MEDAL_PILL.padLeft + m + MEDAL_PILL.gap
+    this.line(label, x, top, 20, 700, this.c.time, { lineHeight: 30 })
+    this.line(value, x, top + 30, size, 800, this.c.time, { lineHeight: valueH })
+  }
+
+  /** The season: mode, month and version; its name; its dates. A panel fading toward the medal. */
+  season(box: Box) {
+    this.faded(box, SEASON_FADE, true, () => {
+      const ctx = this.p.ctx
+      // `linear-gradient(135deg, …)` over the box.
+      const half = (box.w + box.h) / 4
+      const cx = box.x + box.w / 2
+      const cy = box.y + box.h / 2
+      const g = ctx.createLinearGradient(cx - half, cy - half, cx + half, cy + half)
+      g.addColorStop(0, this.c.season[0])
+      g.addColorStop(1, this.c.season[1])
+      ctx.fillStyle = g
+      ctx.fillRect(box.x, box.y, box.w, box.h)
+      this.dim(box, SEASON_DIM, true)
+    })
+    const right = box.x + box.w - 28
+    const max = box.w - 50
+    const top = box.y + (box.h - (30 + 4 + 50.6 + 4 + 28.5)) / 2
+    const labels = [
+      t('endgame.modes.stygian'),
+      seasonMonth(this.input.start),
+      this.input.version ? t('wishes.history.version', { version: this.input.version }) : '',
+    ].filter(Boolean)
+    let lx = right
+    for (const label of [...labels].reverse()) {
+      const w = this.textWidth(label, 20, 700)
+      if (lx - w < box.x + 22) break
+      this.line(label, lx, top, 20, 700, this.c.accent, { lineHeight: 30, align: 'right' })
+      lx -= w + 24
+    }
+    this.line(this.input.seasonName, right, top + 34, 44, 800, this.c.text, {
+      lineHeight: 50.6,
+      align: 'right',
+      max,
+    })
+    this.line(
+      seasonDates(this.input.start, this.input.end),
+      right,
+      top + 34 + 54.6,
+      19,
+      400,
+      this.c.sub,
+      {
+        lineHeight: 28.5,
+        align: 'right',
+      },
+    )
+  }
+
+  /** One battlefield: the boss's art, its name and title, the time, the team and the two figures. */
   fight(index: number, box: Box) {
     const fight = this.input.record.fights[index]
     if (!fight) return
-    const { p, ctx } = this
+    const { p } = this
+    const ctx = p.ctx
     const { x, y, w, h } = box
-    this.glass(x, y, w, h, 22, 'panel')
-    const text = this.v('--card-text')
-    const muted = this.v('--card-muted')
-    const secondary = this.v('--card-secondary')
+    const c = this.c
+    p.fill(x, y, w, h, 22, c.panel)
 
-    // The boss: its art on the swirl, the level in a chip.
+    // The boss: its art on the theme's ground, growing to fill what the
+    // parts below leave, fading into the panel at its foot.
+    const artH = h - columnFootH(w)
     const boss = this.input.bosses[index] ?? null
     const art = boss?.art ? this.images.get(boss.art) : null
-    p.clipped(x, y, h, h, [22, 0, 0, 22], () => {
-      const fill = ctx.createLinearGradient(x, y, x, y + h)
-      fill.addColorStop(0, ART_GROUND[0])
-      fill.addColorStop(1, ART_GROUND[1])
-      ctx.fillStyle = fill
-      ctx.fillRect(x, y, h, h)
-      if (art) p.cover(art, x, y, h, h)
+    p.clipped(x, y, w, artH, [22, 22, 0, 0], () => {
+      const gx = x + w / 2
+      const gy = y + artH * 0.48
+      const reach = Math.hypot(Math.max(gx - x, x + w - gx), Math.max(gy - y, y + artH - gy))
+      const ground = ctx.createRadialGradient(gx, gy, 0, gx, gy, reach)
+      ground.addColorStop(0, c.artGround[0])
+      ground.addColorStop(0.71, c.artGround[1])
+      ground.addColorStop(1, c.artGround[1])
+      ctx.fillStyle = ground
+      ctx.fillRect(x, y, w, artH)
+      const s = COLUMN.art
+      if (art) p.cover(art, x + w / 2 - s / 2, y + artH * 0.52 - s / 2, s, s)
+      const fade = ctx.createLinearGradient(0, y + artH - COLUMN.artFade, 0, y + artH)
+      fade.addColorStop(0, rgba(c.fade, 0))
+      fade.addColorStop(1, rgba(c.fade, 1))
+      ctx.fillStyle = fade
+      ctx.fillRect(x, y + artH - COLUMN.artFade, w, COLUMN.artFade)
     })
-    if (this.input.level) {
-      const label = t('endgame.level', { n: this.input.level })
-      const lw = this.textWidth(label, 18, 700) + 24
-      p.fill(x + 14, y + h - 14 - 36, lw, 36, 18, 'rgba(8,6,18,0.72)')
-      this.line(label, x + 14 + 12, y + h - 14 - 36 + 6, 18, 700, '#f8fafc', { lineHeight: 24 })
+    if (index === this.fastest) {
+      const label = t('endgame.share.fastest')
+      const lw = this.textWidth(label, 16, 700) + 28
+      const lh = 24 + 10 + 2
+      const lx = x + w - 18 - lw
+      p.fill(lx, y + 18, lw, lh, lh / 2, c.fastBg)
+      p.insetRing(lx, y + 18, lw, lh, lh / 2, 1, c.fastLine)
+      this.line(label, lx + 14, y + 18 + 6, 16, 700, c.fastInk, { lineHeight: 24 })
     }
+    p.insetRing(x, y, w, h, 22, 1, c.line)
 
-    const x0 = x + h + 28
-    const right = x + w - 28
-    // The time at the right, with a done mark (a check, or the time struck through).
+    // The name (coral, as the game writes enemies) and its title, the time (gold) at the right.
+    const x0 = x + COLUMN.pad
+    const right = x + w - COLUMN.pad
+    let cy = y + artH
+    const rowH = COLUMN.nameH + 2 + COLUMN.titleH
     const time = formatSeconds(fight.time)
-    const timeW = this.textWidth(time, 44, 800)
-    this.line(time, right, y + 18, 44, 800, fight.done ? text : muted, {
-      lineHeight: 54,
+    const timeW = this.textWidth(time, 54, 800)
+    const timeTop = cy + rowH - 51.3
+    this.line(time, right, timeTop, 54, 800, fight.done ? c.time : c.muted, {
+      lineHeight: 51.3,
       align: 'right',
     })
-    if (fight.done)
-      this.check(right - timeW - 34, y + 34, 24, this.cardTheme === 'dark' ? '#5eead4' : '#0f766e')
-    else p.fill(right - timeW - 2, y + 45, timeW + 4, 3, 1, muted)
-    this.line(t('endgame.share.battleTime'), right, y + 72, 16, 600, muted, {
-      lineHeight: 22,
-      align: 'right',
-    })
-
-    // Which battlefield, and the boss's name.
-    const nameMax = right - x0 - timeW - 60
-    this.line(t('endgame.share.battlefield', { n: index + 1 }), x0, y + 22, 16, 700, secondary, {
-      lineHeight: 22,
-      max: nameMax,
-    })
-    this.line(
-      boss?.name || t('endgame.captured.fight', { n: index + 1 }),
-      x0,
-      y + 46,
-      28,
-      700,
-      text,
-      {
-        lineHeight: 36,
+    // Not done: the time struck through (never the colour alone).
+    if (!fight.done) p.fill(right - timeW - 2, timeTop + 26, timeW + 4, 4, 2, c.muted)
+    const named = splitBossName(boss?.name || t('endgame.captured.fight', { n: index + 1 }))
+    const nameMax = right - x0 - timeW - 16
+    this.line(named.name, x0, cy, 26, 800, c.boss, { lineHeight: COLUMN.nameH, max: nameMax })
+    if (named.title)
+      this.line(named.title, x0, cy + COLUMN.nameH + 2, 17, 600, c.muted, {
+        lineHeight: COLUMN.titleH,
         max: nameMax,
-      },
-    )
+      })
+    cy += rowH + COLUMN.gap
 
-    // The team as bag cells, then the two figures.
-    const tileY = y + h - 24 - TILE.h
-    fight.team.slice(0, 4).forEach((key, i) => this.tile(key, x0 + i * (TILE.w + TILE.gap), tileY))
-    const figuresX = x0 + 4 * TILE.w + 3 * TILE.gap + 32
+    // The team as bag cells.
+    const cellW = (right - x0 - 3 * COLUMN.tileGap) / 4
+    const cell = bagCell(cellW)
+    fight.team
+      .slice(0, 4)
+      .forEach((key, i) => this.tile(key, x0 + i * (cellW + COLUMN.tileGap), cy, cellW))
+    cy += cell.h + COLUMN.gap
+
+    // The two figures.
     const figures = [
       { label: t('endgame.share.strike'), figure: fight.strike },
       { label: t('endgame.share.damage'), figure: fight.damage },
-    ].filter((f): f is { label: string; figure: GiFigure } => !!f.figure)
-    figures.forEach((f, i) =>
-      this.figure(f.label, f.figure, figuresX, tileY + i * (FIGURE_H + 14), right - figuresX),
-    )
+    ]
+    figures.forEach((f, i) => {
+      if (f.figure)
+        this.figure(f.label, f.figure, x0, cy + i * (COLUMN.figureH + COLUMN.figureGap), right - x0)
+    })
   }
 
-  /** A team member as the game's bag cell: portrait, constellation, level on the cream strip. */
-  private tile(key: string, x: number, y: number) {
+  /** A team member as the game's bag cell: portrait, element, constellation, level on the cream strip. */
+  private tile(key: string, x: number, y: number, w: number) {
     const { p } = this
-    const rarity = characterMeta(key)?.[0] ?? 4
+    const ctx = p.ctx
+    const cell = bagCell(w)
+    const meta = characterMeta(key)
+    const rarity = meta?.[0] ?? 4
     const now = this.input.roster.get(key)
-    p.clipped(x, y, TILE.w, TILE.h, TILE.r, () => {
-      const cell = this.images.get(qualityCell(rarity))
-      if (cell) p.cover(cell, x, y, TILE.w, TILE.h)
-      else p.fill(x, y, TILE.w, TILE.h, 0, rarity === 5 ? '#b7791f' : '#7c5ab8')
+    p.clipped(x, y, cell.w, cell.h, cell.r, () => {
+      const art = this.images.get(qualityCell(rarity))
+      if (art) p.image(art, x, y, cell.w, cell.h)
+      else p.fill(x, y, cell.w, cell.h, 0, rarity === 5 ? '#b7791f' : '#7c5ab8')
       const portrait = this.images.get(characterIcon(key))
-      if (portrait) p.cover(portrait, x, y, TILE.w, TILE.w)
-      p.fill(x, y + TILE.h - TILE.strip, TILE.w, TILE.strip, 0, CREAM)
+      if (portrait) p.cover(portrait, x, y, cell.w, cell.w)
+      // The strip, and the cell's inner curl over its right end.
+      const sx = x + cell.w - cell.curl
+      const sy = y + cell.h - cell.curlBottom - cell.curl
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(sx, sy, cell.curl, cell.curl)
+      ctx.clip()
+      ctx.beginPath()
+      ctx.rect(sx, sy, cell.curl, cell.curl)
+      ctx.arc(sx, sy, cell.curl, 0, Math.PI * 2)
+      ctx.fillStyle = CREAM
+      ctx.fill('evenodd')
+      ctx.restore()
+      p.fill(x, y + cell.h - cell.strip, cell.w, cell.strip, 0, CREAM)
     })
-    if (now) {
+    if (now)
       this.line(
         t('endgame.level', { n: now.level }),
-        x + TILE.w / 2,
-        y + TILE.h - TILE.strip + 2,
-        16,
+        x + cell.w / 2,
+        y + cell.h - cell.strip,
+        cell.levelSize,
         700,
         CREAM_INK,
-        {
-          lineHeight: 22,
-          align: 'center',
-        },
+        { lineHeight: cell.strip, align: 'center' },
       )
-      const c = `C${now.constellation}`
-      const cw = this.textWidth(c, 14, 800) + 14
-      const gold = now.constellation === 6
-      p.fill(x + 6, y + 6, cw, 24, 12, gold ? '#facc15' : 'rgba(8,6,18,0.72)')
-      this.line(c, x + 6 + 7, y + 8, 14, 800, gold ? '#422006' : '#f8fafc', { lineHeight: 20 })
+    const element = meta?.[1] ? this.images.get(elementIcon(meta[1])) : null
+    if (element)
+      p.contain(element, x + cell.element.x, y + cell.element.y, cell.element.d, cell.element.d)
+    if (now) {
+      const chip = cell.chip
+      const label = `C${now.constellation}`
+      const lh = chip.size * 1.3
+      const cw = this.textWidth(label, chip.size, 800) + 2 * chip.padX
+      const ch = lh + 2 * chip.padY
+      const cx = x + cell.w - chip.inset - cw
+      const cy = y + chip.inset
+      const gold = now.constellation >= 6
+      if (gold)
+        p.boxShadow(cx, cy, cw, ch, chip.r, { x: 0, y: 1, blur: 4, color: 'rgba(80,50,0,0.45)' })
+      p.fill(cx, cy, cw, ch, chip.r, gold ? goldChip(ctx, cy, ch) : '#303048')
+      this.line(label, cx + cw / 2, cy + chip.padY, chip.size, 800, gold ? '#8a4e24' : '#c8c8c8', {
+        lineHeight: lh,
+        align: 'center',
+      })
     }
-    p.insetRing(x, y, TILE.w, TILE.h, TILE.r, 1, 'rgba(255,255,255,0.18)')
   }
 
   /** A figure: whose it was (a round portrait), the label, the value. */
   private figure(label: string, figure: GiFigure, x: number, y: number, w: number) {
     const { p } = this
-    this.glass(x, y, w, FIGURE_H, 16, 'chip')
+    const c = this.c
+    const h = COLUMN.figureH
+    p.fill(x, y, w, h, 16, c.chip)
+    p.insetRing(x, y, w, h, 16, 1, c.line)
     let tx = x + 18
     if (figure.by) {
-      const size = 44
+      const size = 42
+      const px = x + 9
+      const py = y + (h - size) / 2
       const portrait = this.images.get(characterIcon(figure.by))
-      p.fill(x + 10, y + 9, size, size, size / 2, this.v('--card-pill'))
+      p.fill(px, py, size, size, size / 2, c.pill)
       if (portrait)
-        p.clipped(x + 10, y + 9, size, size, size / 2, () =>
-          p.cover(portrait, x + 10, y + 9, size, size),
-        )
-      p.insetRing(x + 10, y + 9, size, size, size / 2, 1, this.ring)
-      tx = x + 10 + size + 14
+        p.clipped(px, py, size, size, size / 2, () => p.cover(portrait, px, py, size, size))
+      tx = px + size + 12
     }
     const value = formatNumber(figure.value)
-    const valueW = this.textWidth(value, 26, 800)
-    this.line(value, x + w - 18, y + 14, 26, 800, this.v('--card-text'), {
-      lineHeight: 34,
+    const valueW = this.textWidth(value, 24, 800)
+    this.line(value, x + w - 18, y + (h - 36) / 2, 24, 800, c.text, {
+      lineHeight: 36,
       align: 'right',
     })
-    const byName = figure.by ? ` · ${characterName(figure.by)}` : ''
-    this.line(`${label}${byName}`, tx, y + 19, 16, 600, this.v('--card-secondary'), {
+    this.line(label, tx, y + (h - 24) / 2, 16, 600, c.sub, {
       lineHeight: 24,
-      max: x + w - 18 - valueW - 16 - tx,
+      max: x + w - 18 - valueW - 12 - tx,
     })
   }
 
-  /** A check mark (the fight was done): drawn, so no font needs the glyph. */
-  private check(x: number, y: number, size: number, color: string) {
-    const { ctx } = this
-    ctx.save()
-    ctx.strokeStyle = color
-    ctx.lineWidth = size / 6
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.beginPath()
-    ctx.moveTo(x + size * 0.15, y + size * 0.55)
-    ctx.lineTo(x + size * 0.42, y + size * 0.8)
-    ctx.lineTo(x + size * 0.88, y + size * 0.22)
-    ctx.stroke()
-    ctx.restore()
+  /** When the record was set, and the site. */
+  foot(box: Box) {
+    this.line(
+      t('endgame.share.recordSet', { date: formatDate(this.input.record.at * 1000) }),
+      box.x,
+      box.y,
+      17,
+      400,
+      this.c.muted,
+      { lineHeight: box.h },
+    )
+    this.line('teyvat.me', box.x + box.w, box.y, 17, 700, this.c.sub, {
+      lineHeight: box.h,
+      align: 'right',
+    })
   }
+}
+
+/** The season's dates, "Sep 30 – Nov 11, 2026" in the site's language (the calendar days it names). */
+function seasonDates(start: string, end: string): string {
+  const day = (s: string) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s)
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null
+  }
+  const from = day(start)
+  const to = day(end)
+  if (!from || !to) return ''
+  return dateFormat({ year: 'numeric', month: 'short', day: 'numeric' }).formatRange(from, to)
 }

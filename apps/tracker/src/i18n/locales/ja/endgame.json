@@ -76,10 +76,9 @@
   "share": {
     "title": "記録をシェア",
     "bestRecord": "最高記録",
-    "battlefield": "フィールド{n}",
     "strike": "最強の一撃",
     "damage": "最大合計ダメージ",
-    "battleTime": "戦闘時間",
-    "fastest": "最速"
+    "fastest": "最速",
+    "recordSet": "記録達成日 {date}"
   }
 }

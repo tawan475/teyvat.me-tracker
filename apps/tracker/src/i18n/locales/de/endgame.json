@@ -76,10 +76,9 @@
   "share": {
     "title": "Rekord teilen",
     "bestRecord": "Rekord",
-    "battlefield": "Schlachtfeld {n}",
     "strike": "Stärkster Einzelschlag",
     "damage": "Höchster Gesamtschaden",
-    "battleTime": "Kampfzeit",
-    "fastest": "Am schnellsten"
+    "fastest": "Am schnellsten",
+    "recordSet": "Rekord vom {date}"
   }
 }

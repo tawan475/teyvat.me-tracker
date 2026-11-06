@@ -76,10 +76,9 @@
   "share": {
     "title": "分享记录",
     "bestRecord": "最佳记录",
-    "battlefield": "战场{n}",
     "strike": "最强一击",
     "damage": "最高总伤害",
-    "battleTime": "战斗用时",
-    "fastest": "最快"
+    "fastest": "最快",
+    "recordSet": "记录达成于 {date}"
   }
 }

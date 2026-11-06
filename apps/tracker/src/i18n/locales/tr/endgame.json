@@ -76,10 +76,9 @@
   "share": {
     "title": "Rekoru paylaş",
     "bestRecord": "Rekor",
-    "battlefield": "{n}. Savaş Alanı",
     "strike": "Tek Vuruşta Verilen En Fazla Hasar",
     "damage": "Verilen En Yüksek Toplam Hasar",
-    "battleTime": "Savaş süresi",
-    "fastest": "En hızlı"
+    "fastest": "En hızlı",
+    "recordSet": "Rekor tarihi: {date}"
   }
 }

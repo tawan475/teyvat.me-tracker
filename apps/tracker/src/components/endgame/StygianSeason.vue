@@ -254,29 +254,35 @@ const bosses = computed(() => {
       <h3 class="text-xs font-semibold tracking-wide text-text-muted uppercase">
         {{ $t('endgame.captured.records') }}
       </h3>
-      <div class="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
+      <!-- Each card is header / fights / total on the grid's own rows (subgrid), so side by
+           side a solo card's header is as tall as a co-op card's with its players line. -->
+      <div class="grid min-w-0 grid-cols-1 gap-x-3 lg:grid-cols-2">
         <template v-for="r in recordSlots" :key="r.key">
           <article
             v-if="'empty' in r"
-            class="flex min-w-0 flex-col rounded-xl border border-dashed border-border-default bg-surface-raised/60"
+            class="row-span-3 mb-3 grid min-w-0 grid-rows-subgrid gap-0 rounded-xl border border-dashed border-border-default bg-surface-raised/60"
           >
-            <header class="flex items-center gap-2 border-b border-border-default px-4 py-2.5">
+            <header
+              class="flex flex-wrap content-start items-center gap-2 border-b border-border-default px-4 py-2.5"
+            >
               <UiBadge>
                 <component :is="r.coop ? Users : User" class="size-3.5" aria-hidden="true" />
                 {{ r.coop ? $t('endgame.captured.coop') : $t('endgame.captured.solo') }}
               </UiBadge>
             </header>
-            <p class="flex flex-1 items-center justify-center px-4 py-8 text-sm text-text-muted">
+            <p
+              class="row-span-2 flex items-center justify-center px-4 py-8 text-sm text-text-muted"
+            >
               {{ $t('endgame.captured.noRecord') }}
             </p>
           </article>
           <article
             v-else
-            class="flex min-w-0 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+            class="row-span-3 mb-3 grid min-w-0 grid-rows-subgrid gap-0 rounded-xl border border-border-default bg-surface-raised shadow-sm"
             :title="r.from"
           >
             <header
-              class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border-default px-4 py-2.5"
+              class="flex flex-wrap content-start items-center justify-between gap-x-3 gap-y-1 border-b border-border-default px-4 py-2.5"
             >
               <span class="flex min-w-0 flex-wrap items-center gap-2">
                 <UiBadge>

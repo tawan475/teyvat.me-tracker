@@ -20,8 +20,6 @@ import {
   COLUMN,
   MEDAL_PILL,
   PROFILE,
-  PROFILE_DIM,
-  PROFILE_FADE,
   SEASON_DIM,
   SEASON_FADE,
   STYGIAN_CARD,
@@ -47,7 +45,6 @@ export interface StygianBossArt {
 export interface StygianProfile {
   name: string | null
   signature: string | null
-  nameCard: string
   avatar: string
   frame: string
   uid: string | null
@@ -118,11 +115,6 @@ const PALETTE = {
   },
 } as const
 
-/** The profile's text: white with the share card's hero shadow, on both themes. */
-const HERO_SHADOWS = [
-  { x: 0, y: 2, blur: 10, color: 'rgba(0,0,0,0.65)' },
-  { x: 0, y: 1, blur: 2, color: 'rgba(0,0,0,0.6)' },
-]
 const CREAM = '#e9e5dc'
 const CREAM_INK = '#4a5366'
 
@@ -140,7 +132,6 @@ export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise
   const { profile } = input
   const urls = [
     giCdnArt(stygianMedal(input.record)),
-    profile.nameCard,
     profile.avatar,
     profile.frame,
     ...input.bosses.map((b) => b?.art ?? ''),
@@ -258,12 +249,8 @@ class StygianPainter extends CardPaint {
   profile(box: Box) {
     const p = this.p
     const { profile } = this.input
-    const nameCard = this.images.get(profile.nameCard)
-    this.faded(box, PROFILE_FADE, false, () => {
-      if (nameCard) p.cover(nameCard, box.x, box.y, box.w, box.h)
-      else p.fill(box.x, box.y, box.w, box.h, 0, this.c.season[0])
-      this.dim(box, PROFILE_DIM, false)
-    })
+    // The season panel's ground, mirrored: solid at the card's edge, fading toward the medal.
+    this.panel(box, false)
 
     const pic = PROFILE.picture
     const px = box.x + pic.x
@@ -289,20 +276,13 @@ class StygianPainter extends CardPaint {
     const max = box.w - text.left - text.right
     let y = box.y + text.top
     if (profile.name) {
-      this.line(profile.name, x, y, 34, 800, '#ffffff', {
-        lineHeight: 39,
-        shadows: HERO_SHADOWS,
-        max,
-      })
+      this.line(profile.name, x, y, 34, 800, this.c.text, { lineHeight: 39, max })
       y += 39 + 6
       if (profile.signature) {
         this.p.font(400, 18, this.family)
         const lines = wrapLines(profile.signature, max, (s) => this.p.measure(s), 2)
         for (const line of lines) {
-          this.line(line, x, y, 18, 400, 'rgba(255,255,255,0.92)', {
-            lineHeight: 24.3,
-            shadows: HERO_SHADOWS,
-          })
+          this.line(line, x, y, 18, 400, this.c.sub, { lineHeight: 24.3 })
           y += 24.3
         }
       }
@@ -314,8 +294,8 @@ class StygianPainter extends CardPaint {
         box.y + box.h - text.bottom - 27,
         18,
         400,
-        'rgba(255,255,255,0.92)',
-        { lineHeight: 27, shadows: HERO_SHADOWS },
+        this.c.sub,
+        { lineHeight: 27 },
       )
   }
 
@@ -356,21 +336,32 @@ class StygianPainter extends CardPaint {
     this.line(value, x, top + 30, size, 800, this.c.time, { lineHeight: valueH })
   }
 
-  /** The season: mode, month and version; its name; its dates. A panel fading toward the medal. */
-  season(box: Box) {
-    this.faded(box, SEASON_FADE, true, () => {
+  /**
+   * The header's side panel: the season colours at 135° (mirrored for the
+   * left), dimmed toward and fading out at the medal's side. The profile
+   * and the season use the same one, one the mirror of the other.
+   */
+  private panel(box: Box, fromRight: boolean) {
+    this.faded(box, SEASON_FADE, fromRight, () => {
       const ctx = this.p.ctx
-      // `linear-gradient(135deg, …)` over the box.
       const half = (box.w + box.h) / 4
       const cx = box.x + box.w / 2
       const cy = box.y + box.h / 2
-      const g = ctx.createLinearGradient(cx - half, cy - half, cx + half, cy + half)
+      // 135° (top-left to bottom-right) on the right; mirrored, top-right to bottom-left.
+      const g = fromRight
+        ? ctx.createLinearGradient(cx - half, cy - half, cx + half, cy + half)
+        : ctx.createLinearGradient(cx + half, cy - half, cx - half, cy + half)
       g.addColorStop(0, this.c.season[0])
       g.addColorStop(1, this.c.season[1])
       ctx.fillStyle = g
       ctx.fillRect(box.x, box.y, box.w, box.h)
-      this.dim(box, SEASON_DIM, true)
+      this.dim(box, SEASON_DIM, fromRight)
     })
+  }
+
+  /** The season: mode, month and version; its name; its dates. A panel fading toward the medal. */
+  season(box: Box) {
+    this.panel(box, true)
     const right = box.x + box.w - 28
     const max = box.w - 50
     const top = box.y + (box.h - (30 + 4 + 50.6 + 4 + 28.5)) / 2
@@ -500,36 +491,44 @@ class StygianPainter extends CardPaint {
     const meta = characterMeta(key)
     const rarity = meta?.[0] ?? 4
     const now = this.input.roster.get(key)
-    p.clipped(x, y, cell.w, cell.h, cell.r, () => {
+    // On whole pixels, so the art, the portrait, the curl and the strip meet without seams.
+    const [left, top, width, height] = p.snap(x, y, cell.w, cell.h)
+    const stripTop = Math.round(top + height - cell.strip)
+    p.clipped(left, top, width, height, cell.r, () => {
       const art = this.images.get(qualityCell(rarity))
-      if (art) p.image(art, x, y, cell.w, cell.h)
-      else p.fill(x, y, cell.w, cell.h, 0, rarity === 5 ? '#b7791f' : '#7c5ab8')
+      if (art) p.image(art, left, top, width, height)
+      else p.fill(left, top, width, height, 0, rarity === 5 ? '#b7791f' : '#7c5ab8')
+      // The portrait fills all of the cell above the strip (a little taller
+      // than square: ~1% cropped off each side), standing on the strip as in
+      // the game's bag, so no sliver of the cell shows above or below it.
       const portrait = this.images.get(characterIcon(key))
-      if (portrait) p.cover(portrait, x, y, cell.w, cell.w)
-      // The strip, and the cell's inner curl over its right end.
-      const sx = x + cell.w - cell.curl
-      const sy = y + cell.h - cell.curlBottom - cell.curl
+      if (portrait) p.cover(portrait, left, top, width, stripTop - top, { y: 1 })
+      // The cell's inner curl over the strip's right end: a quarter circle cut
+      // out of a square of cream, run 1px into the strip.
+      const curl = Math.round(cell.curl)
+      const cx = left + width - curl
+      const cy = stripTop - curl
       ctx.save()
       ctx.beginPath()
-      ctx.rect(sx, sy, cell.curl, cell.curl)
+      ctx.rect(cx, cy, curl, curl + 1)
       ctx.clip()
       ctx.beginPath()
-      ctx.rect(sx, sy, cell.curl, cell.curl)
-      ctx.arc(sx, sy, cell.curl, 0, Math.PI * 2)
+      ctx.rect(cx, cy, curl, curl + 1)
+      ctx.arc(cx, cy, curl, 0, Math.PI * 2)
       ctx.fillStyle = CREAM
       ctx.fill('evenodd')
       ctx.restore()
-      p.fill(x, y + cell.h - cell.strip, cell.w, cell.strip, 0, CREAM)
+      p.fill(left, stripTop, width, top + height - stripTop, 0, CREAM)
     })
     if (now)
       this.line(
         t('endgame.level', { n: now.level }),
-        x + cell.w / 2,
-        y + cell.h - cell.strip,
+        left + width / 2,
+        stripTop,
         cell.levelSize,
         700,
         CREAM_INK,
-        { lineHeight: cell.strip, align: 'center' },
+        { lineHeight: top + height - stripTop, align: 'center' },
       )
     const element = meta?.[1] ? this.images.get(elementIcon(meta[1])) : null
     if (element)

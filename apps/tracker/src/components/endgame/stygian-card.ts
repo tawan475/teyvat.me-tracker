@@ -5,11 +5,11 @@
  * what it shows, worked out from one captured record, and where it goes.
  * Pure; the canvas is stygian-card-canvas.ts.
  *
- * 1920 × 1080. A header of three: the owner's in-game profile (name card
- * fading out to the ground, the profile picture in its frame at the game's
- * scale, name, signature, UID), the best-record medal and total time in a
- * pill in the middle, and the season (mode, month, version; name; dates) in
- * a panel fading the other way. Then a column per battlefield: the boss's
+ * 1920 × 1080. A header of three: the owner's in-game profile (the profile
+ * picture in its frame at the game's scale, name, signature, UID) on a
+ * panel fading toward the middle, the best-record medal and total time in a
+ * pill in the middle, and the season (mode, month, version; name; dates) on
+ * its mirror. Then a column per battlefield: the boss's
  * art growing to fill it, its name and title, the battle time, the team as
  * the game's bag cells (element, constellation, level from the newest
  * capture) and the strongest strike and top damage with whose they were.
@@ -39,20 +39,11 @@ export const STYGIAN_CARD = {
 export const MEDAL_PILL = { h: 172, medal: 140, gap: 18, padLeft: 22, padRight: 40 } as const
 
 /**
- * Where the name card is opaque, then fades out (alpha by the card's width,
- * left to right); the season panel fades the same way from the right,
- * starting later (it is a plain panel, which melts into the ground sooner).
- * The user's tuning, 2026-11-06.
+ * The header's side panels fade out toward the medal (alpha by the panel's
+ * width from its outer edge), and the ground's colour dims them as they go.
+ * The season panel's, and the profile's mirrored (the user's tuning,
+ * 2026-11-06: one the mirror of the other, no name card).
  */
-export const PROFILE_FADE: readonly (readonly [number, number])[] = [
-  [0, 1],
-  [0.28, 1],
-  [0.41, 0.8],
-  [0.53, 0.55],
-  [0.64, 0.3],
-  [0.73, 0.12],
-  [0.79, 0],
-]
 export const SEASON_FADE: readonly (readonly [number, number])[] = [
   [0, 1],
   [0.4, 1],
@@ -62,13 +53,7 @@ export const SEASON_FADE: readonly (readonly [number, number])[] = [
   [0.94, 0.12],
   [1, 0],
 ]
-/** How much of the ground colour lies over the fading part (to dim it), by the same axis. */
-export const PROFILE_DIM: readonly (readonly [number, number])[] = [
-  [0.28, 0],
-  [0.45, 0.25],
-  [0.63, 0.5],
-  [0.79, 0.6],
-]
+/** How much of the ground's colour lies over a fading panel, by the same axis. */
 export const SEASON_DIM: readonly (readonly [number, number])[] = [
   [0.4, 0],
   [0.62, 0.25],

@@ -11,6 +11,7 @@ import { loadLatestInventory } from '@/data/account-data'
 import { shareUid } from '@/data/character-build'
 import { stygianBossPicture, type EndgameData } from '@/data/endgame'
 import { buildProfileCard, loadProfileArt } from '@/data/profile-card'
+import { recordPlayers } from '@/data/stygian-coop'
 import { travelerGender } from '@/data/traveler'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
@@ -27,6 +28,7 @@ import {
   drawStygianCard,
   type DrawnStygian,
   type StygianBossArt,
+  type StygianCardPlayer,
   type StygianProfile,
 } from './stygian-card-canvas'
 
@@ -109,6 +111,20 @@ const profile = computed<StygianProfile>(() => {
     uid: showUid.value ? shareUid(account.value.uid, player?.uid ?? null) : null,
   }
 })
+/** A co-op record's players for the foot line; names follow the Name option. */
+const players = computed<StygianCardPlayer[]>(() =>
+  props.record
+    ? recordPlayers(props.record).map((pl) => {
+        const icon = pl.picture ? extras.data.value?.art.avatars.get(pl.picture) : undefined
+        return {
+          p: pl.p,
+          self: pl.self,
+          picture: icon ? gameIcon(icon) : '',
+          name: showName.value ? pl.nickname || `${pl.p}P` : null,
+        }
+      })
+    : [],
+)
 const version = computed(() =>
   extras.data.value ? seasonVersion(props.season.start, extras.data.value.banners) : null,
 )
@@ -169,6 +185,7 @@ function redraw() {
       roster: roster.value,
       theme: theme.value,
       profile: profile.value,
+      players: players.value,
     }),
     png: null,
   }))()
@@ -186,6 +203,7 @@ watch(
     props.record,
     theme.value,
     profile.value,
+    players.value,
     version.value,
     roster.value,
     locale.value,

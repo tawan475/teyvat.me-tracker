@@ -2,13 +2,17 @@
  * The Stygian Onslaught record card drawn on a canvas, for its PNG and its
  * preview (stygian-card.ts says what is on it and where; design F). The
  * ground is the game's Stygian purple. Done or not is never the colour
- * alone: a fight not done has its time struck through.
+ * alone: a fight not done has its time struck through. A co-op record
+ * (Capture 1.17.20) puts every player's characters in the tiles, each with
+ * the game's 1P-4P badge at its bottom-left, and the players in the foot
+ * line between the date and the site (the user's design, 2026-11-07).
  */
 
 import type { GiFigure, GiStygianRecord } from '@gdt/shared'
 import { recordTotal } from '@/data/endgame-runs'
 import { characterMeta } from '@/data/game-meta'
 import { frameSize } from '@/data/profile-card'
+import { coopBadge, fightMembers, type FightMember } from '@/data/stygian-coop'
 import { t } from '@/i18n'
 import { characterIcon, elementIcon, giCdnArt } from '@/lib/assets'
 import {
@@ -71,6 +75,17 @@ export interface StygianDrawing {
   roster: ReadonlyMap<string, { level: number; constellation: number }>
   theme: CardTheme
   profile: StygianProfile
+  /** A co-op record's players for the foot line (none for solo cards and older captures). */
+  players: readonly StygianCardPlayer[]
+}
+
+/** A player in the foot line: the badge, the picture, the name (null: the Name option is off). */
+export interface StygianCardPlayer {
+  p: number
+  self: boolean
+  /** The profile picture (a URL; '' none). */
+  picture: string
+  name: string | null
 }
 
 export interface DrawnStygian {
@@ -129,9 +144,22 @@ const rgba = (rgb: readonly number[], a: number) => `rgba(${rgb[0]},${rgb[1]},${
 
 export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise<DrawnStygian> {
   const fights = input.record.fights
+  const members = fights.map((f) => fightMembers(input.record, f))
   const keys = [
-    ...new Set(fights.flatMap((f) => [...f.team, f.strike?.by ?? '', f.damage?.by ?? ''])),
+    ...new Set(
+      fights.flatMap((f, i) => [
+        ...members[i]!.map((m) => m.key),
+        f.strike?.by ?? '',
+        f.damage?.by ?? '',
+      ]),
+    ),
   ].filter(Boolean)
+  const badges = [
+    ...new Set([
+      ...members.flat().flatMap((m) => (m.p === null ? [] : [coopBadge(m.p, m.self)])),
+      ...input.players.map((pl) => coopBadge(pl.p, pl.self)),
+    ]),
+  ]
   const rarities = [...new Set(keys.map((key) => characterMeta(key)?.[0] ?? 4))]
   const elements = [...new Set(keys.map((key) => characterMeta(key)?.[1] ?? null))].filter(
     (e) => e !== null,
@@ -145,6 +173,8 @@ export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise
     ...keys.map((key) => characterIcon(key)),
     ...rarities.map((r) => qualityCell(r)),
     ...elements.map((e) => elementIcon(e)),
+    ...badges,
+    ...input.players.map((pl) => pl.picture),
   ].filter(Boolean)
   const [images, fonts] = await Promise.all([
     CardImages.load(urls),
@@ -153,7 +183,7 @@ export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise
   const { width, height } = STYGIAN_CARD
   const p = new Painter(width, height, scale)
   try {
-    const card = new StygianPainter(p, input, images, fonts.tabular)
+    const card = new StygianPainter(p, input, members, images, fonts.tabular)
     card.ground()
     const pill = card.pillWidth()
     const header = stygianHeader(pill)
@@ -181,6 +211,8 @@ class StygianPainter extends CardPaint {
   constructor(
     p: Painter,
     private readonly input: StygianDrawing,
+    /** Each fight's characters, player by player (fightMembers). */
+    private readonly members: readonly FightMember[][],
     images: CardImages,
     family: string,
   ) {
@@ -474,9 +506,9 @@ class StygianPainter extends CardPaint {
     // The team as bag cells.
     const cellW = (right - x0 - 3 * COLUMN.tileGap) / 4
     const cell = bagCell(cellW)
-    fight.team
-      .slice(0, 4)
-      .forEach((key, i) => this.tile(key, x0 + i * (cellW + COLUMN.tileGap), cy, cellW))
+    this.members[index]!.slice(0, 4).forEach((m, i) =>
+      this.tile(m, x0 + i * (cellW + COLUMN.tileGap), cy, cellW),
+    )
     cy += cell.h + COLUMN.gap
 
     // The two figures.
@@ -490,14 +522,30 @@ class StygianPainter extends CardPaint {
     })
   }
 
-  /** A team member as the game's bag cell: portrait, element, constellation, level on the cream strip. */
-  private tile(key: string, x: number, y: number, w: number) {
+  /**
+   * A team member as the game's bag cell: portrait, element, constellation,
+   * level on the cream strip, and in a co-op record its player's badge at the
+   * bottom-left. Level and constellation: in a co-op record the record's own
+   * (another player's characters have nothing else), the account's newest
+   * capture where the record has none; on a solo card the newest capture.
+   */
+  private tile(member: FightMember, x: number, y: number, w: number) {
     const { p } = this
     const ctx = p.ctx
+    const key = member.key
     const cell = bagCell(w)
     const meta = characterMeta(key)
     const rarity = meta?.[0] ?? 4
-    const now = this.input.roster.get(key)
+    const own = member.self ? this.input.roster.get(key) : undefined
+    const now =
+      this.input.record.coop && member.level !== undefined
+        ? {
+            level: member.level,
+            constellation: member.constellation ?? own?.constellation ?? null,
+          }
+        : own
+          ? { level: own.level, constellation: own.constellation as number | null }
+          : undefined
     // On whole pixels, so the art, the portrait, the curl and the strip meet without seams.
     const [left, top, width, height] = p.snap(x, y, cell.w, cell.h)
     const stripTop = Math.round(top + height - cell.strip)
@@ -540,7 +588,7 @@ class StygianPainter extends CardPaint {
     const element = meta?.[1] ? this.images.get(elementIcon(meta[1])) : null
     if (element)
       p.contain(element, x + cell.element.x, y + cell.element.y, cell.element.d, cell.element.d)
-    if (now) {
+    if (now && now.constellation !== null) {
       const chip = cell.chip
       const label = `C${now.constellation}`
       const lh = chip.size * 1.3
@@ -556,6 +604,17 @@ class StygianPainter extends CardPaint {
         lineHeight: lh,
         align: 'center',
       })
+    }
+    // The player's badge (co-op): 38px on a 128px cell, standing on the strip.
+    if (member.p !== null) {
+      const d = (w * 38) / 128
+      p.contain(
+        this.images.get(coopBadge(member.p, member.self)),
+        left + (w * 3) / 128,
+        stripTop - d - 1,
+        d,
+        d,
+      )
     }
   }
 
@@ -603,6 +662,82 @@ class StygianPainter extends CardPaint {
     this.line('teyvat.me', box.x + box.w, box.y, 17, 700, this.c.sub, {
       lineHeight: box.h,
       align: 'right',
+    })
+    this.players(box)
+  }
+
+  /**
+   * A co-op record's players, centred in the foot line between the date and
+   * the site: each the game's badge, the profile picture, the name (when the
+   * Name option is on) and "You" on the account's own.
+   */
+  private players(box: Box) {
+    const players = this.input.players
+    if (!players.length) return
+    const { p } = this
+    const ctx = p.ctx
+    const c = this.c
+    const BADGE = 40
+    const PIC = 40
+    const GAP = 9
+    const BETWEEN = 44
+    const NAME = 19
+    const YOU = 15
+    const you = t('endgame.share.you')
+    const youW = this.textWidth(you, YOU, 600) + 18
+    const widths = players.map(
+      (pl) =>
+        BADGE +
+        (pl.picture ? GAP + PIC : 0) +
+        (pl.name ? GAP + this.textWidth(pl.name, NAME, 700) : 0) +
+        (pl.self ? GAP + youW : 0),
+    )
+    const total = widths.reduce((a, b) => a + b, 0) + BETWEEN * (players.length - 1)
+    const mid = box.y + box.h / 2
+    let x = STYGIAN_CARD.width / 2 - total / 2
+    players.forEach((pl, i) => {
+      p.contain(this.images.get(coopBadge(pl.p, pl.self)), x, mid - BADGE / 2, BADGE, BADGE)
+      let cx = x + BADGE
+      const picture = pl.picture ? this.images.get(pl.picture) : null
+      if (pl.picture) {
+        cx += GAP
+        const top = mid - PIC / 2
+        p.clipped(cx, top, PIC, PIC, PIC / 2, () => {
+          p.fill(cx, top, PIC, PIC, 0, c.chip)
+          if (picture) p.cover(picture, cx, top, PIC, PIC)
+        })
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(cx + PIC / 2, mid, PIC / 2 - 1, 0, Math.PI * 2)
+        ctx.lineWidth = 2
+        ctx.strokeStyle =
+          this.input.theme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(76,29,149,0.35)'
+        ctx.stroke()
+        ctx.restore()
+        cx += PIC
+      }
+      if (pl.name) {
+        cx += GAP
+        this.line(pl.name, cx, mid - (NAME * 1.3) / 2, NAME, 700, c.text, {
+          lineHeight: NAME * 1.3,
+        })
+        cx += this.textWidth(pl.name, NAME, 700)
+      }
+      if (pl.self) {
+        cx += GAP
+        const h = YOU * 1.3 + 4
+        ctx.save()
+        p.path(cx, mid - h / 2, youW, h, h / 2)
+        ctx.lineWidth = 1
+        ctx.strokeStyle = c.line
+        ctx.stroke()
+        ctx.restore()
+        this.line(you, cx + youW / 2, mid - (YOU * 1.3) / 2, YOU, 600, c.muted, {
+          lineHeight: YOU * 1.3,
+          align: 'center',
+        })
+      }
+      x += widths[i]! + BETWEEN
     })
   }
 }

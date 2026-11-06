@@ -21,6 +21,9 @@ import type {
   GiSignIn,
   GiFateStock,
   GiStygianFight,
+  GiStygianMember,
+  GiStygianPlayer,
+  GiStygianPlayerTeam,
   GiStygianRecord,
   GiTheaterRun,
   GiTeapot,
@@ -1370,6 +1373,13 @@ const THEATER_STARS = 50
 const TEAM_SIZE = 4
 /** A fight's seconds: the game's timer stops well under a day. */
 const FIGHT_TIME = [0, 86_400] as const
+/** Players in a co-op run (1P-4P). */
+const COOP_PLAYERS = 4
+/** ProfilePicture ids (7.2: 1 … 900004), with room. */
+const PICTURE_ID = [1, 99_999_999] as const
+/** The game allows 14; Capture sends up to 64 characters. */
+const NICKNAME_CHARS = 64
+const CHARACTER_LEVEL = [1, 120] as const
 
 /**
  * `gi_endgame` (Capture 1.17.12): the Theater run and the Stygian records,
@@ -1449,17 +1459,96 @@ function toStygianRecords(raw: unknown): GiStygianRecord[] | null {
       const strike = toFigure(f.strike)
       const damage = toFigure(f.damage)
       if (strike === null || damage === null) return null
+      const teams = toPlayerTeams(f.players)
       fights.push({
         time: f.time,
         done: f.done,
         team: [...(f.team as string[])],
         ...(strike ? { strike } : {}),
         ...(damage ? { damage } : {}),
+        ...(teams ? { players: teams } : {}),
       })
     }
-    out.push({ season: r.season, difficulty: r.difficulty, at: r.at, coop: r.coop, fights })
+    const players = r.coop ? toStygianPlayers(r.players) : null
+    out.push({
+      season: r.season,
+      difficulty: r.difficulty,
+      at: r.at,
+      coop: r.coop,
+      fights,
+      ...(players ? { players } : {}),
+    })
   }
   return out
+}
+
+/**
+ * A co-op record's players (Capture 1.17.20), by position, each position
+ * once, at most one of them the account. Appended to contract v1: a bad list
+ * drops only itself, never the record.
+ */
+function toStygianPlayers(raw: unknown): GiStygianPlayer[] | null {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > COOP_PLAYERS) return null
+  const out: GiStygianPlayer[] = []
+  for (const p of raw) {
+    if (
+      !isObject(p) ||
+      !isIntIn(p.p, 1, COOP_PLAYERS) ||
+      typeof p.self !== 'boolean' ||
+      (p.picture !== undefined && !isIntIn(p.picture, ...PICTURE_ID)) ||
+      (p.nickname !== undefined && !isNickname(p.nickname))
+    ) {
+      return null
+    }
+    out.push({
+      p: p.p,
+      self: p.self,
+      ...(p.picture !== undefined ? { picture: p.picture } : {}),
+      ...(p.nickname !== undefined ? { nickname: p.nickname as string } : {}),
+    })
+  }
+  const positions = new Set(out.map((p) => p.p))
+  if (positions.size !== out.length || out.filter((p) => p.self).length > 1) return null
+  return out.sort((a, b) => a.p - b.p)
+}
+
+/** Printable text of a nickname's length. */
+function isNickname(raw: unknown): raw is string {
+  if (typeof raw !== 'string') return false
+  const chars = [...raw].length
+  // eslint-disable-next-line no-control-regex
+  return chars >= 1 && chars <= NICKNAME_CHARS && !/[\u0000-\u001f\u007f]/.test(raw)
+}
+
+/** Every player's characters in a fight, by position (at most four in all). */
+function toPlayerTeams(raw: unknown): GiStygianPlayerTeam[] | null {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > COOP_PLAYERS) return null
+  const out: GiStygianPlayerTeam[] = []
+  let members = 0
+  for (const t of raw) {
+    if (!isObject(t) || !isIntIn(t.p, 1, COOP_PLAYERS) || !Array.isArray(t.team)) return null
+    const team: GiStygianMember[] = []
+    for (const m of t.team) {
+      if (
+        !isObject(m) ||
+        typeof m.key !== 'string' ||
+        !GOOD_KEY.test(m.key) ||
+        (m.level !== undefined && !isIntIn(m.level, ...CHARACTER_LEVEL)) ||
+        (m.constellation !== undefined && !isIntIn(m.constellation, 0, 6))
+      ) {
+        return null
+      }
+      team.push({
+        key: m.key,
+        ...(m.level !== undefined ? { level: m.level } : {}),
+        ...(m.constellation !== undefined ? { constellation: m.constellation } : {}),
+      })
+    }
+    members += team.length
+    out.push({ p: t.p, team })
+  }
+  if (members > TEAM_SIZE || new Set(out.map((t) => t.p)).size !== out.length) return null
+  return out.sort((a, b) => a.p - b.p)
 }
 
 function isIntIn(value: unknown, min: number, max: number): value is number {

@@ -2595,3 +2595,151 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     expect(alone.data.length).toBeLessThan(1_600)
   })
 })
+
+// ------------------------------------------------------ Capture 1.17.20
+
+describe("Teyvat.me Capture 1.17.20's Stygian co-op players", () => {
+  const plain = syntheticEndgame(11)
+  const base = { ...sample, gi_tasks: { welkin: { days: 30 } } }
+  // Each record's players and every fight's characters by position, the way
+  // Capture 1.17.20 sends them (a solo record: one team, no player list).
+  const withPlayers = {
+    ...plain,
+    stygian: {
+      records: plain.stygian.records.map((r, n) => ({
+        ...r,
+        fights: r.fights.map((f) => ({
+          ...f,
+          players: r.coop
+            ? [
+                { p: 1, team: [{ key: 'Furina', level: 100, constellation: 6 }] },
+                {
+                  p: 2,
+                  team: f.team
+                    .slice(0, 2)
+                    .map((key, i) => ({ key, level: 90, ...(i ? {} : { constellation: 0 }) })),
+                },
+                { p: 3, team: [{ key: 'Bennett' }] },
+              ]
+            : [{ p: 1, team: f.team.map((key) => ({ key, level: 90, constellation: n % 7 })) }],
+        })),
+        ...(r.coop
+          ? {
+              players: [
+                { p: 1, self: false, picture: 1001 + n, nickname: 'Lumine' },
+                { p: 2, self: true, picture: 2 },
+                { p: 3, self: false, nickname: 'Aether 旅人' },
+              ],
+            }
+          : {}),
+      })),
+    },
+  }
+
+  it('round-trips the players and their characters', async () => {
+    const { encoded, decoded } = await roundTrip({ ...base, gi_endgame: withPlayers })
+    expect(decoded.gi_endgame).toEqual(withPlayers)
+    const rows = JSON.parse(encoded.extras!.json).e.s as unknown[][]
+    const coop = rows.find((r) => r[3] === 1)!
+    expect(coop[5]).toEqual([
+      [1, 0, expect.any(Number), 'Lumine'],
+      [2, 1, 2, ''],
+      [3, 0, 0, 'Aether 旅人'],
+    ])
+    // Levels and constellations + 1, 0 where unknown.
+    expect((coop[4] as unknown[][])[0]![5]).toEqual([
+      [1, [[expect.anything(), 100, 7]]],
+      [2, expect.arrayContaining([[expect.anything(), 90, 1]])],
+      [3, [[expect.anything(), 0, 0]]],
+    ])
+  })
+
+  it('stores them in the binary layout, stars and starred acts too', () => {
+    const good = normalizeGood({
+      ...base,
+      gi_endgame: {
+        ...withPlayers,
+        theater: {
+          ...withPlayers.theater,
+          acts: 8,
+          stars: 7,
+          maxStars: 12,
+          starredActs: [1, 2, 4],
+        },
+      },
+    })
+    const value = JSON.parse(JSON.stringify(encodeExtras({ endgame: good.endgame! })))
+    expect(Object.keys(value.e)).toEqual(['t', 'r', 'x', 's'])
+    const blob = encodeSectionBlob('extras', value, false, null)
+    expect(blob.payload[0]).toBe(0x10)
+    const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+    expect(JSON.stringify(back.value)).toBe(JSON.stringify(value))
+  })
+
+  it('still reads a binary blob written before the players', () => {
+    const value = {
+      e: { t: [31, 129, 5, 8], s: [[5_269_012, 6, 1_790_972_494, 0, [[51, 1, [3]]]]] },
+    }
+    const blob = encodeSectionBlob('extras', value, false, null)
+    expect(blob.payload[0]).toBe(0x10)
+    // The flags byte of an old blob: t and s only, the records without a players byte.
+    const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+    expect(back.value).toEqual(value)
+  })
+
+  it('hashes as before for the trackers that dropped them', async () => {
+    const catalog = new Catalog()
+    const before = await roundTrip({ ...base, gi_endgame: plain }, catalog)
+    const after = await roundTrip({ ...base, gi_endgame: withPlayers }, catalog)
+    expect(after.encoded.contentHash).not.toBe(before.encoded.contentHash)
+    expect(after.encoded.pre21ContentHash).toBe(before.encoded.contentHash)
+    expect(after.encoded.pre20ContentHash).toBe(before.encoded.pre20ContentHash)
+    expect(before.encoded.pre21ContentHash).toBe(before.encoded.contentHash)
+  })
+
+  it('drops a bad player list or team list and keeps the record', () => {
+    const record = withPlayers.stygian.records.find((r) => r.coop)!
+    const read = (patch: object, fightPatch: object = {}) =>
+      normalizeGood({
+        ...base,
+        gi_endgame: {
+          stygian: {
+            records: [{ ...record, ...patch, fights: [{ ...record.fights[0]!, ...fightPatch }] }],
+          },
+        },
+      }).endgame!.stygian!.records[0]!
+    const players = record.players!
+    expect(read({}).players).toEqual(players)
+    for (const bad of [
+      [...players, { p: 2, self: false }],
+      [{ ...players[0]!, self: true }, players[1]!],
+      [{ ...players[0]!, p: 5 }],
+      [{ ...players[0]!, picture: 0 }],
+      [{ ...players[0]!, nickname: 'a\u0007b' }],
+      [{ ...players[0]!, nickname: 'x'.repeat(65) }],
+      [],
+    ]) {
+      const kept = read({ players: bad })
+      expect(kept.players).toBeUndefined()
+      expect(kept.fights).toHaveLength(1)
+    }
+    // A solo record's player list is not kept (the account alone).
+    expect(read({ coop: false }).players).toBeUndefined()
+    const teams = record.fights[0]!.players!
+    expect(read({}).fights[0]!.players).toEqual(teams)
+    for (const bad of [
+      [{ p: 1, team: [{ key: 'Furina', constellation: 7 }] }],
+      [{ p: 1, team: [{ key: 'Furina', level: 0 }] }],
+      [{ p: 1, team: [{ key: 'Bad Key' }] }],
+      [
+        { p: 1, team: [] },
+        { p: 1, team: [] },
+      ],
+      [{ p: 1, team: ['A', 'B', 'C', 'D', 'E'].map((key) => ({ key })) }],
+    ]) {
+      const fight = read({}, { players: bad }).fights[0]!
+      expect(fight.players).toBeUndefined()
+      expect(fight.team).toEqual(record.fights[0]!.team)
+    }
+  })
+})

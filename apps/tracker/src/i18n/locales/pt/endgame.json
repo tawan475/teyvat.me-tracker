@@ -73,7 +73,8 @@
     "starMissing": "Stella do Desafio da Estrela não obtida",
     "strike": "Golpe mais forte",
     "damage": "Maior dano",
-    "noRecord": "Sem recorde"
+    "noRecord": "Sem recorde",
+    "you": "você"
   },
   "share": {
     "title": "Compartilhar recorde",
@@ -81,6 +82,7 @@
     "strike": "Ataque mais forte",
     "damage": "Maior Dano total",
     "fastest": "Mais rápido",
-    "recordSet": "Recorde em {date}"
+    "recordSet": "Recorde em {date}",
+    "you": "Você"
   }
 }

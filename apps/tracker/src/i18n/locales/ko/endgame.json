@@ -73,7 +73,8 @@
     "starMissing": "스타 도전의 별 미획득",
     "strike": "최강 일격",
     "damage": "최대 누적 피해",
-    "noRecord": "기록 없음"
+    "noRecord": "기록 없음",
+    "you": "나"
   },
   "share": {
     "title": "기록 공유",
@@ -81,6 +82,7 @@
     "strike": "최강 일격",
     "damage": "최고 총 피해",
     "fastest": "최단",
-    "recordSet": "기록 달성일 {date}"
+    "recordSet": "기록 달성일 {date}",
+    "you": "나"
   }
 }

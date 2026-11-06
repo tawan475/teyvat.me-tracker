@@ -1,5 +1,20 @@
 # Stygian Onslaught co-op records: the other players' characters
 
+**Built 2026-11-07** (Capture 1.17.20 exports it; tracker shown below as
+built). The user's design, iterated on the canvas
+https://claude.ai/artifact/GXXfRTn9YLjQz4LA8VK8LF: the players strip sits in
+the share card's FOOT line, between "Record set" and teyvat.me (never taking
+height from the boss art); each tile carries the game's short badge
+`UI_MarkPlayer<n>` (green, the other players) / `UI_MarkPlayer<n>_Self` (blue,
+you) at its bottom-left (gi-cdn `extra`); the Endgame card puts a badge on
+every character (no groups), lists the players under its header, and shows
+no tick on a cleared fight (a not-cleared one keeps its struck time and
+minus). Co-op tiles take level/C from the record; solo cards still use the
+newest capture (open question). Stored in extras `e` (record cell 6 =
+players, fight cell 6 = teams; binary layout flags 8/16, figure bit 4),
+`pre21ContentHash`. A bad players part drops only itself. The notes below
+are the plan as written before the build.
+
 Planning notes, 2026-11-06. The user noticed that a co-op record on the
 Endgame page and the share card shows only the account's own one or two
 characters per battlefield, while the game's record screen shows all four

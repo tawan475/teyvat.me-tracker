@@ -73,7 +73,8 @@
     "starMissing": "Chưa nhận Huy Hiệu Khiêu Chiến Minh Tinh",
     "strike": "Đòn mạnh nhất",
     "damage": "Sát thương cao nhất",
-    "noRecord": "Chưa có kỷ lục"
+    "noRecord": "Chưa có kỷ lục",
+    "you": "bạn"
   },
   "share": {
     "title": "Chia sẻ thành tích",
@@ -81,6 +82,7 @@
     "strike": "Tấn công mạnh nhất",
     "damage": "Sát Thương Cao Nhất",
     "fastest": "Nhanh nhất",
-    "recordSet": "Lập kỷ lục ngày {date}"
+    "recordSet": "Lập kỷ lục ngày {date}",
+    "you": "Bạn"
   }
 }

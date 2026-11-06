@@ -73,7 +73,8 @@
     "starMissing": "Stella per Sfida magistrale non ottenuta",
     "strike": "Colpo più forte",
     "damage": "Danno maggiore",
-    "noRecord": "Nessun record"
+    "noRecord": "Nessun record",
+    "you": "tu"
   },
   "share": {
     "title": "Condividi record",
@@ -81,6 +82,7 @@
     "strike": "Colpo singolo più forte",
     "damage": "Maggior quantità di danni totali inflitta",
     "fastest": "Più veloce",
-    "recordSet": "Record stabilito il {date}"
+    "recordSet": "Record stabilito il {date}",
+    "you": "Tu"
   }
 }

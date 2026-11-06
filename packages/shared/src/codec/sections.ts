@@ -30,6 +30,8 @@ import type {
   GiMiliastra,
   GiSignIn,
   GiStygianFight,
+  GiStygianPlayer,
+  GiStygianPlayerTeam,
   GiStygianRecord,
   GiTeapot,
   GiWardrobe,
@@ -1305,7 +1307,12 @@ export interface ExtrasSection {
  * strongest strike and the top damage, each [value, by (0: no character)] or
  * 0 when absent]]; `r` the run's stars [earned, possible (0: not sent)],
  * only when the capture has them; `x` the acts whose star was earned, only
- * when the capture lists them.
+ * when the capture lists them. Capture 1.17.20's co-op parts append: a
+ * record's players [position, you 0/1, picture (0: none), nickname ('':
+ * none)] as its sixth cell (co-op records that have them), and a fight's
+ * players' teams [position, [character ref, level (0: unknown),
+ * constellation + 1 (0: unknown)]] as its sixth (the figures then always
+ * written, 0 when absent).
  */
 export interface EndgameSection {
   t?: [season: number, difficulty: number, level: number, acts: number]
@@ -1313,17 +1320,31 @@ export interface EndgameSection {
   r?: [stars: number, maxStars: number]
   x?: number[]
 }
-export type StygianRecordRow = [
-  season: number,
-  difficulty: number,
-  at: number,
-  coop: number,
-  fights: StygianFightRow[],
-]
+export type StygianRecordRow =
+  | [season: number, difficulty: number, at: number, coop: number, fights: StygianFightRow[]]
+  | [
+      season: number,
+      difficulty: number,
+      at: number,
+      coop: number,
+      fights: StygianFightRow[],
+      players: StygianPlayerRow[],
+    ]
+export type StygianPlayerRow = [p: number, self: number, picture: number, nickname: string]
+export type StygianMemberCell = [key: KeyRef, level: number, constellation: number]
+export type StygianTeamRow = [p: number, members: StygianMemberCell[]]
 export type FigureCell = 0 | [value: number, by: KeyRef]
 export type StygianFightRow =
   | [time: number, done: number, team: KeyRef[]]
   | [time: number, done: number, team: KeyRef[], strike: FigureCell, damage: FigureCell]
+  | [
+      time: number,
+      done: number,
+      team: KeyRef[],
+      strike: FigureCell,
+      damage: FigureCell,
+      players: StygianTeamRow[],
+    ]
 
 export interface GiExtrasParts {
   teapot?: GiTeapot
@@ -1356,22 +1377,64 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
   if (theater?.stars !== undefined) section.r = [theater.stars, theater.maxStars ?? 0]
   if (theater?.starredActs) section.x = theater.starredActs
   if (stygian) {
-    section.s = stygian.records.map((r) => [
-      r.season,
-      r.difficulty,
-      r.at,
-      r.coop ? 1 : 0,
-      r.fights.map((f): StygianFightRow => {
-        const row: StygianFightRow = [
-          f.time,
-          f.done ? 1 : 0,
-          f.team.map((key) => toRef(CHARACTERS, key)),
-        ]
-        return f.strike || f.damage ? [...row, figureCell(f.strike), figureCell(f.damage)] : row
-      }),
-    ])
+    section.s = stygian.records.map((r): StygianRecordRow => {
+      const fights = r.fights.map((f): StygianFightRow => {
+        const team = f.team.map((key) => toRef(CHARACTERS, key))
+        if (f.players) {
+          return [
+            f.time,
+            f.done ? 1 : 0,
+            team,
+            figureCell(f.strike),
+            figureCell(f.damage),
+            f.players.map(teamRow),
+          ]
+        }
+        return f.strike || f.damage
+          ? [f.time, f.done ? 1 : 0, team, figureCell(f.strike), figureCell(f.damage)]
+          : [f.time, f.done ? 1 : 0, team]
+      })
+      const head = [r.season, r.difficulty, r.at, r.coop ? 1 : 0] as const
+      return r.players ? [...head, fights, r.players.map(playerRow)] : [...head, fights]
+    })
   }
   return Object.keys(section).length > 0 ? section : null
+}
+
+const playerRow = (p: GiStygianPlayer): StygianPlayerRow => [
+  p.p,
+  p.self ? 1 : 0,
+  p.picture ?? 0,
+  p.nickname ?? '',
+]
+
+const teamRow = (t: GiStygianPlayerTeam): StygianTeamRow => [
+  t.p,
+  t.team.map((m) => [
+    toRef(CHARACTERS, m.key),
+    m.level ?? 0,
+    m.constellation === undefined ? 0 : m.constellation + 1,
+  ]),
+]
+
+function playerOf([p, self, picture, nickname]: StygianPlayerRow): GiStygianPlayer {
+  return {
+    p,
+    self: self === 1,
+    ...(picture ? { picture } : {}),
+    ...(nickname ? { nickname } : {}),
+  }
+}
+
+function teamOf([p, members]: StygianTeamRow): GiStygianPlayerTeam {
+  return {
+    p,
+    team: members.map(([ref, level, constellation]) => ({
+      key: fromRef(CHARACTERS, ref),
+      ...(level ? { level } : {}),
+      ...(constellation ? { constellation: constellation - 1 } : {}),
+    })),
+  }
 }
 
 const figureCell = (figure: GiFigure | undefined): FigureCell =>
@@ -1400,7 +1463,7 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
   if (section.s) {
     endgame.stygian = {
       records: section.s.map(
-        ([season, difficulty, at, coop, fights]): GiStygianRecord => ({
+        ([season, difficulty, at, coop, fights, players]): GiStygianRecord => ({
           season,
           difficulty,
           at,
@@ -1409,14 +1472,17 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
             const [time, done, team] = row
             const strike = figureOf(row[3])
             const damage = figureOf(row[4])
+            const teams = row[5]
             return {
               time,
               done: done === 1,
               team: team.map((ref) => fromRef(CHARACTERS, ref)),
               ...(strike ? { strike } : {}),
               ...(damage ? { damage } : {}),
+              ...(teams ? { players: teams.map(teamOf) } : {}),
             }
           }),
+          ...(players ? { players: players.map(playerOf) } : {}),
         }),
       ),
     }

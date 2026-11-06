@@ -73,7 +73,8 @@
     "starMissing": "Star Challenge Stella not earned",
     "strike": "Strongest strike",
     "damage": "Most damage",
-    "noRecord": "No record"
+    "noRecord": "No record",
+    "you": "you"
   },
   "share": {
     "title": "Share record",
@@ -81,6 +82,7 @@
     "strike": "Strongest Single Strike",
     "damage": "Highest Total Damage Dealt",
     "fastest": "Fastest",
-    "recordSet": "Record set {date}"
+    "recordSet": "Record set {date}",
+    "you": "You"
   }
 }

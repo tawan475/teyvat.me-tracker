@@ -433,9 +433,38 @@ export interface GiStygianRecord {
   difficulty: number
   /** Unix seconds the record was set. */
   at: number
-  /** A co-op run (the other players' teams and UIDs are never exported). */
+  /** A co-op run (the other players' UIDs are never exported). */
   coop: boolean
   fights: GiStygianFight[]
+  /** A co-op run's players by position (Capture 1.17.20+). */
+  players?: GiStygianPlayer[]
+}
+
+/** A player of a co-op record, as the game's record screen lists them. */
+export interface GiStygianPlayer {
+  /** The position, 1-4: the game's 1P-4P. */
+  p: number
+  /** The account's own place in the run. */
+  self: boolean
+  /** ProfilePicture id. */
+  picture?: number
+  nickname?: string
+}
+
+/** One player's characters in a fight (Capture 1.17.20+). */
+export interface GiStygianPlayerTeam {
+  /** The player's position (`GiStygianPlayer.p`; 1 in a solo run). */
+  p: number
+  team: GiStygianMember[]
+}
+
+/** A character as it was when the record was set. */
+export interface GiStygianMember {
+  /** GOOD character key. */
+  key: string
+  level?: number
+  /** 0-6. */
+  constellation?: number
 }
 
 export interface GiStygianFight {
@@ -448,6 +477,8 @@ export interface GiStygianFight {
   strike?: GiFigure
   /** The highest total damage dealt by one character. */
   damage?: GiFigure
+  /** Every player's characters by position, with the record's own level and C (Capture 1.17.20+). */
+  players?: GiStygianPlayerTeam[]
 }
 
 /** A damage figure and, when the game names one character for it, whose. */

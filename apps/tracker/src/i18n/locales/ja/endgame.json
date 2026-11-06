@@ -73,7 +73,8 @@
     "starMissing": "スター挑戦星章は未獲得",
     "strike": "最大単発ダメージ",
     "damage": "最大累計ダメージ",
-    "noRecord": "記録なし"
+    "noRecord": "記録なし",
+    "you": "あなた"
   },
   "share": {
     "title": "記録をシェア",
@@ -81,6 +82,7 @@
     "strike": "最強の一撃",
     "damage": "最大合計ダメージ",
     "fastest": "最速",
-    "recordSet": "記録達成日 {date}"
+    "recordSet": "記録達成日 {date}",
+    "you": "あなた"
   }
 }

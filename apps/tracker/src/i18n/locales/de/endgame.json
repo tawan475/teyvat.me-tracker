@@ -73,7 +73,8 @@
     "starMissing": "Star-Abzeichen nicht erhalten",
     "strike": "Stärkster Treffer",
     "damage": "Höchster Schaden",
-    "noRecord": "Kein Rekord"
+    "noRecord": "Kein Rekord",
+    "you": "du"
   },
   "share": {
     "title": "Rekord teilen",
@@ -81,6 +82,7 @@
     "strike": "Stärkster Einzelschlag",
     "damage": "Höchster Gesamtschaden",
     "fastest": "Am schnellsten",
-    "recordSet": "Rekord vom {date}"
+    "recordSet": "Rekord vom {date}",
+    "you": "Du"
   }
 }

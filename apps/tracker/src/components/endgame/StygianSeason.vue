@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
-import { Check, ExternalLink, Minus, Share2, User, Users } from 'lucide-vue-next'
+import { ExternalLink, Minus, Share2, User, Users } from 'lucide-vue-next'
 import type { GiStygianRecord } from '@gdt/shared'
 import type { EndgameText, StygianSeason } from '@gdt/game-data/endgame'
 import GameText from '@/components/game/GameText.vue'
@@ -22,6 +22,8 @@ import {
   recordTotal,
   type CapturedStygian,
 } from '@/data/endgame-capture'
+import { loadProfileArt, type ProfileArt } from '@/data/profile-card'
+import { coopBadge, fightMembers, recordPlayers } from '@/data/stygian-coop'
 import { characterName } from '@/i18n/game-names'
 import { t } from '@/i18n'
 import { formatDate, formatNumber, formatShort } from '@/lib/format'
@@ -87,6 +89,23 @@ function clearsUrl(index: number): string | null {
   return name ? `${STYGIAN_MOE}clears?${new URLSearchParams({ boss: name })}` : null
 }
 /**
+ * The co-op players' profile pictures (Capture 1.17.20) come from the game
+ * data's player topic, loaded only when a record names one.
+ */
+const profileArt = shallowRef<ProfileArt | null>(null)
+watch(
+  () => props.records?.records.some((r) => r.players?.some((p) => p.picture)),
+  (named) => {
+    if (named && !profileArt.value)
+      loadProfileArt().then(
+        (a) => (profileArt.value = a),
+        () => {},
+      )
+  },
+  { immediate: true },
+)
+
+/**
  * The account's records this season, solo first: each fight with the boss
  * of that slot on the record's difficulty (its icon and short name), the
  * time, whether it was done and the player's team.
@@ -97,7 +116,23 @@ const yourRecords = computed(() => {
   return soloFirst(props.records.records).map((r) => {
     const row = props.season.difficulties.find((d) => d.difficulty === r.difficulty)
     const total = recordTotal(r)
+    // A co-op record's players (Capture 1.17.20): the game's badge, picture, name.
+    const players = recordPlayers(r).map((p) => {
+      const icon = p.picture ? profileArt.value?.avatars.get(p.picture) : undefined
+      const name = p.nickname || `${p.p}P`
+      return {
+        p: p.p,
+        tag: `${p.p}P`,
+        badge: coopBadge(p.p, p.self),
+        picture: icon ? gameIcon(icon) : '',
+        name,
+        self: p.self,
+        title: `${p.p}P · ${name}${p.self ? ` (${t('endgame.captured.you')})` : ''}`,
+      }
+    })
+    const playerTitle = (n: number) => players.find((p) => p.p === n)?.title ?? `${n}P`
     return {
+      players,
       key: `${r.coop ? 'c' : 's'}-${r.difficulty}-${r.at}`,
       record: r,
       coop: r.coop,
@@ -116,7 +151,16 @@ const yourRecords = computed(() => {
           full,
           time: formatFightTime(f.time),
           done: f.done,
-          team: f.team,
+          // Every player's characters with their badge (co-op, 1.17.20+);
+          // the account's own team alone before that.
+          team: fightMembers(r, f).map((m, n) => ({
+            id: `${n}-${m.key}`,
+            key: m.key,
+            badge: m.p === null ? '' : coopBadge(m.p, m.self),
+            tag: m.p === null ? '' : `${m.p}P`,
+            title:
+              m.p === null ? characterName(m.key) : `${characterName(m.key)} · ${playerTitle(m.p)}`,
+          })),
           // The strongest strike and the top damage (v1 addition), with the character when named.
           figures: (['strike', 'damage'] as const).flatMap((kind) => {
             const figure = f[kind]
@@ -278,31 +322,67 @@ const bosses = computed(() => {
                   <Share2 class="size-4" aria-hidden="true" />{{ $t('share.export.share') }}
                 </UiButton>
               </span>
+              <!-- The co-op players, as the game's record screen lists them. -->
+              <ul
+                v-if="r.players.length"
+                class="flex basis-full flex-wrap items-center gap-x-4 gap-y-1.5 pt-1"
+              >
+                <li
+                  v-for="pl in r.players"
+                  :key="pl.p"
+                  class="flex min-w-0 items-center gap-1.5"
+                  :title="pl.title"
+                >
+                  <img :src="pl.badge" :alt="pl.tag" class="size-6 shrink-0" data-skeleton="off" />
+                  <img
+                    v-if="pl.picture"
+                    :src="pl.picture"
+                    alt=""
+                    loading="lazy"
+                    class="size-6 shrink-0 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                  />
+                  <span class="truncate text-xs font-semibold">{{ pl.name }}</span>
+                  <span v-if="pl.self" class="text-xs text-text-muted"
+                    >({{ $t('endgame.captured.you') }})</span
+                  >
+                </li>
+              </ul>
             </header>
             <ol class="flex flex-col px-4">
               <li
                 v-for="(f, i) in r.fights"
                 :key="i"
-                class="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
+                class="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5"
                 :class="i > 0 && 'border-t border-border-default'"
               >
-                <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="sm" />
+                <GameIcon :src="gameIcon(f.icon)" :name="f.full || f.name" size="md" />
                 <span class="flex min-w-0 flex-col gap-1">
                   <span class="truncate text-sm font-semibold" :title="f.full || undefined">{{
                     f.name
                   }}</span>
-                  <span v-if="f.team.length" class="flex flex-wrap gap-1">
-                    <img
-                      v-for="key in f.team"
-                      :key="key"
-                      :src="characterIcon(key)"
-                      :alt="characterName(key)"
-                      :title="characterName(key)"
-                      loading="lazy"
-                      class="size-7 rounded-full border border-border-strong bg-surface-overlay object-cover"
-                    />
+                  <span v-if="f.team.length" class="flex flex-wrap gap-2 ps-1">
+                    <span
+                      v-for="m in f.team"
+                      :key="m.id"
+                      class="relative size-12 shrink-0"
+                      :title="m.title"
+                    >
+                      <img
+                        :src="characterIcon(m.key)"
+                        :alt="characterName(m.key)"
+                        loading="lazy"
+                        class="size-12 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                      />
+                      <img
+                        v-if="m.badge"
+                        :src="m.badge"
+                        :alt="m.tag"
+                        data-skeleton="off"
+                        class="absolute -bottom-1 -left-1.5 size-6"
+                      />
+                    </span>
                   </span>
-                  <span v-if="f.figures.length" class="flex flex-wrap gap-x-3 gap-y-1">
+                  <span v-if="f.figures.length" class="flex flex-wrap gap-x-3 gap-y-1 pt-1">
                     <span
                       v-for="g in f.figures"
                       :key="g.kind"
@@ -316,12 +396,12 @@ const bosses = computed(() => {
                         :src="characterIcon(g.by)"
                         :alt="g.byName"
                         loading="lazy"
-                        class="size-5 rounded-full border border-border-strong bg-surface-overlay object-cover"
+                        class="size-6 rounded-full border border-border-strong bg-surface-overlay object-cover"
                       />
                     </span>
                   </span>
                 </span>
-                <!-- Done or not is a mark and a struck time, never the colour alone. -->
+                <!-- Not done is a struck time and a mark, never the colour alone (no tick on a clear: the user's call). -->
                 <span
                   class="flex items-center gap-1.5 justify-self-end"
                   :title="
@@ -333,8 +413,7 @@ const bosses = computed(() => {
                     :class="f.done ? '' : 'text-text-muted line-through'"
                     >{{ f.time }}</span
                   >
-                  <Check v-if="f.done" class="size-4 text-success-text" aria-hidden="true" />
-                  <Minus v-else class="size-4 text-text-muted" aria-hidden="true" />
+                  <Minus v-if="!f.done" class="size-4 text-text-muted" aria-hidden="true" />
                   <span class="sr-only">{{
                     f.done ? $t('endgame.captured.cleared') : $t('endgame.captured.notCleared')
                   }}</span>

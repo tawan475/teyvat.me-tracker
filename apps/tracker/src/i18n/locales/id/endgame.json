@@ -73,7 +73,8 @@
     "starMissing": "Stella Tantangan Bintang belum diperoleh",
     "strike": "Serangan terkuat",
     "damage": "Damage tertinggi",
-    "noRecord": "Belum ada rekor"
+    "noRecord": "Belum ada rekor",
+    "you": "kamu"
   },
   "share": {
     "title": "Bagikan rekor",
@@ -81,6 +82,7 @@
     "strike": "Serangan Terkuat",
     "damage": "Total DMG Tertinggi",
     "fastest": "Tercepat",
-    "recordSet": "Rekor dicapai {date}"
+    "recordSet": "Rekor dicapai {date}",
+    "you": "Kamu"
   }
 }

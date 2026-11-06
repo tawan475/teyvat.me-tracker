@@ -73,7 +73,8 @@
     "starMissing": "Yıldız Mücadelesi Yıldızı kazanılmadı",
     "strike": "En güçlü vuruş",
     "damage": "En yüksek hasar",
-    "noRecord": "Kayıt yok"
+    "noRecord": "Kayıt yok",
+    "you": "sen"
   },
   "share": {
     "title": "Rekoru paylaş",
@@ -81,6 +82,7 @@
     "strike": "Tek Vuruşta Verilen En Fazla Hasar",
     "damage": "Verilen En Yüksek Toplam Hasar",
     "fastest": "En hızlı",
-    "recordSet": "Rekor tarihi: {date}"
+    "recordSet": "Rekor tarihi: {date}",
+    "you": "Sen"
   }
 }

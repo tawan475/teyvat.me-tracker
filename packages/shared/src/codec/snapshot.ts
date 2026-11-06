@@ -1,6 +1,6 @@
 import { hashArtifactIdentity, type ArtifactIdentity } from '../artifact'
 import type { KeyDictionary } from '../dictionary'
-import type { GiCollections, GiExploration, GiTasks, Good } from '../good'
+import type { GiCollections, GiEndgame, GiExploration, GiTasks, Good } from '../good'
 import { sha256Hex128 } from '../hash'
 import { deflateRaw } from './compress'
 import { normalizeGood, type NormalizedGood, type NormalizeOptions } from './normalize'
@@ -212,6 +212,12 @@ export interface EncodedSnapshot extends ExtraSections {
    * leaves nothing), so re-uploading it stays a no-op.
    */
   pre20ContentHash: string
+  /**
+   * The content hash a tracker from before Capture 1.17.20's co-op players
+   * gave this file (the Stygian records' and fights' `players` left out of
+   * the endgame), so re-uploading it stays a no-op.
+   */
+  pre21ContentHash: string
   /**
    * The content hash with the recipes left out of collections2 (equal to
    * `contentHash` without recipes): what a tracker from before Capture
@@ -514,6 +520,29 @@ export async function completeSnapshot(
   const pre18ContentHash = await asOf(18)
   const pre19ContentHash = await asOf(19)
   const pre20ContentHash = await asOf(20)
+  // Capture 1.17.20's co-op players live inside the endgame: what the extras
+  // section was for trackers that dropped them.
+  const coop = endgame?.stygian?.records.some(
+    (r) => r.players !== undefined || r.fights.some((f) => f.players !== undefined),
+  )
+  const pre21ContentHash = coop
+    ? (
+        await chain(
+          sections.tasks,
+          sections.collections2,
+          sections.exploration,
+          sections.progress,
+          await optionalSection(
+            'extras',
+            encodeExtras({
+              ...(prepared.good.teapot ? { teapot: prepared.good.teapot } : {}),
+              ...(prepared.good.miliastra ? { miliastra: prepared.good.miliastra } : {}),
+              endgame: withoutCoop(endgame!),
+            }),
+          ),
+        )
+      ).content
+    : contentHash
   return {
     ...sections,
     artifacts,
@@ -533,6 +562,21 @@ export async function completeSnapshot(
     pre18ContentHash,
     pre19ContentHash,
     pre20ContentHash,
+    pre21ContentHash,
+  }
+}
+
+/** The endgame as trackers before Capture 1.17.20's co-op players stored it. */
+function withoutCoop(endgame: GiEndgame): GiEndgame {
+  if (!endgame.stygian) return endgame
+  return {
+    ...endgame,
+    stygian: {
+      records: endgame.stygian.records.map(({ players: _players, ...r }) => ({
+        ...r,
+        fights: r.fights.map(({ players: _teams, ...f }) => f),
+      })),
+    },
   }
 }
 

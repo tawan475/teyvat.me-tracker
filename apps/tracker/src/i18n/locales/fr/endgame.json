@@ -73,7 +73,8 @@
     "starMissing": "Astre de défi de vedette non obtenu",
     "strike": "Coup le plus fort",
     "damage": "Dégâts les plus élevés",
-    "noRecord": "Aucun record"
+    "noRecord": "Aucun record",
+    "you": "vous"
   },
   "share": {
     "title": "Partager le score",
@@ -81,6 +82,7 @@
     "strike": "Coup le plus puissant",
     "damage": "Meilleur total de DGT",
     "fastest": "Le plus rapide",
-    "recordSet": "Record établi le {date}"
+    "recordSet": "Record établi le {date}",
+    "you": "Vous"
   }
 }

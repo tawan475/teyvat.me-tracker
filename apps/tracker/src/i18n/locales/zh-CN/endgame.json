@@ -73,7 +73,8 @@
     "starMissing": "未获得明星挑战星章",
     "strike": "最强一击",
     "damage": "最高总伤害",
-    "noRecord": "暂无记录"
+    "noRecord": "暂无记录",
+    "you": "你"
   },
   "share": {
     "title": "分享记录",
@@ -81,6 +82,7 @@
     "strike": "最强一击",
     "damage": "最高总伤害",
     "fastest": "最快",
-    "recordSet": "记录达成于 {date}"
+    "recordSet": "记录达成于 {date}",
+    "you": "你"
   }
 }

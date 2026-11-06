@@ -73,7 +73,8 @@
     "starMissing": "Estrella por Desafío estelar no obtenida",
     "strike": "Golpe más fuerte",
     "damage": "Mayor daño",
-    "noRecord": "Sin registro"
+    "noRecord": "Sin registro",
+    "you": "tú"
   },
   "share": {
     "title": "Compartir récord",
@@ -81,6 +82,7 @@
     "strike": "Ataque más fuerte",
     "damage": "Mayor daño total",
     "fastest": "Más rápido",
-    "recordSet": "Récord logrado el {date}"
+    "recordSet": "Récord logrado el {date}",
+    "you": "Tú"
   }
 }

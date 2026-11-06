@@ -1019,29 +1019,61 @@ const comfortPart: TaggedPart = {
 }
 
 // `e` gi_endgame (Capture 1.17.12): a byte of flags (bit 0 = `t`, 1 = `s`,
-// 2 = `r`); `t` the Theater run's four numbers; `s` the records as count,
-// then per record season, difficulty, at, co-op, fights as count, then per
-// fight time, done, the team as count + KeyRef cells (no delta: a team is
-// unordered), a byte of figure flags (bit 0 strike, 1 damage) and each
-// present figure's value + its character as a KeyRef cell (0: none); `r`
-// the run's two star numbers.
+// 2 = `r`, 3 = `x`, 4 = the records carry Capture 1.17.20's players); `t` the
+// Theater run's four numbers; `r` the run's two star numbers; `x` the starred
+// acts as count + numbers; `s` the records as count, then per record season,
+// difficulty, at, co-op, (with bit 4) a byte, 1 when the players follow, and
+// then each player's position, you, picture and nickname; fights as count,
+// then per fight time, done, the team as count + KeyRef cells (no delta: a
+// team is unordered), a byte of figure flags (bit 0 strike, 1 damage, 2 the
+// players' teams follow) and each present figure's value + its character as a
+// KeyRef cell (0: none), then the teams as count + per team its position and
+// members as count + [KeyRef cell, level, constellation + 1]. The keys keep
+// the encoder's order (t, r, x, s): blobs written before `r` hold `t`/`s` only.
+const ENDGAME_KEYS = ['t', 'r', 'x', 's'] as const
+
 const endgamePart: TaggedPart = {
   write(w, value) {
-    const v = fields(value, ['t', 's', 'r'], ['t', 's', 'r'])
-    w.byte((v.t !== undefined ? 1 : 0) | (v.s !== undefined ? 2 : 0) | (v.r !== undefined ? 4 : 0))
+    const v = fields(value, ENDGAME_KEYS, ENDGAME_KEYS)
+    const records = v.s === undefined ? [] : array(v.s)
+    const withPlayers = records.some((record) => array(record).length === 6)
+    w.byte(
+      (v.t !== undefined ? 1 : 0) |
+        (v.s !== undefined ? 2 : 0) |
+        (v.r !== undefined ? 4 : 0) |
+        (v.x !== undefined ? 8 : 0) |
+        (withPlayers ? 16 : 0),
+    )
     if (v.t !== undefined) for (const n of row(v.t, 4)) w.uint(uint(n))
+    if (v.r !== undefined) for (const n of row(v.r, 2)) w.uint(uint(n))
+    if (v.x !== undefined) uintList(w, array(v.x) as number[])
     if (v.s !== undefined) {
-      const records = array(v.s)
       w.uint(records.length)
       for (const record of records) {
-        const [season, difficulty, at, coop, fights] = row(record, 5)
+        const cells = array(record)
+        if (cells.length !== 5 && cells.length !== 6) throw new TypeError('Not a record')
+        const [season, difficulty, at, coop, fights, players] = cells
         w.uint(uint(season)).uint(uint(difficulty)).uint(uint(at)).uint(uint(coop))
+        if (withPlayers) {
+          w.byte(players === undefined ? 0 : 1)
+          if (players !== undefined) {
+            const list = array(players)
+            w.uint(list.length)
+            for (const player of list) {
+              const [p, self, picture, nickname] = row(player, 4)
+              if (typeof nickname !== 'string') throw new TypeError('Not a nickname')
+              w.uint(uint(p)).uint(uint(self)).uint(uint(picture)).string(nickname)
+            }
+          }
+        }
         const list = array(fights)
         w.uint(list.length)
         for (const fight of list) {
-          const cells = array(fight)
-          if (cells.length !== 3 && cells.length !== 5) throw new TypeError('Not a fight')
-          const [time, done, team, strike, damage] = cells
+          const fightCells = array(fight)
+          if (fightCells.length !== 3 && fightCells.length !== 5 && fightCells.length !== 6) {
+            throw new TypeError('Not a fight')
+          }
+          const [time, done, team, strike, damage, teams] = fightCells
           w.uint(uint(time)).uint(uint(done))
           const keys = array(team) as KeyRef[]
           w.uint(keys.length)
@@ -1049,46 +1081,90 @@ const endgamePart: TaggedPart = {
           const figures = [strike, damage].map((f) =>
             f === 0 || f === undefined ? null : row(f, 2),
           )
-          w.byte((figures[0] ? 1 : 0) | (figures[1] ? 2 : 0))
+          // A six-cell fight writes its figures even when both are 0; the
+          // bit tells a five-cell fight with no figures from a three-cell one.
+          w.byte(
+            (figures[0] ? 1 : 0) |
+              (figures[1] ? 2 : 0) |
+              (teams !== undefined ? 4 : 0) |
+              (fightCells.length === 5 && !figures[0] && !figures[1] ? 8 : 0),
+          )
           for (const figure of figures) {
             if (!figure) continue
             w.uint(uint(figure[0]))
             writeRef(w, figure[1] as KeyRef, 0)
           }
+          if (teams !== undefined) {
+            const teamRows = array(teams)
+            w.uint(teamRows.length)
+            for (const teamRow of teamRows) {
+              const [p, members] = row(teamRow, 2)
+              const memberRows = array(members)
+              w.uint(uint(p)).uint(memberRows.length)
+              for (const member of memberRows) {
+                const [ref, level, constellation] = row(member, 3)
+                writeRef(w, ref as KeyRef, 0)
+                w.uint(uint(level)).uint(uint(constellation))
+              }
+            }
+          }
         }
       }
     }
-    if (v.r !== undefined) for (const n of row(v.r, 2)) w.uint(uint(n))
   },
   read(r) {
     const flags = r.byte()
-    if (flags >= 8) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
+    if (flags >= 32) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
     const section: Record<string, unknown> = {}
     if (flags & 1) section.t = [r.uint(), r.uint(), r.uint(), r.uint()]
+    if (flags & 4) section.r = [r.uint(), r.uint()]
+    if (flags & 8) section.x = readUintList(r)
     if (flags & 2) {
-      section.s = Array.from({ length: checkedCount(r) }, () => [
-        r.uint(),
-        r.uint(),
-        r.uint(),
-        r.uint(),
-        Array.from({ length: checkedCount(r) }, () => {
+      section.s = Array.from({ length: checkedCount(r) }, () => {
+        const head = [r.uint(), r.uint(), r.uint(), r.uint()]
+        let players: unknown[] | undefined
+        if (flags & 16) {
+          const has = r.byte()
+          if (has > 1) throw new CorruptDataError(`Unknown record flags ${has}`)
+          if (has) {
+            players = Array.from({ length: checkedCount(r) }, () => [
+              r.uint(),
+              r.uint(),
+              r.uint(),
+              r.string(),
+            ])
+          }
+        }
+        const fights = Array.from({ length: checkedCount(r) }, () => {
           const fight: unknown[] = [
             r.uint(),
             r.uint(),
             Array.from({ length: checkedCount(r) }, () => readRef(r, 0)[0]),
           ]
           const figures = r.byte()
-          if (figures >= 4) throw new CorruptDataError(`Unknown fight figures ${figures}`)
+          if (figures >= 16) throw new CorruptDataError(`Unknown fight figures ${figures}`)
           if (figures) {
             for (const bit of [1, 2]) {
               fight.push(figures & bit ? [r.uint(), readRef(r, 0)[0]] : 0)
             }
           }
+          if (figures & 4) {
+            fight.push(
+              Array.from({ length: checkedCount(r) }, () => [
+                r.uint(),
+                Array.from({ length: checkedCount(r) }, () => [
+                  readRef(r, 0)[0],
+                  r.uint(),
+                  r.uint(),
+                ]),
+              ]),
+            )
+          }
           return fight
-        }),
-      ])
+        })
+        return players ? [...head, fights, players] : [...head, fights]
+      })
     }
-    if (flags & 4) section.r = [r.uint(), r.uint()]
     return section
   },
 }

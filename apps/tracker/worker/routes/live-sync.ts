@@ -7,13 +7,20 @@
  *   `uid` like an import. Answers per §13: stored (`collapse`, `watching`),
  *   a duplicate, `live: false` (the account's live sync is off), 409
  *   `resync`, 429 `daily_live_limit`.
+ * - `POST /api/irminsul/attach` (Capture 1.17.21, @gdt/shared live/attach):
+ *   the endgame parts the game sends only when a screen is opened, written
+ *   into the session's newest snapshot (services/attach).
  * - `GET/DELETE /api/accounts/:id/live` and `/points` (`liveAccounts`): the
  *   owner's journal and chart points, and deleting them.
  */
 
 import {
+  ATTACH_MAX_BYTES,
   MAX_DELTA_BYTES,
+  attachRequestSchema,
   goodDeltaSchema,
+  normalizeEndgame,
+  type AttachResponse,
   type LiveChangesResponse,
   type LiveJournalResponse,
   type LivePointsResponse,
@@ -35,6 +42,7 @@ import {
   tellAlertFacts,
 } from '../services/live'
 import { deltaFacts } from '../services/alerts'
+import { attachEndgame } from '../services/attach'
 import {
   deleteJournalStatements,
   liveDb,
@@ -44,12 +52,14 @@ import {
 } from '../services/live-sync'
 import { utcDay } from '../services/upload-limits'
 
-/** The request body as text, refused past MAX_DELTA_BYTES (gzip allowed). */
-async function readDeltaText(c: Context<AppEnv>): Promise<string> {
-  const tooLarge = () =>
-    new ApiError(413, 'batch_too_large', 'A batch is at most 512 KB: send a snapshot instead')
+/** The request body as text, refused past `max` bytes (gzip allowed). */
+async function readBodyText(
+  c: Context<AppEnv>,
+  max: number,
+  tooLarge: () => ApiError,
+): Promise<string> {
   const declared = Number(c.req.header('content-length') ?? 0)
-  if (declared > MAX_DELTA_BYTES) throw tooLarge()
+  if (declared > max) throw tooLarge()
   const body = c.req.raw.body
   if (!body) throw new ApiError(400, 'invalid_json', 'Expected a JSON body')
   const gzip = c.req.header('content-encoding') === 'gzip'
@@ -60,7 +70,7 @@ async function readDeltaText(c: Context<AppEnv>): Promise<string> {
     const { done, value } = await reader.read()
     if (done) break
     size += value.length
-    if (size > MAX_DELTA_BYTES) {
+    if (size > max) {
       await reader.cancel()
       throw tooLarge()
     }
@@ -73,6 +83,16 @@ async function readDeltaText(c: Context<AppEnv>): Promise<string> {
     at += chunk.length
   }
   return new TextDecoder().decode(bytes)
+}
+
+/** The request body as text, refused past MAX_DELTA_BYTES (gzip allowed). */
+function readDeltaText(c: Context<AppEnv>): Promise<string> {
+  return readBodyText(
+    c,
+    MAX_DELTA_BYTES,
+    () =>
+      new ApiError(413, 'batch_too_large', 'A batch is at most 512 KB: send a snapshot instead'),
+  )
 }
 
 export const liveChanges = new Hono<AppEnv>().post('/changes', async (c) => {
@@ -124,6 +144,52 @@ export const liveChanges = new Hono<AppEnv>().post('/changes', async (c) => {
     seq: stored.seq,
     collapse: stored.collapse,
     watching,
+  })
+})
+
+liveChanges.post('/attach', async (c) => {
+  const owner = await uploaderOf(c, c.env.LIVE_LIMITER, 'attach')
+  let input: unknown
+  try {
+    input = JSON.parse(
+      await readBodyText(
+        c,
+        ATTACH_MAX_BYTES,
+        () => new ApiError(413, 'attach_too_large', 'An attach is at most 128 KB'),
+      ),
+    )
+  } catch (error) {
+    if (error instanceof ApiError) throw error
+    throw new ApiError(400, 'invalid_json', 'The attach is not valid JSON')
+  }
+  const parsed = attachRequestSchema.safeParse(input)
+  if (!parsed.success) {
+    throw new ApiError(400, 'invalid_attach', parsed.error.issues[0]?.message ?? 'Invalid attach')
+  }
+  const endgame = normalizeEndgame(parsed.data.gi_endgame)
+  if (!endgame) throw new ApiError(400, 'invalid_endgame', 'gi_endgame has nothing valid in it')
+  const account = uploaderAccount(owner, String(parsed.data.uid))
+  if (!account) throw new ApiError(404, 'no_snapshot', 'No account for this UID yet')
+  const attached = await attachEndgame(c.env.DB, account.id, parsed.data.session, endgame)
+  if (attached.dataVersion !== null) {
+    notifyAccount(
+      c,
+      attached.listeners,
+      {
+        type: 'data',
+        accountId: account.id,
+        dataVersion: attached.dataVersion,
+        takenAt: attached.takenAt,
+      },
+      uploaderUserId(owner),
+    )
+  }
+  return c.json<AttachResponse>({
+    ok: true,
+    snapshotId: attached.snapshotId,
+    takenAt: attached.takenAt,
+    dataVersion: attached.dataVersion ?? 0,
+    stored: attached.stored,
   })
 })
 

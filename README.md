@@ -567,6 +567,9 @@ While Teyvat.me Capture runs, it sends the account's changes between snapshots
 (`POST /api/irminsul/changes`, Bearer or `x-import-key`), and the pages show
 the newest snapshot with them applied. Plan and contract:
 `docs/plans/live-sync.md` (§13 is the wire contract as built).
+Data the game sends only when a screen is opened (the endgame records) goes
+up on its own with `POST /api/irminsul/attach` and is written into the
+session's newest snapshot (§13.5, Capture 1.17.21).
 
 - **Per account**, setting `liveSync` (default `LIVE_SYNC_DEFAULT` in
   `packages/shared/src/settings.ts`); off, imports answer without `live` and

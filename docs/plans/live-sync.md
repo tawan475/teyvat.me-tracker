@@ -842,3 +842,22 @@ journal touches, and the browser binds them (`bindItemGuids`) before `applyDelta
 (each batch as sent, simulated time from the packets), `{"type":"state","good":…}` (the
 whole export just before each snapshot and at the end). Checked with
 `GDT_JOURNAL_REPLAY=<file> pnpm --filter @gdt/shared test live-replay`.
+
+### 13.5 Attach (Capture 1.17.21, 2026-11-07)
+
+`POST /api/irminsul/attach` (Bearer or `x-import-key`, routed by `uid` like a batch;
+`@gdt/shared` `live/attach.ts`, `worker/services/attach.ts`): data the game sends only when
+a screen is opened, after the login's snapshot, which no batch path carries (`gi_endgame`:
+the Stygian records, the Spiral Abyss record book, the Theater's state after a run). Body
+`{v: 1, uid, session, gi_endgame}` (≤ 128 KB, gzip allowed); each part present replaces
+the whole part in the **session's newest snapshot** (its `gi_capture.session` must equal
+`session`): the extras section is re-encoded as a new blob and the row re-pointed, the
+content key kept (the login's own file re-uploaded stays a no-op), the account's data
+version bumped, listeners told `data`. No new snapshot, no journal change: the Endgame
+page reads snapshots as before. Answers: 200 `{ok, snapshotId, takenAt, dataVersion,
+stored}` (`stored` 0: already there), 400 `invalid_endgame`, 404 `no_snapshot`, 409
+`session_mismatch` (the newest snapshot is another login's: Capture drops it, the next
+login's snapshot carries the data), 413 `attach_too_large`. Capture sends it once per
+change (a re-opened screen with nothing new sends nothing; a snapshot being built clears
+it, since the export holds the parts), retries 429/5xx/network with backoff, drops the
+rest. Why not a `change` snapshot: 1.4 MB parsed and hashed to store 0.7 KB.

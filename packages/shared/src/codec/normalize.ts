@@ -1405,6 +1405,11 @@ function toEndgame(raw: unknown): GiEndgame | null {
   return Object.keys(endgame).length > 0 ? endgame : null
 }
 
+/** `gi_endgame` on its own (the attach request), checked as an import's. */
+export function normalizeEndgame(raw: unknown): GiEndgame | null {
+  return toEndgame(raw)
+}
+
 /** The record book's periods in the order sent; one bad period drops the book. */
 function toAbyssPeriods(raw: unknown): GiAbyssRecord[] | null {
   if (!Array.isArray(raw) || raw.length > GOOD_LIMITS.abyssPeriods) return null

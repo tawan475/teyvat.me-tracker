@@ -107,7 +107,7 @@ function identityOf(a: LiveArtifact): string {
     mainStatKey: a.mainStatKey,
     substats: a.substats,
     totalRolls: a.totalRolls ?? 0,
-    elixerCrafted: a.elixerCrafted ?? false,
+    elixirCrafted: a.elixirCrafted ?? a.elixerCrafted ?? false,
     unactivatedSubstats: a.unactivatedSubstats ?? [],
   })
 }

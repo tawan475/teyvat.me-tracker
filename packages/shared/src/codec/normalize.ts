@@ -364,7 +364,8 @@ function toArtifact(raw: Json): ArtifactOccurrence {
       mainStatKey: str(raw.mainStatKey),
       substats: toSubstats(raw.substats),
       totalRolls: num(raw.totalRolls, 0),
-      elixerCrafted: Boolean(raw.elixerCrafted),
+      // GOOD spells it "elixir"; older Capture builds and irminsul wrote "elixer".
+      elixirCrafted: Boolean(raw.elixirCrafted ?? raw.elixerCrafted),
       unactivatedSubstats: toSubstats(raw.unactivatedSubstats),
     },
     state: {

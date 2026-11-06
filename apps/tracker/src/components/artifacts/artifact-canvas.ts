@@ -308,7 +308,7 @@ export async function drawArtifactCard(
 
     // The set, in the game's green; the marks end its line when no one wears the piece.
     const marks = [
-      ...(a.elixerCrafted ? (['flask'] as const) : []),
+      ...(a.elixirCrafted ? (['flask'] as const) : []),
       ...(a.astralMark ? (['astral'] as const) : []),
       ...(a.lock ? (['lock'] as const) : []),
     ]

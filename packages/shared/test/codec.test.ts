@@ -269,7 +269,7 @@ function expectedGood(input: unknown): Omit<Good, 'timestamp'> {
       substats: identity.substats,
       totalRolls: identity.totalRolls,
       astralMark: state.astralMark,
-      elixerCrafted: identity.elixerCrafted,
+      elixirCrafted: identity.elixirCrafted,
       unactivatedSubstats: identity.unactivatedSubstats,
       ...(state.exp ? { gi_exp: state.exp } : {}),
     })),
@@ -340,7 +340,7 @@ const sample: Good = {
       lock: true,
       totalRolls: 9,
       astralMark: true,
-      elixerCrafted: false,
+      elixirCrafted: false,
       substats: [
         { key: 'critRate_', value: 10.5, initialValue: 3.9 },
         { key: 'critDMG_', value: 21.8, initialValue: 7.8 },
@@ -390,6 +390,19 @@ describe('snapshot codec', () => {
   it('round-trips a snapshot, unknown keys and duplicates included', async () => {
     const { decoded } = await roundTrip(sample)
     expect(canonical(decoded)).toEqual(canonical(expectedGood(sample)))
+  })
+
+  it("keeps the elixir flag from GOOD's elixirCrafted and the old elixerCrafted alike", async () => {
+    const piece = sample.artifacts[0]!
+    const { elixirCrafted: _, ...withoutFlag } = piece
+    for (const artifact of [
+      { ...withoutFlag, elixirCrafted: true },
+      { ...withoutFlag, elixerCrafted: true },
+    ]) {
+      const { decoded } = await roundTrip({ ...sample, artifacts: [artifact] })
+      expect(decoded.artifacts[0]).toMatchObject({ elixirCrafted: true })
+      expect(decoded.artifacts[0]).not.toHaveProperty('elixerCrafted')
+    }
   })
 
   it('omits achievements when the file had none', async () => {
@@ -990,7 +1003,7 @@ describe('stored before sections could be deltas', () => {
       mainStatKey: 'hp',
       substats: [],
       totalRolls: 0,
-      elixerCrafted: false,
+      elixirCrafted: false,
       unactivatedSubstats: [],
     })
     const catalog = new Map([

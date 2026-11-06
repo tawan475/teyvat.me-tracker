@@ -207,7 +207,7 @@ function artifactFields(a: LiveArtifact): unknown[] {
     a.mainStatKey,
     subs(a.substats),
     a.totalRolls ?? 0,
-    a.elixerCrafted ? 1 : 0,
+    (a.elixirCrafted ?? a.elixerCrafted) ? 1 : 0,
     subs(a.unactivatedSubstats),
     a.location ?? '',
     a.lock ? 1 : 0,
@@ -284,7 +284,7 @@ export function preparedItemIndex(good: NormalizedGood): ItemIndex | null {
       substats: identity.substats,
       totalRolls: identity.totalRolls,
       astralMark: state.astralMark,
-      elixerCrafted: identity.elixerCrafted,
+      elixirCrafted: identity.elixirCrafted,
       unactivatedSubstats: identity.unactivatedSubstats,
     }
     return [[guid, itemFingerprint('artifacts', item)]]

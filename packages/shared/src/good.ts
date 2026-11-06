@@ -24,6 +24,12 @@ export interface GoodArtifact {
   substats: GoodSubstat[]
   totalRolls?: number
   astralMark?: boolean
+  /** GOOD's name (Genshin Optimizer reads only this one). */
+  elixirCrafted?: boolean
+  /**
+   * The misspelling Teyvat.me Capture before 1.17.18 and irminsul write; read
+   * as `elixirCrafted` when that is absent, never written.
+   */
   elixerCrafted?: boolean
   unactivatedSubstats?: GoodSubstat[]
   /** EXP toward the next level (Teyvat.me Capture); absent = 0 or unknown. */

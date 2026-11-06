@@ -16,7 +16,7 @@ const catalog = new Map<number, CatalogEntry>(
       mainStatKey: 'hp',
       substats: [],
       totalRolls: 8,
-      elixerCrafted: false,
+      elixirCrafted: false,
       unactivatedSubstats: [],
       cv: 0,
       rv: 0,

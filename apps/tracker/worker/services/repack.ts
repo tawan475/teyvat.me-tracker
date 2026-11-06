@@ -587,7 +587,7 @@ function identityOfRow(r: Record<string, unknown>): ArtifactIdentity {
     mainStatKey: r.main_stat_key as string,
     substats: expandSubstats(JSON.parse(r.substats as string)),
     totalRolls: r.total_rolls as number,
-    elixerCrafted: r.elixer_crafted === 1,
+    elixirCrafted: r.elixer_crafted === 1,
     unactivatedSubstats: expandSubstats(JSON.parse(r.unactivated_substats as string)),
   }
 }

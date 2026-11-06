@@ -125,7 +125,7 @@ describe('rows and filters', () => {
       ],
       unactivatedSubstats: [{ key: 'critDMG_', value: 7.8 }],
     }),
-    piece({ rarity: 4, level: 16, location: 'Bennett', elixerCrafted: true }),
+    piece({ rarity: 4, level: 16, location: 'Bennett', elixirCrafted: true }),
     piece({ rarity: 3, level: 0, lock: true, substats: [{ key: 'hp_', value: 3.5 }] }),
   ]
   const rows = buildArtifactRows(artifacts, [40, 41, 12, 7])

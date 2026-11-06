@@ -227,7 +227,7 @@ const rankTitle = computed(() =>
         {{ $t('artifacts.detail.astral') }}
       </li>
       <li
-        v-if="artifact.elixerCrafted"
+        v-if="artifact.elixirCrafted"
         class="flex items-center gap-1.5"
         :title="$t('artifacts.detail.elixirTitle')"
       >

@@ -97,6 +97,22 @@ describe('GOOD-X delta contract', () => {
     expect(canonicalLiveGood(applied)).toEqual(canonicalLiveGood(base))
   })
 
+  it("reads an artifact sent as elixerCrafted (Capture before 1.17.18) as GOOD's elixirCrafted", () => {
+    const piece = { ...base.artifacts[0]!, gi_guid: undefined }
+    const { elixirCrafted: _, ...old } = { ...piece, elixerCrafted: true } as Record<
+      string,
+      unknown
+    >
+    const added = applyDelta(base, [['add', ['artifacts', '424242'], old]])
+    const item = added.artifacts.find((a) => a.gi_guid === '424242')! as Record<string, unknown>
+    expect(item.elixirCrafted).toBe(true)
+    expect(item).not.toHaveProperty('elixerCrafted')
+    const set = applyDelta(added, [['set', ['artifacts', '424242', 'elixerCrafted'], false]])
+    const after = set.artifacts.find((a) => a.gi_guid === '424242')! as Record<string, unknown>
+    expect(after.elixirCrafted).toBe(false)
+    expect(after).not.toHaveProperty('elixerCrafted')
+  })
+
   it('creates sections only when something goes in them', () => {
     const bare: LiveGood = {
       format: 'GOOD',

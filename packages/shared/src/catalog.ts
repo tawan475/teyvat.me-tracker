@@ -24,7 +24,7 @@ export function expandSubstats(compact: readonly CompactSubstat[]): GoodSubstat[
  * One artifact catalog row on the wire, positional because an account's
  * catalog is thousands of rows:
  * [id, setKey, slotKey, level, rarity, mainStatKey, substats, totalRolls,
- *  elixerCrafted (0/1), unactivatedSubstats]
+ *  elixirCrafted (0/1), unactivatedSubstats]
  */
 export type CatalogRow = [
   number,
@@ -59,7 +59,7 @@ export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, Catalo
       mainStatKey: r[5],
       substats,
       totalRolls: r[7],
-      elixerCrafted: r[8] === 1,
+      elixirCrafted: r[8] === 1,
       unactivatedSubstats: expandSubstats(r[9]),
       // Derived on read, never stored, so a formula change applies everywhere.
       cv: calculateCV(substats),

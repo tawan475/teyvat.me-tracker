@@ -232,7 +232,7 @@ const wearer = computed(() => {
     <p class="flex items-center gap-2 px-3 pb-1.5 text-sm font-semibold" aria-hidden="true">
       <span class="min-w-0 flex-1 truncate" :class="CARD_SET">{{ row.setName }}</span>
       <span v-if="!row.ownerName" class="flex shrink-0 items-center gap-1.5">
-        <FlaskConical v-if="artifact.elixerCrafted" class="size-4" :class="CARD_MUTED" />
+        <FlaskConical v-if="artifact.elixirCrafted" class="size-4" :class="CARD_MUTED" />
         <Sparkle v-if="artifact.astralMark" class="size-4 fill-current text-[#e0a417]" />
         <Lock v-if="artifact.lock" class="size-4 text-[#e8704a]" stroke-width="2.6" />
       </span>
@@ -256,7 +256,7 @@ const wearer = computed(() => {
         $t('artifacts.card.equipped', { name: row.ownerName })
       }}</span>
       <span class="ml-auto flex shrink-0 items-center gap-1.5">
-        <FlaskConical v-if="artifact.elixerCrafted" class="size-4" :class="CARD_MUTED" />
+        <FlaskConical v-if="artifact.elixirCrafted" class="size-4" :class="CARD_MUTED" />
         <Sparkle v-if="artifact.astralMark" class="size-4 fill-current text-[#e0a417]" />
         <Lock v-if="artifact.lock" class="size-4 text-[#e8704a]" stroke-width="2.6" />
       </span>

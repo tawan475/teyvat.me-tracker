@@ -29,7 +29,7 @@ function entry(
       { key: 'critDMG_', value: 14 },
     ],
     totalRolls: 8,
-    elixerCrafted: false,
+    elixirCrafted: false,
     unactivatedSubstats: [],
     cv: opts.cv ?? 28,
     rv: 600,

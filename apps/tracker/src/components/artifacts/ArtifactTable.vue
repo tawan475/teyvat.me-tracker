@@ -216,7 +216,7 @@ const owner = (row: ArtifactRow) =>
           <td class="hidden py-1.5 pr-3 md:table-cell">
             <span class="flex items-center justify-end gap-1.5 text-text-muted">
               <FlaskConical
-                v-if="row.artifact.elixerCrafted"
+                v-if="row.artifact.elixirCrafted"
                 class="size-4"
                 :aria-label="$t('artifacts.table.elixir')"
               />

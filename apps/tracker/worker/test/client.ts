@@ -137,7 +137,7 @@ export function sampleGood(overrides: Partial<Good> = {}): Good {
         lock: true,
         totalRolls: 9,
         astralMark: true,
-        elixerCrafted: false,
+        elixirCrafted: false,
         substats: [
           { key: 'critRate_', value: 10.5, initialValue: 3.9 },
           { key: 'critDMG_', value: 21.8, initialValue: 7.8 },
@@ -154,7 +154,7 @@ export function sampleGood(overrides: Partial<Good> = {}): Good {
         lock: false,
         totalRolls: 1,
         astralMark: false,
-        elixerCrafted: false,
+        elixirCrafted: false,
         substats: [{ key: 'hp', value: 167 }],
         unactivatedSubstats: [],
       },
@@ -222,7 +222,7 @@ export function bigGood(overrides: Partial<Good> = {}): Good {
     lock: scatter(i, 3) !== 0,
     astralMark: scatter(i, 11) === 0,
     totalRolls: 9,
-    elixerCrafted: false,
+    elixirCrafted: false,
     substats: [
       { key: 'critRate_', value: 3 + (i % 50) / 10 },
       { key: 'hp', value: 100 + i },

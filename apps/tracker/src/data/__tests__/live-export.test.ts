@@ -14,7 +14,7 @@ const artifact = {
   substats: [{ key: 'critRate_', value: 3.9 }],
   totalRolls: 4,
   astralMark: false,
-  elixerCrafted: false,
+  elixirCrafted: false,
   unactivatedSubstats: [],
 }
 const good: Good = {

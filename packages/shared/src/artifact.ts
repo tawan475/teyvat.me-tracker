@@ -49,7 +49,7 @@ export interface ArtifactIdentity {
   mainStatKey: string
   substats: GoodSubstat[]
   totalRolls: number
-  elixerCrafted: boolean
+  elixirCrafted: boolean
   unactivatedSubstats: GoodSubstat[]
 }
 
@@ -76,7 +76,7 @@ export function artifactIdentityText(identity: ArtifactIdentity): string {
     identity.mainStatKey,
     identity.substats.map(substatTuple),
     identity.totalRolls,
-    identity.elixerCrafted ? 1 : 0,
+    identity.elixirCrafted ? 1 : 0,
     identity.unactivatedSubstats.map(substatTuple),
   ])
 }

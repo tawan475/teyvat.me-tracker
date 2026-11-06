@@ -94,7 +94,7 @@ describe('the developer page', () => {
           substats: [],
           totalRolls: 8,
           astralMark: false,
-          elixerCrafted: false,
+          elixirCrafted: false,
           unactivatedSubstats: [],
           gi_guid: '3488998120056947072',
         },

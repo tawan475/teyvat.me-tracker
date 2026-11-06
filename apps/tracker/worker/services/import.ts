@@ -676,7 +676,7 @@ async function insertArtifacts(
         compactSubstats(a.substats),
         compactSubstats(a.unactivatedSubstats),
         a.totalRolls,
-        a.elixerCrafted ? 1 : 0,
+        a.elixirCrafted ? 1 : 0,
       ]
     })
     statements.push(

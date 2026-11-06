@@ -298,7 +298,7 @@ export function decodeArtifacts(
       substats: identity.substats,
       totalRolls: identity.totalRolls,
       astralMark: (flags & ASTRAL_MARK) !== 0,
-      elixerCrafted: identity.elixerCrafted,
+      elixirCrafted: identity.elixirCrafted,
       unactivatedSubstats: identity.unactivatedSubstats,
       ...(flags >= EXP_UNIT ? { gi_exp: Math.floor(flags / EXP_UNIT) } : {}),
     }

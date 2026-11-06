@@ -445,7 +445,7 @@ function identityOfRow(r: Record<string, unknown>): ArtifactIdentity {
     mainStatKey: r.main_stat_key as string,
     substats: expandSubstats(JSON.parse(r.substats as string)),
     totalRolls: r.total_rolls as number,
-    elixerCrafted: r.elixer_crafted === 1,
+    elixirCrafted: r.elixer_crafted === 1,
     unactivatedSubstats: expandSubstats(JSON.parse(r.unactivated_substats as string)),
   }
 }
@@ -496,7 +496,7 @@ export async function catalogJson(d1: D1Database, accountId: number): Promise<st
           s.initialValue === undefined ? [s.key, s.value] : [s.key, s.value, s.initialValue],
         ),
         a.totalRolls,
-        a.elixerCrafted ? 1 : 0,
+        a.elixirCrafted ? 1 : 0,
         a.unactivatedSubstats.map((s) =>
           s.initialValue === undefined ? [s.key, s.value] : [s.key, s.value, s.initialValue],
         ),

@@ -15,7 +15,7 @@ const artifact = (level: number, lock = false) => ({
   substats: [{ key: 'critRate_', value: 3.9 }],
   totalRolls: 4,
   astralMark: false,
-  elixerCrafted: false,
+  elixirCrafted: false,
   unactivatedSubstats: [],
 })
 

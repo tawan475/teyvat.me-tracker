@@ -431,7 +431,7 @@ export function compileFilter(
     if (equipped !== 'any' && row.equipped !== (equipped === 'equipped')) return false
     if (owners && !owners.has(a.location)) return false
     if (astral !== 'any' && !!a.astralMark !== (astral === 'marked')) return false
-    if (elixir !== 'any' && !!a.elixerCrafted !== (elixir === 'yes')) return false
+    if (elixir !== 'any' && !!a.elixirCrafted !== (elixir === 'yes')) return false
     if (fresh && !isNewPiece(row, previous)) return false
     for (const term of terms) if (!row.haystack.includes(term)) return false
     return true

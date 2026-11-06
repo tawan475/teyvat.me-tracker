@@ -5,7 +5,7 @@
  * One identity, as written by `packArtifact`:
  *   uint  head      0: the identity follows as JSON (anything the layout
  *                   below cannot hold exactly), else
- *                   1 + slot + 8 * (rarity + 8 * elixerCrafted), where slot
+ *                   1 + slot + 8 * (rarity + 8 * elixirCrafted), where slot
  *                   is its index in SLOT_KEYS (7: spelled out after the head)
  *                   and rarity 0-6 (7: a uint after the head)
  *   [string slot] [uint rarity]
@@ -129,7 +129,7 @@ function packable(a: ArtifactIdentity): boolean {
     isUint(a.level) &&
     isUint(a.rarity) &&
     isUint(a.totalRolls) &&
-    typeof a.elixerCrafted === 'boolean' &&
+    typeof a.elixirCrafted === 'boolean' &&
     substatsOk(a.substats) &&
     substatsOk(a.unactivatedSubstats)
   )
@@ -173,7 +173,7 @@ export function packArtifact(w: ByteWriter, a: ArtifactIdentity): void {
   const slotIndex = (SLOT_KEYS as readonly string[]).indexOf(a.slotKey)
   const slot = slotIndex >= 0 && slotIndex < ESCAPE_SLOT ? slotIndex : ESCAPE_SLOT
   const rarity = a.rarity < ESCAPE_RARITY ? a.rarity : ESCAPE_RARITY
-  w.uint(1 + slot + 8 * (rarity + 8 * (a.elixerCrafted ? 1 : 0)))
+  w.uint(1 + slot + 8 * (rarity + 8 * (a.elixirCrafted ? 1 : 0)))
   if (slot === ESCAPE_SLOT) w.string(a.slotKey)
   if (rarity === ESCAPE_RARITY) w.uint(a.rarity)
   writeKey(w, ARTIFACT_SETS, a.setKey)
@@ -221,7 +221,7 @@ export function unpackArtifact(r: ByteReader): ArtifactIdentity {
     mainStatKey,
     substats,
     totalRolls,
-    elixerCrafted: elixer === 1,
+    elixirCrafted: elixer === 1,
     unactivatedSubstats,
   }
 }

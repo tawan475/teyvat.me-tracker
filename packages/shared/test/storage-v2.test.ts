@@ -571,7 +571,7 @@ function oddIdentity(rand: () => number): ArtifactIdentity {
     mainStatKey: a.mainStatKey,
     substats: a.substats,
     totalRolls: a.totalRolls ?? 0,
-    elixerCrafted: rand() < 0.1,
+    elixirCrafted: rand() < 0.1,
     unactivatedSubstats: a.unactivatedSubstats ?? [],
   }
   switch (int(rand, 0, 12)) {

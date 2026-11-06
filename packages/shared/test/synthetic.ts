@@ -62,7 +62,7 @@ export function syntheticArtifact(rand: () => number, level = 0): GoodArtifact {
     substats,
     totalRolls: start,
     astralMark: rand() < 0.05,
-    elixerCrafted: false,
+    elixirCrafted: false,
     unactivatedSubstats,
   }
   return levelUp(rand, artifact, level)

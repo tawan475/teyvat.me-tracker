@@ -132,7 +132,7 @@ function indexOf(
           substats: piece.substats,
           totalRolls: piece.totalRolls,
           astralMark: (flags & ASTRAL_MARK) !== 0,
-          elixerCrafted: piece.elixerCrafted,
+          elixirCrafted: piece.elixirCrafted,
           unactivatedSubstats: piece.unactivatedSubstats,
         })
       })

@@ -325,7 +325,7 @@ export const artifacts = sqliteTable(
       .$type<CompactSubstat[]>()
       .notNull(),
     totalRolls: integer('total_rolls').notNull(),
-    elixerCrafted: integer('elixer_crafted', { mode: 'boolean' }).notNull(),
+    elixirCrafted: integer('elixer_crafted', { mode: 'boolean' }).notNull(),
     createdAt: timestamp('created_at'),
   },
   (t) => [uniqueIndex('artifacts_account_hash_unique').on(t.accountId, t.hash)],

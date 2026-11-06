@@ -142,6 +142,18 @@ const isNumber = (value: unknown): value is number =>
  * Items are found by `gi_guid`; a change to an item or character that is not
  * there, or to an unknown path, is skipped.
  */
+/**
+ * GOOD spells it `elixirCrafted`; Teyvat.me Capture before 1.17.18 (and
+ * irminsul) sent `elixerCrafted`. Journals hold what was sent, so items are
+ * read into GOOD's name here, once, wherever a batch is applied.
+ */
+const OLD_ELIXIR = 'elixerCrafted'
+function goodSpelling(value: Record<string, unknown>): Record<string, unknown> {
+  if (!(OLD_ELIXIR in value)) return value
+  const { [OLD_ELIXIR]: old, ...rest } = value
+  return 'elixirCrafted' in rest ? rest : { ...rest, elixirCrafted: old }
+}
+
 export function applyDelta(good: LiveGood, changes: readonly DeltaChange[]): LiveGood {
   const next = { ...good }
   const copied = new Set<string>()
@@ -175,14 +187,15 @@ export function applyDelta(good: LiveGood, changes: readonly DeltaChange[]): Liv
           if (op === 'del') {
             if (at >= 0) list.splice(at, 1)
           } else if (isObject(value)) {
-            const item = { ...value, gi_guid: name } as LiveArtifact & LiveWeapon
+            const item = { ...goodSpelling(value), gi_guid: name } as LiveArtifact & LiveWeapon
             if (at >= 0) list[at] = item
             else list.push(item)
           }
         } else if (parts.length === 3 && at >= 0 && field !== 'gi_guid') {
           const item: Record<string, unknown> = { ...list[at]! }
-          if (op === 'del') delete item[field!]
-          else if (op === 'set') item[field!] = value
+          const key = field === OLD_ELIXIR ? 'elixirCrafted' : field!
+          if (op === 'del') delete item[key]
+          else if (op === 'set') item[key] = value
           list[at] = item as unknown as LiveArtifact & LiveWeapon
         }
         break

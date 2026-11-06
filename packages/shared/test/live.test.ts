@@ -104,11 +104,17 @@ describe('GOOD-X delta contract', () => {
       unknown
     >
     const added = applyDelta(base, [['add', ['artifacts', '424242'], old]])
-    const item = added.artifacts.find((a) => a.gi_guid === '424242')! as Record<string, unknown>
+    const item = added.artifacts.find((a) => a.gi_guid === '424242')! as unknown as Record<
+      string,
+      unknown
+    >
     expect(item.elixirCrafted).toBe(true)
     expect(item).not.toHaveProperty('elixerCrafted')
     const set = applyDelta(added, [['set', ['artifacts', '424242', 'elixerCrafted'], false]])
-    const after = set.artifacts.find((a) => a.gi_guid === '424242')! as Record<string, unknown>
+    const after = set.artifacts.find((a) => a.gi_guid === '424242')! as unknown as Record<
+      string,
+      unknown
+    >
     expect(after.elixirCrafted).toBe(false)
     expect(after).not.toHaveProperty('elixerCrafted')
   })

@@ -1,0 +1,220 @@
+<script setup lang="ts">
+import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
+import ShareActions from '@/components/share/ShareActions.vue'
+import ShareMenu from '@/components/share/ShareMenu.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import { loadLatestInventory } from '@/data/account-data'
+import { shareUid } from '@/data/character-build'
+import { buildProfileCard, loadProfileArt } from '@/data/profile-card'
+import { travelerGender } from '@/data/traveler'
+import { useResource } from '@/data/use-resource'
+import { t } from '@/i18n'
+import { locale } from '@/i18n/locale'
+import { canvasPng } from '@/lib/card-canvas'
+import { readJson, writeJson } from '@/lib/storage'
+import { resolvedTheme } from '@/lib/theme'
+import { useCardExport } from '@/lib/use-card-export'
+import { useAccounts } from '@/stores/accounts'
+import { useAccount } from '@/views/account/context'
+import { recordFileName } from './record-card'
+import {
+  drawAbyssCard,
+  drawTheaterCard,
+  type AbyssDrawing,
+  type DrawnRecord,
+  type TheaterDrawing,
+} from './record-card-canvas'
+import { STYGIAN_CARD, seasonVersion } from './stygian-card'
+import type { StygianProfile } from './stygian-card-canvas'
+
+/**
+ * A Spiral Abyss or Imaginarium Theater record's share card, as the Stygian
+ * one (StygianShareModal): drawn on a canvas once per change, the preview is
+ * that canvas, the share cards' one remembered option set (theme, name,
+ * UID), PNG / Copy / Share in the header. The owner's profile and UID come
+ * from the newest capture; the season's version from the wish banners'.
+ */
+type Fixed = 'theme' | 'profile' | 'version'
+const props = defineProps<{
+  open: boolean
+  card:
+    | { mode: 'abyss'; input: Omit<AbyssDrawing, Fixed> }
+    | { mode: 'theater'; input: Omit<TheaterDrawing, Fixed> }
+    | null
+}>()
+defineEmits<{ close: [] }>()
+
+const wide = useMediaQuery('(min-width: 1024px)')
+const account = useAccount()
+const latest = useResource(
+  () => (props.open ? account.value : null),
+  (a) => (a?.latest ? loadLatestInventory(a) : Promise.resolve(null)),
+)
+const good = computed(() => latest.data.value?.good ?? null)
+const accounts = useAccounts()
+const extras = useResource(
+  () => (props.open ? 'record-card' : null),
+  async (key) => {
+    if (!key) return null
+    const [art, banners] = await Promise.all([
+      loadProfileArt(),
+      import('@/data/wish-banners.json').then(
+        (m) => (m.default as unknown as { banners: unknown[][] }).banners,
+      ),
+    ])
+    return {
+      art,
+      banners: banners.map((row) => ({
+        kind: String(row[0]),
+        start: String(row[1]),
+        version: String(row[6]),
+      })),
+    }
+  },
+)
+
+interface Prefs {
+  theme?: 'light' | 'dark'
+  name?: boolean
+  uid?: boolean
+}
+const saved = readJson<Prefs>('share-card', {})
+const theme = ref<'light' | 'dark'>(saved.theme ?? resolvedTheme.value)
+const showName = ref(saved.name ?? true)
+const showUid = ref(saved.uid ?? false)
+watch([theme, showName, showUid], () =>
+  writeJson('share-card', {
+    ...readJson<object>('share-card', {}),
+    theme: theme.value,
+    name: showName.value,
+    uid: showUid.value,
+  }),
+)
+
+const profile = computed<StygianProfile>(() => {
+  const player = good.value?.gi_player ?? null
+  const card = buildProfileCard(
+    player,
+    extras.data.value?.art,
+    accounts.displayName(account.value),
+    travelerGender.value,
+  )
+  return {
+    ...card,
+    name: showName.value ? card.name : null,
+    signature: showName.value ? card.signature : null,
+    uid: showUid.value ? shareUid(account.value.uid, player?.uid ?? null) : null,
+  }
+})
+const version = computed(() =>
+  extras.data.value && props.card
+    ? seasonVersion(props.card.input.start, extras.data.value.banners)
+    : null,
+)
+const title = computed(() =>
+  props.card?.mode === 'theater' ? t('endgame.modes.theater') : t('endgame.modes.abyss'),
+)
+
+interface Drawing {
+  drawn: DrawnRecord
+  png: Promise<Blob> | null
+}
+const drawing = shallowRef<Promise<Drawing> | null>(null)
+const shown = shallowRef<DrawnRecord | null>(null)
+const host = useTemplateRef<HTMLElement>('host')
+watch([shown, host], ([drawn, el]) => {
+  if (!el || !drawn) return
+  drawn.canvas.className =
+    'mx-auto block h-auto w-auto max-w-full max-h-[calc(100dvh-6rem)] sm:max-h-[calc(90dvh-6rem)]'
+  drawn.canvas.setAttribute('role', 'img')
+  drawn.canvas.setAttribute('aria-label', title.value)
+  el.replaceChildren(drawn.canvas)
+})
+
+function redraw() {
+  const card = props.card
+  if (!props.open || !card || latest.loading.value || extras.loading.value) return
+  const fixed = { theme: theme.value, profile: profile.value, version: version.value }
+  const promise = (async (): Promise<Drawing> => ({
+    drawn:
+      card.mode === 'abyss'
+        ? await drawAbyssCard({ ...card.input, ...fixed })
+        : await drawTheaterCard({ ...card.input, ...fixed }),
+    png: null,
+  }))()
+  drawing.value = promise
+  promise.then(
+    (done) => {
+      if (drawing.value === promise) shown.value = done.drawn
+    },
+    () => undefined,
+  )
+}
+watch(
+  () => [
+    props.open,
+    props.card,
+    theme.value,
+    profile.value,
+    version.value,
+    locale.value,
+    latest.loading.value,
+    extras.loading.value,
+  ],
+  redraw,
+  { immediate: true },
+)
+watch(
+  () => props.card,
+  () => (shown.value = null),
+)
+
+const size = `${STYGIAN_CARD.width} × ${STYGIAN_CARD.height}`
+const exporter = useCardExport({
+  draw: async () => {
+    if (!drawing.value) redraw()
+    if (!drawing.value) throw new Error('Closed')
+    const done = await drawing.value
+    done.png ??= canvasPng(done.drawn.canvas)
+    return { blob: await done.png, missing: done.drawn.missing }
+  },
+  open: () => props.open && !!props.card,
+  state: () => [props.card, theme.value, profile.value, locale.value],
+  filename: () =>
+    props.card ? recordFileName(props.card.mode, props.card.input.start) : 'record.png',
+  title: () => title.value,
+  pngLabel: () => t('share.export.downloadSized', { size }),
+})
+</script>
+
+<template>
+  <UiModal :open="open" :title="title" size="detail" @close="$emit('close')">
+    <template #heading>
+      <h2 class="mr-auto min-w-0 flex-1 truncate text-lg font-semibold">{{ title }}</h2>
+      <ShareActions
+        v-if="wide"
+        v-model:theme="theme"
+        v-model:name="showName"
+        v-model:uid="showUid"
+        :exporter="exporter"
+      />
+      <ShareMenu
+        v-else
+        v-model:theme="theme"
+        v-model:name="showName"
+        v-model:uid="showUid"
+        :exporter="exporter"
+        :size="$t('characters.modal.pngSize', { size })"
+      />
+    </template>
+
+    <div v-show="shown" ref="host" class="w-full" />
+    <UiSkeleton
+      v-if="!shown"
+      class="mx-auto w-full max-w-full rounded-xl"
+      :style="{ aspectRatio: `${STYGIAN_CARD.width} / ${STYGIAN_CARD.height}` }"
+    />
+  </UiModal>
+</template>

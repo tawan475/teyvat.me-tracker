@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
 import type { TheaterAct, TheaterSeason } from '@gdt/game-data/endgame'
+import { Share2 } from 'lucide-vue-next'
 import GameText from '@/components/game/GameText.vue'
 import ElementIcon from '@/components/ui/ElementIcon.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   theaterDifficultyName,
   theaterRunRow,
+  theaterStarsMax,
   theaterStarsText,
   type EndgameData,
 } from '@/data/endgame'
@@ -16,7 +19,9 @@ import { characterName } from '@/i18n/game-names'
 import { characterBanner, characterIcon } from '@/lib/assets'
 import { formatDate } from '@/lib/format'
 import { t } from '@/i18n'
+import EndgameStar from './EndgameStar.vue'
 import EnemyTile from './EnemyTile.vue'
+import { stellaMarks } from './record-card'
 
 /**
  * An Imaginarium Theater season: a column that stays in view (the namecard,
@@ -24,8 +29,12 @@ import EnemyTile from './EnemyTile.vue'
  * beside the chosen difficulty's acts, one row each: a boss act shows its
  * boss and what it does; any other its lineups side by side (a run meets one
  * of them); then the hardest difficulty's extra bouts. With a capture of the
- * account's run this season (`run`, Capture 1.17.12) the side column says
- * its difficulty and acts cleared, and that difficulty is the one chosen.
+ * account's run this season (`run`, Capture 1.17.12) the side card says
+ * its difficulty, acts cleared and stars (the user's pick "C", 2026-11-07):
+ * one Star Challenge Stella per act in the game's art, the extra bouts' after
+ * a divider (10 | 2 in Lunar Mode, as the game's Past Performances shows
+ * them), and that difficulty is the one chosen. Share opens the run's PNG
+ * card (RecordShareModal).
  */
 const props = defineProps<{
   season: TheaterSeason
@@ -72,10 +81,69 @@ const yourRun = computed(() => {
     acts: run.acts,
     total,
     stars: theaterStarsText(run, props.season),
+    starsN: run.stars ?? null,
+    starsMax: theaterStarsMax(run, props.season),
+    stellas: row ? stellaRow(run, row.acts.length, row.extra.length) : null,
     entered: !!row || run.acts > 0 || !!run.stars,
     from: t('endgame.captured.fromCapture', { date: formatDate(takenAt) }),
   }
 })
+/**
+ * The run's Stellas as the game lists them: one per act (earned or not), then
+ * the extra bouts' after a divider. The capture names the acts whose Stella
+ * was earned; the extra bouts' are what is left of the count, so they fill
+ * from the first. Null without the list of starred acts.
+ */
+function stellaRow(run: CapturedTheater['run'], acts: number, extra: number) {
+  const marks = stellaMarks(run, acts, extra)
+  if (!marks) return null
+  const tip = (earned: boolean) =>
+    earned ? t('endgame.captured.starEarned') : t('endgame.captured.starMissing')
+  return {
+    marks,
+    acts: marks.acts.map((earned, i) => ({
+      key: `a${i + 1}`,
+      earned,
+      title: `${t('endgame.theater.act', { n: i + 1 })} · ${tip(earned)}`,
+    })),
+    extra: marks.extra.map((earned, i) => ({
+      key: `x${i + 1}`,
+      earned,
+      title: `${t('endgame.theater.extra')} · ${tip(earned)}`,
+    })),
+  }
+}
+
+const RecordShareModal = defineAsyncComponent(() => import('./RecordShareModal.vue'))
+const shareOpened = ref(false)
+const sharing = shallowRef(false)
+const shareCard = computed(() => {
+  const own = yourRun.value
+  if (!props.run || !own?.entered) return null
+  return {
+    mode: 'theater' as const,
+    input: {
+      seasonName: props.name,
+      start: props.season.start,
+      end: props.season.end,
+      takenAt: props.run.takenAt,
+      difficulty: own.label,
+      acts: own.acts,
+      totalActs: own.total,
+      stars: own.starsN ?? 0,
+      maxStars: own.starsMax,
+      stellas: own.stellas?.marks ?? null,
+      art: characterBanner(props.season.opening[0] ?? ''),
+      elements: props.season.elements.map(element),
+      opening: props.season.opening,
+      guests: props.season.guests,
+    },
+  }
+})
+function share() {
+  shareOpened.value = true
+  sharing.value = true
+}
 const chosen = computed(
   () => props.season.difficulties.find((d) => d.difficulty === difficulty.value) ?? null,
 )
@@ -156,26 +224,62 @@ const starOf = (a: { act: number; extra: boolean }): boolean | null => {
             </span>
             <div
               v-if="yourRun"
-              class="mt-1.5 flex flex-col gap-0.5 rounded-lg border border-border-default bg-surface-sunken px-3 py-2"
+              class="mt-1.5 flex flex-col gap-2 rounded-lg border border-border-default bg-surface-sunken px-3 py-2.5"
               :title="yourRun.from"
             >
-              <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">{{
-                $t('endgame.captured.run')
-              }}</span>
+              <span class="flex min-h-8 items-center justify-between gap-2">
+                <span class="text-xs font-semibold tracking-wide text-text-muted uppercase">{{
+                  $t('endgame.captured.record')
+                }}</span>
+                <UiButton
+                  v-if="shareCard"
+                  size="sm"
+                  :title="$t('endgame.share.title')"
+                  @click="share"
+                >
+                  <Share2 class="size-4" aria-hidden="true" />{{ $t('share.export.share') }}
+                </UiButton>
+              </span>
               <span v-if="!yourRun.entered" class="text-sm text-text-secondary">{{
                 $t('endgame.captured.notEntered')
               }}</span>
-              <span v-else class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-                <span v-if="yourRun.label" class="font-semibold">{{ yourRun.label }}</span>
-                <span class="tabular font-mono text-text-secondary">{{
-                  yourRun.total
-                    ? $t('endgame.captured.actsOf', { n: yourRun.acts, total: yourRun.total })
-                    : $t('endgame.theater.acts', { n: yourRun.acts })
-                }}</span>
-                <span v-if="yourRun.stars" class="tabular font-mono text-text-secondary">{{
-                  yourRun.stars
-                }}</span>
+              <span v-else class="flex flex-wrap items-center justify-between gap-x-2.5 gap-y-1">
+                <span class="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-0.5 text-sm">
+                  <span v-if="yourRun.label" class="font-semibold">{{ yourRun.label }}</span>
+                  <span class="tabular font-mono text-text-secondary">{{
+                    yourRun.total
+                      ? $t('endgame.captured.actsOf', { n: yourRun.acts, total: yourRun.total })
+                      : $t('endgame.theater.acts', { n: yourRun.acts })
+                  }}</span>
+                </span>
+                <span
+                  v-if="yourRun.starsN !== null"
+                  class="tabular inline-flex items-center gap-1 font-mono text-base font-bold"
+                  :aria-label="yourRun.stars"
+                >
+                  <EndgameStar kind="theater" :size="20" />{{ yourRun.starsN
+                  }}<span v-if="yourRun.starsMax" class="text-sm font-normal text-text-muted"
+                    >/{{ yourRun.starsMax }}</span
+                  >
+                </span>
               </span>
+              <!-- One Stella per act, then the extra bouts' after a divider; earned is the
+                   game's art, not earned the same in grey and faded (each says so in its tooltip). -->
+              <ul
+                v-if="yourRun.entered && yourRun.stellas"
+                class="flex flex-wrap items-center gap-0.5"
+                :aria-label="yourRun.stars"
+              >
+                <li v-for="s in yourRun.stellas.acts" :key="s.key" :title="s.title">
+                  <EndgameStar kind="theater" :earned="s.earned" :size="20" />
+                </li>
+                <template v-if="yourRun.stellas.extra.length">
+                  <li aria-hidden="true" class="mx-1 h-4 w-px bg-border-strong" />
+                  <li v-for="s in yourRun.stellas.extra" :key="s.key" :title="s.title">
+                    <EndgameStar kind="theater" :earned="s.earned" :size="20" />
+                  </li>
+                </template>
+              </ul>
             </div>
             <ul class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
               <li v-for="e in season.elements" :key="e" class="flex items-center gap-1.5 text-sm">
@@ -299,8 +403,8 @@ const starOf = (a: { act: number; extra: boolean }): boolean | null => {
                       ? $t('endgame.captured.starEarned')
                       : $t('endgame.captured.starMissing')
                   "
-                  >{{ starOf(a) ? '★' : '☆' }}</span
-                >
+                  ><EndgameStar kind="theater" :earned="!!starOf(a)" :size="18"
+                /></span>
                 <span class="tabular font-mono text-xs text-text-muted">{{
                   $t('endgame.level', { n: a.level })
                 }}</span>
@@ -369,5 +473,11 @@ const starOf = (a: { act: number; extra: boolean }): boolean | null => {
         </li>
       </ol>
     </div>
+    <RecordShareModal
+      v-if="shareOpened"
+      :open="sharing"
+      :card="shareCard"
+      @close="sharing = false"
+    />
   </div>
 </template>

@@ -11,7 +11,14 @@ import { characterMeta } from '@/data/game-meta'
 import { frameSize } from '@/data/profile-card'
 import { t } from '@/i18n'
 import { characterIcon, elementIcon, giCdnArt } from '@/lib/assets'
-import { CARD_CORNER, CardImages, Painter, cardFonts, roundCorners } from '@/lib/card-canvas'
+import {
+  CARD_CORNER,
+  CardImages,
+  Painter,
+  cardFonts,
+  drawQualityCell,
+  roundCorners,
+} from '@/lib/card-canvas'
 import { dateFormat, formatDate, formatNumber, formatSeconds } from '@/lib/format'
 import { qualityCell } from '@/lib/item-art'
 import { CardPaint, goldChip } from '../characters/card-paint'
@@ -496,7 +503,7 @@ class StygianPainter extends CardPaint {
     const stripTop = Math.round(top + height - cell.strip)
     p.clipped(left, top, width, height, cell.r, () => {
       const art = this.images.get(qualityCell(rarity))
-      if (art) p.image(art, left, top, width, height)
+      if (art) drawQualityCell(ctx, art, left, top, width, height)
       else p.fill(left, top, width, height, 0, rarity === 5 ? '#b7791f' : '#7c5ab8')
       // The portrait fills all of the cell above the strip (a little taller
       // than square: ~1% cropped off each side), standing on the strip as in

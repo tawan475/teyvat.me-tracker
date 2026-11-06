@@ -17,6 +17,7 @@
 
 import type { Shadow } from './css-shadow'
 import { fontFiles, parseGoogleFontCss } from './font-embed'
+import { QUALITY_CELL_EDGE } from './item-art'
 import { Lru } from './lru'
 
 export { parseInsetRing, parseShadows, type Shadow } from './css-shadow'
@@ -778,4 +779,23 @@ export async function canvasPng(canvas: HTMLCanvasElement): Promise<Blob> {
       'image/png',
     ),
   )
+}
+
+/**
+ * Draws the bag cell sprite on a canvas over the box without its clear
+ * border. Stretched whole, that border became a ~1.6px seam of whatever lies
+ * behind between the art and a full-width strip or portrait (the web tiles
+ * have the rarity gradient under it, so it never shows there). The caller
+ * clips the box to its rounded shape.
+ */
+export function drawQualityCell(
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  image: ImageBitmap | HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): void {
+  const e = QUALITY_CELL_EDGE
+  ctx.drawImage(image, e, e, image.width - 2 * e, image.height - 2 * e, x, y, w, h)
 }

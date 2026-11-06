@@ -22,6 +22,7 @@ import {
   CardImages,
   Painter,
   cardFonts,
+  drawQualityCell,
   linearGradient,
   roundCorners,
   type Shadow,
@@ -489,7 +490,7 @@ class BannerPainter extends CardPaint {
     p.boxShadow(x, y, w, h, r, TILE_SHADOW)
     p.clipped(x, y, w, h, r, () => {
       const cell = this.images.get(qualityCell(5))
-      if (cell) p.image(cell, x, y, w, h)
+      if (cell) drawQualityCell(ctx, cell, ...p.snap(x, y, w, h))
       else {
         ctx.fillStyle = linearGradient(ctx, RARITY_GRADIENT[5]!, x, y, w, h) ?? '#b45309'
         ctx.fillRect(x, y, w, h)

@@ -121,6 +121,12 @@ export function qualityCell(rarity: number | null | undefined, small = false): s
 }
 
 /**
+ * The cell sprite's clear border, in its own pixels: `UI_QualityBg_<n>` is
+ * 80×98 with a fully transparent 1px edge on every side (the art is 78×96).
+ */
+export const QUALITY_CELL_EDGE = 1
+
+/**
  * Bumped when gi-cdn re-encodes the cells (2: lossless, the knot no longer
  * smeared): browsers and the service worker keep images by URL for months.
  */

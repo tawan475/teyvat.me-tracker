@@ -12,7 +12,7 @@ import type { TalentLevel } from '@/data/character-build'
 import type { CharacterView } from '@/data/characters'
 import type { Element } from '@/data/game-meta'
 import { characterIcon, elementIcon, elementIconLight } from '@/lib/assets'
-import { CARD_CORNER, canvasPng, roundCorners } from '@/lib/card-canvas'
+import { CARD_CORNER, canvasPng, drawQualityCell, roundCorners } from '@/lib/card-canvas'
 import { qualityCell } from '@/lib/item-art'
 import {
   ROSTER_GAP,
@@ -485,7 +485,7 @@ function drawTile(
   roundRect(ctx, x, y, W, H, R)
   ctx.clip()
   const cell = images.cell.get(c.rarity ?? 0)
-  if (cell) ctx.drawImage(cell, x, y, W, H)
+  if (cell) drawQualityCell(ctx, cell, x, y, W, H)
 
   // The portrait in the top square, else initials.
   const portrait = images.portrait.get(c.key)

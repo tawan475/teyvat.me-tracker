@@ -18,8 +18,11 @@
  * maintenance's collection. Nothing here logs inventory data: ids and byte
  * counts only.
  *
- * Run by the hourly maintenance (reorderStorage), one account at a time
- * from a cursor in `site_settings`, skipping an account while it uploads.
+ * Run off Cloudflare by `pnpm --filter @gdt/tracker admin:repack`
+ * (scripts/repack.ts), on a PC or a server against the remote database: a
+ * long history's re-encode outran the Worker's CPU limit (account 11's 864
+ * snapshots went past 300 s; 17 s on a PC), so it no longer runs in a cron.
+ * `dryRun` works out the gain and writes nothing.
  */
 
 import {
@@ -53,7 +56,7 @@ export interface ReorderResult {
   after: number
   /** Written (false: nothing to gain, a v1 row, or the account changed meanwhile). */
   applied: boolean
-  reason?: 'smaller already' | 'v1 rows' | 'changed meanwhile' | 'mismatch'
+  reason?: 'smaller already' | 'v1 rows' | 'changed meanwhile' | 'mismatch' | 'dry run'
 }
 
 /** Below this share of what it saves, an account is left as it is. */
@@ -282,7 +285,11 @@ function chunks(rows: readonly object[]): string[] {
 const GUARD = `(SELECT count(*) FROM snapshots WHERE account_id = ?1) = ?2
   AND (SELECT max(id) FROM snapshots WHERE account_id = ?1) = ?3`
 
-export async function reorderAccount(d1: D1Database, accountId: number): Promise<ReorderResult> {
+export async function reorderAccount(
+  d1: D1Database,
+  accountId: number,
+  options: { dryRun?: boolean } = {},
+): Promise<ReorderResult> {
   const [snapshotsResult, blobsResult] = await d1.batch([
     d1
       .prepare(`SELECT id, taken_at, ${REFS_SQL} FROM snapshots WHERE account_id = ?1`)
@@ -321,6 +328,7 @@ export async function reorderAccount(d1: D1Database, accountId: number): Promise
   }
   const { before, after } = plan
   if (after > before * (1 - MIN_SAVING)) return result({ before, after, reason: 'smaller already' })
+  if (options.dryRun) return result({ before, after, reason: 'dry run' })
 
   // Rows already stored exactly so are not written again; rows rewritten in
   // place change the account's byte count (the insert trigger counts only
@@ -404,149 +412,4 @@ export async function reorderAccount(d1: D1Database, accountId: number): Promise
   const results = await d1.batch(statements)
   const applied = (results.at(-1)!.meta.changes ?? 0) > 0
   return result({ before, after, applied, ...(applied ? {} : { reason: 'changed meanwhile' }) })
-}
-
-/** The `site_settings` key of the repack's cursor: the last account id it finished. */
-export const REORDER_CURSOR = 'storage.reorder_after'
-/** The accounts the cursor passed while they were busy (a JSON id list), retried once quiet. */
-export const REORDER_SKIPPED = 'storage.reorder_skipped'
-/**
- * The account a run is repacking (set before it starts, cleared after). A
- * run the platform kills (past `limits.cpu_ms`: account 11's 864 snapshots
- * went over 300 s on 2026-11-06, 17 s on a PC) leaves it set; the next run
- * then gives that account up (`REORDER_GAVE_UP`) instead of retrying it
- * every hour.
- */
-export const REORDER_RUNNING = 'storage.reorder_running'
-/** Accounts given up on (a JSON id list); staff can clear it to try again. */
-export const REORDER_GAVE_UP = 'storage.reorder_gave_up'
-/** An account that uploaded this recently is left for a later run. */
-const QUIET_MS = 30 * 60_000
-
-async function setting(d1: D1Database, key: string): Promise<string | null> {
-  const row = await d1
-    .prepare('SELECT value FROM site_settings WHERE key = ?1')
-    .bind(key)
-    .first<{ value: string }>()
-  return row?.value ?? null
-}
-
-function saveSetting(d1: D1Database, key: string, value: string, now: number) {
-  return d1
-    .prepare(
-      `INSERT INTO site_settings (key, value, updated_at) VALUES (?1, ?2, ?3)
-       ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-    )
-    .bind(key, value, now)
-}
-
-/**
- * Repacks accounts in id order from the cursor until `budgetMs` has passed
- * (the hourly maintenance). An account that uploaded in the last half hour
- * is passed over and remembered (`REORDER_SKIPPED`); each run first takes a
- * remembered one that has gone quiet. Before, a busy account stopped the
- * run, and one that uploads all day (Capture's live sync) held the whole
- * queue behind it.
- */
-export async function reorderStorage(
-  d1: D1Database,
-  now = Date.now(),
-  budgetMs = 20_000,
-): Promise<ReorderResult[]> {
-  const started = Date.now()
-  const done: ReorderResult[] = []
-  const list = async (key: string): Promise<number[]> => {
-    try {
-      const parsed: unknown = JSON.parse((await setting(d1, key)) ?? '[]')
-      return Array.isArray(parsed) ? parsed.filter((id): id is number => Number.isInteger(id)) : []
-    } catch {
-      return []
-    }
-  }
-  // The last run was killed inside an account: give it up and walk on.
-  const killed = Number(await setting(d1, REORDER_RUNNING))
-  if (Number.isInteger(killed) && killed > 0) {
-    const gaveUp = await list(REORDER_GAVE_UP)
-    const cursor = Number((await setting(d1, REORDER_CURSOR)) ?? 0) || 0
-    await d1.batch([
-      saveSetting(d1, REORDER_GAVE_UP, JSON.stringify([...new Set([...gaveUp, killed])]), now),
-      saveSetting(
-        d1,
-        REORDER_SKIPPED,
-        JSON.stringify((await list(REORDER_SKIPPED)).filter((id) => id !== killed)),
-        now,
-      ),
-      saveSetting(d1, REORDER_CURSOR, String(Math.max(cursor, killed)), now),
-      d1.prepare('DELETE FROM site_settings WHERE key = ?1').bind(REORDER_RUNNING),
-    ])
-    console.warn('reorder gave up on', killed)
-  }
-  const lastSeen = async (ids: readonly number[]) => {
-    if (!ids.length) return new Map<number, number | null>()
-    const { results } = await d1
-      .prepare(
-        `SELECT a.id, (SELECT max(last_seen_at) FROM snapshots WHERE account_id = a.id) AS seen
-         FROM genshin_accounts AS a WHERE a.id IN (SELECT value FROM json_each(?1))`,
-      )
-      .bind(JSON.stringify(ids))
-      .all<{ id: number; seen: number | null }>()
-    return new Map(results.map((r) => [r.id, r.seen]))
-  }
-  const quiet = (seen: number | null | undefined) =>
-    seen === null || seen === undefined || now - seen >= QUIET_MS
-  for (;;) {
-    const after = Number((await setting(d1, REORDER_CURSOR)) ?? 0) || 0
-    let skipped = await list(REORDER_SKIPPED)
-    // A remembered account that has gone quiet (or is gone) first.
-    const seenSkipped = await lastSeen(skipped)
-    const gone = skipped.filter((id) => !seenSkipped.has(id))
-    const retry = skipped.find((id) => seenSkipped.has(id) && quiet(seenSkipped.get(id)))
-    if (gone.length) {
-      skipped = skipped.filter((id) => !gone.includes(id))
-      await saveSetting(d1, REORDER_SKIPPED, JSON.stringify(skipped), now).run()
-    }
-    let id: number
-    if (retry !== undefined) id = retry
-    else {
-      const next = await d1
-        .prepare(
-          `SELECT a.id, (SELECT max(last_seen_at) FROM snapshots WHERE account_id = a.id) AS seen
-           FROM genshin_accounts AS a WHERE a.id > ?1 ORDER BY a.id LIMIT 1`,
-        )
-        .bind(after)
-        .first<{ id: number; seen: number | null }>()
-      if (!next) return done
-      if (!quiet(next.seen)) {
-        // Busy: passed over, remembered, and the walk goes on.
-        await d1.batch([
-          saveSetting(d1, REORDER_CURSOR, String(next.id), now),
-          saveSetting(d1, REORDER_SKIPPED, JSON.stringify([...skipped, next.id]), now),
-        ])
-        if (Date.now() - started > budgetMs) return done
-        continue
-      }
-      id = next.id
-    }
-    await saveSetting(d1, REORDER_RUNNING, String(id), now).run()
-    const result = await reorderAccount(d1, id)
-    await d1.prepare('DELETE FROM site_settings WHERE key = ?1').bind(REORDER_RUNNING).run()
-    done.push(result)
-    console.log('reorder', JSON.stringify(result))
-    // A guard that stopped the write leaves it for the next run.
-    if (result.reason === 'changed meanwhile') {
-      if (retry === undefined)
-        await saveSetting(d1, REORDER_SKIPPED, JSON.stringify([...skipped, id]), now).run()
-      await saveSetting(d1, REORDER_CURSOR, String(Math.max(after, id)), now).run()
-      return done
-    }
-    if (retry !== undefined)
-      await saveSetting(
-        d1,
-        REORDER_SKIPPED,
-        JSON.stringify(skipped.filter((s) => s !== id)),
-        now,
-      ).run()
-    else await saveSetting(d1, REORDER_CURSOR, String(id), now).run()
-    if (Date.now() - started > budgetMs) return done
-  }
 }

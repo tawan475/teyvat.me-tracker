@@ -16,14 +16,7 @@ import {
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { describe, expect, it } from 'vitest'
 import { NEAREST_SQL } from '../services/import'
-import {
-  REORDER_CURSOR,
-  REORDER_GAVE_UP,
-  REORDER_RUNNING,
-  REORDER_SKIPPED,
-  reorderAccount,
-  reorderStorage,
-} from '../services/reorder'
+import { reorderAccount } from '../services/reorder'
 import { COLLECT_SECTION_BLOBS, runMaintenance, TRASH_DAYS } from '../services/maintenance'
 import type { RepackResult } from '../services/repack'
 import {
@@ -364,61 +357,6 @@ describe('time-order repack', () => {
     expect(res.status, await res.clone().text()).toBeLessThan(300)
     const latest = await exportsOf(client, account.id)
     expect(Object.keys(latest.goods)).toHaveLength(13)
-  })
-
-  it('gives up on an account whose run was killed, and walks on', async () => {
-    const { account } = await storedApart()
-    await env.DB.prepare('DELETE FROM site_settings WHERE key LIKE ?1')
-      .bind('storage.reorder%')
-      .run()
-    // The last run was killed inside this account (past the CPU limit).
-    await env.DB.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?1, ?2, 0)')
-      .bind(REORDER_RUNNING, String(account.id))
-      .run()
-    await env.DB.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?1, ?2, 0)')
-      .bind(REORDER_CURSOR, String(account.id - 1))
-      .run()
-    const read = async (key: string) =>
-      (
-        await env.DB.prepare('SELECT value FROM site_settings WHERE key = ?1')
-          .bind(key)
-          .first<{ value: string }>()
-      )?.value
-    const done = await reorderStorage(env.DB, Date.now() + 365 * 86_400_000)
-    expect(done.map((r) => r.accountId)).not.toContain(account.id)
-    expect(JSON.parse((await read(REORDER_GAVE_UP))!)).toEqual([account.id])
-    expect(Number(await read(REORDER_CURSOR))).toBeGreaterThanOrEqual(account.id)
-    expect(await read(REORDER_RUNNING)).toBeUndefined()
-  })
-
-  it('walks accounts from its cursor, passing over one that uploaded lately', async () => {
-    const { account } = await storedApart()
-    await env.DB.prepare('DELETE FROM site_settings WHERE key IN (?1, ?2)')
-      .bind(REORDER_CURSOR, REORDER_SKIPPED)
-      .run()
-    await env.DB.prepare('INSERT INTO site_settings (key, value, updated_at) VALUES (?1, ?2, 0)')
-      .bind(REORDER_CURSOR, String(account.id - 1))
-      .run()
-    const read = async (key: string) =>
-      (
-        await env.DB.prepare('SELECT value FROM site_settings WHERE key = ?1')
-          .bind(key)
-          .first<{ value: string }>()
-      )?.value
-    // Its last capture was "just now": passed over and remembered, the
-    // cursor walks on (a busy account no longer holds the queue).
-    const seen = await env.DB.prepare(
-      'SELECT max(last_seen_at) AS seen FROM snapshots WHERE account_id = ?1',
-    )
-      .bind(account.id)
-      .first<{ seen: number }>()
-    expect(await reorderStorage(env.DB, seen!.seen + 60_000)).toEqual([])
-    expect(Number(await read(REORDER_CURSOR))).toBeGreaterThanOrEqual(account.id)
-    expect(JSON.parse((await read(REORDER_SKIPPED))!)).toContain(account.id)
-    // Half an hour later it goes first, and leaves the list.
-    const done = await reorderStorage(env.DB, seen!.seen + 31 * 60_000)
-    expect(done[0]).toMatchObject({ accountId: account.id, applied: true })
-    expect(JSON.parse((await read(REORDER_SKIPPED))!)).not.toContain(account.id)
   })
 })
 

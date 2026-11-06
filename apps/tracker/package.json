@@ -20,7 +20,8 @@
     "deploy": "pnpm build && wrangler deploy",
     "icons": "node scripts/make-icons.mjs",
     "admin:reset-link": "node scripts/admin-reset-link.mjs",
-    "admin:grant": "node scripts/admin-grant.mjs"
+    "admin:grant": "node scripts/admin-grant.mjs",
+    "admin:repack": "tsx scripts/repack.ts"
   },
   "dependencies": {
     "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.3",

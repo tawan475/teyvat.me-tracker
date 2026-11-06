@@ -24,7 +24,6 @@ import { recovery } from './routes/recovery'
 import { staff } from './routes/staff'
 import { wishProxy } from './routes/wish-proxy'
 import { wishAccounts, wishSync } from './routes/wishes'
-import { reorderStorage } from './services/reorder'
 import { syncGameEvents } from './services/game-events'
 import { runMaintenance } from './services/maintenance'
 
@@ -106,14 +105,11 @@ export default {
     return app.fetch(request, env, ctx)
   },
   async scheduled(controller, env, ctx) {
-    // Hourly: the game's notice board and HoYoLAB (services/game-events.ts),
-    // and the time-order repack of stored sections (services/reorder.ts).
+    // Hourly: the game's notice board and HoYoLAB (services/game-events.ts).
+    // The time-order repack (services/reorder.ts) is a command run off
+    // Cloudflare (scripts/repack.ts): a long history's re-encode outran the
+    // Worker's CPU limit.
     if (controller.cron === EVENTS_CRON) {
-      ctx.waitUntil(
-        reorderStorage(env.DB).catch((error: unknown) =>
-          console.error('reorder failed', String(error)),
-        ),
-      )
       ctx.waitUntil(
         syncGameEvents(env.DB).then((status) =>
           console.log(

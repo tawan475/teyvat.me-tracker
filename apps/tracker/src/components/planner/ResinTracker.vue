@@ -2,7 +2,7 @@
 import { pushOnHere } from '@/lib/push-flag'
 import type { ManualResin } from '@gdt/shared'
 import { computed, ref, shallowRef, watch } from 'vue'
-import { Bell, BellOff, BellRing, Pencil } from 'lucide-vue-next'
+import { Bell, BellOff, BellRing, ChevronRight, Pencil } from 'lucide-vue-next'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -44,7 +44,8 @@ import { formatSpan } from './tasks'
  * users' asks, 2026-11-05): when resin reaches each amount the account
  * chose in Planner settings (`planner.resinMarks`, default 40 and 200), with
  * the time left and the clock time, a bell on each row setting the alert to
- * it; always shown (no fold) while any amount is chosen.
+ * it. Folded by default (the user, 2026-11-07), open state kept per device
+ * (`planner:resin-marks-open`); its columns pack to the left.
  */
 const props = defineProps<{
   reading: ResinReading | null
@@ -69,6 +70,13 @@ const marks = computed(() =>
   props.reading ? resinMarks(props.reading, props.now, props.marks) : [],
 )
 const full = computed(() => (props.reading ? fullAt(props.reading, props.now) : null))
+
+const MARKS_OPEN_KEY = 'planner:resin-marks-open'
+const marksOpen = ref(readStorage(MARKS_OPEN_KEY) === '1')
+function toggleMarks() {
+  marksOpen.value = !marksOpen.value
+  writeStorage(MARKS_OPEN_KEY, marksOpen.value ? '1' : null)
+}
 const readingTitle = computed(() => {
   const r = props.reading
   if (!r) return t('planner.resin.unknown')
@@ -304,9 +312,35 @@ watch(
 
     <!-- The marks table: amount, time left, clock time, the alert bell. Reached
          rows are muted with a tick (not colour alone). -->
-    <ul
+    <div
       v-if="marks.length"
-      class="mt-1 grid w-full grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-x-4 border-t border-border-subtle pt-2 text-sm"
+      class="mt-1 flex w-full items-center gap-2 border-t border-border-subtle pt-1.5"
+    >
+      <button
+        type="button"
+        class="-ml-1.5 inline-flex min-h-8 items-center gap-1 rounded-md px-1.5 text-xs text-text-muted transition-colors hover:bg-surface-overlay hover:text-text-primary"
+        :aria-expanded="marksOpen"
+        aria-controls="resin-marks"
+        @click="toggleMarks"
+      >
+        <ChevronRight
+          class="size-3.5 transition-transform"
+          :class="marksOpen && 'rotate-90'"
+          aria-hidden="true"
+        />{{ $t('planner.resin.marks') }}
+      </button>
+      <button
+        type="button"
+        class="ml-auto inline-flex min-h-8 items-center gap-1 rounded-md px-1.5 text-xs text-text-muted transition-colors hover:bg-surface-overlay hover:text-text-primary"
+        @click="emit('settings')"
+      >
+        <Pencil class="size-3" aria-hidden="true" />{{ $t('planner.resin.editMarks') }}
+      </button>
+    </div>
+    <ul
+      v-if="marks.length && marksOpen"
+      id="resin-marks"
+      class="grid w-full grid-cols-[repeat(4,auto)] items-center justify-start gap-x-4 pb-1 text-sm"
       :aria-label="$t('planner.resin.marks')"
     >
       <li v-for="m in marks" :key="m.amount" class="contents">
@@ -347,14 +381,6 @@ watch(
         </button>
       </li>
     </ul>
-    <button
-      v-if="marks.length"
-      type="button"
-      class="-mb-1 ml-auto inline-flex min-h-8 items-center gap-1 rounded-md px-1.5 text-xs text-text-muted transition-colors hover:bg-surface-overlay hover:text-text-primary"
-      @click="emit('settings')"
-    >
-      <Pencil class="size-3" aria-hidden="true" />{{ $t('planner.resin.editMarks') }}
-    </button>
 
     <UiPopover
       :open="editing"

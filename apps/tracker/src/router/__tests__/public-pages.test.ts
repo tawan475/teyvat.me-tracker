@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { injectPrerender } from '../../../build/prerender-html'
-import shell from '../../../index.html?raw'
-import robots from '../../../public/robots.txt?raw'
+import shellFile from '../../../index.html?raw'
+import robotsFile from '../../../public/robots.txt?raw'
 import llms from '../../../public/llms.txt?raw'
 import shellMessages from '../../i18n/locales/en/shell.json'
 import router from '../index.ts?raw'
 import { canonicalUrl, INDEXED_PAGES, SITE_ORIGIN, sitemapXml } from '../public-pages'
+
+// The repository keeps these files with CRLF line endings (Windows checkouts,
+// committed as they are); the checks below are about content, so read them as LF.
+const shell = shellFile.replace(/\r\n/g, '\n')
+const robots = robotsFile.replace(/\r\n/g, '\n')
 
 /** The route object in router/index.ts whose path is `path` (its source text). */
 function routeSource(path: string): string {

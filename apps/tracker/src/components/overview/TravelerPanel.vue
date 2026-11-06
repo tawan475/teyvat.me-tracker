@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GiPlayer } from '@gdt/shared'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Cake, Compass, Heart, Mountain, Swords, Trophy } from 'lucide-vue-next'
 import { dateLocale, formatNumber } from '@/lib/format'
 
@@ -42,6 +42,24 @@ const props = defineProps<{
     abyssStars: number | null
   }
 }>()
+
+/**
+ * The game draws a profile frame at its own pixel size around a picture
+ * about 222 px across: every frame's hole is ~111 px in radius in its own
+ * pixels, whatever the image's size (272-360 px wide, game data 7.2). So a
+ * frame scales by its width / 222 against the picture and reaches past it,
+ * as in game; stretched to the picture's box it sat inside the picture.
+ */
+const FRAME_HOLE = 222
+const frameScale = ref<number | null>(null)
+watch(
+  () => props.profile.frame,
+  () => (frameScale.value = null),
+)
+function frameLoaded(event: Event) {
+  const img = event.target as HTMLImageElement
+  if (img.naturalWidth > 0) frameScale.value = img.naturalWidth / FRAME_HOLE
+}
 
 /** EXP toward the next rank: shown below AR 60 with a known need. */
 const exp = computed(() => {
@@ -107,7 +125,15 @@ const right = computed(() =>
             alt=""
             :class="profile.frame ? 'framed' : 'ringed'"
           />
-          <img v-if="profile.frame" :src="profile.frame" alt="" class="frame" />
+          <img
+            v-if="profile.frame"
+            :src="profile.frame"
+            alt=""
+            class="frame"
+            data-skeleton="off"
+            :style="frameScale ? { '--frame-scale': frameScale } : { visibility: 'hidden' }"
+            @load="frameLoaded"
+          />
         </span>
         <div class="panel name-panel">
           <p class="name" :title="profile.name">{{ profile.name }}</p>
@@ -233,10 +259,14 @@ const right = computed(() =>
   border-radius: 9999px;
   box-shadow: 0 0 0 3px rgb(255 255 255 / 0.75);
 }
+/* Centred on the picture at its own scale (FRAME_HOLE): it reaches past the box, as in game. */
 .pfp .frame {
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  left: 50%;
+  top: 50%;
+  width: calc(78% * var(--frame-scale, 1));
+  height: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
   object-fit: contain;
   pointer-events: none;
 }

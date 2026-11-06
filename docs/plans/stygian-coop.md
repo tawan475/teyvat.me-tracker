@@ -35,7 +35,7 @@ character.
   "season": 5269012, "difficulty": 6, "at": 1791900000, "coop": true,
   // NEW: the players in the game's order (1P, 2P, 3P). Never a UID.
   "players": [
-    { "p": 1, "self": false, "picture": 1023 },       // picture: ProfilePicture id (optional)
+    { "p": 1, "self": false, "picture": 1023, "nickname": "Starxor" },   // picture: ProfilePicture id; both optional
     { "p": 2, "self": true,  "picture": 2 }
   ],
   "fights": [{
@@ -52,10 +52,10 @@ character.
 }]
 ```
 
-- `nickname` on a player: **only if the trace shows it in the message, and
-  only if the user says so** (the other players' names are shown in game
-  to whoever they played with, but they are still other people's data; the
-  share card's Name toggle would hide them with the owner's own).
+- `nickname` on a player: **yes (the user's call, 2026-11-06), when the
+  message has it** (the trace decides; if the client fetches names apart
+  from the record, they are not read). The share card's Name toggle hides
+  them together with the owner's own name.
 - UIDs of other players stay out, as now. `self` marks the owner.
 - Old Capture builds keep sending `team` only; the tracker falls back to
   today's view.
@@ -94,8 +94,8 @@ record,
    user prefers record-time values everywhere (open);
 3. a **participants strip** under the header, 44px tall, only on co-op
    cards: the players in order, each a round profile picture (where
-   exported, else the tag alone), the tag and "You" / the nickname (if
-   exported and the Name option is on). The boss art gives up those 66px
+   exported, else the tag alone), the tag and "You" / the nickname (when
+   the Name option is on). The boss art gives up those 66px
    (strip + gap); the columns are otherwise unchanged. The pill's
    "Co-op" is already implied by the strip; the season panel is untouched.
 
@@ -118,6 +118,5 @@ Size: about a day for Capture, two for the tracker, after the trace.
 
 ## Open
 
-- Export nicknames or not (and only if the message has them).
 - Record-time level/constellation on solo cards too, for one rule everywhere.
 - The tag's corner (bottom-left, or in place of the constellation chip).

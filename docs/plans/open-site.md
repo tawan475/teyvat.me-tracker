@@ -40,11 +40,13 @@ as a capture program. The fix is content and a few files, not a trick.
    Spiral Abyss / Theater / Stygian records, share cards), and Capture as
    "the companion app that keeps it up to date". The pictures stay; the
    text is what is missing.
-2. **A title and description per public route.** The router already carries
-   `meta.title` for the app bar; public routes (`/`, `/developers`,
-   `/guides`, `/login`, `/register`, later `/demo`) get a document title and
-   a `<meta name="description">` set on navigation, plus `og:title`/
-   `og:description` to match. Today every page is "Teyvat.me".
+2. **A title and description on every route, public or private** (the
+   user's rule). The router already carries `meta.title` for the app bar;
+   every route gets a document title ("Planner · Teyvat.me", "Characters ·
+   <account> · Teyvat.me") and a `<meta name="description">` set on
+   navigation, plus `og:title`/`og:description` to match. Private pages
+   gain a readable tab title and history; public ones gain what crawlers
+   read. Today every page is "Teyvat.me".
 3. **`public/robots.txt`**: allow everything public, disallow `/app/`,
    `/api/`, `/link`, `/oauth/`; name the sitemap; allow the AI crawlers
    (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) explicitly.
@@ -89,8 +91,9 @@ crawler) can walk the actual app without signing up. The user's calls
 (2026-11-06): it is **a made-up account, not the user's own** (a real
 roster with everything at C6 and built gives the planner nothing to show);
 it is static, its own separate page, the work is done by the client, going
-back changes nothing, export is off, the header says plainly that it is a
-demo, and any identity shown is masked.
+back changes nothing, **everything works except import** (export included:
+a visitor can take the demo's GOOD or zip home), the header says plainly
+that it is a demo, and any identity shown is masked.
 
 ### The demo's data
 
@@ -156,9 +159,12 @@ roster; it rebuilds the account from scratch (delete, re-import).
    react; leaving the page (or reloading) drops it. The pages stay
    interactive, which is the point of a demo, without storing anything
    (`useReadOnly()` alone would grey everything out).
-5. **Export off.** Save-Data, the zip export, wish export, GOOD download:
-   hidden on the demo (the `demo` flag). Share cards stay on: a PNG saying
-   teyvat.me is the best advert there is.
+5. **Everything works except import.** Export (Save-Data, the zip, wish
+   export, GOOD download) stays on: the data is made up, so there is nothing
+   to protect, and a downloaded file shows the format. Share cards stay on:
+   a PNG saying teyvat.me is the best advert there is. Import, upload,
+   keys, devices, sharing, account deletion: hidden (the `demo` flag), since
+   nothing may be written to the demo.
 6. **A demo bar in the header**: a fixed band at the top of every demo page,
    "This is a demo of Teyvat.me. Nothing you change is kept. Create an
    account to track your own." with a Sign-up button; the app bar's account
@@ -186,7 +192,14 @@ entry points (hide), `router/index.ts`, locale files for the bar's text.
 
 ---
 
-## 3. Public share pages (about a week)
+## 3. Public share pages — ON HOLD (the user's call, 2026-11-06)
+
+**On hold, likely cancelled.** The user tried the same on aru.gg: it takes
+a lot of processing for little return. If it is ever picked up, the rule is
+that **the token carries everything the page needs to draw the card** (the
+card's inputs packed into the URL: no server lookup, no stored rows, no R2),
+so the page costs the server nothing and nothing has to be revoked. The
+notes below are kept for that case.
 
 ### What it is
 
@@ -335,6 +348,17 @@ way in beside password, Discord and Google; the device-session model stays.
    account may be passkey-only; a reset link still works; the Devices page
    lists passkeys with rename and remove; `revoke-others` and password
    change treat passkey sessions like any device.
+5. **A gentle nudge, the way the big platforms do it** (the user's ask):
+   after a password or OAuth sign-in on a browser that supports passkeys
+   (`PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()`)
+   and has none registered, a small dismissible card on Home: "Sign in
+   faster next time with a passkey" → Set up / Not now. Never obnoxious: a
+   localStorage flag `gdt:passkey-nudge` records when it was last shown and
+   how many times it was dismissed; shown at most once every 30 days, not
+   at all after the third "Not now" or once any passkey exists, and never
+   on the first sign-up session (the user has just typed a password; let
+   them see the app first). Settings → Devices keeps the permanent "Add a
+   passkey" button.
 5. **Library**: `@simplewebauthn/server` runs on Workers with WebCrypto in
    its current versions; if its bundle or its dependencies fight the
    Worker build, verifying an assertion by hand is ~150 lines (CBOR for the
@@ -356,16 +380,21 @@ Migration, `worker/routes/passkeys.ts`, `worker/lib/webauthn.ts`,
 
 ## Order and why
 
-1. **SEO quick wins** — cheapest, fixes what Google says today.
-2. **Demo account** — a made-up half-built roster so the planner has work to show; a few days.
-3. **Share pages** — turns every shared card into an inbound page.
-4. **Passkeys** — self-contained, a week, improves sign-up friction.
-5. **Guest mode** — the largest; decide after the demo whether it is
+1. **SEO quick wins** — cheapest, fixes what Google says today; titles on
+   every route.
+2. **Demo account** — a made-up half-built roster so the planner has work
+   to show; everything works except import.
+3. **Passkeys** — self-contained, a week, with a gentle nudge after sign-in.
+4. **Guest mode** — the largest; decide after the demo whether it is
    needed, and design its local storage as a sync target from day one.
+
+On hold: **public share pages** (if ever, the token carries all the card's
+data) and the **supporter tier** (the research below stays for when there
+is demand).
 
 ---
 
-## 6. Supporter tier: how a Thai individual can take money (research, 2026-11-06)
+## 6. Supporter tier — ON HOLD (the user's call, 2026-11-06); research kept
 
 The goal is "the site pays for itself" (under $10/month today), not profit.
 What was checked, with the official pages where they could be read; the
@@ -478,4 +507,3 @@ paywall), never present the site as official, and keep game art off
 - Opn (Omise) Thailand pricing: https://www.omise.co/pricing/thailand
 - HoYoverse fan-made content guide (coverage): https://www.hoyolab.com/article/106430
 
-Supporter tier: see section 6; it waits for demand.

@@ -424,14 +424,41 @@
   align-items: center;
   justify-content: center;
 }
-.lp .ft b {
+.lp .ft-t {
+  margin: 0;
   font-size: 18px;
   line-height: 24px;
   font-weight: 600;
 }
-.lp .ft span {
+.lp .ft p {
+  margin: 0;
   font-size: 15px;
   line-height: 22px;
+  color: var(--tx2);
+}
+/* the smaller notes under the feature sections */
+.lp .feat-x {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  font-size: 15px;
+  line-height: 22px;
+}
+.lp .feat-x li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.lp .feat-x .ic {
+  align-self: center;
+  flex: none;
+  color: var(--acTx);
+}
+.lp .feat-x span {
   color: var(--tx2);
 }
 .lp .dash {
@@ -1638,13 +1665,24 @@
     width: 18px;
     height: 18px;
   }
-  .lp .ft b {
+  .lp .ft {
+    align-items: start;
+  }
+  .lp .ft-t {
     font-size: 16px;
     line-height: 22px;
   }
-  .lp .ft span {
+  .lp .ft p {
     font-size: 13.5px;
     line-height: 19px;
+  }
+  .lp .feat-x {
+    font-size: 13.5px;
+    line-height: 19px;
+  }
+  .lp .feat-x li {
+    flex-wrap: wrap;
+    column-gap: 6px;
   }
 }
 
@@ -1741,6 +1779,17 @@
 .lp .e-hero .h1 {
   font-size: clamp(52px, 4vw, 104px);
   white-space: nowrap;
+}
+/* the second line of the title: what kind of site this is */
+.lp .e-hero .e-kind {
+  display: block;
+  margin-top: 0.3em;
+  font-size: 0.42em;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: normal;
+  color: var(--tx2);
 }
 .lp .e-hero .lead {
   font-size: clamp(18px, 1.15vw, 26px);

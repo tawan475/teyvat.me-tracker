@@ -8,11 +8,12 @@
     "download": "Download"
   },
   "hero": {
-    "lead": "Capture your Genshin account while you play.",
-    "download": "Download the app",
-    "track": "Track it online",
+    "title": "Genshin Impact account tracker",
+    "lead": "Your Genshin Impact account over time: characters and builds, artifacts, materials, wishes and endgame records, plus a planner for what to farm next.",
+    "track": "Start tracking",
     "open": "Open dashboard",
-    "note": "Download latest release on GitHub"
+    "download": "Download the app",
+    "note": "Free. The Teyvat.me Capture app for Windows and Android keeps it up to date."
   },
   "video": {
     "label": "Demo video",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "Capture app",
-    "title": "The capture app",
-    "lead": "Reads the game's traffic on your PC or phone. Saves your account as Leyline JSON.",
+    "title": "Teyvat.me Capture, the companion app",
+    "lead": "A free app for Windows and Android that reads your account from the game's network traffic while you play and keeps your tracker up to date. It also saves your account as Leyline JSON, with or without a Teyvat.me account.",
     "noAccount": "No account needed",
     "noAccountNote": "Connecting to teyvat.me is optional",
     "readOnly": "Reads, never writes",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Tracker",
-    "title": "The tracker",
-    "lead": "Your account over time.",
+    "title": "Everything your account holds, over time",
+    "lead": "Teyvat.me keeps every capture, so each page shows where your account stands today and how it got there.",
     "sample": "Tracker overview, sample data",
     "chart": "Mora and Primogems, {per}, sample data",
-    "snapshotsNote": "Characters, weapons, artifacts (CV, RV), materials",
-    "progressionNote": "Mora, Primogems, artifacts · per snapshot or month",
-    "plannerNote": "Goals, today's farm by resin, daily and weekly tasks",
-    "plannerTip": "Commissions, Spiral Abyss, expeditions, Serenitea Pot currency, Welkin, read from your game",
-    "wishesNote": "Pity, 50/50, banners · import paimon.moe, UIGF",
-    "achievementsNote": "Achievements and Travel Accounts checklists",
-    "share": "Share cards",
-    "shareNote": "Build, roster and artifact cards · PNG",
+    "features": {
+      "characters": {
+        "title": "Characters and builds",
+        "text": "Every character with level, talents, constellations, weapon and artifacts. Open one for its stats, set bonuses and talent details, and step back through the builds it wore on earlier days."
+      },
+      "artifacts": {
+        "title": "Artifacts",
+        "text": "Every artifact with its main stat, substats and rolls, crit value (CV) and roll value (RV), filtered by set, slot or stat, with who wears it."
+      },
+      "planner": {
+        "title": "Materials and the planner",
+        "text": "Your bag, sorted like the game's. Set goals for characters, talents and weapons: the planner works out what each one needs, what to farm today with your resin, and the daily and weekly tasks read from your game."
+      },
+      "achievements": {
+        "title": "Achievements and collections",
+        "text": "Achievements, Travel Accounts, world quests, the archive and more, ticked from your captures, with hand marks for the rest."
+      },
+      "wishes": {
+        "title": "Wish history",
+        "text": "Pity, 50/50 wins and every banner you pulled on, synced by the Capture app or imported from paimon.moe, UIGF or a wish link."
+      },
+      "endgame": {
+        "title": "Endgame records",
+        "text": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught seasons with their enemies, and your own runs and records."
+      },
+      "share": {
+        "title": "Share cards",
+        "text": "Build, team, roster, artifact, banner and Stygian cards as PNG images, ready to post."
+      }
+    },
     "sharing": "Share an account",
     "sharingNote": "With a friend, as viewer or editor",
     "anywhere": "Anywhere",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "FAQ",
     "title": "Questions",
+    "whatQ": "What is Teyvat.me?",
+    "whatA": "A free website that tracks your Genshin Impact account over time: characters, artifacts, materials, achievements, wishes and endgame records, with a planner. Teyvat.me Capture is its separate, free companion app for Windows and Android that keeps it up to date; you can also import Leyline or GOOD files by hand.",
     "freeQ": "Is it free?",
     "freeA": "Yes. The tracker and the capture app are both free.",
     "modifyQ": "Does it modify the game?",

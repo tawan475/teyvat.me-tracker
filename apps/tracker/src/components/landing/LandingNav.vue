@@ -27,9 +27,9 @@ const short = computed(() => locale.value.split('-')[0]!.toUpperCase())
         <a v-for="link in links" :key="link.href" :href="link.href">{{ link.label }}</a>
       </div>
       <div v-else class="navlinks">
+        <a href="#tracker">{{ $t('landing.nav.tracker') }}</a>
         <a href="#capture">{{ $t('landing.nav.app') }}</a>
         <a href="#video">{{ $t('landing.nav.video') }}</a>
-        <a href="#tracker">{{ $t('landing.nav.tracker') }}</a>
         <a href="#faq">{{ $t('landing.nav.faq') }}</a>
       </div>
       <div class="nav-r">

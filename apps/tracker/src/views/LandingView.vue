@@ -13,9 +13,12 @@ import UiModal from '@/components/ui/UiModal.vue'
 import '@/components/landing/landing.css'
 
 /**
- * The landing page: the capture app first, the tracker second (the user's
- * order). Always dark (a public route). Signed in, its links lead to the
- * dashboard instead of sign-in and sign-up.
+ * The landing page: the tracker first (the site is the tracker), then how the
+ * Teyvat.me Capture app keeps it up to date (docs/plans/open-site.md §1; until
+ * 2026-11-06 the app came first and search engines took the site for the app).
+ * Always dark (a public route). Signed in, its links lead to the dashboard
+ * instead of sign-in and sign-up. Prerendered at build (vite.config.ts), so its
+ * text is in the HTML before any script runs.
  */
 const languageOpen = ref(false)
 </script>
@@ -26,9 +29,9 @@ const languageOpen = ref(false)
       <LandingNav @language="languageOpen = true" />
       <main>
         <LandingHero />
+        <LandingTracker />
         <LandingSteps />
         <LandingCapture />
-        <LandingTracker />
         <LandingPrivacy />
         <LandingFaq />
       </main>

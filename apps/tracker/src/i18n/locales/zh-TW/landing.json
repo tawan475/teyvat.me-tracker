@@ -8,11 +8,12 @@
     "download": "下載"
   },
   "hero": {
-    "lead": "邊玩邊記錄你的原神帳號。",
-    "download": "下載應用程式",
-    "track": "線上追蹤",
+    "title": "原神帳號追蹤器",
+    "lead": "隨時間記錄你的原神帳號：角色與配裝、聖遺物、素材、祈願和終局挑戰紀錄，還有規劃工具幫你決定接下來刷什麼。",
+    "track": "開始追蹤",
     "open": "開啟儀表板",
-    "note": "在 GitHub 下載最新版本"
+    "download": "下載應用程式",
+    "note": "免費。Windows 和 Android 版 Teyvat.me Capture 應用程式會讓它保持最新。"
   },
   "video": {
     "label": "示範影片",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "擷取應用程式",
-    "title": "擷取應用程式",
-    "lead": "讀取電腦或手機上的遊戲流量，將帳號儲存為 Leyline JSON。",
+    "title": "Teyvat.me Capture 輔助應用程式",
+    "lead": "適用於 Windows 和 Android 的免費應用程式，在你遊玩時從遊戲的網路流量讀取帳號，讓追蹤器保持最新。它也能將帳號儲存為 Leyline JSON，有沒有 Teyvat.me 帳號都可以。",
     "noAccount": "不需要帳號",
     "noAccountNote": "連接 teyvat.me 為選用",
     "readOnly": "只讀不寫",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "追蹤器",
-    "title": "追蹤器",
-    "lead": "記錄你的帳號隨時間的變化。",
+    "title": "帳號裡的一切，隨時間記錄",
+    "lead": "Teyvat.me 保存每一次擷取，因此每個頁面都能顯示你的帳號現在的狀況，以及它是如何一步步走到今天的。",
     "sample": "追蹤器概覽，範例資料",
     "chart": "摩拉與原石，{per}，範例資料",
-    "snapshotsNote": "角色、武器、聖遺物（CV、RV）、材料",
-    "progressionNote": "摩拉、原石、聖遺物 · 依快照或依月份",
-    "plannerNote": "目標、依樹脂安排今日刷取、每日與每週任務",
-    "plannerTip": "每日委託、深境螺旋、探索派遣、洞天寶錢、空月祝福，皆讀取自你的遊戲",
-    "wishesNote": "保底、50/50、卡池 · 匯入 paimon.moe、UIGF",
-    "achievementsNote": "成就與遊逸旅帳清單",
-    "share": "分享卡片",
-    "shareNote": "配裝、角色一覽與聖遺物卡片 · PNG",
+    "features": {
+      "characters": {
+        "title": "角色與配裝",
+        "text": "每個角色的等級、天賦、命之座、武器和聖遺物。開啟角色即可查看屬性、套裝效果和天賦詳情，還能回顧它往日穿過的配裝。"
+      },
+      "artifacts": {
+        "title": "聖遺物",
+        "text": "每件聖遺物的主屬性、副屬性和詞條數，以及雙暴分（CV）和詞條價值（RV），可依套裝、部位或屬性篩選，並顯示裝備者。"
+      },
+      "planner": {
+        "title": "素材與規劃",
+        "text": "背包排序與遊戲一致。為角色、天賦和武器設定目標：規劃工具會算出每個目標需要什麼、今天該用樹脂刷什麼，並列出從遊戲讀取的每日與每週任務。"
+      },
+      "achievements": {
+        "title": "成就與收藏",
+        "text": "成就、遊逸旅帳、世界任務、圖鑑等，依你的擷取自動勾選，其餘可手動標記。"
+      },
+      "wishes": {
+        "title": "祈願紀錄",
+        "text": "保底、50/50 結果和你抽過的每個卡池，可由 Capture 應用程式同步，或從 paimon.moe、UIGF 或祈願連結匯入。"
+      },
+      "endgame": {
+        "title": "終局挑戰紀錄",
+        "text": "深境螺旋、幻想真境劇詩和幽境危戰各期的敵人，以及你自己的挑戰與紀錄。"
+      },
+      "share": {
+        "title": "分享卡片",
+        "text": "配裝、隊伍、角色一覽、聖遺物、卡池和幽境危戰卡片，匯出為 PNG 圖片，隨時可以發布。"
+      }
+    },
     "sharing": "共用帳號",
     "sharingNote": "與好友共用，可檢視或編輯",
     "anywhere": "隨處可用",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "常見問題",
     "title": "問與答",
+    "whatQ": "Teyvat.me 是什麼？",
+    "whatA": "一個免費網站，隨時間記錄你的原神帳號：角色、聖遺物、素材、成就、祈願和終局挑戰紀錄，並附有規劃工具。Teyvat.me Capture 是它獨立的免費輔助應用程式，適用於 Windows 和 Android，可讓網站保持最新；你也可以手動匯入 Leyline 或 GOOD 檔案。",
     "freeQ": "免費嗎？",
     "freeA": "是的。追蹤器和擷取應用程式都免費。",
     "modifyQ": "會修改遊戲嗎？",

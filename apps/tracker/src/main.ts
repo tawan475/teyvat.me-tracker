@@ -24,8 +24,17 @@ warnMissingKeys()
 const preference = storedPreference()
 const loading = applyLocale(preference).catch(() => undefined)
 const timeout = new Promise<void>((resolve) => setTimeout(resolve, 3000))
-void (
-  resolveLocale(preference) === 'en' ? Promise.resolve() : Promise.race([loading, timeout])
-).then(() => app.mount('#app'))
+// A prerendered page (build/prerender.ts) on screen stays until its route is
+// ready, rather than going blank while the page's code and session load.
+const root = document.getElementById('app')
+const prerendered =
+  root?.hasAttribute('data-prerendered') === true &&
+  !document.documentElement.hasAttribute('data-prerender-hide')
+void (resolveLocale(preference) === 'en' ? Promise.resolve() : Promise.race([loading, timeout]))
+  .then(() => (prerendered ? router.isReady().catch(() => undefined) : undefined))
+  .then(() => {
+    root?.removeAttribute('data-prerendered')
+    app.mount('#app')
+  })
 
 registerServiceWorker()

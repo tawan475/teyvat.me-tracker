@@ -8,11 +8,12 @@
     "download": "Descargar"
   },
   "hero": {
-    "lead": "Captura tu cuenta de Genshin mientras juegas.",
-    "download": "Descargar la app",
-    "track": "Seguirla en línea",
+    "title": "Tracker de cuentas de Genshin Impact",
+    "lead": "Tu cuenta de Genshin Impact a lo largo del tiempo: personajes y builds, artefactos, materiales, deseos y récords de contenido final, además de un planificador para saber qué farmear después.",
+    "track": "Empezar a registrar",
     "open": "Abrir panel",
-    "note": "Descarga la última versión en GitHub"
+    "download": "Descargar la app",
+    "note": "Gratis. La app Teyvat.me Capture para Windows y Android lo mantiene al día."
   },
   "video": {
     "label": "Vídeo de demostración",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "App de captura",
-    "title": "La app de captura",
-    "lead": "Lee el tráfico del juego en tu PC o móvil. Guarda tu cuenta como Leyline JSON.",
+    "title": "Teyvat.me Capture, la app complementaria",
+    "lead": "Una app gratuita para Windows y Android que lee tu cuenta del tráfico de red del juego mientras juegas y mantiene tu tracker al día. También guarda tu cuenta como Leyline JSON, con o sin cuenta de Teyvat.me.",
     "noAccount": "Sin cuenta",
     "noAccountNote": "Conectar con teyvat.me es opcional",
     "readOnly": "Solo lee, nunca escribe",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Tracker",
-    "title": "El tracker",
-    "lead": "Tu cuenta a lo largo del tiempo.",
+    "title": "Todo lo que guarda tu cuenta, a lo largo del tiempo",
+    "lead": "Teyvat.me conserva cada captura, así que cada página muestra cómo está tu cuenta hoy y cómo llegó hasta ahí.",
     "sample": "Resumen del tracker, datos de ejemplo",
     "chart": "Moras y Protogemas, {per}, datos de ejemplo",
-    "snapshotsNote": "Personajes, armas, artefactos (CV, RV), materiales",
-    "progressionNote": "Moras, Protogemas, artefactos · por captura o por mes",
-    "plannerNote": "Objetivos, el farmeo de hoy según la resina, tareas diarias y semanales",
-    "plannerTip": "Encargos del día, Espiral del Abismo, expediciones, Intramora, Bendición Lunar, leídos de tu juego",
-    "wishesNote": "Garantía, 50/50, banners · importa paimon.moe, UIGF",
-    "achievementsNote": "Listas de logros y del Cuaderno de anécdotas",
-    "share": "Tarjetas para compartir",
-    "shareNote": "Tarjetas de build, plantilla y artefacto · PNG",
+    "features": {
+      "characters": {
+        "title": "Personajes y builds",
+        "text": "Cada personaje con su nivel, talentos, constelaciones, arma y artefactos. Abre uno para ver sus atributos, efectos del conjunto y detalles de talentos, y repasa las builds que llevó en días anteriores."
+      },
+      "artifacts": {
+        "title": "Artefactos",
+        "text": "Cada artefacto con su atributo principal, atributos secundarios y mejoras, valor de CRIT (CV) y valor de mejoras (RV), filtrado por conjunto, pieza o atributo, y quién lo lleva."
+      },
+      "planner": {
+        "title": "Materiales y planificador",
+        "text": "Tu inventario, ordenado como en el juego. Fija objetivos para personajes, talentos y armas: el planificador calcula lo que necesita cada uno, qué farmear hoy con tu resina y las tareas diarias y semanales leídas de tu juego."
+      },
+      "achievements": {
+        "title": "Logros y colecciones",
+        "text": "Logros, Cuaderno de anécdotas, misiones de mundo, el archivo y más, marcados a partir de tus capturas, con marcas manuales para el resto."
+      },
+      "wishes": {
+        "title": "Historial de deseos",
+        "text": "Garantía, 50/50 ganados y cada banner en el que tiraste, sincronizado por la app Capture o importado desde paimon.moe, UIGF o un enlace de deseos."
+      },
+      "endgame": {
+        "title": "Récords de contenido final",
+        "text": "Temporadas de Espiral del Abismo, Teatro Fantasía y Conflagración estigia con sus enemigos, y tus propias partidas y récords."
+      },
+      "share": {
+        "title": "Tarjetas para compartir",
+        "text": "Tarjetas de build, escuadrón, personajes, artefacto, banner y Conflagración estigia como imágenes PNG, listas para publicar."
+      }
+    },
     "sharing": "Compartir una cuenta",
     "sharingNote": "Con un amigo, como lector o editor",
     "anywhere": "En todas partes",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "Preguntas",
     "title": "Preguntas frecuentes",
+    "whatQ": "¿Qué es Teyvat.me?",
+    "whatA": "Un sitio web gratuito que registra tu cuenta de Genshin Impact a lo largo del tiempo: personajes, artefactos, materiales, logros, deseos y récords de contenido final, con un planificador. Teyvat.me Capture es su app complementaria, aparte y gratuita, para Windows y Android que lo mantiene al día; también puedes importar archivos Leyline o GOOD a mano.",
     "freeQ": "¿Es gratis?",
     "freeA": "Sí. El tracker y la app de captura son gratis.",
     "modifyQ": "¿Modifica el juego?",

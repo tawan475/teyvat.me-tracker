@@ -2,12 +2,13 @@
 import { computed, ref } from 'vue'
 import {
   ClipboardList,
-  History,
+  Flower2,
   Languages,
   Share,
   Sparkles,
-  TrendingUp,
+  Swords,
   Trophy,
+  UserPlus,
   Users,
 } from 'lucide-vue-next'
 import { t } from '@/i18n'
@@ -70,23 +71,22 @@ const stats = computed(() => [
   },
 ])
 
-const features = computed(() => [
-  { icon: History, title: t('shell.nav.snapshots'), note: t('landing.tracker.snapshotsNote') },
-  {
-    icon: TrendingUp,
-    title: t('shell.nav.progression'),
-    note: t('landing.tracker.progressionNote'),
-  },
-  {
-    icon: ClipboardList,
-    title: t('shell.nav.planner'),
-    note: t('landing.tracker.plannerNote'),
-    tip: t('landing.tracker.plannerTip'),
-  },
-  { icon: Sparkles, title: t('wishes.title'), note: t('landing.tracker.wishesNote') },
-  { icon: Trophy, title: t('shell.nav.achievements'), note: t('landing.tracker.achievementsNote') },
-  { icon: Share, title: t('landing.tracker.share'), note: t('landing.tracker.shareNote') },
-  { icon: Users, title: t('landing.tracker.sharing'), note: t('landing.tracker.sharingNote') },
+/**
+ * What the tracker has: one short section per feature, real sentences (what a
+ * visitor and a search engine read), then two smaller notes.
+ */
+const FEATURES = [
+  { key: 'characters', icon: Users },
+  { key: 'artifacts', icon: Flower2 },
+  { key: 'planner', icon: ClipboardList },
+  { key: 'achievements', icon: Trophy },
+  { key: 'wishes', icon: Sparkles },
+  { key: 'endgame', icon: Swords },
+  { key: 'share', icon: Share },
+] as const
+
+const extras = computed(() => [
+  { icon: UserPlus, title: t('landing.tracker.sharing'), note: t('landing.tracker.sharingNote') },
   {
     icon: Languages,
     title: t('landing.tracker.anywhere'),
@@ -185,12 +185,19 @@ const features = computed(() => [
       </div>
 
       <div class="feat">
-        <div v-for="feature in features" :key="feature.title" class="tile-g ft">
+        <article v-for="feature in FEATURES" :key="feature.key" class="tile-g ft">
           <div class="ft-ic"><component :is="feature.icon" class="ic l" aria-hidden="true" /></div>
-          <b>{{ feature.title }}</b
-          ><span :title="feature.tip">{{ feature.note }}</span>
-        </div>
+          <h3 class="ft-t">{{ $t(`landing.tracker.features.${feature.key}.title`) }}</h3>
+          <p>{{ $t(`landing.tracker.features.${feature.key}.text`) }}</p>
+        </article>
       </div>
+      <ul class="feat-x">
+        <li v-for="extra in extras" :key="extra.title">
+          <component :is="extra.icon" class="ic" aria-hidden="true" />
+          <b>{{ extra.title }}</b
+          ><span>{{ extra.note }}</span>
+        </li>
+      </ul>
     </div>
   </section>
 </template>

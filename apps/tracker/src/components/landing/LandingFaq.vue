@@ -2,7 +2,7 @@
 import { ChevronDown } from 'lucide-vue-next'
 
 /** Each question's i18n keys: `landing.faq.<key>Q` / `<key>A`. The first starts open. */
-const QUESTIONS = ['free', 'modify', 'reads', 'admin', 'need', 'servers'] as const
+const QUESTIONS = ['what', 'free', 'modify', 'reads', 'admin', 'need', 'servers'] as const
 </script>
 
 <template>

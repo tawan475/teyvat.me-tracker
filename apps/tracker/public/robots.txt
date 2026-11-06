@@ -1,0 +1,27 @@
+# Teyvat.me: a free Genshin Impact account tracker. About the site: https://teyvat.me/llms.txt
+# The public pages are open to every crawler; the signed-in app, the API and
+# the sign-in hand-offs are not pages to index.
+
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /api/
+Disallow: /link
+Disallow: /oauth
+Disallow: /reset-password
+Disallow: /verify-email
+
+# AI crawlers are welcome on the same pages (named so no default of theirs keeps them out).
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+Allow: /
+Disallow: /app/
+Disallow: /api/
+Disallow: /link
+Disallow: /oauth
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://teyvat.me/sitemap.xml

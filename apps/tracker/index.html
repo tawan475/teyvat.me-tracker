@@ -81,19 +81,83 @@
         } catch (_) {}
       })()
     </script>
+    <script>
+      // A prerendered page (build/prerender.ts) carries its English text in
+      // #app until the app mounts. In another language, or where this file is
+      // the fallback for another route (index.html is the landing page's), that
+      // text is hidden so it never shows first.
+      ;(function () {
+        var root = document.documentElement
+        var page = root.getAttribute('data-prerendered')
+        var here = location.pathname.replace(/\/+$/, '') || '/'
+        if (page !== null && (root.lang !== 'en' || here !== page)) {
+          root.setAttribute('data-prerender-hide', '')
+        }
+      })()
+    </script>
+    <style>
+      html[data-prerender-hide] #app[data-prerendered] {
+        display: none;
+      }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Teyvat.me</title>
+    <!-- The landing page's; every route sets its own (src/router/document-meta.ts). -->
+    <title>Teyvat.me · Genshin Impact account tracker</title>
     <meta
       name="description"
-      content="Track your Genshin Impact account over time: characters, artifacts, materials, wishes and a planner, kept up to date by the Teyvat.me Capture app."
+      content="Teyvat.me is a free Genshin Impact account tracker: characters and builds, artifacts, materials and a planner, achievements, wish history and endgame records over time, kept up to date by the free Teyvat.me Capture app."
     />
     <meta property="og:site_name" content="Teyvat.me" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Teyvat.me" />
+    <meta property="og:title" content="Teyvat.me · Genshin Impact account tracker" />
     <meta
       property="og:description"
-      content="Track your Genshin Impact account over time: characters, artifacts, materials, wishes and a planner, kept up to date by the Teyvat.me Capture app."
+      content="Teyvat.me is a free Genshin Impact account tracker: characters and builds, artifacts, materials and a planner, achievements, wish history and endgame records over time, kept up to date by the free Teyvat.me Capture app."
     />
+    <!--
+      What the site is, for search engines: the website (a tracker) and the
+      program (Teyvat.me Capture, its companion app) are two things under one name.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://teyvat.me/#website",
+            "name": "Teyvat.me",
+            "url": "https://teyvat.me/",
+            "description": "A free Genshin Impact account tracker: characters and builds, artifacts, materials and a planner, achievements, wish history and endgame records, kept over time.",
+            "inLanguage": ["en", "zh-CN", "zh-TW", "ja", "ko", "es", "fr", "ru", "th", "vi", "de", "id", "pt", "it", "tr"]
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://teyvat.me/#tracker",
+            "name": "Teyvat.me",
+            "url": "https://teyvat.me/",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any (web browser)",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "description": "The Teyvat.me website: tracks a Genshin Impact account over time (characters, weapons, artifacts with crit and roll value, materials, a planner with daily farming, achievements, wish history with pity, Spiral Abyss, Imaginarium Theater and Stygian Onslaught records, share cards). Updated by the Teyvat.me Capture app or by importing GOOD files."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://teyvat.me/#capture",
+            "name": "Teyvat.me Capture",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Windows, Linux, macOS, Android",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "downloadUrl": "https://github.com/tawan475/teyvat.me-capture/releases/latest",
+            "installUrl": "https://github.com/tawan475/teyvat.me-capture/releases/latest",
+            "sameAs": "https://github.com/tawan475/teyvat.me-capture",
+            "license": "https://opensource.org/licenses/MIT",
+            "description": "The companion app of the Teyvat.me website: a free program for Windows and Android that reads a Genshin Impact account from the game's network traffic while you play, saves it as Leyline (GOOD) JSON and, optionally, keeps a Teyvat.me tracker up to date. It never modifies the game."
+          }
+        ]
+      }
+    </script>
     <!-- The link preview picture lives on gi-cdn (it holds game art, which the repo never does). -->
     <meta property="og:image" content="https://gi-cdn.ley-courier.workers.dev/og/teyvat-me.png" />
     <meta property="og:image:type" content="image/png" />

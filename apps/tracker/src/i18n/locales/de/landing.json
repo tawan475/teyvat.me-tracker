@@ -8,11 +8,12 @@
     "download": "Herunterladen"
   },
   "hero": {
-    "lead": "Erfasse deinen Genshin-Account, während du spielst.",
-    "download": "App herunterladen",
-    "track": "Online verfolgen",
+    "title": "Account-Tracker für Genshin Impact",
+    "lead": "Dein Account in Genshin Impact im Zeitverlauf: Figuren und Builds, Artefakte, Materialien, Gebete und Endgame-Rekorde, dazu ein Planer, der zeigt, was du als Nächstes farmen solltest.",
+    "track": "Tracking starten",
     "open": "Dashboard öffnen",
-    "note": "Neueste Version auf GitHub herunterladen"
+    "download": "App herunterladen",
+    "note": "Kostenlos. Die App Teyvat.me Capture für Windows und Android hält alles aktuell."
   },
   "video": {
     "label": "Demovideo",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "Aufzeichnungs-App",
-    "title": "Die Aufzeichnungs-App",
-    "lead": "Liest den Netzwerkverkehr des Spiels auf deinem PC oder Handy. Speichert deinen Account als Leyline JSON.",
+    "title": "Teyvat.me Capture, die Begleit-App",
+    "lead": "Eine kostenlose App für Windows und Android, die beim Spielen deinen Account aus dem Netzwerkverkehr des Spiels liest und deinen Tracker aktuell hält. Sie speichert deinen Account auch als Leyline JSON, mit oder ohne Teyvat.me-Konto.",
     "noAccount": "Kein Konto nötig",
     "noAccountNote": "Die Verbindung mit teyvat.me ist freiwillig",
     "readOnly": "Liest, schreibt nie",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Tracker",
-    "title": "Der Tracker",
-    "lead": "Dein Account im Zeitverlauf.",
+    "title": "Alles, was dein Account enthält, im Zeitverlauf",
+    "lead": "Teyvat.me behält jede Erfassung, also zeigt jede Seite, wo dein Account heute steht und wie er dorthin kam.",
     "sample": "Tracker-Übersicht, Beispieldaten",
     "chart": "Mora und Urgesteine, {per}, Beispieldaten",
-    "snapshotsNote": "Charaktere, Waffen, Artefakte (CV, RV), Materialien",
-    "progressionNote": "Mora, Urgesteine, Artefakte · pro Snapshot oder Monat",
-    "plannerNote": "Ziele, heutiges Farmen nach Harz, tägliche und wöchentliche Aufgaben",
-    "plannerTip": "Tägliche Missionen, Gewundener Abgrund, Erkundungen, Kannentaler, Mondsegen, aus deinem Spiel gelesen",
-    "wishesNote": "Pity, 50/50, Banner · Import von paimon.moe, UIGF",
-    "achievementsNote": "Listen für Errungenschaften und Reiseberichte",
-    "share": "Teilbare Karten",
-    "shareNote": "Build-, Kader- und Artefaktkarten · PNG",
+    "features": {
+      "characters": {
+        "title": "Figuren und Builds",
+        "text": "Jede Figur mit Stufe, Talenten, Sternbildern, Waffe und Artefakten. Öffne eine für ihre Werte, Setboni und Talentdetails und blättere zurück durch die Builds, die sie an früheren Tagen trug."
+      },
+      "artifacts": {
+        "title": "Artefakte",
+        "text": "Jedes Artefakt mit Hauptattribut, Nebenattributen und Rolls, Crit Value (CV) und Roll Value (RV), filterbar nach Set, Slot oder Attribut, samt Träger."
+      },
+      "planner": {
+        "title": "Materialien und Planer",
+        "text": "Dein Inventar, sortiert wie im Spiel. Setze Ziele für Figuren, Talente und Waffen: Der Planer berechnet, was jedes Ziel braucht, was du heute mit deinem Harz farmen solltest, und die täglichen und wöchentlichen Aufgaben aus deinem Spiel."
+      },
+      "achievements": {
+        "title": "Errungenschaften und Sammlungen",
+        "text": "Errungenschaften, Reiseberichte, Weltaufträge, das Handbuch und mehr, abgehakt anhand deiner Erfassungen, mit eigenen Markierungen für den Rest."
+      },
+      "wishes": {
+        "title": "Gebetsverlauf",
+        "text": "Pity, gewonnene 50/50 und jedes Banner, auf dem du gebetet hast, synchronisiert von der Capture-App oder importiert aus paimon.moe, UIGF oder einem Gebetslink."
+      },
+      "endgame": {
+        "title": "Endgame-Rekorde",
+        "text": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: jede Saison mit ihren Gegnern, dazu deine eigenen Läufe und Rekorde."
+      },
+      "share": {
+        "title": "Teilbare Karten",
+        "text": "Build-, Truppen-, Figuren-, Artefakt- und Bannerkarten sowie Karten zum Düsteren Ansturm als PNG-Bilder, bereit zum Posten."
+      }
+    },
     "sharing": "Account teilen",
     "sharingNote": "Mit Freunden, zum Ansehen oder Bearbeiten",
     "anywhere": "Überall",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "FAQ",
     "title": "Fragen",
+    "whatQ": "Was ist Teyvat.me?",
+    "whatA": "Eine kostenlose Website, die deinen Account in Genshin Impact im Zeitverlauf festhält: Figuren, Artefakte, Materialien, Errungenschaften, Gebete und Endgame-Rekorde, dazu ein Planer. Teyvat.me Capture ist die separate, kostenlose Begleit-App für Windows und Android, die alles aktuell hält; du kannst Leyline- oder GOOD-Dateien auch von Hand importieren.",
     "freeQ": "Ist es kostenlos?",
     "freeA": "Ja. Der Tracker und die Aufzeichnungs-App sind beide kostenlos.",
     "modifyQ": "Verändert es das Spiel?",

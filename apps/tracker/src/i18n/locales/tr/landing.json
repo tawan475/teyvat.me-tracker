@@ -8,11 +8,12 @@
     "download": "İndir"
   },
   "hero": {
-    "lead": "Genshin hesabını oynarken kaydet.",
-    "download": "Uygulamayı indir",
-    "track": "Çevrim içi takip et",
+    "title": "Genshin Impact hesap takipçisi",
+    "lead": "Genshin Impact hesabın zaman içinde: karakterler ve buildler, yadigarlar, malzemeler, dilekler ve oyun sonu rekorları, ayrıca sırada neyi farmlayacağını gösteren bir planlayıcı.",
+    "track": "Takibe başla",
     "open": "Paneli aç",
-    "note": "En yeni sürümü GitHub'dan indir"
+    "download": "Uygulamayı indir",
+    "note": "Ücretsiz. Windows ve Android için Teyvat.me Capture uygulaması onu güncel tutar."
   },
   "video": {
     "label": "Tanıtım videosu",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "Yakalama uygulaması",
-    "title": "Yakalama uygulaması",
-    "lead": "Oyunun trafiğini PC'nde veya telefonunda okur. Hesabını Leyline JSON olarak kaydeder.",
+    "title": "Teyvat.me Capture, yardımcı uygulama",
+    "lead": "Sen oynarken hesabını oyunun ağ trafiğinden okuyan ve takipçini güncel tutan, Windows ve Android için ücretsiz bir uygulama. Hesabını Leyline JSON olarak da kaydeder; Teyvat.me hesabın olsa da olmasa da.",
     "noAccount": "Hesap gerekmez",
     "noAccountNote": "teyvat.me'ye bağlanmak isteğe bağlıdır",
     "readOnly": "Okur, asla yazmaz",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Takipçi",
-    "title": "Takipçi",
-    "lead": "Hesabın zaman içinde.",
+    "title": "Hesabındaki her şey, zaman içinde",
+    "lead": "Teyvat.me her yakalamayı saklar; böylece her sayfa hesabının bugün nerede olduğunu ve oraya nasıl geldiğini gösterir.",
     "sample": "Takipçi özeti, örnek veri",
     "chart": "Mora ve Köken Taşı, {per}, örnek veri",
-    "snapshotsNote": "Karakterler, silahlar, yadigarlar (CV, RV), malzemeler",
-    "progressionNote": "Mora, Köken Taşı, yadigarlar · anlık görüntü veya ay başına",
-    "plannerNote": "Hedefler, reçineye göre bugünkü farm, günlük ve haftalık görevler",
-    "plannerTip": "Günlük Özel Görevler, Hiçlik Sarmalı, keşifler, Çaydanlık Parası, Yeni Ayın Lütfu; oyunundan okunur",
-    "wishesNote": "Sayaç, 50/50, afişler · paimon.moe, UIGF içe aktar",
-    "achievementsNote": "Başarım ve Seyahat Notları listeleri",
-    "share": "Paylaşım kartları",
-    "shareNote": "Build, kadro ve yadigar kartları · PNG",
+    "features": {
+      "characters": {
+        "title": "Karakterler ve buildler",
+        "text": "Her karakter seviyesi, yetenekleri, takımyıldızları, silahı ve yadigarlarıyla. Birini açıp özelliklerini, set bonuslarını ve yetenek ayrıntılarını gör, önceki günlerde kullandığı buildlere geri dön."
+      },
+      "artifacts": {
+        "title": "Yadigarlar",
+        "text": "Her yadigar ana özelliği, alt özellikleri ve artışları, kritik değeri (CV) ve artış değeriyle (RV); sete, yuvaya veya özelliğe göre filtrelenir, kimin taktığı da görünür."
+      },
+      "planner": {
+        "title": "Malzemeler ve planlayıcı",
+        "text": "Envanterin, oyundaki gibi sıralı. Karakterler, yetenekler ve silahlar için hedef koy: planlayıcı her birinin neye ihtiyacı olduğunu, bugün reçinenle neyi farmlayacağını ve oyunundan okunan günlük ve haftalık görevleri hesaplar."
+      },
+      "achievements": {
+        "title": "Başarımlar ve koleksiyonlar",
+        "text": "Başarımlar, Seyahat Notları, Dünya Görevleri, Arşiv ve daha fazlası; yakalamalarından işaretlenir, gerisini elle işaretlersin."
+      },
+      "wishes": {
+        "title": "Dilek geçmişi",
+        "text": "Sayaç, kazanılan 50/50'ler ve dilek tuttuğun her afiş; Capture uygulamasıyla senkronize edilir ya da paimon.moe, UIGF veya bir dilek bağlantısından içe aktarılır."
+      },
+      "endgame": {
+        "title": "Oyun sonu rekorları",
+        "text": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz sezonları düşmanlarıyla birlikte, ayrıca kendi denemelerin ve rekorların."
+      },
+      "share": {
+        "title": "Paylaşım kartları",
+        "text": "Build, takım, kadro, yadigar, afiş ve Kasvetli Taarruz kartları PNG görseli olarak, paylaşmaya hazır."
+      }
+    },
     "sharing": "Hesap paylaş",
     "sharingNote": "Bir arkadaşla, görüntüleyen veya düzenleyen olarak",
     "anywhere": "Her yerde",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "SSS",
     "title": "Sorular",
+    "whatQ": "Teyvat.me nedir?",
+    "whatA": "Genshin Impact hesabını zaman içinde takip eden ücretsiz bir site: karakterler, yadigarlar, malzemeler, başarımlar, dilekler ve oyun sonu rekorları, bir planlayıcıyla birlikte. Teyvat.me Capture onu güncel tutan, Windows ve Android için ayrı ve ücretsiz yardımcı uygulamasıdır; Leyline veya GOOD dosyalarını elle de içe aktarabilirsin.",
     "freeQ": "Ücretsiz mi?",
     "freeA": "Evet. Takipçi de yakalama uygulaması da ücretsiz.",
     "modifyQ": "Oyunu değiştiriyor mu?",

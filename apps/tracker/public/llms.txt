@@ -1,0 +1,35 @@
+# Teyvat.me
+
+> Teyvat.me (https://teyvat.me) is a free website that tracks a Genshin Impact account over time: characters and builds, weapons, artifacts, materials, a planner, achievements and collections, wish history and endgame records. Teyvat.me Capture is a separate, free companion app for Windows, Linux, macOS and Android that reads the account from the game's network traffic while you play and keeps the website up to date. The two share a name; the website is the tracker, the app is one way to feed it.
+
+Teyvat.me is an unofficial fan project, not affiliated with or endorsed by HoYoverse. Genshin Impact is a trademark of HoYoverse. The site is in 15 languages (every language the game ships).
+
+## The website (the tracker)
+
+- Free. Sign up with a username and password, or with Discord or Google. One user can track several Genshin accounts and share an account with a friend as viewer or editor.
+- Characters and builds: level, talents, constellations, weapon and artifacts per character, the game's text for each talent and constellation, and earlier builds from past captures.
+- Artifacts: main stat, substats and rolls, crit value (CV) and roll value (RV), filters by set, slot and stat, and who wears each piece.
+- Materials and the planner: the bag sorted like the game's; goals for characters, talents and weapons; what each goal needs, what to farm today with resin, and daily and weekly tasks (commissions, Spiral Abyss, expeditions, Serenitea Pot currency, Welkin) read from the game. Imports Seelie and paimon.moe plans.
+- Achievements and collections: achievements, Travel Accounts, world quests, the archive, living beings, Local Legends and more, ticked from captures, with hand marks.
+- Wish history: pity, 50/50 results and every banner; synced by the Capture app or imported from paimon.moe, UIGF files or the game's wish history link.
+- Endgame: Spiral Abyss, Imaginarium Theater and Stygian Onslaught seasons with their enemies, and the account's own records.
+- Share cards: build, team, roster, artifact, banner and Stygian record cards as PNG images.
+- History: every capture is kept, so figures (Mora, Primogems, artifacts, characters) can be charted over time.
+- Data in and out: imports and exports GOOD / Leyline JSON (the Genshin Open Object Description format used by Genshin Optimizer); a user can export or delete everything at any time.
+- The signed-in app lives under /app/ and is private to each user; it is not for indexing.
+
+## Teyvat.me Capture (the companion app)
+
+- Free and open source (MIT): https://github.com/tawan475/teyvat.me-capture
+- Download: https://github.com/tawan475/teyvat.me-capture/releases/latest (Windows, Linux, macOS, Android 10+).
+- Reads the game's network traffic on the same PC or phone; it never touches the game's files or memory and needs no mods. It must start before the game; on Windows it needs administrator rights for packet capture.
+- Works without a Teyvat.me account: it saves the account as Leyline JSON (GOOD plus more), for Genshin Optimizer or any GOOD-compatible site. Signed in, it uploads each login to the tracker and can send changes live while you play.
+
+## Pages
+
+- [Home](https://teyvat.me/): what the tracker does, feature by feature; how the Capture app keeps it up to date; privacy; questions and answers.
+- [Developers: the Leyline format](https://teyvat.me/developers): the export format (GOOD plus every other key Teyvat.me Capture writes), the upload rules and limits, and the upload and live sync API.
+- [Leyline TypeScript types](https://teyvat.me/developers/leyline.d.ts): the format as TypeScript declarations.
+- [Create an account](https://teyvat.me/register)
+- [Sign in](https://teyvat.me/login)
+- [Download Teyvat.me Capture](https://github.com/tawan475/teyvat.me-capture/releases/latest)

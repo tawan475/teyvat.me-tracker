@@ -7,11 +7,11 @@ import {
   type RouteMeta,
 } from 'vue-router'
 import { loadSignInOptions } from '@/components/oauth/oauth'
-import { pageTitle, type PageKey } from '@/components/shell/nav'
-import { onLocaleChange, t } from '@/i18n'
+import type { PageKey } from '@/components/shell/nav'
 import { setPublicPage } from '@/lib/theme'
 import { useAccounts } from '@/stores/accounts'
 import { useSession } from '@/stores/session'
+import { installDocumentMeta } from './document-meta'
 import { setAppRouter } from './instance'
 import { installLinkPrefetch } from './prefetch'
 
@@ -526,15 +526,9 @@ router.afterEach((to) => {
     void nextTick().then(finish)
   }
   setPublicPage(to.meta.public === true)
-  setDocumentTitle(to)
+  // The tab title, description and preview tags follow the route from here on.
+  installDocumentMeta(router)
 })
-
-/** The tab's title: the page's, in the language on screen (again on a switch). */
-function setDocumentTitle(to: RouteLocationNormalized) {
-  const title = pageTitle(to.meta)
-  document.title = title ? t('shell.documentTitle', { title }) : t('shell.site')
-}
-onLocaleChange(() => setDocumentTitle(router.currentRoute.value))
 
 /** After a deploy, an open tab may ask for a chunk that no longer exists: reload once. */
 router.onError((error, to) => {

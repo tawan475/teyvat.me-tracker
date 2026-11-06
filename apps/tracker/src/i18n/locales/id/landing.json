@@ -8,11 +8,12 @@
     "download": "Unduh"
   },
   "hero": {
-    "lead": "Rekam akun Genshin kamu sambil bermain.",
-    "download": "Unduh aplikasinya",
-    "track": "Lacak secara online",
+    "title": "Pelacak akun Genshin Impact",
+    "lead": "Akun Genshin Impact-mu dari waktu ke waktu: karakter dan build, artefak, material, permohonan, dan rekor endgame, plus perencana untuk menentukan apa yang di-farm berikutnya.",
+    "track": "Mulai melacak",
     "open": "Buka dasbor",
-    "note": "Unduh rilis terbaru di GitHub"
+    "download": "Unduh aplikasinya",
+    "note": "Gratis. Aplikasi Teyvat.me Capture untuk Windows dan Android menjaganya tetap terbaru."
   },
   "video": {
     "label": "Video demo",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "Aplikasi perekam",
-    "title": "Aplikasi perekam",
-    "lead": "Membaca lalu lintas game di PC atau ponselmu. Menyimpan akunmu sebagai Leyline JSON.",
+    "title": "Teyvat.me Capture, aplikasi pendamping",
+    "lead": "Aplikasi gratis untuk Windows dan Android yang membaca akunmu dari lalu lintas jaringan game saat kamu bermain dan menjaga pelacakmu tetap terbaru. Aplikasi ini juga menyimpan akunmu sebagai Leyline JSON, dengan atau tanpa akun Teyvat.me.",
     "noAccount": "Tanpa akun",
     "noAccountNote": "Terhubung ke teyvat.me itu opsional",
     "readOnly": "Hanya membaca",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Pelacak",
-    "title": "Pelacaknya",
-    "lead": "Akunmu dari waktu ke waktu.",
+    "title": "Semua isi akunmu, dari waktu ke waktu",
+    "lead": "Teyvat.me menyimpan setiap rekaman, jadi setiap halaman menunjukkan posisi akunmu hari ini dan bagaimana sampai ke sana.",
     "sample": "Ringkasan pelacak, data contoh",
     "chart": "Mora dan Primogem, {per}, data contoh",
-    "snapshotsNote": "Karakter, senjata, artefak (CV, RV), material",
-    "progressionNote": "Mora, Primogem, artefak · per snapshot atau per bulan",
-    "plannerNote": "Target, farming hari ini sesuai Resin, tugas harian dan mingguan",
-    "plannerTip": "Misi Harian, Spiral Abyss, ekspedisi, Realm Currency, Welkin Moon, dibaca dari game-mu",
-    "wishesNote": "Pity, 50/50, banner · impor paimon.moe, UIGF",
-    "achievementsNote": "Daftar Achievement dan Travel Account",
-    "share": "Kartu berbagi",
-    "shareNote": "Kartu build, roster, dan artefak · PNG",
+    "features": {
+      "characters": {
+        "title": "Karakter dan build",
+        "text": "Setiap karakter dengan level, talenta, konstelasi, senjata, dan artefak. Buka satu karakter untuk melihat stat, bonus set, dan detail talentanya, lalu telusuri kembali build yang dipakainya di hari-hari sebelumnya."
+      },
+      "artifacts": {
+        "title": "Artefak",
+        "text": "Setiap artefak dengan stat utama, substat dan roll-nya, crit value (CV) dan roll value (RV), bisa difilter menurut set, slot, atau stat, lengkap dengan siapa yang memakainya."
+      },
+      "planner": {
+        "title": "Material dan perencana",
+        "text": "Tasmu, diurutkan seperti di game. Tetapkan target untuk karakter, talenta, dan senjata: perencana menghitung kebutuhan masing-masing, apa yang di-farm hari ini dengan Resin-mu, serta tugas harian dan mingguan yang dibaca dari game-mu."
+      },
+      "achievements": {
+        "title": "Achievement dan koleksi",
+        "text": "Achievement, Travel Account, Quest Dunia, Arsip, dan lainnya, dicentang dari rekamanmu, dengan tanda manual untuk sisanya."
+      },
+      "wishes": {
+        "title": "Riwayat Permohonan",
+        "text": "Pity, kemenangan 50/50, dan setiap banner yang pernah kamu tarik, disinkronkan oleh aplikasi Capture atau diimpor dari paimon.moe, UIGF, atau tautan permohonan."
+      },
+      "endgame": {
+        "title": "Rekor endgame",
+        "text": "Musim Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught beserta musuhnya, serta percobaan dan rekormu sendiri."
+      },
+      "share": {
+        "title": "Kartu berbagi",
+        "text": "Kartu build, tim, roster, artefak, banner, dan Stygian sebagai gambar PNG, siap diunggah."
+      }
+    },
     "sharing": "Bagikan akun",
     "sharingNote": "Dengan teman, sebagai pelihat atau editor",
     "anywhere": "Di mana saja",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "Tanya jawab",
     "title": "Pertanyaan",
+    "whatQ": "Apa itu Teyvat.me?",
+    "whatA": "Situs gratis yang melacak akun Genshin Impact-mu dari waktu ke waktu: karakter, artefak, material, achievement, permohonan, dan rekor endgame, dilengkapi perencana. Teyvat.me Capture adalah aplikasi pendampingnya yang terpisah dan gratis untuk Windows dan Android yang menjaganya tetap terbaru; kamu juga bisa mengimpor file Leyline atau GOOD secara manual.",
     "freeQ": "Apakah gratis?",
     "freeA": "Ya. Pelacak dan aplikasi perekam sama-sama gratis.",
     "modifyQ": "Apakah mengubah game?",

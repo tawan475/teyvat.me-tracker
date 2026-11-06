@@ -8,11 +8,12 @@
     "download": "Tải về"
   },
   "hero": {
-    "lead": "Ghi lại tài khoản Genshin của bạn ngay khi đang chơi.",
-    "download": "Tải ứng dụng",
-    "track": "Theo dõi trực tuyến",
+    "title": "Trình theo dõi tài khoản Genshin Impact",
+    "lead": "Tài khoản Genshin Impact của bạn theo thời gian: nhân vật và build, thánh di vật, nguyên liệu, cầu nguyện và kỷ lục nội dung cuối, cùng công cụ kế hoạch cho biết nên farm gì tiếp theo.",
+    "track": "Bắt đầu theo dõi",
     "open": "Mở bảng điều khiển",
-    "note": "Tải bản mới nhất trên GitHub"
+    "download": "Tải ứng dụng",
+    "note": "Miễn phí. Ứng dụng Teyvat.me Capture cho Windows và Android giúp dữ liệu luôn cập nhật."
   },
   "video": {
     "label": "Video giới thiệu",
@@ -49,8 +50,8 @@
   },
   "capture": {
     "overline": "Ứng dụng ghi",
-    "title": "Ứng dụng ghi",
-    "lead": "Đọc lưu lượng của game trên PC hoặc điện thoại. Lưu tài khoản của bạn thành Leyline JSON.",
+    "title": "Teyvat.me Capture, ứng dụng đồng hành",
+    "lead": "Ứng dụng miễn phí cho Windows và Android, đọc tài khoản của bạn từ lưu lượng mạng của game khi bạn chơi và giữ trình theo dõi luôn cập nhật. Ứng dụng cũng lưu tài khoản của bạn thành Leyline JSON, dù có tài khoản Teyvat.me hay không.",
     "noAccount": "Không cần tài khoản",
     "noAccountNote": "Kết nối teyvat.me là tùy chọn",
     "readOnly": "Chỉ đọc, không ghi",
@@ -89,18 +90,40 @@
   },
   "tracker": {
     "overline": "Trình theo dõi",
-    "title": "Trình theo dõi",
-    "lead": "Tài khoản của bạn theo thời gian.",
+    "title": "Mọi thứ trong tài khoản của bạn, theo thời gian",
+    "lead": "Teyvat.me giữ lại mọi lần ghi, nên mỗi trang cho thấy tài khoản của bạn hôm nay ra sao và đã đi đến đó như thế nào.",
     "sample": "Tổng quan trình theo dõi, dữ liệu mẫu",
     "chart": "Mora và Nguyên Thạch, {per}, dữ liệu mẫu",
-    "snapshotsNote": "Nhân vật, vũ khí, thánh di vật (CV, RV), nguyên liệu",
-    "progressionNote": "Mora, Nguyên Thạch, thánh di vật · theo bản chụp hoặc theo tháng",
-    "plannerNote": "Mục tiêu, farm hôm nay theo Nhựa, nhiệm vụ hằng ngày và hằng tuần",
-    "plannerTip": "Ủy Thác Mỗi Ngày, La Hoàn Thâm Cảnh, Phái Đi, Tiền Động Tiên, Không Nguyệt Chúc Phúc, đọc từ game của bạn",
-    "wishesNote": "Bảo hiểm, 50/50, banner · nhập paimon.moe, UIGF",
-    "achievementsNote": "Danh sách Thành Tựu và Ghi Chép Lữ Hành",
-    "share": "Thẻ chia sẻ",
-    "shareNote": "Thẻ build, đội hình và thánh di vật · PNG",
+    "features": {
+      "characters": {
+        "title": "Nhân vật và build",
+        "text": "Mọi nhân vật với cấp, thiên phú, cung mệnh, vũ khí và thánh di vật. Mở một nhân vật để xem chỉ số, hiệu quả bộ và chi tiết thiên phú, và xem lại các build nhân vật đã dùng vào những ngày trước."
+      },
+      "artifacts": {
+        "title": "Thánh Di Vật",
+        "text": "Mọi thánh di vật với thuộc tính chính, thuộc tính thêm và số lần tăng, crit value (CV) và roll value (RV), lọc theo bộ, vị trí hoặc chỉ số, kèm người đang trang bị."
+      },
+      "planner": {
+        "title": "Nguyên liệu và kế hoạch",
+        "text": "Túi của bạn, sắp xếp như trong game. Đặt mục tiêu cho nhân vật, thiên phú và vũ khí: công cụ kế hoạch tính xem mỗi mục tiêu cần gì, hôm nay nên dùng Nhựa farm gì, cùng các nhiệm vụ hằng ngày và hằng tuần đọc từ game của bạn."
+      },
+      "achievements": {
+        "title": "Thành tựu và bộ sưu tập",
+        "text": "Thành Tựu, Ghi Chép Lữ Hành, Nhiệm Vụ Thế Giới, Thư Viện và hơn thế nữa, được đánh dấu từ các lần ghi của bạn, kèm đánh dấu thủ công cho phần còn lại."
+      },
+      "wishes": {
+        "title": "Lịch sử cầu nguyện",
+        "text": "Bảo hiểm, số lần thắng 50/50 và mọi banner bạn đã cầu nguyện, đồng bộ bằng ứng dụng Capture hoặc nhập từ paimon.moe, UIGF hay liên kết cầu nguyện."
+      },
+      "endgame": {
+        "title": "Kỷ lục nội dung cuối",
+        "text": "Các mùa La Hoàn Thâm Cảnh, Nhà Hát Giả Tưởng và Ảo Cảnh Hiểm Ác cùng kẻ địch của chúng, và các lượt chơi, kỷ lục của chính bạn."
+      },
+      "share": {
+        "title": "Thẻ chia sẻ",
+        "text": "Thẻ build, đội nhóm, nhân vật, thánh di vật, banner và Ảo Cảnh Hiểm Ác dưới dạng ảnh PNG, sẵn sàng để đăng."
+      }
+    },
     "sharing": "Chia sẻ tài khoản",
     "sharingNote": "Với bạn bè, quyền xem hoặc chỉnh sửa",
     "anywhere": "Mọi nơi",
@@ -119,6 +142,8 @@
   "faq": {
     "overline": "Hỏi đáp",
     "title": "Câu hỏi",
+    "whatQ": "Teyvat.me là gì?",
+    "whatA": "Một trang web miễn phí theo dõi tài khoản Genshin Impact của bạn theo thời gian: nhân vật, thánh di vật, nguyên liệu, thành tựu, cầu nguyện và kỷ lục nội dung cuối, kèm công cụ kế hoạch. Teyvat.me Capture là ứng dụng đồng hành riêng, miễn phí cho Windows và Android, giúp dữ liệu luôn cập nhật; bạn cũng có thể tự nhập tệp Leyline hoặc GOOD.",
     "freeQ": "Có miễn phí không?",
     "freeA": "Có. Cả trình theo dõi lẫn ứng dụng ghi đều miễn phí.",
     "modifyQ": "Có sửa đổi game không?",

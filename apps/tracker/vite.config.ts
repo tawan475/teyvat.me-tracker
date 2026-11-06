@@ -9,6 +9,7 @@ import { defineConfig, type Plugin, type Rolldown } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 import { GI_CDN_HOST, IMAGE_HOST } from '@gdt/game-data/image-url'
+import { prerender, sitemap } from './build/prerender.ts'
 import { oauthMock } from './dev/oauth-mock.ts'
 import pkg from './package.json' with { type: 'json' }
 
@@ -171,6 +172,9 @@ export default defineConfig(({ command }) => ({
     imageHostPreconnect(),
     serviceWorker(),
     startupGraph(),
+    // Crawlers: /sitemap.xml and the public pages as static HTML (build/prerender.ts).
+    sitemap(),
+    prerender(),
   ],
   // Pre-bundle every client dependency up front. Discovering one at runtime
   // makes Vite re-optimise and invalidate loaded modules, which shows up as

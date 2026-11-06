@@ -25,6 +25,7 @@ import type {
 import { deepMerge } from '@gdt/shared/settings'
 import type { z } from 'zod'
 import { ApiRequestError } from './error'
+import { demoPath } from './inspect'
 
 /**
  * One /api/demo read: public, no cookie and no session to refresh, so a
@@ -34,7 +35,7 @@ import { ApiRequestError } from './error'
 async function served(rest: string): Promise<unknown> {
   let response: Response
   try {
-    response = await fetch(`/api/demo/${rest}`)
+    response = await fetch(demoPath(rest))
   } catch {
     throw new ApiRequestError(0, 'network', 'Could not reach the server. Check your connection.')
   }

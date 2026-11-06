@@ -35,7 +35,7 @@ async function open() {
     const found = await requestJson<AccountResponse>('/api/demo/account', { noRefresh: true })
     // A demo rebuilt under the tab: its changes were made on the old one.
     if (account.value && account.value.id !== found.id) resetDemoState()
-    setDemoAccount(found.id)
+    setDemoAccount(found.id, found.dataVersion)
     // An editor's access: everything that plans and marks shows, the
     // owner-only controls (rename, keys, deleting, sharing) don't.
     account.value = { ...found, access: 'editor', source: 'demo', liveSync: false }

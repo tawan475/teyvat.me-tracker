@@ -74,6 +74,20 @@ describe('the demo account in the API layer', () => {
     expect(sent).not.toHaveBeenCalled()
     expect(await accountWrite(7, sent)).toBe('sent')
   })
+
+  it('names the demo build in every read, so a rebuilt demo never meets an old copy', async () => {
+    // The browser keeps demo answers a day by URL: account 124's catalog must
+    // not be served from account 123's (the bug after the 2026-11-06 rebuild).
+    setDemoAccount(124, 9)
+    expect(accountPath(124, 'catalog')).toBe('/api/demo/catalog?b=124.9')
+    expect(accountPath(124, 'bundle?ids=3400&format=2')).toBe(
+      '/api/demo/bundle?ids=3400&format=2&b=124.9',
+    )
+    setDemoAccount(125, 9)
+    expect(accountPath(125, 'catalog')).toBe('/api/demo/catalog?b=125.9')
+    await demoRead('achievement-marks').catch(() => undefined)
+    expect(fetched.at(-1)?.url).toBe('/api/demo/achievement-marks?b=125.9')
+  })
 })
 
 describe('the demo store', () => {

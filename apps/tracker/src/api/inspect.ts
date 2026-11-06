@@ -13,6 +13,7 @@ import { ApiRequestError } from './error'
  */
 const inspected = new Set<number>()
 let demoId: number | null = null
+let demoBuild = ''
 
 export function startInspect(id: number): void {
   inspected.add(id)
@@ -22,9 +23,23 @@ export function endInspect(id: number): void {
   inspected.delete(id)
 }
 
-/** The account the `/demo` pages show (null: none open). */
-export function setDemoAccount(id: number | null): void {
+/**
+ * The account the `/demo` pages show (null: none open), and its data
+ * version. The demo's answers are cached by the browser for a day under
+ * their URL, and a rebuilt demo is another account behind the same
+ * `/api/demo` paths: each read names the build it is for (`b=<id>.<version>`),
+ * so a copy of an earlier build (its catalog without this build's artifacts)
+ * is never mixed into this one.
+ */
+export function setDemoAccount(id: number | null, dataVersion?: number): void {
   demoId = id
+  demoBuild = id !== null && dataVersion !== undefined ? `${id}.${dataVersion}` : ''
+}
+
+/** `/api/demo/<rest>`, for the demo build open now. */
+export function demoPath(rest: string): string {
+  if (!demoBuild) return `/api/demo/${rest}`
+  return `/api/demo/${rest}${rest.includes('?') ? '&' : '?'}b=${demoBuild}`
 }
 
 export function isDemoAccount(id: number): boolean {
@@ -33,7 +48,7 @@ export function isDemoAccount(id: number): boolean {
 
 /** `/api/accounts/:id/<rest>`, or the demo's (`/api/demo/<rest>`) for the demo account. */
 export function accountPath(id: number, rest: string): string {
-  return isDemoAccount(id) ? `/api/demo/${rest}` : `/api/accounts/${id}/${rest}`
+  return isDemoAccount(id) ? demoPath(rest) : `/api/accounts/${id}/${rest}`
 }
 
 /** `/api/accounts/:id/<rest>`, or its staff twin while the account is inspected (or the demo's). */

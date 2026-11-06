@@ -607,7 +607,7 @@ function selectionClearance(): number {
               <UiEmpty v-else :title="$t('snapshots.noSnapshots')">
                 <template #icon><History aria-hidden="true" /></template>
                 <UiButton
-                  v-if="!readOnly"
+                  v-if="!readOnly && !mode.demo"
                   variant="primary"
                   :to="{ name: 'account-import', params: { accountId: account.id } }"
                 >
@@ -733,7 +733,7 @@ function selectionClearance(): number {
           <UiEmpty v-else :title="$t('snapshots.noSnapshots')">
             <template #icon><History aria-hidden="true" /></template>
             <UiButton
-              v-if="!readOnly"
+              v-if="!readOnly && !mode.demo"
               variant="primary"
               :to="{ name: 'account-import', params: { accountId: account.id } }"
             >

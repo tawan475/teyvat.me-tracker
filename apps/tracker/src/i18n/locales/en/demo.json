@@ -1,0 +1,10 @@
+{
+  "account": "Demo",
+  "bar": "This is a demo of Teyvat.me. Nothing you change is kept. Create an account to track your own.",
+  "barSignedIn": "This is a demo of Teyvat.me. Nothing you change is kept.",
+  "signUp": "Sign up",
+  "yourAccounts": "Your accounts",
+  "missing": "The demo isn't available right now",
+  "try": "Try the demo",
+  "tryHint": "Walk through a made-up account first, no sign-up needed"
+}

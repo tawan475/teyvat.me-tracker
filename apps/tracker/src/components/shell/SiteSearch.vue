@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AccountResponse } from '@gdt/shared'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import { Clock, CornerDownLeft, FileText, Package, Search } from 'lucide-vue-next'
@@ -32,7 +33,11 @@ import { loadSearchIndex } from './search-index'
  * account holds of each. Arrow keys move, Enter opens; an empty query lists
  * the last picks (per device). Game names load the first time it opens.
  */
-const props = defineProps<{ accountId: number | null }>()
+const props = defineProps<{
+  accountId: number | null
+  /** The public demo's account: its pages, none of the user's own (DemoLayout). */
+  demo?: AccountResponse | null
+}>()
 const open = defineModel<boolean>('open', { required: true })
 
 const router = useRouter()
@@ -48,8 +53,8 @@ const index = shallowRef<SearchEntry[] | null>(null)
 const failed = ref(false)
 const inventory = shallowRef<Inventory | null>(null)
 
-const account = computed(() =>
-  props.accountId ? (accounts.byId.get(props.accountId) ?? null) : null,
+const account = computed(
+  () => props.demo ?? (props.accountId ? (accounts.byId.get(props.accountId) ?? null) : null),
 )
 
 watch(
@@ -98,9 +103,12 @@ const pages = computed<SearchEntry[]>(() => {
   const add = (key: string, name: string) =>
     out.push({ kind: 'page', key, name, words: searchWords(name, key), rarity: 0, icon: '' })
   if (props.accountId) {
-    for (const s of ACCOUNT_SECTIONS) add(s.name, t(`shell.nav.${s.label}`))
+    for (const s of ACCOUNT_SECTIONS) {
+      if (!props.demo || s.name !== 'account-settings') add(s.name, t(`shell.nav.${s.label}`))
+    }
     for (const tab of COLLECTION_TABS) add(`tab:${tab}`, t(`collections.tabs.${TAB_LABEL[tab]}`))
   }
+  if (props.demo) return out
   add('home', t('shell.accounts'))
   add('settings', t('shell.settings'))
   add('settings-devices', t('shell.page.devices'))
@@ -232,12 +240,21 @@ function target(entry: SearchEntry): RouteLocationRaw {
   }
 }
 
+/** In the demo, an account page's route is the demo's (`account-x` -> `demo-x`, no account id). */
+function routed(location: RouteLocationRaw): RouteLocationRaw {
+  if (!props.demo || typeof location !== 'object' || !('name' in location)) return location
+  const name = String(location.name ?? '')
+  if (!name.startsWith('account-')) return location
+  const { accountId: _id, ...params } = (location.params ?? {}) as Record<string, unknown>
+  return { ...location, name: `demo-${name.slice(8)}`, params } as RouteLocationRaw
+}
+
 function choose(entry: SearchEntry | undefined) {
   if (!entry) return
   recent.value = addRecent(recent.value, { kind: entry.kind, key: entry.key })
   writeJson(RECENT_KEY, recent.value)
   open.value = false
-  void router.push(target(entry))
+  void router.push(routed(target(entry)))
 }
 
 function onKey(event: KeyboardEvent) {

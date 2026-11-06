@@ -21,7 +21,8 @@
     "icons": "node scripts/make-icons.mjs",
     "admin:reset-link": "node scripts/admin-reset-link.mjs",
     "admin:grant": "node scripts/admin-grant.mjs",
-    "admin:repack": "tsx scripts/repack.ts"
+    "admin:repack": "tsx scripts/repack.ts",
+    "demo:build": "tsx scripts/demo-good.ts"
   },
   "dependencies": {
     "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.4",

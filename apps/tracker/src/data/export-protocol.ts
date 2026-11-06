@@ -12,6 +12,11 @@
 export interface ExportStart {
   type: 'start'
   accountId: number
+  /**
+   * Where the account's data is read, without the trailing slash:
+   * `/api/accounts/<id>`, or `/api/demo` for the public demo account.
+   */
+  root: string
   /** Snapshots to export, or null for every live snapshot. */
   ids: number[] | null
   /** DEFLATE level for each file, 0-9. */

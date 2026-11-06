@@ -68,7 +68,7 @@ import { formatDate } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { preloadMaterialNames, preloadMaterialRarities } from '@/utils/materials'
 import { t } from '@/i18n'
-import { useAccount, useReadOnly } from './context'
+import { useAccount, useDemo, useReadOnly } from './context'
 
 /**
  * Materials: the wallet (currencies) on top, tracked materials as small
@@ -82,6 +82,7 @@ import { useAccount, useReadOnly } from './context'
 const account = useAccount()
 /** Staff Inspect: no Planner, no saved charts, no import. */
 const readOnly = useReadOnly()
+const demo = useDemo()
 const icon = useMaterialIcons()
 const graph = useMaterialsGraph(() => account.value.id)
 
@@ -266,7 +267,7 @@ const importTo = computed(() => ({
   <UiPanel v-if="!account.latest" flush>
     <UiEmpty :title="$t('materials.noSnapshots')">
       <template #icon><Package aria-hidden="true" /></template>
-      <UiButton v-if="!readOnly" variant="primary" :to="importTo">
+      <UiButton v-if="!readOnly && !demo" variant="primary" :to="importTo">
         <Upload class="size-4" aria-hidden="true" />
         {{ $t('materials.import') }}
       </UiButton>

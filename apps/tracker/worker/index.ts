@@ -8,6 +8,7 @@ import { accounts } from './routes/accounts'
 import { admin } from './routes/admin'
 import { auth } from './routes/auth'
 import { bootstrap } from './routes/bootstrap'
+import { demo } from './routes/demo'
 import { accountLink, captureLink, push } from './routes/capture-link'
 import { domainEvents, gameEvents } from './routes/domain-events'
 import { health } from './routes/health'
@@ -81,6 +82,8 @@ app.route('/push', push)
 app.route('/admin', admin)
 app.route('/staff', staff)
 app.route('/domain-events', domainEvents)
+// The public demo account (no cookie, cached for a day).
+app.route('/demo', demo)
 app.route('/game-events', gameEvents)
 
 app.notFound((c) => c.json(errorBody(new ApiError(404, 'not_found', 'Not found')), 404))

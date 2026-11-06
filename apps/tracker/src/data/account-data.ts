@@ -11,13 +11,7 @@
 
 import { accountPlayer, type AccountPlayer } from '@/data/account-player'
 import { withJournal, type LiveApplied } from '@/data/live-now'
-import {
-  heldJournal,
-  heldPoints,
-  holdJournal,
-  holdPoints,
-  liveEventsSeen,
-} from '@/data/live-known'
+import { heldJournal, heldPoints, holdJournal, holdPoints, liveEventsSeen } from '@/data/live-known'
 import { liveVersions } from '@/live/journal'
 import {
   artifactRows,
@@ -35,6 +29,7 @@ import {
   type SnapshotSummary,
 } from '@gdt/shared'
 import { api, bundlePath, BUNDLE_FORMAT, request } from '@/api'
+import { accountPath } from '@/api/inspect'
 import { yieldToMain } from '@/lib/yield'
 import { decodeBundleOffThread } from './decode'
 import { readCached, writeCached } from './idb-cache'
@@ -44,9 +39,10 @@ export interface AccountRef {
   dataVersion: number
   /**
    * `staff`: read through /api/staff (Inspect, someone else's account),
-   * cached apart from the owner's own reads.
+   * cached apart from the owner's own reads. `demo`: the public demo
+   * account, read through /api/demo with no cookie (docs/plans/open-site.md §2).
    */
-  source?: 'staff'
+  source?: 'staff' | 'demo'
   /** Live sync is on for the account: "now" is its newest snapshot with the journal applied. */
   liveSync?: boolean
 }
@@ -124,7 +120,7 @@ export function loadSnapshots(account: AccountRef): Promise<SnapshotResponse[]> 
     account.source === 'staff'
       ? api.staff.snapshots(account.id)
       : (JSON.parse(
-          await stored(account, 'snapshots', `/api/accounts/${account.id}/snapshots`, text),
+          await stored(account, 'snapshots', accountPath(account.id, 'snapshots'), text),
         ) as SnapshotResponse[]),
   )
 }
@@ -136,7 +132,7 @@ export function loadCatalog(account: AccountRef): Promise<Map<number, CatalogEnt
       account.source === 'staff'
         ? await api.staff.catalog(account.id)
         : (JSON.parse(
-            await stored(account, 'catalog', `/api/accounts/${account.id}/catalog`, text),
+            await stored(account, 'catalog', accountPath(account.id, 'catalog'), text),
           ) as CatalogRow[])
     // Thousands of rows to derive: a task of their own.
     await yieldToMain()

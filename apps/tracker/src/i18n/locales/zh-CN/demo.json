@@ -1,0 +1,10 @@
+{
+  "account": "演示",
+  "bar": "这是 Teyvat.me 的演示。你所做的任何更改都不会保存。注册账号即可记录你自己的进度。",
+  "barSignedIn": "这是 Teyvat.me 的演示。你所做的任何更改都不会保存。",
+  "signUp": "注册",
+  "yourAccounts": "我的账号",
+  "missing": "演示暂时无法使用",
+  "try": "试用演示",
+  "tryHint": "先看看一个虚构的账号，无需注册"
+}

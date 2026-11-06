@@ -70,7 +70,7 @@ import { resolvedTheme } from '@/lib/theme'
 import { useCardExport } from '@/lib/use-card-export'
 import { canvasPng } from '@/lib/card-canvas'
 import { formatNumber } from '@/lib/format'
-import { useAccount, useReadOnly } from './context'
+import { useAccount, useDemo, useReadOnly } from './context'
 
 /** Cards are tall, rows are not: a page of each fills a few screens. The Bag fills in as it goes. */
 const PAGE_SIZE: Record<ArtifactView, number> = {
@@ -92,6 +92,7 @@ const STRIP_SORTS: readonly ArtifactSort[] = ['cv', 'rv', 'potential']
 const account = useAccount()
 /** Staff Inspect: nothing here links to the owner's own pages. */
 const readOnly = useReadOnly()
+const demo = useDemo()
 const inventory = useResource(
   () => account.value,
   (a) => withArtifactRows(loadLatestInventory(a)),
@@ -430,7 +431,7 @@ const GRID =
   <UiPanel v-if="!account.latest" flush>
     <UiEmpty :title="$t('characters.page.noSnapshots')">
       <template #icon><Gem aria-hidden="true" /></template>
-      <UiButton v-if="!readOnly" variant="primary" :to="{ name: 'account-import' }">
+      <UiButton v-if="!readOnly && !demo" variant="primary" :to="{ name: 'account-import' }">
         <Upload class="size-4" aria-hidden="true" />
         {{ $t('characters.page.import') }}
       </UiButton>
@@ -472,7 +473,7 @@ const GRID =
   <UiPanel v-else-if="rows.length === 0" flush>
     <UiEmpty :title="$t('characters.detail.noArtifacts')">
       <template #icon><Gem aria-hidden="true" /></template>
-      <UiButton v-if="!readOnly" variant="primary" :to="{ name: 'account-import' }">
+      <UiButton v-if="!readOnly && !demo" variant="primary" :to="{ name: 'account-import' }">
         <Upload class="size-4" aria-hidden="true" />
         {{ $t('characters.page.import') }}
       </UiButton>

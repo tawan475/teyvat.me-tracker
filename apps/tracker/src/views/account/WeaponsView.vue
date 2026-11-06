@@ -41,13 +41,14 @@ import {
   type WeaponView,
 } from '@/data/weapons'
 import { readJson, writeJson } from '@/lib/storage'
-import { useAccount, useReadOnly } from './context'
+import { useAccount, useDemo, useReadOnly } from './context'
 
 const LIST_PAGE = 100
 
 const account = useAccount()
 /** Staff Inspect: nothing here links to the owner's own pages. */
 const readOnly = useReadOnly()
+const demo = useDemo()
 const inventory = useResource(
   () => account.value,
   (a) => loadLatestInventory(a),
@@ -271,7 +272,7 @@ function close() {
           "
         >
           <template #icon><Swords aria-hidden="true" /></template>
-          <UiButton v-if="!readOnly" variant="primary" :to="{ name: 'account-import' }">
+          <UiButton v-if="!readOnly && !demo" variant="primary" :to="{ name: 'account-import' }">
             <Upload class="size-4" aria-hidden="true" />
             {{ $t('characters.page.import') }}
           </UiButton>

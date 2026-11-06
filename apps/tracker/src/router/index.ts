@@ -31,6 +31,8 @@ declare module 'vue-router' {
     staff?: boolean
     /** Inspect: which page of someone's account (logged when opened). */
     inspect?: InspectView
+    /** The public demo account's pages (/demo, DemoLayout): open to anyone. */
+    demo?: true
     /**
      * A page whose content runs long (lists, grids, history): the shell leaves about 30% of the
      * screen empty after it, so its last row can be scrolled up to mid-screen. `'param'`: only
@@ -67,6 +69,15 @@ const staffPage = (
   permission: PermissionNode,
   load: () => Promise<unknown>,
 ) => ({ path, name, component: load, meta: { auth: true, staff: true, title, permission } })
+
+/** A page of the public demo account (`demo-<name>`, the owner's view under DemoLayout). */
+const demoPage = (
+  path: string,
+  name: string,
+  title: PageKey,
+  load: () => Promise<unknown>,
+  long?: RouteMeta['long'],
+) => ({ path, name: `demo-${name}`, component: load, meta: { demo: true as const, title, long } })
 
 /** Inspect's pages that are the owner's long pages (RouteMeta `long`). */
 const LONG_INSPECT = new Set<InspectView>([
@@ -439,6 +450,86 @@ const router = createRouter({
         },
       ],
     },
+    // The public demo (docs/plans/open-site.md §2): the account pages of one
+    // made-up account, signed in or not; the owner's Manage and Import aren't here.
+    {
+      path: '/demo',
+      component: () => import('@/views/demo/DemoLayout.vue'),
+      meta: { demo: true },
+      children: [
+        demoPage('', 'overview', 'overview', () => import('@/views/account/OverviewView.vue')),
+        demoPage(
+          'characters',
+          'characters',
+          'characters',
+          () => import('@/views/account/CharactersView.vue'),
+          true,
+        ),
+        demoPage(
+          'weapons',
+          'weapons',
+          'weapons',
+          () => import('@/views/account/WeaponsView.vue'),
+          true,
+        ),
+        demoPage(
+          'artifacts',
+          'artifacts',
+          'artifacts',
+          () => import('@/views/account/ArtifactsView.vue'),
+          true,
+        ),
+        demoPage(
+          'materials',
+          'materials',
+          'materials',
+          () => import('@/views/account/MaterialsView.vue'),
+          true,
+        ),
+        demoPage(
+          'planner',
+          'planner',
+          'planner',
+          () => import('@/views/account/PlannerView.vue'),
+          true,
+        ),
+        demoPage(
+          `collections/:tab(${COLLECTION_TAB_PATTERN})?`,
+          'collections',
+          'collections',
+          () => import('@/views/account/CollectionsView.vue'),
+          { param: 'tab' },
+        ),
+        demoPage(
+          `endgame/:mode(${ENDGAME_MODE_PATTERN})?/:season(\\d+)?`,
+          'endgame',
+          'endgame',
+          () => import('@/views/account/EndgameView.vue'),
+          true,
+        ),
+        demoPage(
+          'wishes',
+          'wishes',
+          'wishHistory',
+          () => import('@/views/account/WishesView.vue'),
+          true,
+        ),
+        demoPage(
+          `wishes/:banner(${WISH_BANNER_PATTERN})`,
+          'wishes-banner',
+          'wishHistory',
+          () => import('@/views/account/WishBannerView.vue'),
+          true,
+        ),
+        demoPage(
+          'snapshots',
+          'snapshots',
+          'snapshots',
+          () => import('@/views/account/SnapshotsView.vue'),
+          true,
+        ),
+      ],
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -472,7 +563,10 @@ router.beforeEach(async (to) => {
     opening = false
     if (session.status === 'unknown') startLoadingAhead(to)
   }
-  if (to.meta.auth || to.meta.guest || to.name === 'landing') await session.ensureLoaded()
+  // The demo too: its bar offers sign-up, or the user's own accounts.
+  if (to.meta.auth || to.meta.guest || to.meta.demo || to.name === 'landing') {
+    await session.ensureLoaded()
+  }
 
   if (to.meta.auth && session.status !== 'signed-in') {
     return { name: 'login', query: to.fullPath !== '/app' ? { next: to.fullPath } : {} }

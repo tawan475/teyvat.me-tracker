@@ -72,7 +72,7 @@ async function readBody(response: Response, onBytes: (count: number) => void) {
 }
 
 /** Live sync's journal and points (null / none when it fails: the snapshots still export). */
-async function loadLive(accountId: number) {
+async function loadLive(root: string) {
   const json = async <T>(path: string): Promise<T | null> => {
     try {
       return (await (await request(path)).json()) as T
@@ -81,18 +81,18 @@ async function loadLive(accountId: number) {
     }
   }
   const [live, points] = await Promise.all([
-    json<LiveJournalResponse>(`/api/accounts/${accountId}/live`),
-    json<LivePointsResponse>(`/api/accounts/${accountId}/points`),
+    json<LiveJournalResponse>(`${root}/live`),
+    json<LivePointsResponse>(`${root}/points`),
   ])
   return { live, points: points?.points ?? [] }
 }
 
-async function run({ accountId, ids, level, live: withLive }: ExportStart) {
-  const liveData = withLive ? loadLive(accountId) : null
+async function run({ root, ids, level, live: withLive }: ExportStart) {
+  const liveData = withLive ? loadLive(root) : null
   const query = ids && ids.length <= MAX_IDS_IN_URL ? `&ids=${ids.join(',')}` : ''
   const [bundleResponse, catalogResponse] = await Promise.all([
-    request(`/api/accounts/${accountId}/bundle?format=${BUNDLE_FORMAT}${query}`),
-    request(`/api/accounts/${accountId}/catalog`),
+    request(`${root}/bundle?format=${BUNDLE_FORMAT}${query}`),
+    request(`${root}/catalog`),
   ])
   const lengths = [knownLength(bundleResponse), knownLength(catalogResponse)]
   const total = lengths.every((n) => n !== null)

@@ -12,6 +12,13 @@ const MODE: InjectionKey<AccountMode> = Symbol('account-mode')
  */
 export interface AccountMode {
   readOnly: boolean
+  /**
+   * The public demo account (DemoLayout, docs/plans/open-site.md §2): pages
+   * stay interactive (changes are kept in the tab, src/api/demo-store.ts), but
+   * whatever would upload, store or reach a device is hidden: import, keys,
+   * sharing, deletion, Capture.
+   */
+  demo?: boolean
   /** Staff with `data.delete`: purges snapshots (Inspect's Snapshots page). */
   purge?: (ids: number[]) => Promise<number>
   /** Re-reads the account after a purge. */
@@ -38,6 +45,11 @@ export function useAccountMode(): AccountMode {
 /** True on staff Inspect pages: show, never save. */
 export function useReadOnly(): boolean {
   return useAccountMode().readOnly
+}
+
+/** True on the public demo's pages (see AccountMode `demo`). */
+export function useDemo(): boolean {
+  return useAccountMode().demo === true
 }
 
 /**

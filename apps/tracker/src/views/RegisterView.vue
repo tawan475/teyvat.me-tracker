@@ -197,6 +197,14 @@ async function submit() {
       >
         {{ $t('common.signIn') }}
       </RouterLink>
+      <span aria-hidden="true" class="mx-1.5 text-text-muted">·</span>
+      <RouterLink
+        :to="{ name: 'demo-overview' }"
+        class="font-semibold text-accent-text hover:underline"
+        :title="$t('demo.tryHint')"
+      >
+        {{ $t('demo.try') }}
+      </RouterLink>
     </template>
   </AuthFrame>
 </template>

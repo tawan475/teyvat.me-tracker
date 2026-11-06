@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
+  UserPlus,
   Settings,
   ShieldCheck,
   Sun,
@@ -19,8 +20,9 @@ import {
   X,
 } from 'lucide-vue-next'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
+import type { AccountResponse } from '@gdt/shared'
 import { readStorage, writeStorage } from '@/lib/storage'
-import { resolvedTheme } from '@/lib/theme'
+import { applyTheme, resolvedTheme } from '@/lib/theme'
 import { lastAccountId, useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
 import { copyText } from '@/data/import-setup'
@@ -30,6 +32,7 @@ import AccountSwitcher from './AccountSwitcher.vue'
 import AppearanceButton from './AppearanceButton.vue'
 import CaptureButton from './CaptureButton.vue'
 import DiscordButton from './DiscordButton.vue'
+import KofiButton from './KofiButton.vue'
 import LastSync from './LastSync.vue'
 import { t } from '@/i18n'
 import { ACCOUNT_SECTIONS, NAV_PARENT, STAFF_SECTIONS, pageTitle } from './nav'
@@ -43,7 +46,16 @@ import SiteSearch from './SiteSearch.vue'
  * section labels, a top bar with the page title and account, and (on
  * mobile) a drawer plus a bottom tab bar. On desktop the sidebar collapses
  * to an icon rail (remembered per device, see nav-collapse.ts).
+ *
+ * `demo`: the public demo account's frame (DemoLayout): its pages only, no
+ * account picker, no import or Capture, and a sign-up link where the user's
+ * name and sign-out would be. The `band` slot sits above the top bar.
  */
+const props = defineProps<{ demo?: AccountResponse | null }>()
+// null while the demo's account loads: the demo's frame already.
+const demoMode = computed(() => props.demo !== undefined)
+/** The demo's route for an account page's (`account-characters` -> `demo-characters`). */
+const demoName = (name: string) => `demo-${name.slice('account-'.length)}`
 const route = useRoute()
 const router = useRouter()
 const session = useSession()
@@ -98,13 +110,20 @@ watch(narrow, (value) => {
 onBeforeUnmount(() => clearTimeout(settle))
 
 const currentId = computed<number | null>(() => {
+  if (demoMode.value) return props.demo?.id ?? null
   // Inspect's account is someone else's: the switcher keeps the user's own.
   const param = staffMode.value ? NaN : Number(route.params.accountId)
   if (Number.isSafeInteger(param) && param > 0) return param
   const last = lastAccountId()
   return last && accounts.byId.has(last) ? last : (accounts.list[0]?.id ?? null)
 })
-const current = computed(() => (currentId.value ? accounts.byId.get(currentId.value) : undefined))
+const current = computed(() =>
+  demoMode.value
+    ? (props.demo ?? undefined)
+    : currentId.value
+      ? accounts.byId.get(currentId.value)
+      : undefined,
+)
 
 /** Site-wide search: the top bar's button, Ctrl+K (⌘K) anywhere, "/" outside a text field. */
 const searching = ref(false)
@@ -131,28 +150,42 @@ async function copyFromBar(what: 'name' | 'uid', value: string, event: MouseEven
   else feedback.toast({ tone: 'danger', title: t('common.copyFailed'), detail: value })
 }
 
-const sections = computed(() =>
-  currentId.value
+const sections = computed(() => {
+  if (demoMode.value) {
+    // Manage (rename, keys, sharing, deleting) is the owner's: not in the demo.
+    return ACCOUNT_SECTIONS.filter((s) => s.name !== 'account-settings').map((s) => ({
+      ...s,
+      key: s.label,
+      name: demoName(s.name),
+      label: t(`shell.nav.${s.label}`),
+      to: { name: demoName(s.name) } as RouteLocationRaw,
+    }))
+  }
+  return currentId.value
     ? ACCOUNT_SECTIONS.map((s) => ({
         ...s,
+        key: s.label,
         label: t(`shell.nav.${s.label}`),
-        to: { name: s.name, params: { accountId: currentId.value } },
+        to: { name: s.name, params: { accountId: currentId.value } } as RouteLocationRaw,
       }))
-    : [],
-)
+    : []
+})
 /** The phone tab bar: the pages the user picked (Settings → Appearance), in the sidebar's order. */
 const primary = computed(() => {
   if (staffMode.value) return staffSections.value.filter((s) => s.primary)
   const picked = new Set(session.settings.tabBar ?? USER_SETTINGS_DEFAULTS.tabBar)
-  return sections.value.filter((s) =>
-    picked.has(ACCOUNT_SECTIONS.find((a) => a.name === s.name)!.label),
-  )
+  return sections.value.filter((s) => picked.has(s.key))
 })
 const title = computed(() => pageTitle(route.meta))
 
 // Flips what is painted; from "system" it pins the opposite theme.
 const theme = resolvedTheme
 async function toggleTheme() {
+  // Signed out (the demo): this browser only.
+  if (session.status !== 'signed-in') {
+    applyTheme(theme.value === 'dark' ? 'light' : 'dark')
+    return
+  }
   try {
     await session.updateSettings({ theme: theme.value === 'dark' ? 'light' : 'dark' })
   } catch (error) {
@@ -269,7 +302,20 @@ const footButton =
 
         <div v-else>
           <SectionLabel :label="$t('shell.section.account')" :collapsed="narrow" />
-          <AccountSwitcher :current-id="currentId" :collapsed="narrow" />
+          <div
+            v-if="demoMode"
+            class="flex min-h-11 items-center gap-2 rounded-lg border border-border-default px-3 py-2"
+            :title="narrow ? $t('demo.account') : undefined"
+          >
+            <span class="size-2 shrink-0 rounded-full bg-paimon" aria-hidden="true" />
+            <span :class="labelClass" class="text-sm font-semibold">{{ $t('demo.account') }}</span>
+            <span
+              v-if="demo?.uid && !narrow"
+              class="tabular ml-auto truncate font-mono text-xs text-text-muted"
+              >{{ demo.uid }}</span
+            >
+          </div>
+          <AccountSwitcher v-else :current-id="currentId" :collapsed="narrow" />
           <nav
             v-if="sections.length"
             class="mt-3 space-y-0.5"
@@ -294,6 +340,7 @@ const footButton =
           <SectionLabel :label="$t('shell.section.system')" :collapsed="narrow" />
           <nav class="space-y-0.5" :aria-label="$t('shell.section.system')">
             <RouterLink
+              v-if="!demoMode || session.status === 'signed-in'"
               :to="{ name: 'home' }"
               class="flex items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
               :class="navClass(isActive('home'))"
@@ -304,7 +351,7 @@ const footButton =
               <span :class="labelClass">{{ $t('shell.accounts') }}</span>
             </RouterLink>
             <RouterLink
-              v-if="session.can('staff.view')"
+              v-if="!demoMode && session.can('staff.view')"
               :to="{ name: 'staff-overview' }"
               class="flex items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
               :class="navClass(staffMode)"
@@ -316,6 +363,7 @@ const footButton =
             </RouterLink>
             <div class="flex" :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'">
               <RouterLink
+                v-if="!demoMode"
                 :to="{ name: 'settings' }"
                 class="flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
                 :class="navClass(isActive('settings'))"
@@ -340,6 +388,7 @@ const footButton =
 
       <div class="border-t border-border-default p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div
+          v-if="!demoMode"
           class="mb-3 flex items-center gap-3 px-1.5"
           :title="narrow ? session.me?.username : undefined"
         >
@@ -359,7 +408,17 @@ const footButton =
             <ArrowLeft class="size-4 shrink-0" aria-hidden="true" />
             <span :class="compact ? 'sr-only' : ''">{{ $t('shell.return') }}</span>
           </RouterLink>
+          <RouterLink
+            v-if="demoMode && session.status !== 'signed-in'"
+            :to="{ name: 'register' }"
+            :class="footButton"
+            :title="compact ? $t('demo.signUp') : undefined"
+          >
+            <UserPlus class="size-4 shrink-0" aria-hidden="true" />
+            <span :class="compact ? 'sr-only' : ''">{{ $t('demo.signUp') }}</span>
+          </RouterLink>
           <button
+            v-else-if="!demoMode"
             type="button"
             :class="footButton"
             :title="compact ? $t('common.signOut') : undefined"
@@ -376,107 +435,117 @@ const footButton =
       <!-- Solid, no backdrop blur (also the tab bar below): a blurred bar redraws
            everything scrolling under it on every frame, over 90% of a scroll
            frame's work on a long page (measured 2026-10-30). -->
-      <header
-        data-app-bar
-        class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border-default bg-surface-nav px-4 shadow-sm sm:px-8"
-      >
-        <UiIconButton :label="$t('shell.openMenu')" class="-ml-2 lg:hidden" @click="drawer = true">
-          <Menu class="size-5" aria-hidden="true" />
-        </UiIconButton>
-        <!-- On phones the title takes what the buttons leave; under 7rem it
+      <!-- The demo's band rides with the bar; sticky headings measure the
+           bar's foot (`data-app-bar`), so they clear both. -->
+      <div class="sticky top-0 z-30">
+        <slot name="band" />
+        <header
+          data-app-bar
+          class="flex h-16 shrink-0 items-center gap-3 border-b border-border-default bg-surface-nav px-4 shadow-sm sm:px-8"
+        >
+          <UiIconButton
+            :label="$t('shell.openMenu')"
+            class="-ml-2 lg:hidden"
+            @click="drawer = true"
+          >
+            <Menu class="size-5" aria-hidden="true" />
+          </UiIconButton>
+          <!-- On phones the title takes what the buttons leave; under 7rem it
              hides rather than show "C…" (the user's call, 2026-11-04). -->
-        <span class="bar-title min-w-0 flex-1 sm:flex-none">
-          <span class="block truncate text-lg font-semibold">{{ title }}</span>
-        </span>
-        <template v-if="staffMode">
-          <template v-if="staff.topRole">
-            <div class="hidden h-4 w-px bg-border-strong sm:block" />
-            <span
-              class="hidden min-w-0 items-center gap-2 text-sm font-medium text-text-muted sm:flex"
-              :title="$t('shell.highestRole')"
-            >
+          <span class="bar-title min-w-0 flex-1 sm:flex-none">
+            <span class="block truncate text-lg font-semibold">{{ title }}</span>
+          </span>
+          <template v-if="staffMode">
+            <template v-if="staff.topRole">
+              <div class="hidden h-4 w-px bg-border-strong sm:block" />
               <span
-                class="size-2 shrink-0 rounded-full"
-                :style="{ backgroundColor: staff.topRole.color }"
-              />
-              <span class="truncate">{{ staff.topRole.name }}</span>
-            </span>
+                class="hidden min-w-0 items-center gap-2 text-sm font-medium text-text-muted sm:flex"
+                :title="$t('shell.highestRole')"
+              >
+                <span
+                  class="size-2 shrink-0 rounded-full"
+                  :style="{ backgroundColor: staff.topRole.color }"
+                />
+                <span class="truncate">{{ staff.topRole.name }}</span>
+              </span>
+            </template>
           </template>
-        </template>
-        <template v-else-if="current">
-          <div class="hidden h-4 w-px bg-border-strong sm:block" />
-          <!-- The line takes what the buttons leave (flex-1, a size container)
+          <template v-else-if="current">
+            <div class="hidden h-4 w-px bg-border-strong sm:block" />
+            <!-- The line takes what the buttons leave (flex-1, a size container)
                and gives way in order (CSS below): the sync label first, then
                the name, rather than show "p…" beside the UID (the user's
                call, 2026-11-05). -->
-          <span
-            class="bar-account hidden min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm font-medium text-text-muted sm:flex"
-          >
-            <span class="size-2 shrink-0 rounded-full bg-emerald-500" />
-            <button
-              v-if="current.name"
-              type="button"
-              class="bar-name min-w-0 truncate rounded-md px-1 py-0.5 transition-colors hover:bg-surface-overlay hover:text-text-primary"
-              :title="$t('shell.copyName')"
-              @click="copyFromBar('name', current.name, $event)"
+            <span
+              class="bar-account hidden min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm font-medium text-text-muted sm:flex"
             >
-              {{ current.name }}
-            </button>
-            <span v-if="current.name && current.uid" class="bar-name" aria-hidden="true">·</span>
-            <button
-              v-if="current.uid"
-              type="button"
-              class="tabular shrink-0 rounded-md px-1 py-0.5 font-mono transition-colors hover:bg-surface-overlay hover:text-text-primary"
-              :title="$t('shell.copyUid')"
-              :aria-label="$t('shell.copyUidValue', { uid: current.uid })"
-              @click="copyFromBar('uid', String(current.uid), $event)"
-            >
-              {{ current.uid }}
-            </button>
-            <span v-if="!current.name && !current.uid" class="truncate">{{
-              accounts.displayName(current)
-            }}</span>
-            <span class="bar-sync contents"><LastSync :account="current" /></span>
-          </span>
-        </template>
-        <div class="ml-auto flex shrink-0 items-center gap-2">
-          <template v-if="!staffMode">
-            <button
-              type="button"
-              class="hidden min-h-9 w-56 items-center gap-2 rounded-lg border border-border-default bg-surface-sunken px-3 text-sm text-text-muted transition-colors hover:border-border-strong hover:text-text-secondary xl:flex"
-              :title="$t('shell.search.hint')"
-              @click="searching = true"
-            >
-              <Search class="size-4 shrink-0" aria-hidden="true" />
-              {{ $t('shell.search.button') }}
-              <kbd
-                class="ml-auto rounded border border-border-strong px-1.5 font-sans text-xs"
-                aria-hidden="true"
-                >{{ isMac ? '⌘K' : 'Ctrl K' }}</kbd
+              <span class="size-2 shrink-0 rounded-full bg-emerald-500" />
+              <button
+                v-if="current.name"
+                type="button"
+                class="bar-name min-w-0 truncate rounded-md px-1 py-0.5 transition-colors hover:bg-surface-overlay hover:text-text-primary"
+                :title="$t('shell.copyName')"
+                @click="copyFromBar('name', current.name, $event)"
               >
-            </button>
-            <UiIconButton
-              :label="$t('shell.search.button')"
-              :title="$t('shell.search.hint')"
-              class="xl:hidden"
-              @click="searching = true"
-            >
-              <Search class="size-5" aria-hidden="true" />
-            </UiIconButton>
+                {{ current.name }}
+              </button>
+              <span v-if="current.name && current.uid" class="bar-name" aria-hidden="true">·</span>
+              <button
+                v-if="current.uid"
+                type="button"
+                class="tabular shrink-0 rounded-md px-1 py-0.5 font-mono transition-colors hover:bg-surface-overlay hover:text-text-primary"
+                :title="$t('shell.copyUid')"
+                :aria-label="$t('shell.copyUidValue', { uid: current.uid })"
+                @click="copyFromBar('uid', String(current.uid), $event)"
+              >
+                {{ current.uid }}
+              </button>
+              <span v-if="!current.name && !current.uid" class="truncate">{{
+                accounts.displayName(current)
+              }}</span>
+              <span class="bar-sync contents"><LastSync :account="current" /></span>
+            </span>
           </template>
-          <DiscordButton />
-          <CaptureButton :account="staffMode ? undefined : current" />
-          <AppearanceButton />
-          <RouterLink
-            v-if="currentId && !staffMode && current?.access !== 'viewer'"
-            :to="{ name: 'account-import', params: { accountId: currentId } }"
-            class="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-medium text-accent-ink shadow-sm shadow-accent/30 hover:bg-accent-hover"
-          >
-            <Upload class="size-4" aria-hidden="true" />
-            <span class="hidden sm:inline">{{ $t('shell.import') }}</span>
-          </RouterLink>
-        </div>
-      </header>
+          <div class="ml-auto flex shrink-0 items-center gap-2">
+            <template v-if="!staffMode">
+              <button
+                type="button"
+                class="hidden min-h-9 w-56 items-center gap-2 rounded-lg border border-border-default bg-surface-sunken px-3 text-sm text-text-muted transition-colors hover:border-border-strong hover:text-text-secondary xl:flex"
+                :title="$t('shell.search.hint')"
+                @click="searching = true"
+              >
+                <Search class="size-4 shrink-0" aria-hidden="true" />
+                {{ $t('shell.search.button') }}
+                <kbd
+                  class="ml-auto rounded border border-border-strong px-1.5 font-sans text-xs"
+                  aria-hidden="true"
+                  >{{ isMac ? '⌘K' : 'Ctrl K' }}</kbd
+                >
+              </button>
+              <UiIconButton
+                :label="$t('shell.search.button')"
+                :title="$t('shell.search.hint')"
+                class="xl:hidden"
+                @click="searching = true"
+              >
+                <Search class="size-5" aria-hidden="true" />
+              </UiIconButton>
+            </template>
+            <DiscordButton />
+            <KofiButton />
+            <CaptureButton v-if="!demoMode" :account="staffMode ? undefined : current" />
+            <AppearanceButton />
+            <RouterLink
+              v-if="currentId && !staffMode && !demoMode && current?.access !== 'viewer'"
+              :to="{ name: 'account-import', params: { accountId: currentId } }"
+              class="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-medium text-accent-ink shadow-sm shadow-accent/30 hover:bg-accent-hover"
+            >
+              <Upload class="size-4" aria-hidden="true" />
+              <span class="hidden sm:inline">{{ $t('shell.import') }}</span>
+            </RouterLink>
+          </div>
+        </header>
+      </div>
 
       <!-- overflow-x-clip: page art reaching past the content (PageBackdrop) never scrolls sideways -->
       <main
@@ -516,7 +585,7 @@ const footButton =
         <span class="max-w-full truncate">{{ $t('common.more') }}</span>
       </button>
     </nav>
-    <SiteSearch v-model:open="searching" :account-id="currentId" />
+    <SiteSearch v-model:open="searching" :account-id="currentId" :demo="demo" />
   </div>
 </template>
 

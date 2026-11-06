@@ -14,23 +14,9 @@
 
 import type { ApiError } from '@gdt/shared'
 import { bookmarkHeaders, noteBookmarks } from './d1-bookmark'
+import { ApiRequestError } from './error'
 
-export class ApiRequestError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-    readonly issues: { path: string; message: string }[] = [],
-  ) {
-    super(message)
-    this.name = 'ApiRequestError'
-  }
-
-  /** First validation message for a field, for inline form errors. */
-  issueFor(path: string): string | undefined {
-    return this.issues.find((issue) => issue.path === path)?.message
-  }
-}
+export { ApiRequestError }
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   json?: unknown

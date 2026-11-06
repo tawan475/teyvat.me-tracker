@@ -1,0 +1,10 @@
+{
+  "account": "示範",
+  "bar": "這是 Teyvat.me 的示範。你所做的任何變更都不會保存。註冊帳號即可記錄你自己的進度。",
+  "barSignedIn": "這是 Teyvat.me 的示範。你所做的任何變更都不會保存。",
+  "signUp": "註冊",
+  "yourAccounts": "我的帳號",
+  "missing": "示範暫時無法使用",
+  "try": "試用示範",
+  "tryHint": "先看看一個虛構的帳號，無需註冊"
+}

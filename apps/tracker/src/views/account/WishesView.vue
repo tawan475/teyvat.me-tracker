@@ -23,7 +23,7 @@ import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { loadLatestInventory } from '@/data/account-data'
 import { useResource } from '@/data/use-resource'
-import { useAccount, useAccountRoute, useReadOnly } from './context'
+import { useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
 
 /**
  * Wish history overview: a card per banner (lifetime pulls, 5★ pity with
@@ -48,6 +48,7 @@ const wishPath = computed(() => capture.data.value?.good.gi_tasks?.wishPath ?? n
 const bargains = computed(() => capture.data.value?.good.gi_tasks?.bargains)
 const bag = computed(() => capture.data.value?.good.materials)
 const readOnly = useReadOnly()
+const demo = useDemo()
 const wishes = useWishHistory(() => account.value.id)
 const history = computed(() => wishes.history.value)
 const { stats, error: statsError, reload: reloadStats } = useWishStats(history)
@@ -132,7 +133,7 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
       <template v-if="ready && history?.total" #actions>
         <UiButton size="sm" @click="dialog = true">
           <ArrowDownUp class="size-4" aria-hidden="true" />{{
-            readOnly ? $t('wishes.export') : $t('wishes.importExport')
+            readOnly || demo ? $t('wishes.export') : $t('wishes.importExport')
           }}
         </UiButton>
       </template>
@@ -150,7 +151,7 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
         <div :title="$t('wishes.overview.syncHelp')">
           <UiEmpty :title="$t('wishes.overview.empty')" :body="$t('wishes.overview.emptyBody')">
             <template #icon><Sparkles aria-hidden="true" /></template>
-            <UiButton v-if="!readOnly" variant="primary" @click="dialog = true">{{
+            <UiButton v-if="!readOnly && !demo" variant="primary" @click="dialog = true">{{
               $t('wishes.import')
             }}</UiButton>
           </UiEmpty>
@@ -272,7 +273,7 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
       :open="dialog"
       :account="account"
       :history="history"
-      :read-only="readOnly"
+      :read-only="readOnly || demo"
       @close="dialog = false"
       @changed="wishes.refresh()"
     />

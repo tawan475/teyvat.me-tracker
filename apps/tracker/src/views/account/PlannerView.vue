@@ -159,7 +159,7 @@ import { materialName } from '@/utils/materials'
 import CapturePresence from '@/components/live/CapturePresence.vue'
 import { alertFactsOf } from '@/components/planner/alert-facts'
 import { useAlertFacts } from '@/components/planner/alert-facts-send'
-import { useAccess, useAccount, useAccountRoute, useReadOnly } from './context'
+import { useAccess, useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
 
 /**
  * Planner: goals per character (level, ascension, talents) and weapon, extra
@@ -224,6 +224,7 @@ const settingsOpen = ref(false)
 const now = ref(Date.now())
 const presenceAccess = useAccess()
 const presenceReadOnly = useReadOnly()
+const demo = useDemo()
 const clock = setInterval(() => (now.value = Date.now()), 30_000)
 onBeforeUnmount(() => clearInterval(clock))
 /**
@@ -1527,7 +1528,10 @@ async function importSeelie(writes: SeelieWrites) {
     const patch = { ...writes.settings, ...(writes.resin ? { resin: writes.resin } : {}) }
     if (Object.keys(patch).length) await saveSettings(patch)
     if (writes.traveler) await saveTraveler(account.value.id, writes.traveler)
-    if (writes.server) await accounts.update(account.value.id, { server: writes.server })
+    // The demo's account itself is not the visitor's to change.
+    if (writes.server && !demo) {
+      await accounts.update(account.value.id, { server: writes.server })
+    }
   } catch (cause) {
     // The stores say what went wrong; the rest (settings, account) here.
     if (!(cause instanceof ApiRequestError)) feedback.error(t('planner.view.notImported'), cause)
@@ -1664,7 +1668,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
           <Info class="size-4" aria-hidden="true" />
           {{ $t('planner.view.noCapture') }}
           <RouterLink
-            v-if="!readOnly"
+            v-if="!readOnly && !demo"
             :to="importTo"
             class="font-medium text-accent-text hover:underline"
             >{{ $t('planner.view.import') }}</RouterLink
@@ -1727,6 +1731,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       class="mb-3 flex flex-col gap-3"
     >
       <CapturePresence
+        v-if="!demo"
         :account-id="account.id"
         :now="now"
         :can-act="!presenceReadOnly && presenceAccess !== 'viewer'"
@@ -1767,7 +1772,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
           <FileInput class="size-4" aria-hidden="true" />
           {{ $t('planner.view.importSeelie') }}
         </UiButton>
-        <UiButton v-if="!hasCapture && !readOnly" :to="importTo">
+        <UiButton v-if="!hasCapture && !readOnly && !demo" :to="importTo">
           <Upload class="size-4" aria-hidden="true" />
           {{ $t('planner.view.importCapture') }}
         </UiButton>

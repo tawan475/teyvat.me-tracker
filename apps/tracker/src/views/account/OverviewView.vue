@@ -42,7 +42,7 @@ import { loadProfileArt, buildProfileCard } from '@/data/profile-card'
 import type { AccountRef } from '@/data/account-data'
 import { useAccounts } from '@/stores/accounts'
 import CapturePresence from '@/components/live/CapturePresence.vue'
-import { useAccess, useAccount, useAccountRoute, useReadOnly } from './context'
+import { useAccess, useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
 
 /**
  * The account dashboard: latest figures, history charts, monthly analysis
@@ -62,7 +62,9 @@ watch(
   () => account.value.id,
   (id) => {
     // Staff Inspect reads the account when a page opens (it is not in the list).
-    if ((account.value as AccountRef).source === 'staff' || accounts.readWithin(30_000)) return
+    // Nor the demo's (not in the list either).
+    const source = (account.value as AccountRef).source
+    if (source === 'staff' || source === 'demo' || accounts.readWithin(30_000)) return
     accounts.reload(id).catch(() => undefined)
   },
   { immediate: true },
@@ -280,6 +282,7 @@ const meta = computed<MetaItem[]>(() => {
 })
 
 const readOnly = useReadOnly()
+const demo = useDemo()
 const importRoute = computed(() => ({
   name: 'account-import',
   params: { accountId: account.value.id },
@@ -299,6 +302,7 @@ const importRoute = computed(() => ({
   </PageHeader>
 
   <CapturePresence
+    v-if="!demo"
     class="mb-3"
     :account-id="account.id"
     :now="nowMs"
@@ -308,7 +312,7 @@ const importRoute = computed(() => ({
   <UiPanel v-if="!account.latest" flush>
     <UiEmpty :title="$t('overview.noSnapshots')">
       <template #icon><History aria-hidden="true" /></template>
-      <UiButton v-if="!readOnly" variant="primary" :to="importRoute">
+      <UiButton v-if="!readOnly && !demo" variant="primary" :to="importRoute">
         <Upload class="size-4" aria-hidden="true" />
         {{ $t('overview.import') }}
       </UiButton>

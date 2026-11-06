@@ -1,0 +1,10 @@
+{
+  "account": "Bản demo",
+  "bar": "Đây là bản demo của Teyvat.me. Mọi thay đổi của bạn sẽ không được lưu. Hãy tạo tài khoản để theo dõi tiến trình của riêng bạn.",
+  "barSignedIn": "Đây là bản demo của Teyvat.me. Mọi thay đổi của bạn sẽ không được lưu.",
+  "signUp": "Đăng ký",
+  "yourAccounts": "Tài khoản của bạn",
+  "missing": "Bản demo hiện không khả dụng",
+  "try": "Dùng thử bản demo",
+  "tryHint": "Xem trước một tài khoản giả lập, không cần đăng ký"
+}

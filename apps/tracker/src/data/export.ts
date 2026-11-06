@@ -13,6 +13,7 @@
 
 import { readonly, ref } from 'vue'
 import { api } from '@/api'
+import { accountPath } from '@/api/inspect'
 import { t } from '@/i18n'
 import type { ExportEvent, ExportStart } from './export-protocol'
 import { goodFileName } from './export-zip'
@@ -267,6 +268,7 @@ export async function exportZip(options: {
       const start: ExportStart = {
         type: 'start',
         accountId: options.accountId,
+        root: accountPath(options.accountId, '').slice(0, -1),
         ids: options.ids,
         level: 6,
         live: options.live ?? false,

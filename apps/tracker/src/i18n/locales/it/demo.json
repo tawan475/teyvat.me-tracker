@@ -1,0 +1,10 @@
+{
+  "account": "Demo",
+  "bar": "Questa è una demo di Teyvat.me. Le modifiche che fai non vengono salvate. Crea un account per seguire il tuo.",
+  "barSignedIn": "Questa è una demo di Teyvat.me. Le modifiche che fai non vengono salvate.",
+  "signUp": "Registrati",
+  "yourAccounts": "I tuoi account",
+  "missing": "La demo non è disponibile al momento",
+  "try": "Prova la demo",
+  "tryHint": "Esplora prima un account inventato, senza registrarti"
+}

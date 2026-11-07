@@ -2,8 +2,10 @@ import type { BannerRun, EventBanner } from './wish-history'
 
 /**
  * Banner history (the Wishes page's second view, design "3" of the
- * new-features canvas): every event banner that has opened, by version,
- * newest first, each with the account's own run on it when there is one.
+ * new-features canvas): every event banner in the file, by version, newest
+ * first, each with the account's own run on it when there is one. Banners
+ * not open yet are listed too (the user, 2026-11-07: people like to see
+ * what's coming; the view marks them "upcoming").
  */
 
 export interface BannerHistoryRow {
@@ -22,20 +24,18 @@ export interface BannerHistoryVersion {
 const runKey = (banner: EventBanner) => `${banner.start}:${banner.name}`
 
 /**
- * One kind's banners (eventBanners' list, sorted by start) that opened by
- * `now` (UTC seconds; no banner not out yet), grouped by version, newest
- * first; `runs` laid on by start and name (they come from the same file).
+ * One kind's banners (eventBanners' list, sorted by start), grouped by
+ * version, newest first; `runs` laid on by start and name (they come from
+ * the same file).
  */
 export function bannerHistory(
   banners: readonly EventBanner[],
   runs: readonly BannerRun[],
-  now: number,
 ): BannerHistoryVersion[] {
   const byKey = new Map(runs.map((run) => [runKey(run.banner), run]))
   const phases = new Map<string, number>()
   const versions = new Map<string, BannerHistoryRow[]>()
   for (const banner of banners) {
-    if (banner.start > now) continue
     // Phases are counted by start time: two banners opening together share one.
     const seenStarts = phases.get(banner.version) ?? 0
     const previous = versions.get(banner.version)?.at(-1)

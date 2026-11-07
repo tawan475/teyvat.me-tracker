@@ -90,7 +90,7 @@ const versions = computed(() => {
   const f = file.data.value
   if (!f) return null
   const list = eventBanners(f, props.history.timezone).get(kind.value) ?? []
-  let out = bannerHistory(list, props.stats.get(banner.value)?.runs ?? [], now)
+  let out = bannerHistory(list, props.stats.get(banner.value)?.runs ?? [])
   if (mine.value) out = pulledOnly(out)
   if (needle.value)
     out = featuring(out, (key) => normalizeSearch(nameOf(key)).includes(needle.value))
@@ -98,6 +98,8 @@ const versions = computed(() => {
 })
 /** Open now: its dates read "… – now · current" (no other mark). */
 const isOpen = (row: BannerHistoryRow) => row.banner.start <= now && now < row.banner.end
+/** Not open yet: listed with its dates and "· upcoming". */
+const isUpcoming = (row: BannerHistoryRow) => now < row.banner.start
 
 /** A banner's name: the weapons it features (the game's own name is the same each time), else its title. */
 function title(row: BannerHistoryRow): string {
@@ -258,7 +260,14 @@ const outcomes = (row: BannerHistoryRow) => {
               $t('wishes.history.phase', { n: row.phase })
             }}</span>
             <span class="tabular font-mono text-xs text-text-muted"
-              >{{ dates(row) }}{{ isOpen(row) ? $t('wishes.runs.current') : '' }}</span
+              >{{ dates(row)
+              }}{{
+                isOpen(row)
+                  ? $t('wishes.runs.current')
+                  : isUpcoming(row)
+                    ? $t('wishes.runs.upcoming')
+                    : ''
+              }}</span
             >
           </div>
 

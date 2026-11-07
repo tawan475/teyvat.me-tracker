@@ -24,9 +24,10 @@ describe('banner history', () => {
   ]
   const runs: BannerRun[] = [{ banner: banners[1]!, pulls: 12, fives: [] }]
 
-  it('groups by version newest first, numbers phases by start, hides banners not out yet', () => {
-    const out = bannerHistory(banners, runs, 500)
-    expect(out.map((v) => v.version)).toEqual(['1.1', '1.0'])
+  it('groups by version newest first, numbers phases by start, lists banners not out yet', () => {
+    const out = bannerHistory(banners, runs)
+    expect(out.map((v) => v.version)).toEqual(['9.9', '1.1', '1.0'])
+    expect(out.shift()!.rows.map((r) => r.banner.name)).toEqual(['Future'])
     expect(out[0]!.rows.map((r) => [r.banner.name, r.phase])).toEqual([
       ['Albedo', 2],
       ['Second', 1],
@@ -39,7 +40,7 @@ describe('banner history', () => {
   })
 
   it('keeps only pulled banners, or banners featuring a match', () => {
-    const out = bannerHistory(banners, runs, 500)
+    const out = bannerHistory(banners, runs)
     expect(pulledOnly(out).flatMap((v) => v.rows.map((r) => r.banner.name))).toEqual(['Klee'])
     expect(
       featuring(out, (key) => key.startsWith('Zh')).flatMap((v) =>

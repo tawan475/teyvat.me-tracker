@@ -5,13 +5,10 @@
   "name": "genshin-data-tracker",
   "main": "./worker/index.ts",
   "compatibility_date": "2026-08-22",
-  // teyvat.me is the site. genshin-tracker.475.dev, its old address, stays:
-  // installed irminsul copies post to its /api, and index.html sends its
-  // pages on to teyvat.me.
-  "routes": [
-    { "pattern": "teyvat.me", "custom_domain": true },
-    { "pattern": "genshin-tracker.475.dev", "custom_domain": true },
-  ],
+  // teyvat.me is the site. The old address, genshin-tracker.475.dev, was
+  // deleted by the user on 2026-11-08: never list it again (a deploy attaches
+  // every custom domain listed here, and never removes one).
+  "routes": [{ "pattern": "teyvat.me", "custom_domain": true }],
   "workers_dev": false,
 
   // No placement: the Worker runs at the visitor's edge, so with D1 read

@@ -134,7 +134,7 @@ export const SEELIE_ITEMS: Readonly<Record<SeelieItemType, Readonly<Record<strin
     lunar_iron: 112143,
     accreted: 112152,
     life: 112155,
-    // 7.2 (Snowborn Heartshard), spelled from the name until Seelie's bundle shows its own slug.
+    // 7.2 (Snowborn Heartshard); Seelie's bundle confirmed it on 2026-11-07.
     snowborn: 112158,
   },
   element_1: {

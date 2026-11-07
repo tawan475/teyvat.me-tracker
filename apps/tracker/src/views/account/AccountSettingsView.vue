@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Link2, Radio, Trash2, TriangleAlert, Users } from 'lucide-vue-next'
 import AccountFields from '@/components/import/AccountFields.vue'
 import CapturePanel from '@/components/capture/CapturePanel.vue'
+import GuestLock from '@/components/guest/GuestLock.vue'
 import AccountSharingPanel from '@/components/sharing/AccountSharingPanel.vue'
 import ImportKeyPanel from '@/components/import/ImportKeyPanel.vue'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
@@ -28,7 +29,8 @@ import { characterIcon } from '@/lib/assets'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
-import { useAccess, useAccount } from './context'
+import { api } from '@/api'
+import { useAccess, useAccount, useGuest } from './context'
 
 const account = useAccount()
 // Account sharing: details, the capture app's keys and deleting are the owner's.
@@ -36,6 +38,8 @@ const access = useAccess()
 const owner = computed(() => access.value === 'owner')
 const accounts = useAccounts()
 const feedback = useFeedback()
+/** Guest mode: the account kept in this browser (sharing and Capture need an account). */
+const guest = useGuest()
 
 const travelerOptions = computed(() => [
   {
@@ -112,7 +116,11 @@ async function save() {
 const deleteOpen = ref(false)
 const typed = ref('')
 const deleting = ref(false)
-const confirmWord = computed(() => account.value.name?.trim() || t('accounts.settings.confirmWord'))
+const confirmWord = computed(() =>
+  guest
+    ? t('accounts.settings.confirmWord')
+    : account.value.name?.trim() || t('accounts.settings.confirmWord'),
+)
 // NFC: a keyboard may type an accented letter (Vietnamese "xóa") as two code points.
 const confirmed = computed(
   () => typed.value.trim().normalize('NFC') === confirmWord.value.normalize('NFC'),
@@ -139,6 +147,16 @@ async function confirmDelete() {
   const lost = loss.value
   deleting.value = true
   try {
+    if (guest) {
+      // Everything this browser kept as the guest goes, and nothing else.
+      await api.deleteAccount(id)
+      discardImportQueue(id)
+      deleteOpen.value = false
+      feedback.toast({ tone: 'success', title: t('guest.deleted'), detail: lost })
+      await (await import('@/local/guest-account')).loadGuestAccount()
+      await router.replace({ name: 'landing' })
+      return
+    }
     await accounts.remove(id)
     discardImportQueue(id)
     deleteOpen.value = false
@@ -206,7 +224,8 @@ async function confirmDelete() {
       :description="$t('accounts.settings.sections.sharing')"
       :icon="Link2"
     >
-      <AccountSharingPanel :account="account" class="col-span-full" />
+      <GuestLock v-if="guest" kind="sharing" class="col-span-full" />
+      <AccountSharingPanel v-else :account="account" class="col-span-full" />
     </SettingsSection>
 
     <SettingsSection
@@ -215,8 +234,14 @@ async function confirmDelete() {
       :description="$t('accounts.settings.sections.capture')"
       :icon="Radio"
     >
-      <CapturePanel :account="account" class="min-w-0" />
-      <ImportKeyPanel :account="account" class="min-w-0" />
+      <template v-if="guest">
+        <GuestLock kind="capture" class="min-w-0" />
+        <GuestLock kind="devices" class="min-w-0" />
+      </template>
+      <template v-else>
+        <CapturePanel :account="account" class="min-w-0" />
+        <ImportKeyPanel :account="account" class="min-w-0" />
+      </template>
     </SettingsSection>
 
     <SettingsSection
@@ -230,7 +255,9 @@ async function confirmDelete() {
       >
         <div class="flex flex-wrap items-center justify-between gap-4 p-5">
           <div class="min-w-0">
-            <h2 class="text-base font-semibold">{{ $t('accounts.settings.deleteAccount') }}</h2>
+            <h2 class="text-base font-semibold">
+              {{ guest ? $t('guest.deleteData') : $t('accounts.settings.deleteAccount') }}
+            </h2>
             <p class="tabular font-mono text-sm text-text-secondary">{{ loss }}</p>
           </div>
           <UiButton

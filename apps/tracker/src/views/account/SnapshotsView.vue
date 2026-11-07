@@ -14,6 +14,7 @@ import RangeFilter from '@/components/snapshot-history/RangeFilter.vue'
 import RowActions from '@/components/snapshot-history/RowActions.vue'
 import SelectionBar from '@/components/snapshot-history/SelectionBar.vue'
 import SnapshotCards from '@/components/snapshot-history/SnapshotCards.vue'
+import GuestBackupNote from '@/components/guest/GuestBackupNote.vue'
 import StorageStrip from '@/components/snapshot-history/StorageStrip.vue'
 import { inDayRange, snapshotChanges } from '@/components/snapshot-history/snapshot-figures'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -32,7 +33,7 @@ import { clock24, dateLocale, formatBytes, formatFullDateTime, formatNumber } fr
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
 import { invalidateUsage, loadUsage, usageVersion } from '@/data/usage'
-import { useAccess, useAccount, useAccountMode } from './context'
+import { useAccess, useAccount, useAccountLink, useAccountMode } from './context'
 
 /** The bulk delete endpoint takes at most this many ids per request. */
 const DELETE_BATCH = 1000
@@ -55,6 +56,7 @@ const accounts = useAccounts()
  * purged (deleted at once, no trash).
  */
 const mode = useAccountMode()
+const accountLink = useAccountLink()
 const readOnly = mode.readOnly
 // Deleting is the owner's (an account shared with them as editor can't).
 const owner = useAccess().value === 'owner'
@@ -100,7 +102,9 @@ const changes = computed(() => snapshotChanges(list.value))
 
 /** The owner's usage (quota, split); shared and inspected accounts show the counters alone. */
 const usage = useResource(
-  () => (owner && !readOnly ? [account.value.dataVersion, usageVersion.value] : null),
+  // The guest's history is in this browser: no quota to show.
+  () =>
+    owner && !readOnly && !mode.guest ? [account.value.dataVersion, usageVersion.value] : null,
   (key) => (key ? loadUsage() : Promise.resolve(null)),
 )
 const compactOpen = ref(false)
@@ -465,6 +469,12 @@ function selectionClearance(): number {
   <div class="relative mx-auto min-h-[60vh] max-w-6xl space-y-6">
     <ExportTargets v-if="!readOnly" :account="account" />
 
+    <GuestBackupNote
+      v-if="mode.guest && list.length > 0"
+      :count="list.length"
+      :oldest-at="list.at(-1)?.takenAt ?? null"
+    />
+
     <StorageStrip
       :account-id="account.id"
       :snapshots="account.snapshotCount"
@@ -609,7 +619,7 @@ function selectionClearance(): number {
                 <UiButton
                   v-if="!readOnly && !mode.demo"
                   variant="primary"
-                  :to="{ name: 'account-import', params: { accountId: account.id } }"
+                  :to="accountLink('account-import')"
                 >
                   <Upload class="size-4" aria-hidden="true" />
                   {{ $t('snapshots.import') }}
@@ -735,7 +745,7 @@ function selectionClearance(): number {
             <UiButton
               v-if="!readOnly && !mode.demo"
               variant="primary"
-              :to="{ name: 'account-import', params: { accountId: account.id } }"
+              :to="accountLink('account-import')"
             >
               <Upload class="size-4" aria-hidden="true" />
               {{ $t('snapshots.import') }}

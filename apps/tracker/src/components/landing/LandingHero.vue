@@ -32,6 +32,14 @@ const session = useSession()
           <RouterLink :to="{ name: 'demo-overview' }" class="btn btn-g" :title="$t('demo.tryHint')">
             {{ $t('demo.try') }}
           </RouterLink>
+          <RouterLink
+            v-if="session.status !== 'signed-in'"
+            :to="{ name: 'guest-overview' }"
+            class="btn btn-g"
+            :title="$t('guest.tryHint')"
+          >
+            {{ $t('guest.try') }}
+          </RouterLink>
           <a class="btn btn-g" :href="DOWNLOAD_URL">
             <Download class="ic" aria-hidden="true" />{{ $t('landing.hero.download') }}
           </a>

@@ -30,6 +30,7 @@ import sharing from './sharing.json'
 import landing from './landing.json'
 import endgame from './endgame.json'
 import demo from './demo.json'
+import guest from './guest.json'
 
 const messages = {
   common,
@@ -62,6 +63,7 @@ const messages = {
   landing,
   endgame,
   demo,
+  guest,
 }
 
 export default messages

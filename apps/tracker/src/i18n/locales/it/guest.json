@@ -1,0 +1,58 @@
+{
+  "label": "Ospite",
+  "bar": "Salvato solo in questo browser",
+  "barShort": "Solo questo browser",
+  "barInfo": "Cancellare i dati del sito li elimina",
+  "createAccount": "Crea account",
+  "signIn": "Accedi",
+  "yourAccounts": "I tuoi account",
+  "addAccount": "Aggiungi account",
+  "here": "Qui",
+  "withAccount": "Con un account",
+  "rows": {
+    "everyPage": "Ogni pagina e strumento",
+    "files": "File GOOD, link dei desideri",
+    "history": "Cronologia completa",
+    "oneAccount": "Un account di Genshin",
+    "capture": "Capture sincronizza da solo, in diretta",
+    "alerts": "Avvisi della resina",
+    "accounts": "Più di un account di Genshin",
+    "backup": "Backup, ogni dispositivo, condivisione"
+  },
+  "lock": {
+    "capture": "Con un account, Teyvat.me Capture carica da solo, in diretta",
+    "alerts": "Gli avvisi a sito chiuso richiedono un account",
+    "sharing": "La condivisione richiede un account",
+    "accounts": "Più di un account di Genshin richiede un account",
+    "devices": "Backup e ogni dispositivo richiedono un account"
+  },
+  "backup": {
+    "count": "{n} istantanea | {n} istantanee",
+    "where": "solo in questo browser",
+    "info": "Cancellare i dati del sito o un disco pieno può eliminarle",
+    "backUp": "Fanne un backup",
+    "notNow": "Non ora"
+  },
+  "try": "Prova senza account",
+  "tryHint": "Usa tutto con i tuoi file, salvati solo in questo browser",
+  "deleteData": "Elimina i dati ospite",
+  "deleted": "Dati ospite eliminati",
+  "convert": {
+    "title": "Portare i tuoi dati ospite?",
+    "body": "Questo browser contiene dati della modalità ospite.",
+    "snapshots": "{n} istantanea | {n} istantanee",
+    "wishes": "{n} desiderio | {n} desideri",
+    "into": "In {name}",
+    "intoNew": "In un nuovo account",
+    "yes": "Portali",
+    "no": "Tienili separati",
+    "done": "Dati ospite portati",
+    "failed": "{n} non riusciti",
+    "notDone": "Dati ospite non portati",
+    "step": {
+      "snapshots": "Istantanee",
+      "plan": "Piano e segni",
+      "wishes": "Cronologia desideri"
+    }
+  }
+}

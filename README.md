@@ -362,6 +362,38 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   the first 7 days after signing up (`lib/passkey-nudge.ts`, localStorage
   `gdt:passkey-nudge`). A passkey the server no longer knows is reported to
   the browser (`signalUnknownCredential`) where it supports that.
+- **Guest mode** (`/guest/*`, plan `docs/plans/open-site.md` §4, design E of
+  https://claude.ai/artifact/Xv2j5yHzzvfqmJEXaAetVw). One Genshin account kept
+  in this browser only, with every page and tool, no sign-up and no server:
+  the guest account has id `-1` (`src/local/guest-id.ts`), and `api/http.ts`
+  hands every `/api/accounts/-1/…` request to `src/local/server.ts`, which
+  answers it in the browser the way the Worker's routes do (same paths,
+  schemas, answers and error codes; `guest_needs_account` for what only a
+  server does). Storage is `src/local/local-store.ts` over IndexedDB
+  `gdt-guest` (`backend.ts`; in memory in tests): the account row, section
+  blobs, v2 snapshot rows, the artifact catalog and per-account state, read
+  into memory once, written through under a Web Lock, other tabs told by
+  BroadcastChannel `gdt-guest`. Imports (`local-import.ts`) run
+  `worker/services/import.ts`'s steps with the shared codec (prepareSnapshot,
+  completeSnapshot, planSnapshotV2 against the nearest snapshot), so a guest
+  stores byte for byte what an account would (`worker/test/guest-store.test.ts`
+  compares both); reads (`local-read.ts`) build the same snapshot list,
+  catalog, GDT2 bundles and GOOD files; wishes (`local-wishes.ts`) use the
+  same chunks and merge. The planner, marks and settings run the demo's
+  route emulation (`api/demo-store.ts` over a `StateHolder`), with the
+  planner's `capture_changed` check. No snapshot cap; Snapshots shows a backup
+  note once there are 10 snapshots or two weeks of them (`backup-note.ts`).
+  What needs a server shows a lock where it lives (`components/guest/GuestLock.vue`:
+  Capture on Import and Manage, sharing, alerts in the resin bell, a second
+  account in the sidebar); the bar and the Guest chip are `GuestBar.vue` /
+  `GuestChip.vue`. A guest has one Genshin account. Signing up or in with
+  guest data asks once on Home (`GuestConvertPrompt.vue`, answer in
+  `gdt:guest:convert`): yes replays the snapshots oldest first through the
+  import queue, then marks, plan, settings and wishes (`local/convert.ts`;
+  the guest copy stays until Manage deletes it). Entry links on the landing,
+  /login and /register. localStorage `gdt:guest-data` hints that guest data
+  exists. The guest tests load `src/local` untyped (`worker/test/guest-modules.ts`):
+  its types need the DOM, which the workerd project lacks.
 - **Capture app contract**: `POST
   /api/genshin-accounts-public/import-by-key` (multipart `file` + optional
   `timestamp`, header `x-import-key`) and `GET .../verify-key`. Any 2xx is
@@ -544,7 +576,10 @@ test keeps the script on it), checks it with one API request and copies it.
 It sends nothing anywhere else. Phones and PlayStation: paimon.moe's steps
 (the copied error text or link). The capture app's Copy wish URL gives the same
 link. The browser then pages the API through `POST /api/wishes/fetch-page`
-(signed in, CSRF header, 120 pages a minute per user, `WISH_PROXY_LIMITER`):
+(signed in, CSRF header, 120 pages a minute per user, `WISH_PROXY_LIMITER`;
+signed out, guest mode: only from this site's own pages, the CSRF header and
+an `Origin` (and `Sec-Fetch-Site`, when sent) of this origin, 120 a minute
+per IP; no CORS headers, so it is no proxy for other sites):
 the Worker rebuilds every request from the link's credential alone
 (`wishApiUrl`: the two API hosts, `/gacha_info/api/getGachaLog`, only the
 parameters the API needs), so it fetches nothing else; it never stores or

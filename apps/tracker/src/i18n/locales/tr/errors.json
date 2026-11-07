@@ -94,7 +94,10 @@
     "passkey_exists": "Bu geçiş anahtarı zaten eklendi",
     "too_many_passkeys": "Çok fazla geçiş anahtarı",
     "passkey_expired": "Çok uzun sürdü, tekrar dene",
-    "passkey_failed": "Geçiş anahtarı kabul edilmedi"
+    "passkey_failed": "Geçiş anahtarı kabul edilmedi",
+    "guest_needs_account": "Bunun için hesap gerekir",
+    "not_this_site": "Bunu yalnızca bu site yapabilir",
+    "guest_store_failed": "Bu tarayıcı okuyamadı veya kaydedemedi"
   },
   "server": "Sunucuda bir sorun oluştu",
   "request": "İstek başarısız",

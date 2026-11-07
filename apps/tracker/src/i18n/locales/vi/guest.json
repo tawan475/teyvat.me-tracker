@@ -1,0 +1,58 @@
+{
+  "label": "Khách",
+  "bar": "Chỉ lưu trong trình duyệt này",
+  "barShort": "Chỉ trình duyệt này",
+  "barInfo": "Xóa dữ liệu trang sẽ xóa nó",
+  "createAccount": "Tạo tài khoản",
+  "signIn": "Đăng nhập",
+  "yourAccounts": "Tài khoản của bạn",
+  "addAccount": "Thêm tài khoản",
+  "here": "Tại đây",
+  "withAccount": "Khi có tài khoản",
+  "rows": {
+    "everyPage": "Mọi trang và công cụ",
+    "files": "Tệp GOOD, liên kết cầu nguyện",
+    "history": "Toàn bộ lịch sử",
+    "oneAccount": "Một tài khoản Genshin",
+    "capture": "Capture tự đồng bộ, trực tiếp",
+    "alerts": "Nhắc Nhựa",
+    "accounts": "Nhiều tài khoản Genshin",
+    "backup": "Sao lưu, mọi thiết bị, chia sẻ"
+  },
+  "lock": {
+    "capture": "Khi có tài khoản, Teyvat.me Capture tự tải lên trực tiếp",
+    "alerts": "Nhắc khi đã đóng trang cần tài khoản",
+    "sharing": "Chia sẻ cần tài khoản",
+    "accounts": "Nhiều tài khoản Genshin cần tài khoản",
+    "devices": "Sao lưu và mọi thiết bị cần tài khoản"
+  },
+  "backup": {
+    "count": "{n} bản chụp",
+    "where": "chỉ trong trình duyệt này",
+    "info": "Xóa dữ liệu trang hoặc đầy ổ đĩa có thể xóa chúng",
+    "backUp": "Sao lưu chúng",
+    "notNow": "Để sau"
+  },
+  "try": "Dùng thử không cần tài khoản",
+  "tryHint": "Dùng mọi thứ với tệp của bạn, chỉ lưu trong trình duyệt này",
+  "deleteData": "Xóa dữ liệu khách",
+  "deleted": "Đã xóa dữ liệu khách",
+  "convert": {
+    "title": "Đưa dữ liệu khách vào?",
+    "body": "Trình duyệt này có dữ liệu từ chế độ khách.",
+    "snapshots": "{n} bản chụp",
+    "wishes": "{n} lượt cầu nguyện",
+    "into": "Vào {name}",
+    "intoNew": "Vào tài khoản mới",
+    "yes": "Đưa vào",
+    "no": "Để riêng",
+    "done": "Đã đưa dữ liệu khách vào",
+    "failed": "{n} thất bại",
+    "notDone": "Chưa đưa được dữ liệu khách vào",
+    "step": {
+      "snapshots": "Bản chụp",
+      "plan": "Kế hoạch và đánh dấu",
+      "wishes": "Lịch sử cầu nguyện"
+    }
+  }
+}

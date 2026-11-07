@@ -159,7 +159,15 @@ import { materialName } from '@/utils/materials'
 import CapturePresence from '@/components/live/CapturePresence.vue'
 import { alertFactsOf } from '@/components/planner/alert-facts'
 import { useAlertFacts } from '@/components/planner/alert-facts-send'
-import { useAccess, useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
+import {
+  useAccess,
+  useAccount,
+  useAccountLink,
+  useAccountRoute,
+  useDemo,
+  useGuest,
+  useReadOnly,
+} from './context'
 
 /**
  * Planner: goals per character (level, ascension, talents) and weapon, extra
@@ -225,6 +233,7 @@ const now = ref(Date.now())
 const presenceAccess = useAccess()
 const presenceReadOnly = useReadOnly()
 const demo = useDemo()
+const guest = useGuest()
 const clock = setInterval(() => (now.value = Date.now()), 30_000)
 onBeforeUnmount(() => clearInterval(clock))
 /**
@@ -1662,12 +1671,10 @@ watch(accountId, () => {
 // ------------------------------------------------------------------ chrome
 
 const accountRoute = useAccountRoute()
+const accountLink = useAccountLink()
 /** Staff Inspect and viewers: shown, nothing saved (a write is refused). */
 const readOnly = useReadOnly()
-const importTo = computed(() => ({
-  name: 'account-import',
-  params: { accountId: account.value.id },
-}))
+const importTo = computed(() => accountLink('account-import'))
 const loadError = computed(() => resource.error.value ?? store.error.value ?? state.error.value)
 const hasGoals = computed(
   () => (board.value?.entries.length ?? 0) + (board.value?.items.length ?? 0) > 0,
@@ -1771,7 +1778,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       class="mb-3 flex flex-col gap-3"
     >
       <CapturePresence
-        v-if="!demo"
+        v-if="!demo && !guest"
         :account-id="account.id"
         :now="now"
         :can-act="!presenceReadOnly && presenceAccess !== 'viewer'"

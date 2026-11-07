@@ -6,6 +6,9 @@
  * accounts.ts `PATCH /:id/settings`), answering what they would answer. So
  * the pages react as on a real account, and nothing is sent: leaving or
  * reloading the page drops it all.
+ *
+ * The same emulation runs over the guest's store (local/server.ts, §4): a
+ * `StateHolder` says where a resource is read and kept.
  */
 
 import type {
@@ -26,6 +29,21 @@ import { deepMerge } from '@gdt/shared/settings'
 import type { z } from 'zod'
 import { ApiRequestError } from './error'
 import { demoPath } from './inspect'
+
+/**
+ * Where the emulated routes keep their resources, by route (`settings`,
+ * `planner-targets`...): the demo's tab, or the guest's store.
+ */
+export interface StateHolder {
+  read<T>(rest: string): Promise<T>
+  /** Applies `apply` to the current value and keeps what it answers (one at a time). */
+  change<T>(rest: string, apply: (current: T) => T | Promise<T>): Promise<T>
+  /**
+   * The planner's capture time (the newest snapshot's last sighting), where
+   * hand edits are checked against it (the guest; the demo never changes).
+   */
+  capturedAt?(): Promise<number | null>
+}
 
 /**
  * One /api/demo read: public, no cookie and no session to refresh, so a
@@ -81,18 +99,25 @@ export async function demoRead<T>(rest: string): Promise<T> {
   return copy(held.get(rest) as T)
 }
 
-async function change<T>(rest: string, apply: (current: T) => T | Promise<T>): Promise<T> {
-  const next = await apply(await demoRead<T>(rest))
-  held.set(rest, next)
-  return copy(next)
+/** The demo's tab. */
+export const DEMO_HOLDER: StateHolder = {
+  read: demoRead,
+  async change<T>(rest: string, apply: (current: T) => T | Promise<T>): Promise<T> {
+    const next = await apply(await demoRead<T>(rest))
+    held.set(rest, next)
+    return copy(next)
+  },
 }
 
 // ------------------------------------------------------------------ settings
 
-export function demoSettings(patch: AccountSettingsPatch): Promise<AccountSettingsResponse> {
+export function demoSettings(
+  patch: AccountSettingsPatch,
+  holder: StateHolder = DEMO_HOLDER,
+): Promise<AccountSettingsResponse> {
   // Live sync has no switch (the server ignores one too).
   const { liveSync: _ignored, ...rest } = patch as AccountSettingsPatch & { liveSync?: unknown }
-  return change<AccountSettingsResponse>('settings', (current) => ({
+  return holder.change<AccountSettingsResponse>('settings', (current) => ({
     settings: deepMerge(current.settings, rest),
   }))
 }
@@ -103,8 +128,9 @@ export function demoSettings(patch: AccountSettingsPatch): Promise<AccountSettin
 export function demoMarks(
   rest: 'achievement-marks' | 'anecdote-marks' | 'quest-marks',
   body: { done?: number[]; undone?: number[] },
+  holder: StateHolder = DEMO_HOLDER,
 ): Promise<{ done: number[] }> {
-  return change<{ done: number[] }>(rest, (current) => {
+  return holder.change<{ done: number[] }>(rest, (current) => {
     const done = new Set(current.done)
     for (const id of body.done ?? []) done.add(id)
     for (const id of body.undone ?? []) done.delete(id)
@@ -152,10 +178,13 @@ function keepOverrides(
   return { ...state, overrides }
 }
 
-export async function demoTargets(body: TargetsPatch): Promise<PlannerTargetsResponse> {
+export async function demoTargets(
+  body: TargetsPatch,
+  holder: StateHolder = DEMO_HOLDER,
+): Promise<PlannerTargetsResponse> {
   const now = Date.now()
   const moved = new Set<string>()
-  const answer = await change<PlannerTargetsResponse>('planner-targets', ({ targets }) => {
+  const answer = await holder.change<PlannerTargetsResponse>('planner-targets', ({ targets }) => {
     let list = [...targets]
     for (const ref of body.remove ?? []) {
       list = list.filter((t) =>
@@ -204,12 +233,14 @@ export async function demoTargets(body: TargetsPatch): Promise<PlannerTargetsRes
     }
     return { targets: sortTargets(list) }
   })
-  if (held.has('planner-state')) {
-    const state = held.get('planner-state') as PlannerStateResponse
-    const kept = keepOverrides(state, answer.targets)
-    held.set('planner-state', {
-      ...kept,
-      overrides: kept.overrides.filter((o) => !(o.kind === 'weapon' && o.id && moved.has(o.id))),
+  // The overrides of goals gone or moved go with them (as their rows do).
+  if (holder !== DEMO_HOLDER || held.has('planner-state')) {
+    await holder.change<PlannerStateResponse>('planner-state', (state) => {
+      const kept = keepOverrides(state, answer.targets)
+      return {
+        ...kept,
+        overrides: kept.overrides.filter((o) => !(o.kind === 'weapon' && o.id && moved.has(o.id))),
+      }
     })
   }
   return answer
@@ -217,12 +248,28 @@ export async function demoTargets(body: TargetsPatch): Promise<PlannerTargetsRes
 
 const MAX_DELTA = 1_000_000_000_000
 
-export async function demoState(body: StatePatch): Promise<PlannerStateResponse> {
+export async function demoState(
+  body: StatePatch,
+  holder: StateHolder = DEMO_HOLDER,
+): Promise<PlannerStateResponse> {
   const now = Date.now()
-  const { targets } = await demoRead<PlannerTargetsResponse>('planner-targets')
-  return change<PlannerStateResponse>('planner-state', (state) => {
+  const { targets } = await holder.read<PlannerTargetsResponse>('planner-targets')
+  // Where the capture moves (the guest), an edit made against an older one
+  // changes nothing: 409, as the server answers.
+  const captured = holder.capturedAt ? await holder.capturedAt() : undefined
+  if (captured !== undefined && (captured ?? 0) !== body.base) {
+    throw new ApiRequestError(
+      409,
+      'capture_changed',
+      'A newer capture arrived; nothing was changed',
+    )
+  }
+  return holder.change<PlannerStateResponse>('planner-state', (state) => {
     const adjustments = new Map<string, InventoryAdjustment>(
-      state.adjustments.map((a) => [a.key, a]),
+      state.adjustments
+        // Edits a newer capture has replaced.
+        .filter((a) => captured === undefined || a.base >= body.base)
+        .map((a) => [a.key, a]),
     )
     for (const edit of body.inventory ?? []) {
       const before = adjustments.get(edit.key)
@@ -288,14 +335,21 @@ export async function demoState(body: StatePatch): Promise<PlannerStateResponse>
         }
       }
     }
-    return { capturedAt: state.capturedAt, adjustments: kept, overrides }
+    return {
+      capturedAt: captured === undefined ? state.capturedAt : captured,
+      adjustments: kept,
+      overrides,
+    }
   })
 }
 
 /** `remove` before `upsert`; built-in tasks first, custom ones by position, then as made. */
-export function demoTasks(body: TasksPatch): Promise<PlannerTasksResponse> {
+export function demoTasks(
+  body: TasksPatch,
+  holder: StateHolder = DEMO_HOLDER,
+): Promise<PlannerTasksResponse> {
   const now = Date.now()
-  return change<PlannerTasksResponse>('planner-tasks', ({ tasks }) => {
+  return holder.change<PlannerTasksResponse>('planner-tasks', ({ tasks }) => {
     const list = tasks.filter(
       (t) => !(body.remove ?? []).some((ref) => ref.kind === t.kind && ref.id === t.id),
     )

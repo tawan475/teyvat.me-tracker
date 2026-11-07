@@ -1,0 +1,58 @@
+{
+  "label": "访客",
+  "bar": "仅保存在此浏览器中",
+  "barShort": "仅此浏览器",
+  "barInfo": "清除网站数据会将其删除",
+  "createAccount": "注册账号",
+  "signIn": "登录",
+  "yourAccounts": "我的账号",
+  "addAccount": "添加账号",
+  "here": "此处可用",
+  "withAccount": "注册账号后",
+  "rows": {
+    "everyPage": "所有页面和工具",
+    "files": "GOOD 文件、祈愿链接",
+    "history": "完整历史",
+    "oneAccount": "一个原神账号",
+    "capture": "Capture 自动实时同步",
+    "alerts": "树脂提醒",
+    "accounts": "多个原神账号",
+    "backup": "备份、所有设备、共享"
+  },
+  "lock": {
+    "capture": "注册账号后，Teyvat.me Capture 会自动实时上传",
+    "alerts": "网站关闭时的提醒需要账号",
+    "sharing": "共享需要账号",
+    "accounts": "多个原神账号需要账号",
+    "devices": "备份和多设备需要账号"
+  },
+  "backup": {
+    "count": "{n} 个快照",
+    "where": "仅保存在此浏览器中",
+    "info": "清除网站数据或磁盘已满都可能将其删除",
+    "backUp": "备份它们",
+    "notNow": "以后再说"
+  },
+  "try": "无需账号试用",
+  "tryHint": "用你自己的文件使用全部功能，仅保存在此浏览器中",
+  "deleteData": "删除访客数据",
+  "deleted": "访客数据已删除",
+  "convert": {
+    "title": "导入访客数据？",
+    "body": "此浏览器中有访客模式的数据。",
+    "snapshots": "{n} 个快照",
+    "wishes": "{n} 次祈愿",
+    "into": "导入到 {name}",
+    "intoNew": "导入到新账号",
+    "yes": "导入",
+    "no": "分开保留",
+    "done": "访客数据已导入",
+    "failed": "{n} 个失败",
+    "notDone": "访客数据未导入",
+    "step": {
+      "snapshots": "快照",
+      "plan": "规划和标记",
+      "wishes": "祈愿记录"
+    }
+  }
+}

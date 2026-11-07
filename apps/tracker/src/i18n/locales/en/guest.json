@@ -1,0 +1,58 @@
+{
+  "label": "Guest",
+  "bar": "Saved in this browser only",
+  "barShort": "This browser only",
+  "barInfo": "Clearing site data deletes it",
+  "createAccount": "Create account",
+  "signIn": "Sign in",
+  "yourAccounts": "Your accounts",
+  "addAccount": "Add account",
+  "here": "Here",
+  "withAccount": "With an account",
+  "rows": {
+    "everyPage": "Every page and tool",
+    "files": "GOOD files, wish link",
+    "history": "Full history",
+    "oneAccount": "One Genshin account",
+    "capture": "Capture syncs by itself, live",
+    "alerts": "Resin alerts",
+    "accounts": "More than one Genshin account",
+    "backup": "Backup, every device, sharing"
+  },
+  "lock": {
+    "capture": "Teyvat.me Capture uploads by itself, and live, with an account",
+    "alerts": "Alerts with the site closed need an account",
+    "sharing": "Sharing needs an account",
+    "accounts": "More than one Genshin account needs an account",
+    "devices": "Backup and every device need an account"
+  },
+  "backup": {
+    "count": "{n} snapshot | {n} snapshots",
+    "where": "in this browser only",
+    "info": "Clearing site data or a full disk can delete them",
+    "backUp": "Back them up",
+    "notNow": "Not now"
+  },
+  "try": "Try without an account",
+  "tryHint": "Use it all with your own files, kept in this browser only",
+  "deleteData": "Delete guest data",
+  "deleted": "Guest data deleted",
+  "convert": {
+    "title": "Bring your guest data?",
+    "body": "This browser holds data from guest mode.",
+    "snapshots": "{n} snapshot | {n} snapshots",
+    "wishes": "{n} wish | {n} wishes",
+    "into": "Into {name}",
+    "intoNew": "Into a new account",
+    "yes": "Bring it in",
+    "no": "Keep it separate",
+    "done": "Guest data brought in",
+    "failed": "{n} failed",
+    "notDone": "Guest data not brought in",
+    "step": {
+      "snapshots": "Snapshots",
+      "plan": "Plan and marks",
+      "wishes": "Wish history"
+    }
+  }
+}

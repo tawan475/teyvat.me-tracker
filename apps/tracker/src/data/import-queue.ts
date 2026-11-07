@@ -21,6 +21,7 @@ import { errorText } from '@/i18n/api-errors'
 import { t } from '@/i18n'
 import { formatDateTime, formatNumber, formatTime } from '@/lib/format'
 import { importingAccounts } from '@/live/holds'
+import { isGuestAccount } from '@/local/guest-id'
 import { appRouter } from '@/router/instance'
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
@@ -439,7 +440,10 @@ async function upload(queue: ImportQueue, item: ImportItem): Promise<UploadResul
     const paced = await pace(queue, item)
     if (!paced || queue.state !== 'running') return requeue(item)
     try {
-      const { body, gzip } = await compressFile(item.file)
+      // The guest's file is stored here: nothing to send, so nothing to compress.
+      const { body, gzip } = isGuestAccount(queue.accountId)
+        ? { body: item.file, gzip: false }
+        : await compressFile(item.file)
       noteRequest(queue.accountId)
       // Quiet: the live pages hear about the run once, when it ends (reloadAccount).
       // A time from the file's name rides along; one in the contents the server reads itself.
@@ -549,6 +553,8 @@ function noteRequest(accountId: number) {
 
 /** Waits until another upload fits in the per-minute budget. */
 async function pace(queue: ImportQueue, item: ImportItem): Promise<boolean> {
+  // The guest's uploads stay in this browser: no server budget to keep under.
+  if (isGuestAccount(queue.accountId)) return true
   const now = Date.now()
   const times = (recent.get(queue.accountId) ?? []).filter((t) => now - t < RATE_WINDOW_MS)
   recent.set(queue.accountId, times)
@@ -640,7 +646,11 @@ function finishDone(queue: ImportQueue) {
           ? {
               label: t('transfer.upload.snapshots'),
               run: () =>
-                void appRouter()?.push({ name: 'account-snapshots', params: { accountId } }),
+                void appRouter()?.push(
+                  isGuestAccount(accountId)
+                    ? { name: 'guest-snapshots' }
+                    : { name: 'account-snapshots', params: { accountId } },
+                ),
             }
           : undefined,
     },
@@ -661,7 +671,7 @@ let unloadWatched = false
 
 /** Closing the tab drops the queue: ask first while an upload is running. */
 function watchUnload() {
-  if (unloadWatched) return
+  if (unloadWatched || typeof window === 'undefined') return
   unloadWatched = true
   window.addEventListener('beforeunload', (event) => {
     for (const queue of queues.values()) {

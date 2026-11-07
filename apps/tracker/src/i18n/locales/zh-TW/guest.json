@@ -1,0 +1,58 @@
+{
+  "label": "訪客",
+  "bar": "僅儲存在此瀏覽器中",
+  "barShort": "僅此瀏覽器",
+  "barInfo": "清除網站資料會將其刪除",
+  "createAccount": "註冊帳號",
+  "signIn": "登入",
+  "yourAccounts": "我的帳號",
+  "addAccount": "新增帳號",
+  "here": "此處可用",
+  "withAccount": "註冊帳號後",
+  "rows": {
+    "everyPage": "所有頁面和工具",
+    "files": "GOOD 檔案、祈願連結",
+    "history": "完整歷史",
+    "oneAccount": "一個原神帳號",
+    "capture": "Capture 自動即時同步",
+    "alerts": "樹脂提醒",
+    "accounts": "多個原神帳號",
+    "backup": "備份、所有裝置、共享"
+  },
+  "lock": {
+    "capture": "註冊帳號後，Teyvat.me Capture 會自動即時上傳",
+    "alerts": "網站關閉時的提醒需要帳號",
+    "sharing": "共享需要帳號",
+    "accounts": "多個原神帳號需要帳號",
+    "devices": "備份和多裝置需要帳號"
+  },
+  "backup": {
+    "count": "{n} 個快照",
+    "where": "僅儲存在此瀏覽器中",
+    "info": "清除網站資料或磁碟已滿都可能將其刪除",
+    "backUp": "備份它們",
+    "notNow": "以後再說"
+  },
+  "try": "無需帳號試用",
+  "tryHint": "用你自己的檔案使用全部功能，僅儲存在此瀏覽器中",
+  "deleteData": "刪除訪客資料",
+  "deleted": "訪客資料已刪除",
+  "convert": {
+    "title": "匯入訪客資料？",
+    "body": "此瀏覽器中有訪客模式的資料。",
+    "snapshots": "{n} 個快照",
+    "wishes": "{n} 次祈願",
+    "into": "匯入到 {name}",
+    "intoNew": "匯入到新帳號",
+    "yes": "匯入",
+    "no": "分開保留",
+    "done": "訪客資料已匯入",
+    "failed": "{n} 個失敗",
+    "notDone": "訪客資料未匯入",
+    "step": {
+      "snapshots": "快照",
+      "plan": "規劃和標記",
+      "wishes": "祈願紀錄"
+    }
+  }
+}

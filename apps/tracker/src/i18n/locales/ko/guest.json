@@ -1,0 +1,58 @@
+{
+  "label": "게스트",
+  "bar": "이 브라우저에만 저장됨",
+  "barShort": "이 브라우저에만",
+  "barInfo": "사이트 데이터를 지우면 삭제됩니다",
+  "createAccount": "계정 만들기",
+  "signIn": "로그인",
+  "yourAccounts": "내 계정",
+  "addAccount": "계정 추가",
+  "here": "여기서 가능",
+  "withAccount": "계정이 있으면",
+  "rows": {
+    "everyPage": "모든 페이지와 도구",
+    "files": "GOOD 파일, 기원 링크",
+    "history": "전체 기록",
+    "oneAccount": "원신 계정 1개",
+    "capture": "Capture 자동 실시간 동기화",
+    "alerts": "레진 알림",
+    "accounts": "원신 계정 여러 개",
+    "backup": "백업, 모든 기기, 공유"
+  },
+  "lock": {
+    "capture": "계정이 있으면 Teyvat.me Capture가 자동으로 실시간 업로드합니다",
+    "alerts": "사이트를 닫은 동안의 알림은 계정이 필요합니다",
+    "sharing": "공유는 계정이 필요합니다",
+    "accounts": "원신 계정 여러 개는 계정이 필요합니다",
+    "devices": "백업과 여러 기기는 계정이 필요합니다"
+  },
+  "backup": {
+    "count": "스냅샷 {n}개",
+    "where": "이 브라우저에만 저장됨",
+    "info": "사이트 데이터를 지우거나 디스크가 가득 차면 삭제될 수 있습니다",
+    "backUp": "백업하기",
+    "notNow": "나중에"
+  },
+  "try": "계정 없이 사용해 보기",
+  "tryHint": "내 파일로 모든 기능을 사용합니다. 이 브라우저에만 저장됩니다",
+  "deleteData": "게스트 데이터 삭제",
+  "deleted": "게스트 데이터를 삭제했습니다",
+  "convert": {
+    "title": "게스트 데이터를 가져올까요?",
+    "body": "이 브라우저에 게스트 모드 데이터가 있습니다.",
+    "snapshots": "스냅샷 {n}개",
+    "wishes": "기원 {n}회",
+    "into": "{name}(으)로 가져오기",
+    "intoNew": "새 계정으로 가져오기",
+    "yes": "가져오기",
+    "no": "따로 두기",
+    "done": "게스트 데이터를 가져왔습니다",
+    "failed": "{n}개 실패",
+    "notDone": "게스트 데이터를 가져오지 못했습니다",
+    "step": {
+      "snapshots": "스냅샷",
+      "plan": "계획과 표시",
+      "wishes": "기원 기록"
+    }
+  }
+}

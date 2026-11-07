@@ -37,6 +37,8 @@ const props = defineProps<{
   accountId: number | null
   /** The public demo's account: its pages, none of the user's own (DemoLayout). */
   demo?: AccountResponse | null
+  /** Guest mode's account: its pages (GuestLayout). */
+  guest?: AccountResponse | null
 }>()
 const open = defineModel<boolean>('open', { required: true })
 
@@ -54,7 +56,10 @@ const failed = ref(false)
 const inventory = shallowRef<Inventory | null>(null)
 
 const account = computed(
-  () => props.demo ?? (props.accountId ? (accounts.byId.get(props.accountId) ?? null) : null),
+  () =>
+    props.demo ??
+    props.guest ??
+    (props.accountId ? (accounts.byId.get(props.accountId) ?? null) : null),
 )
 
 watch(
@@ -108,7 +113,7 @@ const pages = computed<SearchEntry[]>(() => {
     }
     for (const tab of COLLECTION_TABS) add(`tab:${tab}`, t(`collections.tabs.${TAB_LABEL[tab]}`))
   }
-  if (props.demo) return out
+  if (props.demo || props.guest) return out
   add('home', t('shell.accounts'))
   add('settings', t('shell.settings'))
   add('settings-devices', t('shell.page.devices'))
@@ -240,13 +245,17 @@ function target(entry: SearchEntry): RouteLocationRaw {
   }
 }
 
-/** In the demo, an account page's route is the demo's (`account-x` -> `demo-x`, no account id). */
+/**
+ * In the demo (guest mode), an account page's route is the demo's (the
+ * guest's): `account-x` -> `demo-x` (`guest-x`), no account id.
+ */
 function routed(location: RouteLocationRaw): RouteLocationRaw {
-  if (!props.demo || typeof location !== 'object' || !('name' in location)) return location
+  const frame = props.demo ? 'demo' : props.guest ? 'guest' : null
+  if (!frame || typeof location !== 'object' || !('name' in location)) return location
   const name = String(location.name ?? '')
   if (!name.startsWith('account-')) return location
   const { accountId: _id, ...params } = (location.params ?? {}) as Record<string, unknown>
-  return { ...location, name: `demo-${name.slice(8)}`, params } as RouteLocationRaw
+  return { ...location, name: `${frame}-${name.slice(8)}`, params } as RouteLocationRaw
 }
 
 function choose(entry: SearchEntry | undefined) {

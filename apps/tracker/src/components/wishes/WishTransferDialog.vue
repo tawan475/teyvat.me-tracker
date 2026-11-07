@@ -24,6 +24,7 @@ import { t } from '@/i18n'
 import { formatBytes, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
 import { useFeedback } from '@/stores/feedback'
 import { loadUsage, usageVersion } from '@/data/usage'
+import { isGuestAccount } from '@/local/guest-id'
 import { useResource } from '@/data/use-resource'
 
 /**
@@ -66,7 +67,11 @@ const uid = computed(() => props.account.uid?.trim() || null)
 /** The user's allocated space, read while the dialog is open (shared accounts count on their owner). */
 const usage = useResource(
   () =>
-    props.open && !props.readOnly && (props.account.access ?? 'owner') === 'owner'
+    // The guest's history is in this browser: no allocated space to show.
+    props.open &&
+    !props.readOnly &&
+    !isGuestAccount(props.account.id) &&
+    (props.account.access ?? 'owner') === 'owner'
       ? usageVersion.value
       : null,
   (key) => (key === null ? Promise.resolve(null) : loadUsage()),

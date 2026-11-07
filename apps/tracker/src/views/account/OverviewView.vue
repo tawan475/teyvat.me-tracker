@@ -42,7 +42,15 @@ import { loadProfileArt, buildProfileCard } from '@/data/profile-card'
 import type { AccountRef } from '@/data/account-data'
 import { useAccounts } from '@/stores/accounts'
 import CapturePresence from '@/components/live/CapturePresence.vue'
-import { useAccess, useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
+import {
+  useAccess,
+  useAccount,
+  useAccountLink,
+  useAccountRoute,
+  useDemo,
+  useGuest,
+  useReadOnly,
+} from './context'
 
 /**
  * The account dashboard: latest figures, history charts, monthly analysis
@@ -62,9 +70,10 @@ watch(
   () => account.value.id,
   (id) => {
     // Staff Inspect reads the account when a page opens (it is not in the list).
-    // Nor the demo's (not in the list either).
+    // Nor the demo's or the guest's (not in the list either).
     const source = (account.value as AccountRef).source
-    if (source === 'staff' || source === 'demo' || accounts.readWithin(30_000)) return
+    if (source === 'staff' || source === 'demo' || source === 'local') return
+    if (accounts.readWithin(30_000)) return
     accounts.reload(id).catch(() => undefined)
   },
   { immediate: true },
@@ -283,10 +292,9 @@ const meta = computed<MetaItem[]>(() => {
 
 const readOnly = useReadOnly()
 const demo = useDemo()
-const importRoute = computed(() => ({
-  name: 'account-import',
-  params: { accountId: account.value.id },
-}))
+const accountLink = useAccountLink()
+const guest = useGuest()
+const importRoute = computed(() => accountLink('account-import'))
 </script>
 
 <template>
@@ -302,7 +310,7 @@ const importRoute = computed(() => ({
   </PageHeader>
 
   <CapturePresence
-    v-if="!demo"
+    v-if="!demo && !guest"
     class="mb-3"
     :account-id="account.id"
     :now="nowMs"

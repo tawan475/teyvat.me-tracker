@@ -81,21 +81,78 @@ describe('wish link proxy', () => {
     expect(asked.length).toBe(2)
   })
 
-  it('needs a signed-in user and the CSRF header', async () => {
-    const anonymous = await new Client().fetch('/api/wishes/fetch-page', {
-      method: 'POST',
-      json: { url: LINK, gachaType: 301, page: 1, endId: '0' },
+  it('needs a signed-in user, or a page of this site (guest mode), and the CSRF header', async () => {
+    const body = JSON.stringify({ url: LINK, gachaType: 301, page: 1, endId: '0' })
+    const signedOut = (headers: Record<string, string>) =>
+      SELF.fetch(`${ORIGIN}/api/wishes/fetch-page`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-connecting-ip': '203.0.113.9',
+          ...headers,
+        },
+        body,
+      })
+    // Signed out from this site's own page (the browser sends its Origin): guest mode.
+    const own = await signedOut({
+      'x-gdt-csrf': '1',
+      origin: ORIGIN,
+      'sec-fetch-site': 'same-origin',
     })
-    expect(anonymous.status).toBe(401)
+    expect(own.status).toBe(200)
+    expect(asked.length).toBe(1)
+    // Not a proxy for anyone else: no Origin (a script), another site's, a cross-site
+    // fetch, or no CSRF header (a form) are refused before anything is fetched.
+    for (const headers of <Record<string, string>[]>[
+      { 'x-gdt-csrf': '1' },
+      { 'x-gdt-csrf': '1', origin: 'https://evil.example' },
+      { 'x-gdt-csrf': '1', origin: ORIGIN, 'sec-fetch-site': 'cross-site' },
+      { origin: ORIGIN },
+    ]) {
+      expect((await signedOut(headers)).status).toBe(403)
+    }
+    expect(asked.length).toBe(1)
+    // Its answer carries no CORS header for other sites.
+    expect(own.headers.get('access-control-allow-origin')).toBeNull()
+
     const { client } = await signUp()
     // The browser's cookie without the CSRF header (a cross-site form).
     const noCsrf = await SELF.fetch(`${ORIGIN}/api/wishes/fetch-page`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', cookie: `gdt_at=${client.cookie('gdt_at')}` },
-      body: JSON.stringify({ url: LINK, gachaType: 301, page: 1, endId: '0' }),
+      body,
     })
     expect(noCsrf.status).toBe(403)
-    expect(asked.length).toBe(0)
+    expect(asked.length).toBe(1)
+  })
+
+  it('limits signed-out pages per IP', async () => {
+    let status = 200
+    let n = 0
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const ip = `198.51.100.${10 + attempt}`
+      const minute = Math.floor(Date.now() / 60_000)
+      status = 200
+      n = 0
+      while (status === 200 && n < 200) {
+        status = (
+          await SELF.fetch(`${ORIGIN}/api/wishes/fetch-page`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-gdt-csrf': '1',
+              origin: ORIGIN,
+              'cf-connecting-ip': ip,
+            },
+            body: JSON.stringify({ url: LINK, gachaType: 301, page: 1, endId: '0' }),
+          })
+        ).status
+        n++
+      }
+      if (Math.floor(Date.now() / 60_000) === minute) break
+    }
+    expect(status).toBe(429)
+    expect(n).toBe(121)
   })
 
   it('logs no authkey when the API fails', async () => {

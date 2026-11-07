@@ -1,0 +1,58 @@
+{
+  "label": "Convidado",
+  "bar": "Salvo só neste navegador",
+  "barShort": "Só este navegador",
+  "barInfo": "Limpar os dados do site apaga tudo",
+  "createAccount": "Criar conta",
+  "signIn": "Entrar",
+  "yourAccounts": "Suas contas",
+  "addAccount": "Adicionar conta",
+  "here": "Aqui",
+  "withAccount": "Com uma conta",
+  "rows": {
+    "everyPage": "Todas as páginas e ferramentas",
+    "files": "Arquivos GOOD, link de Orações",
+    "history": "Histórico completo",
+    "oneAccount": "Uma conta de Genshin",
+    "capture": "Capture sincroniza sozinho, ao vivo",
+    "alerts": "Alertas de Resina",
+    "accounts": "Mais de uma conta de Genshin",
+    "backup": "Backup, todos os dispositivos, compartilhamento"
+  },
+  "lock": {
+    "capture": "Com uma conta, o Teyvat.me Capture envia sozinho e ao vivo",
+    "alerts": "Alertas com o site fechado precisam de uma conta",
+    "sharing": "Compartilhar precisa de uma conta",
+    "accounts": "Mais de uma conta de Genshin precisa de uma conta",
+    "devices": "Backup e todos os dispositivos precisam de uma conta"
+  },
+  "backup": {
+    "count": "{n} captura | {n} capturas",
+    "where": "só neste navegador",
+    "info": "Limpar os dados do site ou um disco cheio pode apagá-las",
+    "backUp": "Fazer backup",
+    "notNow": "Agora não"
+  },
+  "try": "Experimentar sem conta",
+  "tryHint": "Use tudo com seus próprios arquivos, salvos só neste navegador",
+  "deleteData": "Apagar dados de convidado",
+  "deleted": "Dados de convidado apagados",
+  "convert": {
+    "title": "Trazer seus dados de convidado?",
+    "body": "Este navegador tem dados do modo convidado.",
+    "snapshots": "{n} captura | {n} capturas",
+    "wishes": "{n} Oração | {n} Orações",
+    "into": "Para {name}",
+    "intoNew": "Para uma conta nova",
+    "yes": "Trazer",
+    "no": "Manter separado",
+    "done": "Dados de convidado trazidos",
+    "failed": "{n} com falha",
+    "notDone": "Dados de convidado não trazidos",
+    "step": {
+      "snapshots": "Capturas",
+      "plan": "Plano e marcações",
+      "wishes": "Histórico de Orações"
+    }
+  }
+}

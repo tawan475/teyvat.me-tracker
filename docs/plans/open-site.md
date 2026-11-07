@@ -144,7 +144,7 @@ roster; it rebuilds the account from scratch (delete, re-import).
 2. **A `demo` data source.** `AccountRef.source` already switches every
    loader in `src/data/account-data.ts` between own data and staff Inspect;
    a third value, `'demo'`, reads `GET /api/demo/{snapshots,catalog,bundle,
-   player,wishes,endgame}` with no cookie, an immutable ETag (the frozen
+player,wishes,endgame}` with no cookie, an immutable ETag (the frozen
    version) and `Cache-Control: public, max-age=1 day`, so the Worker
    answers once and the edge and the browser's IndexedDB cache do the rest.
    The browser decodes exactly as it does for a real account.
@@ -257,61 +257,89 @@ card painters' inputs made serialisable (they nearly are), Settings
 
 ---
 
-## 4. Guest mode (2–4 weeks) — with the account as the upsell
+## 4. Guest mode — BUILT 2026-11-08 (the user's decisions, 2026-11-08; README "Guest mode")
 
 ### What it is
 
 Use the whole app without an account: drop a GOOD file (Capture's local
-export, GO, Enka) and get characters, artifacts, materials, the planner,
-achievements and wishes, all stored in this browser only. **The account is
-the upsell, marked everywhere it applies**: automatic syncing from Capture,
-live sync, push alerts, history across devices, sharing with friends,
-storage that survives a cleared browser, the share links above.
+export, GO, Enka) or paste the wish link and get characters, artifacts,
+materials, the planner, achievements and wishes, all stored in this browser
+only. Guest data never touches the server (no D1 rows, no Worker work beyond
+the wish link relay), so it costs nothing at the 100k-users baseline.
 
-### What I would do
+**The design is row E ("A + B")** of the canvas
+https://claude.ai/artifact/Xv2j5yHzzvfqmJEXaAetVw (`E-desktop.dc.html`,
+`E-phone.dc.html`; rows A–D were the rejected alternatives):
 
-1. **A `local` data source.** The same seam as the demo: `AccountRef.source
-   = 'local'` in `data/account-data.ts`, reading from IndexedDB (the
-   `gdt-data` store already holds snapshots, catalog and bundles per
-   account; a guest's rows live there with no server copy).
-2. **Import in the browser.** `normalizeGood` + `prepareSnapshot`
-   (`packages/shared`) are pure TS: they build the canonical sections and
-   artifact identities locally. History is kept in the v2 codec locally
-   (`store-v2.ts` `planSections` runs anywhere) so 100 snapshots are a few
-   hundred KB, not 150 MB of raw GOOD. Guests keep **the last 30
-   snapshots** (an upsell line: "Keep your whole history with an account").
-3. **Per-account state locally.** The six composables that call `api.*`
-   today (planner state/targets/tasks, achievement marks, anecdote marks,
-   saved teams, account settings, wishes) get a storage interface with two
-   implementations: the server one (as now) and an IndexedDB one. The
-   planner's `capture_changed` conflict is mirrored locally.
-4. **What a guest doesn't get**, each shown as a locked row with "Sign up
-   to …": Capture uploads by key or sign-in (Capture's local GOOD export
-   still works: drag it in), live sync, push alerts, presence, sharing,
-   share links, a second device. The Devices page becomes the pitch page.
-5. **A guest bar**: "Your data is in this browser only. Clearing site data
-   loses it. Create an account to keep it and sync automatically."
-6. **Converting a guest to an account — TBD** (the user hasn't decided).
-   Technically cheap: on sign-up, replay the local snapshots oldest first
-   through the existing website import queue (`data/import-queue.ts`
-   already does bulk uploads), then push marks, plan and settings. Open:
-   whether conversion is automatic, offered once, or always available.
+- A's quiet bar under the top bar: "**Guest** · Saved in this browser only",
+  an ⓘ tooltip (clearing site data deletes it) and **Create account**.
+- B's **Guest** chip in the top bar, opening a popover (a bottom sheet on
+  phones) with two lists. _Here_: every page and tool; GOOD files and the
+  wish link; full history; one Genshin account. _With an account_: Capture
+  syncs by itself and live; resin alerts; more than one Genshin account;
+  backup, every device and sharing. Then Create account and Sign in.
+- Locks appear only where a feature lives (the Capture panel, Devices, push
+  alerts, sharing, adding a second Genshin account). There is no "locked"
+  block on Overview.
+
+### What needs an account
+
+Only what truly needs a server: Capture auto-upload and live sync, Web Push
+alerts, presence and commands, server backup and other devices, account
+sharing. Plus ONE deliberate perk: **a guest has exactly one Genshin
+account.**
+
+**No snapshot cap** (the 30 first planned is dropped): guest history lives
+in the browser in the v2 codec. In its place, once history is worth
+something (about 10 imports or 2 weeks), Snapshots shows a note: "N
+snapshots in this browser only", an ⓘ (clearing site data or a full disk
+can delete them), and the buttons **Back them up** (to sign-up) and **Not
+now**.
+
+**The wish link works for guests**: `POST /api/wishes/fetch-page`
+(`worker/routes/wish-proxy.ts`) also answers signed-out requests from our
+own origin only (the CSRF header and a same-origin `Origin`), limited per
+IP. It is not a public CORS proxy for other sites, and keeps its rules: the
+URL rebuilt from the authkey alone, nothing stored, the key never logged.
+UIGF / paimon.moe files import locally too.
+
+**Conversion: ask once.** When a guest signs up (or signs in) with local
+data, the app asks once whether to bring it into the account. Yes: the
+local snapshots are replayed oldest first through the website import queue
+(`data/import-queue.ts`), then marks, plan and settings, then wishes.
+The answer is remembered; it is never asked again.
+
+### How it is built
+
+1. **A `local` data source.** `AccountRef.source = 'local'` in
+   `data/account-data.ts`; the guest account's paths
+   (`/api/accounts/<guest id>/…`) never leave the browser: `api/http.ts`
+   hands them to `local/server.ts`, which answers them from IndexedDB the way
+   the Worker's routes do (snapshots, catalog, GDT2 bundles, GOOD files,
+   settings, marks, planner, wishes, import, deletes, compact).
+2. **`local/local-store.ts`** on IndexedDB (`gdt-guest`): the account,
+   section blobs, snapshot rows, the artifact catalog and per-account state,
+   held in memory and written through; writes run under a Web Lock and tell
+   other tabs (BroadcastChannel).
+3. **Import in the browser**: `normalizeGood` + `prepareSnapshot` +
+   `completeSnapshot` + `planSnapshotV2` (store-v2's `planSections`), stored
+   against the snapshot nearest in time, exactly as `worker/services/import.ts`.
+4. **Per-account state locally**: the demo's emulation of the PATCH routes
+   (`api/demo-store.ts`) runs over the guest store, so planner targets,
+   state (with the `capture_changed` check), tasks, achievement, anecdote
+   and quest marks and account settings behave as on the server.
+5. **Guest routes** `/guest/*` without `meta.auth` (`views/guest/GuestLayout.vue`),
+   the account pages plus Import and the account's settings.
+6. **Entry**: "Try without an account" beside the demo link on the landing
+   and the login page.
+7. Texts in all 15 locales.
 
 ### Touches
 
-`data/account-data.ts`, a `data/local-store.ts` (IndexedDB, the shared
-codec), the six composables (interface + local implementation),
-`AccountLayout`/a `GuestLayout`, the import dialog (guest path), the
-router (guest routes without `meta.auth`), the locked rows, locale files.
-
-### Open
-
-- Conversion flow (above).
-- Whether guests get wish history (the wish link proxy runs on the server
-  with a sign-in + CSRF; a guest could paste a UIGF/paimon file instead).
-- Whether guest mode is worth it once the demo exists: the demo shows the
-  product; guest mode serves people who won't make an account. Decide
-  after the demo ships.
+`src/local/*` (new), `data/account-data.ts`, `api/http.ts`, `api/inspect.ts`,
+`api/demo-store.ts`, `views/guest/GuestLayout.vue`, `components/guest/*`,
+`AppShell.vue`, the import dialog, the router, `worker/routes/wish-proxy.ts`,
+locale files.
 
 ---
 
@@ -344,7 +372,7 @@ way in beside password, Discord and Google; the device-session model stays.
    attestation (none required; we store the key, not the attestation
    chain). RP ID `teyvat.me` only; the old host cannot use passkeys.
 3. **Sign in**: `/login` requests discoverable credentials (`mediation:
-   'conditional'`, so the passkey appears in the username field's autofill)
+'conditional'`, so the passkey appears in the username field's autofill)
    and a button "Use a passkey"; `POST /api/auth/passkeys/login` verifies
    the assertion (challenge, origin, RP ID hash, signature with WebCrypto
    `ES256`/`RS256`, sign count not going backwards), then
@@ -366,7 +394,7 @@ way in beside password, Discord and Google; the device-session model stays.
    on the first sign-up session (the user has just typed a password; let
    them see the app first). Settings → Devices keeps the permanent "Add a
    passkey" button.
-5. **Library**: `@simplewebauthn/server` runs on Workers with WebCrypto in
+6. **Library**: `@simplewebauthn/server` runs on Workers with WebCrypto in
    its current versions; if its bundle or its dependencies fight the
    Worker build, verifying an assertion by hand is ~150 lines (CBOR for the
    attested key, then `crypto.subtle.verify`). The browser side is
@@ -550,4 +578,3 @@ paywall), never present the site as official, and keep game art off
 - Paddle verification (individuals/sole traders): https://www.paddle.com/help/start/account-verification/what-is-business-verification
 - Opn (Omise) Thailand pricing: https://www.omise.co/pricing/thailand
 - HoYoverse fan-made content guide (coverage): https://www.hoyolab.com/article/106430
-

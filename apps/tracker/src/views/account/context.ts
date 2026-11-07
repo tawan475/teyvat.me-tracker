@@ -1,5 +1,6 @@
 import type { AccountAccess, AccountResponse } from '@gdt/shared'
 import { computed, inject, provide, type ComputedRef, type InjectionKey } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 
 const ACCOUNT: InjectionKey<ComputedRef<AccountResponse>> = Symbol('account')
 const MODE: InjectionKey<AccountMode> = Symbol('account-mode')
@@ -19,6 +20,12 @@ export interface AccountMode {
    * sharing, deletion, Capture.
    */
   demo?: boolean
+  /**
+   * Guest mode (GuestLayout, docs/plans/open-site.md §4): the account kept in
+   * this browser. Everything works and is kept; what needs a server (Capture
+   * uploads, live sync, alerts, sharing, more accounts) shows a lock.
+   */
+  guest?: boolean
   /** Staff with `data.delete`: purges snapshots (Inspect's Snapshots page). */
   purge?: (ids: number[]) => Promise<number>
   /** Re-reads the account after a purge. */
@@ -52,6 +59,11 @@ export function useDemo(): boolean {
   return useAccountMode().demo === true
 }
 
+/** True on guest mode's pages (see AccountMode `guest`). */
+export function useGuest(): boolean {
+  return useAccountMode().guest === true
+}
+
 /**
  * The user's access to the account (account sharing): 'owner', or the role
  * it was shared with them as. Owner-only controls (rename, keys, deleting
@@ -66,6 +78,20 @@ export function useAccess(): ComputedRef<AccountAccess> {
 export function useAccountRoute(): (name: string) => string {
   const mode = useAccountMode()
   return (name) => mode.route?.(name) ?? name
+}
+
+/**
+ * A link to one of the account's own pages (`account-import`…) where it
+ * opens here: the owner's route with the account's id, or the demo's or the
+ * guest's (which have none).
+ */
+export function useAccountLink(): (name: string) => RouteLocationRaw {
+  const mode = useAccountMode()
+  const account = inject(ACCOUNT, null)
+  return (name) =>
+    mode.demo || mode.guest
+      ? { name: mode.route?.(name) ?? name }
+      : { name, params: { accountId: account?.value.id } }
 }
 
 /**

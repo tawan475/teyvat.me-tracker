@@ -2,6 +2,7 @@ import type { AccountResponse, InvitationResponse } from '@gdt/shared'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { api, type AccountInput } from '@/api'
+import { isGuestAccount } from '@/local/guest-id'
 import { t } from '@/i18n'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { postToTabs } from '@/live/channel'
@@ -163,6 +164,8 @@ export const useAccounts = defineStore('accounts', () => {
     id: number,
     options: { announce?: boolean } = {},
   ): Promise<AccountResponse> {
+    // The guest account is not the user's: it has its own (browser-held) copy.
+    if (isGuestAccount(id)) return (await import('@/local/guest-account')).loadGuestAccount()
     const fresh = await (options.announce ? api.announceAccount(id) : api.account(id))
     merge([fresh])
     const userId = useSession().me?.id
@@ -179,6 +182,7 @@ export const useAccounts = defineStore('accounts', () => {
 
   async function update(id: number, input: AccountInput) {
     const updated = await api.updateAccount(id, input)
+    if (isGuestAccount(id)) return (await import('@/local/guest-account')).loadGuestAccount()
     merge([updated])
     return updated
   }
@@ -197,6 +201,7 @@ export const useAccounts = defineStore('accounts', () => {
   function displayName(account: Pick<AccountResponse, 'name' | 'uid' | 'id'>): string {
     return (
       account.name ||
+      (isGuestAccount(account.id) ? t('guest.label') : '') ||
       (account.uid
         ? t('accounts.displayUid', { uid: account.uid })
         : t('accounts.displayId', { id: account.id }))

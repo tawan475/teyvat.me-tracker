@@ -6,7 +6,9 @@ import { Bell, BellOff, BellRing, ChevronRight, Pencil } from 'lucide-vue-next'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
+import GuestLock from '@/components/guest/GuestLock.vue'
 import UiPopover from '@/components/ui/UiPopover.vue'
+import { useGuest } from '@/views/account/context'
 import { t } from '@/i18n'
 import { materialIcon } from '@/lib/assets'
 import { formatDateTime, formatNumber, formatTime } from '@/lib/format'
@@ -138,6 +140,8 @@ function setAlertAmount(accountId: number, value: number | null) {
   writeStorage(`planner:resin-alert:${accountId}`, value === null ? null : String(value))
 }
 
+/** Guest mode: alerts with the site closed (Web Push) are an account's. */
+const guest = useGuest()
 const support = shallowRef<AlertSupport>(alertSupport())
 const amount = ref<number | null>(alertAmount(props.accountId))
 watch(
@@ -453,6 +457,7 @@ watch(
           </div>
           <p class="text-xs text-text-muted">{{ $t('planner.resin.whileOpen') }}</p>
         </template>
+        <GuestLock v-if="guest" kind="alerts" compact />
       </div>
     </UiPopover>
   </section>

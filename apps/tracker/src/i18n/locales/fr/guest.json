@@ -1,0 +1,58 @@
+{
+  "label": "Invité",
+  "bar": "Enregistré dans ce navigateur uniquement",
+  "barShort": "Ce navigateur uniquement",
+  "barInfo": "Effacer les données du site les supprime",
+  "createAccount": "Créer un compte",
+  "signIn": "Se connecter",
+  "yourAccounts": "Vos comptes",
+  "addAccount": "Ajouter un compte",
+  "here": "Ici",
+  "withAccount": "Avec un compte",
+  "rows": {
+    "everyPage": "Toutes les pages et tous les outils",
+    "files": "Fichiers GOOD, lien des vœux",
+    "history": "Historique complet",
+    "oneAccount": "Un compte Genshin",
+    "capture": "Capture synchronise tout seul, en direct",
+    "alerts": "Alertes de résine",
+    "accounts": "Plusieurs comptes Genshin",
+    "backup": "Sauvegarde, tous les appareils, partage"
+  },
+  "lock": {
+    "capture": "Avec un compte, Teyvat.me Capture envoie tout seul, en direct",
+    "alerts": "Les alertes site fermé demandent un compte",
+    "sharing": "Le partage demande un compte",
+    "accounts": "Plusieurs comptes Genshin demandent un compte",
+    "devices": "La sauvegarde et tous les appareils demandent un compte"
+  },
+  "backup": {
+    "count": "{n} instantané | {n} instantanés",
+    "where": "dans ce navigateur uniquement",
+    "info": "Effacer les données du site ou un disque plein peut les supprimer",
+    "backUp": "Les sauvegarder",
+    "notNow": "Plus tard"
+  },
+  "try": "Essayer sans compte",
+  "tryHint": "Tout utiliser avec vos propres fichiers, gardés dans ce navigateur uniquement",
+  "deleteData": "Supprimer les données invité",
+  "deleted": "Données invité supprimées",
+  "convert": {
+    "title": "Importer vos données invité ?",
+    "body": "Ce navigateur contient des données du mode invité.",
+    "snapshots": "{n} instantané | {n} instantanés",
+    "wishes": "{n} vœu | {n} vœux",
+    "into": "Dans {name}",
+    "intoNew": "Dans un nouveau compte",
+    "yes": "Les importer",
+    "no": "Les garder à part",
+    "done": "Données invité importées",
+    "failed": "{n} en échec",
+    "notDone": "Données invité non importées",
+    "step": {
+      "snapshots": "Instantanés",
+      "plan": "Plan et marques",
+      "wishes": "Historique des vœux"
+    }
+  }
+}

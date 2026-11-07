@@ -94,7 +94,10 @@
     "passkey_exists": "该通行密钥已添加",
     "too_many_passkeys": "通行密钥过多",
     "passkey_expired": "超时，请重试",
-    "passkey_failed": "通行密钥未被接受"
+    "passkey_failed": "通行密钥未被接受",
+    "guest_needs_account": "此功能需要账号",
+    "not_this_site": "只有本站可以这样做",
+    "guest_store_failed": "此浏览器无法读取或保存"
   },
   "server": "服务器出了问题",
   "request": "请求失败",

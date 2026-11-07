@@ -13,6 +13,8 @@ import {
   PanelLeftOpen,
   Search,
   UserPlus,
+  Lock,
+  Monitor,
   Settings,
   ShieldCheck,
   Sun,
@@ -29,6 +31,7 @@ import { copyText } from '@/data/import-setup'
 import { useSession } from '@/stores/session'
 import { useStaff } from '@/stores/staff'
 import AccountSwitcher from './AccountSwitcher.vue'
+import GuestChip from '@/components/guest/GuestChip.vue'
 import AppearanceButton from './AppearanceButton.vue'
 import CaptureButton from './CaptureButton.vue'
 import DiscordButton from './DiscordButton.vue'
@@ -50,12 +53,20 @@ import SiteSearch from './SiteSearch.vue'
  * `demo`: the public demo account's frame (DemoLayout): its pages only, no
  * account picker, no import or Capture, and a sign-up link where the user's
  * name and sign-out would be. The `band` slot sits above the top bar.
+ *
+ * `guest`: guest mode's frame (GuestLayout, docs/plans/open-site.md §4): the
+ * account kept in this browser, every page of it (Import and Manage too), the
+ * Guest chip in the top bar, no account picker or Capture button.
  */
-const props = defineProps<{ demo?: AccountResponse | null }>()
+const props = defineProps<{ demo?: AccountResponse | null; guest?: AccountResponse | null }>()
 // null while the demo's account loads: the demo's frame already.
 const demoMode = computed(() => props.demo !== undefined)
+const guestMode = computed(() => props.guest !== undefined)
+/** An account outside the user's list (the demo, the guest): its own frame. */
+const framed = computed(() => demoMode.value || guestMode.value)
 /** The demo's route for an account page's (`account-characters` -> `demo-characters`). */
 const demoName = (name: string) => `demo-${name.slice('account-'.length)}`
+const guestName = (name: string) => `guest-${name.slice('account-'.length)}`
 const route = useRoute()
 const router = useRouter()
 const session = useSession()
@@ -111,6 +122,7 @@ onBeforeUnmount(() => clearTimeout(settle))
 
 const currentId = computed<number | null>(() => {
   if (demoMode.value) return props.demo?.id ?? null
+  if (guestMode.value) return props.guest?.id ?? null
   // Inspect's account is someone else's: the switcher keeps the user's own.
   const param = staffMode.value ? NaN : Number(route.params.accountId)
   if (Number.isSafeInteger(param) && param > 0) return param
@@ -120,9 +132,11 @@ const currentId = computed<number | null>(() => {
 const current = computed(() =>
   demoMode.value
     ? (props.demo ?? undefined)
-    : currentId.value
-      ? accounts.byId.get(currentId.value)
-      : undefined,
+    : guestMode.value
+      ? (props.guest ?? undefined)
+      : currentId.value
+        ? accounts.byId.get(currentId.value)
+        : undefined,
 )
 
 /** Site-wide search: the top bar's button, Ctrl+K (⌘K) anywhere, "/" outside a text field. */
@@ -159,6 +173,15 @@ const sections = computed(() => {
       name: demoName(s.name),
       label: t(`shell.nav.${s.label}`),
       to: { name: demoName(s.name) } as RouteLocationRaw,
+    }))
+  }
+  if (guestMode.value) {
+    return ACCOUNT_SECTIONS.map((s) => ({
+      ...s,
+      key: s.label,
+      name: guestName(s.name),
+      label: t(`shell.nav.${s.label}`),
+      to: { name: guestName(s.name) } as RouteLocationRaw,
     }))
   }
   return currentId.value
@@ -315,6 +338,32 @@ const footButton =
               >{{ demo.uid }}</span
             >
           </div>
+          <template v-else-if="guestMode">
+            <div
+              class="flex min-h-11 items-center gap-2 rounded-lg border border-border-default px-3 py-2"
+              :title="narrow ? $t('guest.label') : undefined"
+            >
+              <Monitor class="size-4 shrink-0 text-accent-text" aria-hidden="true" />
+              <span :class="labelClass" class="text-sm font-semibold">{{
+                guest?.name || $t('guest.label')
+              }}</span>
+              <span
+                v-if="guest?.uid && !narrow"
+                class="tabular ml-auto truncate font-mono text-xs text-text-muted"
+                >{{ guest.uid }}</span
+              >
+            </div>
+            <!-- A second Genshin account is an account's (the guest has one): its lock. -->
+            <RouterLink
+              v-if="session.status !== 'signed-in'"
+              :to="{ name: 'register' }"
+              class="mt-1 flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-overlay/60 hover:text-text-primary"
+              :title="$t('guest.lock.accounts')"
+            >
+              <Lock class="size-4 shrink-0" aria-hidden="true" />
+              <span :class="labelClass">{{ $t('guest.addAccount') }}</span>
+            </RouterLink>
+          </template>
           <AccountSwitcher v-else :current-id="currentId" :collapsed="narrow" />
           <nav
             v-if="sections.length"
@@ -343,7 +392,7 @@ const footButton =
                  or in the demo (no Settings) Accounts, so it never has a row alone
                  while a link is there to sit beside (the user's call, 2026-11-06). -->
             <div
-              v-if="!demoMode || session.status === 'signed-in'"
+              v-if="!framed || session.status === 'signed-in'"
               class="flex"
               :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'"
             >
@@ -358,7 +407,7 @@ const footButton =
                 <span :class="labelClass">{{ $t('shell.accounts') }}</span>
               </RouterLink>
               <UiIconButton
-                v-if="demoMode"
+                v-if="framed"
                 :label="theme === 'dark' ? $t('shell.lightTheme') : $t('shell.darkTheme')"
                 :class="compact ? 'self-center' : ''"
                 @click="toggleTheme"
@@ -368,7 +417,7 @@ const footButton =
               </UiIconButton>
             </div>
             <RouterLink
-              v-if="!demoMode && session.can('staff.view')"
+              v-if="!framed && session.can('staff.view')"
               :to="{ name: 'staff-overview' }"
               class="flex items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
               :class="navClass(staffMode)"
@@ -379,12 +428,12 @@ const footButton =
               <span :class="labelClass">{{ $t('shell.staff') }}</span>
             </RouterLink>
             <div
-              v-if="!demoMode || session.status !== 'signed-in'"
+              v-if="!framed || session.status !== 'signed-in'"
               class="flex"
               :class="compact ? 'flex-col gap-0.5' : 'items-center gap-1'"
             >
               <RouterLink
-                v-if="!demoMode"
+                v-if="!framed"
                 :to="{ name: 'settings' }"
                 class="flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-2.5 text-base font-medium"
                 :class="navClass(isActive('settings'))"
@@ -409,7 +458,7 @@ const footButton =
 
       <div class="border-t border-border-default p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div
-          v-if="!demoMode"
+          v-if="!framed"
           class="mb-3 flex items-center gap-3 px-1.5"
           :title="narrow ? session.me?.username : undefined"
         >
@@ -430,7 +479,7 @@ const footButton =
             <span :class="compact ? 'sr-only' : ''">{{ $t('shell.return') }}</span>
           </RouterLink>
           <RouterLink
-            v-if="demoMode && session.status !== 'signed-in'"
+            v-if="framed && session.status !== 'signed-in'"
             :to="{ name: 'register' }"
             :class="footButton"
             :title="compact ? $t('demo.signUp') : undefined"
@@ -439,7 +488,7 @@ const footButton =
             <span :class="compact ? 'sr-only' : ''">{{ $t('demo.signUp') }}</span>
           </RouterLink>
           <button
-            v-else-if="!demoMode"
+            v-else-if="!framed"
             type="button"
             :class="footButton"
             :title="compact ? $t('common.signOut') : undefined"
@@ -552,13 +601,19 @@ const footButton =
                 <Search class="size-5" aria-hidden="true" />
               </UiIconButton>
             </template>
-            <DiscordButton />
-            <KofiButton />
-            <CaptureButton v-if="!demoMode" :account="staffMode ? undefined : current" />
+            <!-- Guest mode's chip takes their room on phones (design E's phone bar). -->
+            <DiscordButton :class="guestMode && 'max-sm:hidden'" />
+            <KofiButton :class="guestMode && 'max-sm:hidden'" />
+            <GuestChip v-if="guestMode" />
+            <CaptureButton v-if="!framed" :account="staffMode ? undefined : current" />
             <AppearanceButton />
             <RouterLink
               v-if="currentId && !staffMode && !demoMode && current?.access !== 'viewer'"
-              :to="{ name: 'account-import', params: { accountId: currentId } }"
+              :to="
+                guestMode
+                  ? { name: 'guest-import' }
+                  : { name: 'account-import', params: { accountId: currentId } }
+              "
               class="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-medium text-accent-ink shadow-sm shadow-accent/30 hover:bg-accent-hover"
             >
               <Upload class="size-4" aria-hidden="true" />
@@ -606,7 +661,7 @@ const footButton =
         <span class="max-w-full truncate">{{ $t('common.more') }}</span>
       </button>
     </nav>
-    <SiteSearch v-model:open="searching" :account-id="currentId" :demo="demo" />
+    <SiteSearch v-model:open="searching" :account-id="currentId" :demo="demo" :guest="guest" />
   </div>
 </template>
 

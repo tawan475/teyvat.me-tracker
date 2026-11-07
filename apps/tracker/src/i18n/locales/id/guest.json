@@ -1,0 +1,58 @@
+{
+  "label": "Tamu",
+  "bar": "Hanya tersimpan di browser ini",
+  "barShort": "Hanya browser ini",
+  "barInfo": "Menghapus data situs akan menghapusnya",
+  "createAccount": "Buat akun",
+  "signIn": "Masuk",
+  "yourAccounts": "Akun kamu",
+  "addAccount": "Tambah akun",
+  "here": "Di sini",
+  "withAccount": "Dengan akun",
+  "rows": {
+    "everyPage": "Semua halaman dan alat",
+    "files": "File GOOD, tautan Permohonan",
+    "history": "Riwayat lengkap",
+    "oneAccount": "Satu akun Genshin",
+    "capture": "Capture sinkron sendiri, langsung",
+    "alerts": "Pengingat resin",
+    "accounts": "Lebih dari satu akun Genshin",
+    "backup": "Cadangan, semua perangkat, berbagi"
+  },
+  "lock": {
+    "capture": "Dengan akun, Teyvat.me Capture mengunggah sendiri secara langsung",
+    "alerts": "Pengingat saat situs ditutup perlu akun",
+    "sharing": "Berbagi perlu akun",
+    "accounts": "Lebih dari satu akun Genshin perlu akun",
+    "devices": "Cadangan dan semua perangkat perlu akun"
+  },
+  "backup": {
+    "count": "{n} snapshot",
+    "where": "hanya di browser ini",
+    "info": "Menghapus data situs atau disk penuh bisa menghapusnya",
+    "backUp": "Cadangkan",
+    "notNow": "Nanti saja"
+  },
+  "try": "Coba tanpa akun",
+  "tryHint": "Gunakan semuanya dengan file kamu sendiri, hanya tersimpan di browser ini",
+  "deleteData": "Hapus data tamu",
+  "deleted": "Data tamu dihapus",
+  "convert": {
+    "title": "Bawa data tamu kamu?",
+    "body": "Browser ini menyimpan data dari mode tamu.",
+    "snapshots": "{n} snapshot",
+    "wishes": "{n} Permohonan",
+    "into": "Ke {name}",
+    "intoNew": "Ke akun baru",
+    "yes": "Bawa masuk",
+    "no": "Biarkan terpisah",
+    "done": "Data tamu dibawa masuk",
+    "failed": "{n} gagal",
+    "notDone": "Data tamu tidak dibawa masuk",
+    "step": {
+      "snapshots": "Snapshot",
+      "plan": "Rencana dan tanda",
+      "wishes": "Riwayat Permohonan"
+    }
+  }
+}

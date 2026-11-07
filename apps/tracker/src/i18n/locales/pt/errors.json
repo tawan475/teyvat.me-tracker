@@ -94,7 +94,10 @@
     "passkey_exists": "Essa chave de acesso já foi adicionada",
     "too_many_passkeys": "Chaves de acesso demais",
     "passkey_expired": "Demorou demais, tente de novo",
-    "passkey_failed": "A chave de acesso não foi aceita"
+    "passkey_failed": "A chave de acesso não foi aceita",
+    "guest_needs_account": "Isso precisa de uma conta",
+    "not_this_site": "Só este site pode fazer isso",
+    "guest_store_failed": "Este navegador não conseguiu ler nem salvar"
   },
   "server": "O servidor teve um problema",
   "request": "Falha na solicitação",

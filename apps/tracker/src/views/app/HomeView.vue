@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, shallowRef } from 'vue'
+import { computed, defineAsyncComponent, onMounted, shallowRef } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { Plus, Users } from 'lucide-vue-next'
 import AccountCard from '@/components/overview/AccountCard.vue'
@@ -12,7 +12,18 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import { accountTotals, compressionRatio } from '@/data/overview'
 import { t } from '@/i18n'
 import { formatBytes, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { readStorage } from '@/lib/storage'
 import { useAccounts } from '@/stores/accounts'
+
+/**
+ * Guest mode's data in this browser, never asked about yet (docs/plans/
+ * open-site.md §4): ask once whether to bring it in. The question's code
+ * loads only then.
+ */
+const GuestConvertPrompt = defineAsyncComponent(
+  () => import('@/components/guest/GuestConvertPrompt.vue'),
+)
+const guestToAsk = readStorage('guest-data') === '1' && readStorage('guest:convert') === null
 
 /** Every Genshin account of the signed-in user, with its latest figures. */
 const accounts = useAccounts()
@@ -72,6 +83,7 @@ const totals = computed(() => {
   </PageHeader>
 
   <PasskeyNudge />
+  <GuestConvertPrompt v-if="guestToAsk" />
   <InvitationsPanel class="mb-6" />
 
   <UiPanel v-if="!accounts.list.length" flush>

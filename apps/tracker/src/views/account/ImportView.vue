@@ -3,6 +3,7 @@ import { MAX_IMPORT_FILES } from '@gdt/shared'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { Pause, Play, RotateCcw, Upload } from 'lucide-vue-next'
 import GoodDropZone from '@/components/import/GoodDropZone.vue'
+import GuestLock from '@/components/guest/GuestLock.vue'
 import ImportKeyPanel from '@/components/import/ImportKeyPanel.vue'
 import ImportQueueTable from '@/components/import/ImportQueueTable.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -26,9 +27,11 @@ import {
 import { t } from '@/i18n'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useFeedback } from '@/stores/feedback'
-import { useAccount } from './context'
+import { useAccount, useAccountLink, useGuest } from './context'
 
 const account = useAccount()
+const accountLink = useAccountLink()
+const guest = useGuest()
 const feedback = useFeedback()
 
 // The queue outlives this screen: an upload keeps going while the user browses.
@@ -140,7 +143,9 @@ function onFiles(collected: CollectedFiles) {
     <GoodDropZone class="xl:col-span-3" :primary="queue.items.length === 0" @files="onFiles" />
 
     <div class="order-last min-w-0 xl:order-none xl:col-span-2">
-      <ImportKeyPanel class="h-full" :account="account" />
+      <!-- Capture's uploads go to an account: the guest's lock, where they live. -->
+      <GuestLock v-if="guest" kind="capture" />
+      <ImportKeyPanel v-else class="h-full" :account="account" />
     </div>
 
     <UiPanel v-if="queue.items.length > 0" class="min-w-0 xl:order-last xl:col-span-5" flush>
@@ -195,7 +200,7 @@ function onFiles(collected: CollectedFiles) {
           </UiButton>
           <UiButton
             v-if="run && summary.created + summary.unchanged > 0"
-            :to="{ name: 'account-snapshots', params: { accountId: account.id } }"
+            :to="accountLink('account-snapshots')"
           >
             {{ $t('transfer.import.snapshots') }}
           </UiButton>

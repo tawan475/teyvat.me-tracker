@@ -68,7 +68,7 @@ import { formatDate } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { preloadMaterialNames, preloadMaterialRarities } from '@/utils/materials'
 import { t } from '@/i18n'
-import { useAccount, useDemo, useReadOnly } from './context'
+import { useAccount, useAccountLink, useDemo, useReadOnly } from './context'
 
 /**
  * Materials: the wallet (currencies) on top, tracked materials as small
@@ -83,6 +83,7 @@ const account = useAccount()
 /** Staff Inspect: no Planner, no saved charts, no import. */
 const readOnly = useReadOnly()
 const demo = useDemo()
+const accountLink = useAccountLink()
 const icon = useMaterialIcons()
 const graph = useMaterialsGraph(() => account.value.id)
 
@@ -244,10 +245,7 @@ watch(
   },
 )
 
-const importTo = computed(() => ({
-  name: 'account-import',
-  params: { accountId: account.value.id },
-}))
+const importTo = computed(() => accountLink('account-import'))
 </script>
 
 <template>

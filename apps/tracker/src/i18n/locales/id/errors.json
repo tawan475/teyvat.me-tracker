@@ -94,7 +94,10 @@
     "passkey_exists": "Kunci sandi itu sudah ditambahkan",
     "too_many_passkeys": "Terlalu banyak kunci sandi",
     "passkey_expired": "Terlalu lama, coba lagi",
-    "passkey_failed": "Kunci sandi tidak diterima"
+    "passkey_failed": "Kunci sandi tidak diterima",
+    "guest_needs_account": "Ini perlu akun",
+    "not_this_site": "Hanya situs ini yang bisa melakukannya",
+    "guest_store_failed": "Browser ini tidak bisa membaca atau menyimpannya"
   },
   "server": "Server mengalami masalah",
   "request": "Permintaan gagal",

@@ -94,7 +94,10 @@
     "passkey_exists": "That passkey is already added",
     "too_many_passkeys": "Too many passkeys",
     "passkey_expired": "That took too long, try again",
-    "passkey_failed": "The passkey was not accepted"
+    "passkey_failed": "The passkey was not accepted",
+    "guest_needs_account": "This needs an account",
+    "not_this_site": "Only this site can do that",
+    "guest_store_failed": "This browser could not read or save it"
   },
   "server": "The server had a problem",
   "request": "Request failed",

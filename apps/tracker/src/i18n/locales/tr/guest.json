@@ -1,0 +1,58 @@
+{
+  "label": "Misafir",
+  "bar": "Yalnızca bu tarayıcıda kayıtlı",
+  "barShort": "Yalnızca bu tarayıcı",
+  "barInfo": "Site verilerini temizlemek bunu siler",
+  "createAccount": "Hesap oluştur",
+  "signIn": "Giriş yap",
+  "yourAccounts": "Hesapların",
+  "addAccount": "Hesap ekle",
+  "here": "Burada",
+  "withAccount": "Bir hesapla",
+  "rows": {
+    "everyPage": "Her sayfa ve araç",
+    "files": "GOOD dosyaları, dilek bağlantısı",
+    "history": "Tüm geçmiş",
+    "oneAccount": "Bir Genshin hesabı",
+    "capture": "Capture kendi kendine canlı eşitler",
+    "alerts": "Reçine uyarıları",
+    "accounts": "Birden fazla Genshin hesabı",
+    "backup": "Yedek, her cihaz, paylaşım"
+  },
+  "lock": {
+    "capture": "Bir hesapla Teyvat.me Capture kendi kendine canlı yükler",
+    "alerts": "Site kapalıyken uyarılar için hesap gerekir",
+    "sharing": "Paylaşım için hesap gerekir",
+    "accounts": "Birden fazla Genshin hesabı için hesap gerekir",
+    "devices": "Yedek ve her cihaz için hesap gerekir"
+  },
+  "backup": {
+    "count": "{n} anlık görüntü",
+    "where": "yalnızca bu tarayıcıda",
+    "info": "Site verilerini temizlemek veya dolu bir disk bunları silebilir",
+    "backUp": "Yedekle",
+    "notNow": "Şimdi değil"
+  },
+  "try": "Hesapsız dene",
+  "tryHint": "Her şeyi kendi dosyalarınla kullan, yalnızca bu tarayıcıda kayıtlı",
+  "deleteData": "Misafir verilerini sil",
+  "deleted": "Misafir verileri silindi",
+  "convert": {
+    "title": "Misafir verilerin aktarılsın mı?",
+    "body": "Bu tarayıcıda misafir modundan veriler var.",
+    "snapshots": "{n} anlık görüntü",
+    "wishes": "{n} dilek",
+    "into": "{name} hesabına",
+    "intoNew": "Yeni bir hesaba",
+    "yes": "Aktar",
+    "no": "Ayrı tut",
+    "done": "Misafir verileri aktarıldı",
+    "failed": "{n} başarısız",
+    "notDone": "Misafir verileri aktarılamadı",
+    "step": {
+      "snapshots": "Anlık görüntüler",
+      "plan": "Plan ve işaretler",
+      "wishes": "Dilek geçmişi"
+    }
+  }
+}

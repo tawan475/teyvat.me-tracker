@@ -33,6 +33,8 @@ declare module 'vue-router' {
     inspect?: InspectView
     /** The public demo account's pages (/demo, DemoLayout): open to anyone. */
     demo?: true
+    /** Guest mode's pages (/guest, GuestLayout): the account kept in this browser, open to anyone. */
+    local?: true
     /**
      * A page whose content runs long (lists, grids, history): the shell leaves about 30% of the
      * screen empty after it, so its last row can be scrolled up to mid-screen. `'param'`: only
@@ -78,6 +80,15 @@ const demoPage = (
   load: () => Promise<unknown>,
   long?: RouteMeta['long'],
 ) => ({ path, name: `demo-${name}`, component: load, meta: { demo: true as const, title, long } })
+
+/** A page of guest mode (`guest-<name>`, the owner's view under GuestLayout). */
+const guestPage = (
+  path: string,
+  name: string,
+  title: PageKey,
+  load: () => Promise<unknown>,
+  long?: RouteMeta['long'],
+) => ({ path, name: `guest-${name}`, component: load, meta: { local: true as const, title, long } })
 
 /** Inspect's pages that are the owner's long pages (RouteMeta `long`). */
 const LONG_INSPECT = new Set<InspectView>([
@@ -530,6 +541,93 @@ const router = createRouter({
         ),
       ],
     },
+    // Guest mode (docs/plans/open-site.md §4): one account kept in this
+    // browser only, signed in or not; its pages answer from IndexedDB.
+    {
+      path: '/guest',
+      component: () => import('@/views/guest/GuestLayout.vue'),
+      meta: { local: true },
+      children: [
+        guestPage('', 'overview', 'overview', () => import('@/views/account/OverviewView.vue')),
+        guestPage(
+          'characters',
+          'characters',
+          'characters',
+          () => import('@/views/account/CharactersView.vue'),
+          true,
+        ),
+        guestPage(
+          'weapons',
+          'weapons',
+          'weapons',
+          () => import('@/views/account/WeaponsView.vue'),
+          true,
+        ),
+        guestPage(
+          'artifacts',
+          'artifacts',
+          'artifacts',
+          () => import('@/views/account/ArtifactsView.vue'),
+          true,
+        ),
+        guestPage(
+          'materials',
+          'materials',
+          'materials',
+          () => import('@/views/account/MaterialsView.vue'),
+          true,
+        ),
+        guestPage(
+          'planner',
+          'planner',
+          'planner',
+          () => import('@/views/account/PlannerView.vue'),
+          true,
+        ),
+        guestPage(
+          `collections/:tab(${COLLECTION_TAB_PATTERN})?`,
+          'collections',
+          'collections',
+          () => import('@/views/account/CollectionsView.vue'),
+          { param: 'tab' },
+        ),
+        guestPage(
+          `endgame/:mode(${ENDGAME_MODE_PATTERN})?/:season(\\d+)?`,
+          'endgame',
+          'endgame',
+          () => import('@/views/account/EndgameView.vue'),
+          true,
+        ),
+        guestPage(
+          'wishes',
+          'wishes',
+          'wishHistory',
+          () => import('@/views/account/WishesView.vue'),
+          true,
+        ),
+        guestPage(
+          `wishes/:banner(${WISH_BANNER_PATTERN})`,
+          'wishes-banner',
+          'wishHistory',
+          () => import('@/views/account/WishBannerView.vue'),
+          true,
+        ),
+        guestPage(
+          'snapshots',
+          'snapshots',
+          'snapshots',
+          () => import('@/views/account/SnapshotsView.vue'),
+          true,
+        ),
+        guestPage('import', 'import', 'import', () => import('@/views/account/ImportView.vue')),
+        guestPage(
+          'settings',
+          'settings',
+          'accountSettings',
+          () => import('@/views/account/AccountSettingsView.vue'),
+        ),
+      ],
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -564,7 +662,7 @@ router.beforeEach(async (to) => {
     if (session.status === 'unknown') startLoadingAhead(to)
   }
   // The demo too: its bar offers sign-up, or the user's own accounts.
-  if (to.meta.auth || to.meta.guest || to.meta.demo || to.name === 'landing') {
+  if (to.meta.auth || to.meta.guest || to.meta.demo || to.meta.local || to.name === 'landing') {
     await session.ensureLoaded()
   }
 

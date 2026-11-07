@@ -41,8 +41,10 @@ export interface AccountRef {
    * `staff`: read through /api/staff (Inspect, someone else's account),
    * cached apart from the owner's own reads. `demo`: the public demo
    * account, read through /api/demo with no cookie (docs/plans/open-site.md §2).
+   * `local`: the guest account, kept in this browser (§4): its reads are
+   * answered here (local/server.ts) and never copied into the data cache.
    */
-  source?: 'staff' | 'demo'
+  source?: 'staff' | 'demo' | 'local'
   /** Live sync is on for the account: "now" is its newest snapshot with the journal applied. */
   liveSync?: boolean
 }
@@ -101,6 +103,8 @@ async function stored<T extends ArrayBuffer | string>(
   path: string,
   read: (response: Response) => Promise<T>,
 ): Promise<T> {
+  // Already in this browser: nothing to keep a second copy of.
+  if (account.source === 'local') return read(await request(path))
   const key = `${account.id}:${BUNDLE_FORMAT}:${kind}`
   const hit = await readCached(key, account.id, account.dataVersion)
   if (hit !== undefined) return hit as T

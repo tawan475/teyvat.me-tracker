@@ -1,0 +1,58 @@
+{
+  "label": "Gast",
+  "bar": "Nur in diesem Browser gespeichert",
+  "barShort": "Nur dieser Browser",
+  "barInfo": "Das Löschen der Websitedaten entfernt sie",
+  "createAccount": "Konto erstellen",
+  "signIn": "Anmelden",
+  "yourAccounts": "Deine Konten",
+  "addAccount": "Konto hinzufügen",
+  "here": "Hier",
+  "withAccount": "Mit einem Konto",
+  "rows": {
+    "everyPage": "Jede Seite und jedes Werkzeug",
+    "files": "GOOD-Dateien, Gebetslink",
+    "history": "Ganzer Verlauf",
+    "oneAccount": "Ein Genshin-Konto",
+    "capture": "Capture synchronisiert selbst, live",
+    "alerts": "Harz-Hinweise",
+    "accounts": "Mehr als ein Genshin-Konto",
+    "backup": "Sicherung, jedes Gerät, Teilen"
+  },
+  "lock": {
+    "capture": "Mit einem Konto lädt Teyvat.me Capture selbst und live hoch",
+    "alerts": "Hinweise bei geschlossener Seite brauchen ein Konto",
+    "sharing": "Teilen braucht ein Konto",
+    "accounts": "Mehr als ein Genshin-Konto braucht ein Konto",
+    "devices": "Sicherung und jedes Gerät brauchen ein Konto"
+  },
+  "backup": {
+    "count": "{n} Snapshot | {n} Snapshots",
+    "where": "nur in diesem Browser",
+    "info": "Das Löschen der Websitedaten oder eine volle Festplatte kann sie entfernen",
+    "backUp": "Sichern",
+    "notNow": "Nicht jetzt"
+  },
+  "try": "Ohne Konto ausprobieren",
+  "tryHint": "Alles mit deinen eigenen Dateien nutzen, nur in diesem Browser gespeichert",
+  "deleteData": "Gastdaten löschen",
+  "deleted": "Gastdaten gelöscht",
+  "convert": {
+    "title": "Gastdaten übernehmen?",
+    "body": "Dieser Browser enthält Daten aus dem Gastmodus.",
+    "snapshots": "{n} Snapshot | {n} Snapshots",
+    "wishes": "{n} Gebet | {n} Gebete",
+    "into": "In {name}",
+    "intoNew": "In ein neues Konto",
+    "yes": "Übernehmen",
+    "no": "Getrennt lassen",
+    "done": "Gastdaten übernommen",
+    "failed": "{n} fehlgeschlagen",
+    "notDone": "Gastdaten nicht übernommen",
+    "step": {
+      "snapshots": "Snapshots",
+      "plan": "Plan und Markierungen",
+      "wishes": "Gebetsverlauf"
+    }
+  }
+}

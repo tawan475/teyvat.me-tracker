@@ -13,6 +13,7 @@
  */
 
 import type { ApiError } from '@gdt/shared'
+import { isGuestPath } from '@/local/guest-id'
 import { bookmarkHeaders, noteBookmarks } from './d1-bookmark'
 import { ApiRequestError } from './error'
 
@@ -47,6 +48,17 @@ const REFRESHABLE = new Set(['unauthenticated', 'token_expired', 'session_revoke
 
 async function send(path: string, options: RequestOptions): Promise<Response> {
   const method = (options.method ?? 'GET').toUpperCase()
+  // The guest account lives in this browser (docs/plans/open-site.md §4): its
+  // routes are answered here, never sent (the module loads on first use).
+  if (isGuestPath(path)) {
+    const { localFetch } = await import('@/local/server')
+    return localFetch(path, {
+      method,
+      headers: options.headers,
+      json: options.json,
+      body: options.body,
+    })
+  }
   const headers = new Headers(options.headers)
   if (!SAFE.has(method)) {
     headers.set('x-gdt-csrf', '1')

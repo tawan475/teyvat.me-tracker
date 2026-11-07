@@ -38,7 +38,7 @@ import { unownedCharacters } from '@/data/unowned-characters'
 import { characterName } from '@/i18n/game-names'
 import { useResource } from '@/data/use-resource'
 import { readJson, writeJson } from '@/lib/storage'
-import { useAccount, useDemo, useReadOnly } from './context'
+import { useAccount, useAccountLink, useDemo, useReadOnly } from './context'
 
 // The details (also the share card) carry the game's stat tables: loaded on first open.
 const CharacterModal = defineAsyncComponent(
@@ -56,6 +56,7 @@ const account = useAccount()
 /** Staff Inspect: nothing here links to the owner's own pages. */
 const readOnly = useReadOnly()
 const demo = useDemo()
+const accountLink = useAccountLink()
 const inventory = useResource(
   () => account.value,
   (a) => loadLatestInventory(a),
@@ -408,7 +409,7 @@ watch(
         "
       >
         <template #icon><Users aria-hidden="true" /></template>
-        <UiButton v-if="!readOnly && !demo" variant="primary" :to="{ name: 'account-import' }">
+        <UiButton v-if="!readOnly && !demo" variant="primary" :to="accountLink('account-import')">
           <Upload class="size-4" aria-hidden="true" />
           {{ $t('characters.page.import') }}
         </UiButton>

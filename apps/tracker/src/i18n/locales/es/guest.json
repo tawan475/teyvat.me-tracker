@@ -1,0 +1,58 @@
+{
+  "label": "Invitado",
+  "bar": "Guardado solo en este navegador",
+  "barShort": "Solo este navegador",
+  "barInfo": "Borrar los datos del sitio lo elimina",
+  "createAccount": "Crear cuenta",
+  "signIn": "Iniciar sesión",
+  "yourAccounts": "Tus cuentas",
+  "addAccount": "Añadir cuenta",
+  "here": "Aquí",
+  "withAccount": "Con una cuenta",
+  "rows": {
+    "everyPage": "Todas las páginas y herramientas",
+    "files": "Archivos GOOD, enlace de deseos",
+    "history": "Historial completo",
+    "oneAccount": "Una cuenta de Genshin",
+    "capture": "Capture sincroniza solo, en vivo",
+    "alerts": "Avisos de resina",
+    "accounts": "Más de una cuenta de Genshin",
+    "backup": "Copia de seguridad, todos los dispositivos, compartir"
+  },
+  "lock": {
+    "capture": "Con una cuenta, Teyvat.me Capture sube los datos solo y en vivo",
+    "alerts": "Los avisos con el sitio cerrado necesitan una cuenta",
+    "sharing": "Compartir necesita una cuenta",
+    "accounts": "Más de una cuenta de Genshin necesita una cuenta",
+    "devices": "La copia de seguridad y todos los dispositivos necesitan una cuenta"
+  },
+  "backup": {
+    "count": "{n} captura | {n} capturas",
+    "where": "solo en este navegador",
+    "info": "Borrar los datos del sitio o un disco lleno pueden eliminarlas",
+    "backUp": "Guardar una copia",
+    "notNow": "Ahora no"
+  },
+  "try": "Probar sin cuenta",
+  "tryHint": "Úsalo todo con tus propios archivos, guardado solo en este navegador",
+  "deleteData": "Eliminar datos de invitado",
+  "deleted": "Datos de invitado eliminados",
+  "convert": {
+    "title": "¿Traer tus datos de invitado?",
+    "body": "Este navegador tiene datos del modo invitado.",
+    "snapshots": "{n} captura | {n} capturas",
+    "wishes": "{n} deseo | {n} deseos",
+    "into": "A {name}",
+    "intoNew": "A una cuenta nueva",
+    "yes": "Traerlos",
+    "no": "Mantenerlos aparte",
+    "done": "Datos de invitado traídos",
+    "failed": "{n} fallidos",
+    "notDone": "No se trajeron los datos de invitado",
+    "step": {
+      "snapshots": "Capturas",
+      "plan": "Plan y marcas",
+      "wishes": "Historial de deseos"
+    }
+  }
+}

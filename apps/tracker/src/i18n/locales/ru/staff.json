@@ -176,7 +176,11 @@
       "wishes": "Молитвы",
       "wishesTitle": "Есть история молитв",
       "wishesOnly": "Только молитвы",
-      "wishesOnlyTitle": "История молитв есть, снимков нет"
+      "wishesOnlyTitle": "История молитв есть, снимков нет",
+      "uploads": "С загрузками",
+      "uploadsTitle": "Хотя бы один снимок",
+      "noWishes": "Без молитв",
+      "noWishesTitle": "Нет истории молитв"
     },
     "sorts": {
       "newest": "Сначала новые",

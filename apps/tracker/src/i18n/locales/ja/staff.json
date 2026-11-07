@@ -176,7 +176,11 @@
       "wishes": "祈願",
       "wishesTitle": "祈願履歴あり",
       "wishesOnly": "祈願のみ",
-      "wishesOnlyTitle": "祈願履歴はあるがスナップショットなし"
+      "wishesOnlyTitle": "祈願履歴はあるがスナップショットなし",
+      "uploads": "アップロードあり",
+      "uploadsTitle": "スナップショットが1件以上",
+      "noWishes": "祈願なし",
+      "noWishesTitle": "祈願履歴なし"
     },
     "sorts": {
       "newest": "新しい順",

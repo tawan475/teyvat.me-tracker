@@ -176,7 +176,11 @@
       "wishes": "Gebete",
       "wishesTitle": "Hat einen Gebetsverlauf",
       "wishesOnly": "Nur Gebete",
-      "wishesOnlyTitle": "Gebetsverlauf, aber kein Snapshot"
+      "wishesOnlyTitle": "Gebetsverlauf, aber kein Snapshot",
+      "uploads": "Uploads",
+      "uploadsTitle": "Mindestens ein Snapshot",
+      "noWishes": "Keine Gebete",
+      "noWishesTitle": "Kein Gebetsverlauf"
     },
     "sorts": {
       "newest": "Neueste",

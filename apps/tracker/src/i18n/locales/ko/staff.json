@@ -176,7 +176,11 @@
       "wishes": "기원",
       "wishesTitle": "기원 기록 있음",
       "wishesOnly": "기원만",
-      "wishesOnlyTitle": "기원 기록은 있지만 스냅샷 없음"
+      "wishesOnlyTitle": "기원 기록은 있지만 스냅샷 없음",
+      "uploads": "업로드 있음",
+      "uploadsTitle": "스냅샷 1개 이상",
+      "noWishes": "기원 없음",
+      "noWishesTitle": "기원 기록 없음"
     },
     "sorts": {
       "newest": "최신순",

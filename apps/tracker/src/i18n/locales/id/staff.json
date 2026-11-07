@@ -176,7 +176,11 @@
       "wishes": "Permohonan",
       "wishesTitle": "Punya riwayat permohonan",
       "wishesOnly": "Hanya permohonan",
-      "wishesOnlyTitle": "Riwayat permohonan tanpa snapshot"
+      "wishesOnlyTitle": "Riwayat permohonan tanpa snapshot",
+      "uploads": "Ada unggahan",
+      "uploadsTitle": "Minimal satu snapshot",
+      "noWishes": "Tanpa permohonan",
+      "noWishesTitle": "Tidak punya riwayat permohonan"
     },
     "sorts": {
       "newest": "Terbaru",

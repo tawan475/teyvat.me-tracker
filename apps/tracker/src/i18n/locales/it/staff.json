@@ -176,7 +176,11 @@
       "wishes": "Desideri",
       "wishesTitle": "Ha una cronologia desideri",
       "wishesOnly": "Solo desideri",
-      "wishesOnlyTitle": "Cronologia desideri ma nessuno snapshot"
+      "wishesOnlyTitle": "Cronologia desideri ma nessuno snapshot",
+      "uploads": "Con caricamenti",
+      "uploadsTitle": "Almeno un'istantanea",
+      "noWishes": "Nessun desiderio",
+      "noWishesTitle": "Nessuna cronologia desideri"
     },
     "sorts": {
       "newest": "Più recenti",

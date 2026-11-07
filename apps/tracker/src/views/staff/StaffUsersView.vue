@@ -89,22 +89,20 @@ const { data, error, loading, reload } = useResource(
 )
 const rows = computed<StaffUserRow[]>(() => data.value?.users ?? [])
 
-const CHIP_FILTERS: StaffUserFilter[] = [
-  'all',
-  'new',
-  'active',
-  'none',
-  'wishes',
-  'wishesOnly',
-  'suspended',
-  'staff',
+/** The chips in three groups: who, what they keep, standing. */
+const CHIP_GROUPS: StaffUserFilter[][] = [
+  ['all', 'new', 'active'],
+  ['uploads', 'none', 'wishes', 'noWishes', 'wishesOnly'],
+  ['suspended', 'staff'],
 ]
-const chips = computed(() =>
-  CHIP_FILTERS.map((value) => ({
-    value,
-    label: t(`staff.users.chips.${value}`),
-    title: t(`staff.users.chips.${value}Title`),
-  })),
+const chipGroups = computed(() =>
+  CHIP_GROUPS.map((group) =>
+    group.map((value) => ({
+      value,
+      label: t(`staff.users.chips.${value}`),
+      title: t(`staff.users.chips.${value}Title`),
+    })),
+  ),
 )
 
 /** Newest first by default; the select offers the common orders. */
@@ -255,17 +253,24 @@ const pageCount = computed(() =>
         role="radiogroup"
         :aria-label="$t('staff.users.show')"
       >
-        <FilterChip
-          v-for="chip in chips"
-          :key="chip.value"
-          radio
-          :pressed="filter === chip.value"
-          :count="data?.counts[chip.value]"
-          :title="chip.title"
-          @toggle="filter = chip.value"
-        >
-          {{ chip.label }}
-        </FilterChip>
+        <template v-for="(group, g) in chipGroups" :key="g">
+          <span
+            v-if="g > 0"
+            class="mx-1 h-6 w-px shrink-0 self-center bg-border-strong"
+            aria-hidden="true"
+          />
+          <FilterChip
+            v-for="chip in group"
+            :key="chip.value"
+            radio
+            :pressed="filter === chip.value"
+            :count="data?.counts[chip.value]"
+            :title="chip.title"
+            @toggle="filter = chip.value"
+          >
+            {{ chip.label }}
+          </FilterChip>
+        </template>
         <span
           v-if="data"
           class="tabular ml-auto shrink-0 pl-2 font-mono text-sm text-text-secondary"

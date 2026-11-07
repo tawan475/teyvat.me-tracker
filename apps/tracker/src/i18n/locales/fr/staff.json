@@ -176,7 +176,11 @@
       "wishes": "Vœux",
       "wishesTitle": "A un historique des vœux",
       "wishesOnly": "Vœux seulement",
-      "wishesOnlyTitle": "Historique des vœux mais aucun instantané"
+      "wishesOnlyTitle": "Historique des vœux mais aucun instantané",
+      "uploads": "Avec envois",
+      "uploadsTitle": "Au moins un instantané",
+      "noWishes": "Aucun vœu",
+      "noWishesTitle": "Pas d'historique des vœux"
     },
     "sorts": {
       "newest": "Plus récents",

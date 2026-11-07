@@ -602,9 +602,9 @@ Data the game sends only when a screen is opened (the endgame records) goes
 up on its own with `POST /api/irminsul/attach` and is written into the
 session's newest snapshot (§13.5, Capture 1.17.21).
 
-- **Per account**, setting `liveSync` (default `LIVE_SYNC_DEFAULT` in
-  `packages/shared/src/settings.ts`); off, imports answer without `live` and
-  batches with `{ok: false, live: false}`, and the capture app keeps to snapshots.
+- **Always on** (since 2026-10-26): no per-account switch. The Worker opens a
+  journal on every snapshot where `LIVE_DB` exists and answers `liveSync: true`
+  for older builds; the capture app's own setting decides whether it sends batches.
 - **Storage**: the separate D1 database `gdt-live` (binding `LIVE_DB`,
   `worker/db/live-schema.ts`, migrations in `migrations-live/`, applied by
   `deploy.yml` after the main ones). One journal row per account (the base

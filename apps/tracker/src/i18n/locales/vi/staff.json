@@ -176,7 +176,11 @@
       "wishes": "Cầu nguyện",
       "wishesTitle": "Có lịch sử cầu nguyện",
       "wishesOnly": "Chỉ cầu nguyện",
-      "wishesOnlyTitle": "Có lịch sử cầu nguyện nhưng không có ảnh chụp"
+      "wishesOnlyTitle": "Có lịch sử cầu nguyện nhưng không có ảnh chụp",
+      "uploads": "Đã tải lên",
+      "uploadsTitle": "Có ít nhất một bản chụp",
+      "noWishes": "Không cầu nguyện",
+      "noWishesTitle": "Không có lịch sử cầu nguyện"
     },
     "sorts": {
       "newest": "Mới nhất",

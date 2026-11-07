@@ -176,7 +176,11 @@
       "wishes": "Deseos",
       "wishesTitle": "Tiene historial de deseos",
       "wishesOnly": "Solo deseos",
-      "wishesOnlyTitle": "Historial de deseos pero sin instantáneas"
+      "wishesOnlyTitle": "Historial de deseos pero sin instantáneas",
+      "uploads": "Con subidas",
+      "uploadsTitle": "Al menos una captura",
+      "noWishes": "Sin deseos",
+      "noWishesTitle": "Sin historial de deseos"
     },
     "sorts": {
       "newest": "Más recientes",

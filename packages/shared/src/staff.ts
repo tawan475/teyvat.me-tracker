@@ -205,6 +205,10 @@ export interface StaffUserCounts {
   none: number
   wishes: number
   wishesOnly: number
+  /** At least one snapshot (appended 2026-11-08). */
+  uploads: number
+  /** No wish history (appended 2026-11-08). */
+  noWishes: number
   suspended: number
   staff: number
 }
@@ -219,6 +223,9 @@ export const STAFF_USER_FILTERS = [
   'wishesOnly',
   'suspended',
   'staff',
+  // Appended 2026-11-08: the other halves, so uploads and wishes can be read both ways.
+  'uploads',
+  'noWishes',
 ] as const
 export type StaffUserFilter = (typeof STAFF_USER_FILTERS)[number]
 

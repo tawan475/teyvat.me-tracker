@@ -176,7 +176,11 @@
       "wishes": "Orações",
       "wishesTitle": "Tem histórico de orações",
       "wishesOnly": "Só orações",
-      "wishesOnlyTitle": "Histórico de orações mas nenhum snapshot"
+      "wishesOnlyTitle": "Histórico de orações mas nenhum snapshot",
+      "uploads": "Com envios",
+      "uploadsTitle": "Pelo menos uma captura",
+      "noWishes": "Sem orações",
+      "noWishesTitle": "Sem histórico de orações"
     },
     "sorts": {
       "newest": "Mais novos",

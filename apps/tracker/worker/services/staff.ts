@@ -222,10 +222,14 @@ function filterSql(filter: StaffUserFilter, args: Args, now: number): string | n
       return `u.created_at >= ${args.add(now - 7 * DAY)}`
     case 'active':
       return activeSql(args, now - 7 * DAY)
+    case 'uploads':
+      return 'coalesce(t.snapshots, 0) > 0'
     case 'none':
       return 'coalesce(t.snapshots, 0) = 0'
     case 'wishes':
       return 'coalesce(wi.pulls, 0) > 0'
+    case 'noWishes':
+      return 'coalesce(wi.pulls, 0) = 0'
     case 'wishesOnly':
       return '(coalesce(wi.pulls, 0) > 0 AND coalesce(t.snapshots, 0) = 0)'
     case 'suspended':
@@ -270,7 +274,17 @@ export async function listUsers(
   const countArgs = new Args()
   const countSearch = searchSql(query.q, countArgs, context.private)
   const chips = (
-    ['new', 'active', 'none', 'wishes', 'wishesOnly', 'suspended', 'staff'] as const
+    [
+      'new',
+      'active',
+      'uploads',
+      'none',
+      'wishes',
+      'noWishes',
+      'wishesOnly',
+      'suspended',
+      'staff',
+    ] as const
   ).map(
     (filter) =>
       `sum(CASE WHEN ${filterSql(filter, countArgs, now)} THEN 1 ELSE 0 END) AS ${filter}`,
@@ -320,6 +334,8 @@ export async function listUsers(
       none: Number(c.none ?? 0),
       wishes: Number(c.wishes ?? 0),
       wishesOnly: Number(c.wishesOnly ?? 0),
+      uploads: Number(c.uploads ?? 0),
+      noWishes: Number(c.noWishes ?? 0),
       suspended: Number(c.suspended ?? 0),
       staff: Number(c.staff ?? 0),
     } satisfies StaffUserCounts,

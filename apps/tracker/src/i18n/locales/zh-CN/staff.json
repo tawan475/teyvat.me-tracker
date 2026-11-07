@@ -176,7 +176,11 @@
       "wishes": "祈愿",
       "wishesTitle": "有祈愿记录",
       "wishesOnly": "仅祈愿",
-      "wishesOnlyTitle": "有祈愿记录但没有快照"
+      "wishesOnlyTitle": "有祈愿记录但没有快照",
+      "uploads": "有上传",
+      "uploadsTitle": "至少一个快照",
+      "noWishes": "无祈愿",
+      "noWishesTitle": "没有祈愿记录"
     },
     "sorts": {
       "newest": "最新",

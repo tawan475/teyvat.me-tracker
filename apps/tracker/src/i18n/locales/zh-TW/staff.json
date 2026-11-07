@@ -176,7 +176,11 @@
       "wishes": "祈願",
       "wishesTitle": "有祈願紀錄",
       "wishesOnly": "僅祈願",
-      "wishesOnlyTitle": "有祈願紀錄但沒有快照"
+      "wishesOnlyTitle": "有祈願紀錄但沒有快照",
+      "uploads": "有上傳",
+      "uploadsTitle": "至少一個快照",
+      "noWishes": "無祈願",
+      "noWishesTitle": "沒有祈願紀錄"
     },
     "sorts": {
       "newest": "最新",

@@ -176,7 +176,11 @@
       "wishes": "Dilekler",
       "wishesTitle": "Dilek geçmişi var",
       "wishesOnly": "Yalnızca dilekler",
-      "wishesOnlyTitle": "Dilek geçmişi var ama anlık görüntü yok"
+      "wishesOnlyTitle": "Dilek geçmişi var ama anlık görüntü yok",
+      "uploads": "Yüklemesi var",
+      "uploadsTitle": "En az bir anlık görüntü",
+      "noWishes": "Dilek yok",
+      "noWishesTitle": "Dilek geçmişi yok"
     },
     "sorts": {
       "newest": "En yeni",

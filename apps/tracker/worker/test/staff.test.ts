@@ -333,6 +333,18 @@ describe('what staff see', () => {
     const only = await admin.client.json<StaffUsersResponse>('/api/staff/users?filter=wishesOnly')
     expect(only.users.map((u) => u.id)).toContain(wisher.me.id)
     expect(only.users.map((u) => u.id)).not.toContain(uploader.me.id)
+    // The other halves: uploads and no wishes, which add up with their pairs.
+    const ids = async (filter: string) =>
+      (await admin.client.json<StaffUsersResponse>(`/api/staff/users?filter=${filter}`)).users.map(
+        (u) => u.id,
+      )
+    expect(await ids('uploads')).toContain(uploader.me.id)
+    expect(await ids('uploads')).not.toContain(wisher.me.id)
+    expect(await ids('noWishes')).toContain(uploader.me.id)
+    expect(await ids('noWishes')).not.toContain(wisher.me.id)
+    const everyone = await admin.client.json<StaffUsersResponse>('/api/staff/users')
+    expect(everyone.counts.uploads + everyone.counts.none).toBe(everyone.counts.all)
+    expect(everyone.counts.wishes + everyone.counts.noWishes).toBe(everyone.counts.all)
     const byWishes = await admin.client.json<StaffUsersResponse>(
       '/api/staff/users?sort=wishes&dir=desc',
     )

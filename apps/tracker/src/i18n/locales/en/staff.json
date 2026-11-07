@@ -176,7 +176,11 @@
       "wishes": "Wishes",
       "wishesTitle": "Has a wish history",
       "wishesOnly": "Wishes only",
-      "wishesOnlyTitle": "A wish history but no snapshot"
+      "wishesOnlyTitle": "A wish history but no snapshot",
+      "uploads": "Uploads",
+      "uploadsTitle": "At least one snapshot",
+      "noWishes": "No wishes",
+      "noWishesTitle": "No wish history"
     },
     "sorts": {
       "newest": "Newest",

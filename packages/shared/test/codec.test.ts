@@ -2188,7 +2188,7 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
       const back = decodeSectionBlob(kindCode('tasks', false), blob.data, null, null)
       expect(decodeTasks(back.value as typeof section)).toEqual(tasks)
     }
-    // Capture 1.17.23: the Parametric Transformer; a recharge outside an hour to a month is left out.
+    // Capture 1.17.24: the Parametric Transformer; a recharge outside an hour to a month is left out.
     const transformer = { usedAt: 1_794_084_743, readyAt: 1_794_682_343 }
     expect(t({ transformer }).transformer).toEqual(transformer)
     expect('transformer' in t({ transformer: { ...transformer, readyAt: 1_794_084_800 } })).toBe(

@@ -690,7 +690,7 @@ export function captureRead(
       }
     }
     case 'transformer': {
-      // Capture 1.17.23: the game's own recharge, so the row needs no tick.
+      // Capture 1.17.24: the game's own recharge, so the row needs no tick.
       const x = tasks.transformer
       if (!x) return null
       const ready = x.readyAt * 1000

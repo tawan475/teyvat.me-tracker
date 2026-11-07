@@ -649,7 +649,7 @@ export interface TasksSection {
   s?: [value: number, day: number, at: number]
   // Capture 1.17.2: Paimon's Bargains [at, bought (1/0), [[item, currency, cost, bought, limit (0: none)]]].
   f?: [at: number, bought: number, fates: [string, string, number, number, number][]]
-  // Capture 1.17.23: the Parametric Transformer [usedAt, readyAt].
+  // Capture 1.17.24: the Parametric Transformer [usedAt, readyAt].
   x?: [usedAt: number, readyAt: number]
 }
 

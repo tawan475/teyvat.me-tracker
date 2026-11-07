@@ -29,8 +29,8 @@
     "blessing": "Blessing of the Abyssal Moon",
     "floor": "Lantai {n}",
     "chamber": "Ruang {n}",
-    "firstHalf": "Paruh Awal",
-    "secondHalf": "Paruh Akhir",
+    "firstHalf": "Bagian 1",
+    "secondHalf": "Bagian 2",
     "disorder": "Gangguan Ley Line",
     "floors": "Lantai"
   },

@@ -194,14 +194,14 @@
     "label": "要分享的角色",
     "full": "最多{n}名",
     "buildCard": "配置卡片 · {size}",
-    "teamCard": "小隊卡片 · {size}",
+    "teamCard": "隊伍卡片 · {size}",
     "picked": "已選",
     "remove": "移除{name}"
   },
   "team": {
-    "title": "小隊卡片",
-    "share": "分享小隊",
-    "unnamed": "小隊{n}"
+    "title": "隊伍卡片",
+    "share": "分享隊伍",
+    "unnamed": "隊伍{n}"
   },
   "page": {
     "c6": "6命",

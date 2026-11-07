@@ -139,9 +139,9 @@
     },
     "wornBy": "Porté par {n}",
     "expiring": "{n} expirent",
-    "teams": "Escouades",
+    "teams": "Équipes",
     "inUse": "Utilisée",
-    "noTeams": "Aucune escouade",
+    "noTeams": "Aucune équipe",
     "items": "Objets",
     "trialUntil": "À l'essai jusqu'au {time}"
   },
@@ -294,7 +294,7 @@
     "factions": {
       "elemental": "Entités élémentaires",
       "hilichurl": "Brutocollinus",
-      "abyss": "Abîme",
+      "abyss": "Ordre de l'Abîme",
       "fatui": "Fatui",
       "automaton": "Automates",
       "human": "Humains",
@@ -302,8 +302,8 @@
       "boss": "Boss",
       "aviary": "Oiseaux",
       "animal": "Animaux terrestres",
-      "fish": "Poissons",
-      "critter": "Autre"
+      "fish": "Animaux aquatiques",
+      "critter": "Divers"
     },
     "noMatch": "Aucune entrée ne correspond",
     "level": "Niv.",

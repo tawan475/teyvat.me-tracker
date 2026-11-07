@@ -292,7 +292,7 @@
     "faction": "Kategorie",
     "all": "Alle",
     "factions": {
-      "elemental": "Elementarwesen",
+      "elemental": "Elementare Lebensformen",
       "hilichurl": "Hilichurl-Stämme",
       "abyss": "Der Abgrund",
       "fatui": "Fatui",
@@ -300,10 +300,10 @@
       "human": "Weitere Menschen",
       "beast": "Mystische Bestien",
       "boss": "Einprägsame Gegner",
-      "aviary": "Vögel",
+      "aviary": "Flugtiere",
       "animal": "Landgänger",
-      "fish": "Fische",
-      "critter": "Anderes"
+      "fish": "Wasserbewohner",
+      "critter": "Andere"
     },
     "noMatch": "Keine Einträge gefunden",
     "level": "Stufe",

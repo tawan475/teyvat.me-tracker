@@ -194,14 +194,14 @@
     "label": "共有するキャラ",
     "full": "最大{n}人",
     "buildCard": "ビルドカード · {size}",
-    "teamCard": "小隊カード · {size}",
+    "teamCard": "チームカード · {size}",
     "picked": "選択中",
     "remove": "{name}を解除"
   },
   "team": {
-    "title": "小隊カード",
-    "share": "小隊を共有",
-    "unnamed": "小隊{n}"
+    "title": "チームカード",
+    "share": "チームを共有",
+    "unnamed": "チーム{n}"
   },
   "page": {
     "c6": "C6",

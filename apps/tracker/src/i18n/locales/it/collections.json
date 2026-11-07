@@ -139,9 +139,9 @@
     },
     "wornBy": "Indossato da {n}",
     "expiring": "{n} in scadenza",
-    "teams": "Squadre",
+    "teams": "Gruppi",
     "inUse": "In uso",
-    "noTeams": "Nessuna squadra",
+    "noTeams": "Nessun gruppo",
     "items": "Oggetti",
     "trialUntil": "In prova fino al {time}"
   },
@@ -292,7 +292,7 @@
     "faction": "Categoria",
     "all": "Tutti",
     "factions": {
-      "elemental": "Entità elementali",
+      "elemental": "Forme di vita elementali",
       "hilichurl": "Hilichurl",
       "abyss": "Abisso",
       "fatui": "Fatui",

@@ -38,7 +38,7 @@
     "notSaved": "저장되지 않음"
   },
   "stat": {
-    "maxHp": "최대 HP",
+    "maxHp": "HP 최대치",
     "baseAtk": "기초 공격력"
   },
   "talent": {
@@ -194,14 +194,14 @@
     "label": "공유할 캐릭터",
     "full": "최대 {n}명",
     "buildCard": "빌드 카드 · {size}",
-    "teamCard": "소대 카드 · {size}",
+    "teamCard": "파티 카드 · {size}",
     "picked": "선택됨",
     "remove": "{name} 제거"
   },
   "team": {
-    "title": "소대 카드",
-    "share": "소대 공유",
-    "unnamed": "소대 {n}"
+    "title": "파티 카드",
+    "share": "파티 공유",
+    "unnamed": "파티 {n}"
   },
   "page": {
     "c6": "C6",

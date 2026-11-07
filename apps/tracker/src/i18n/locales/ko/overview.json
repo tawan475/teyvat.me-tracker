@@ -72,7 +72,7 @@
     "noCurrency": "화폐 없음"
   },
   "traveler": {
-    "label": "주인공",
+    "label": "여행자",
     "arLabel": "모험 등급",
     "arExp": "모험 경력 {exp} / {need}",
     "arExpLabel": "모험 경력",

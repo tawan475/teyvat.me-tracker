@@ -29,8 +29,8 @@
     "blessing": "Uyên Nguyệt Chúc Phúc",
     "floor": "Tầng {n}",
     "chamber": "Gian {n}",
-    "firstHalf": "Nửa Trận Đầu",
-    "secondHalf": "Nửa Trận Sau",
+    "firstHalf": "Ải trên",
+    "secondHalf": "Ải dưới",
     "disorder": "Địa Mạch Bất Thường",
     "floors": "Tầng"
   },
@@ -86,7 +86,7 @@
   "share": {
     "title": "Chia sẻ thành tích",
     "bestRecord": "Thành tích cao nhất",
-    "strike": "Tấn công mạnh nhất",
+    "strike": "Một Đòn Mạnh Nhất",
     "damage": "Sát Thương Cao Nhất",
     "fastest": "Nhanh nhất",
     "recordSet": "Lập kỷ lục ngày {date}",

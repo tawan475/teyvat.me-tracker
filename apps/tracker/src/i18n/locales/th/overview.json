@@ -72,7 +72,7 @@
     "noCurrency": "ไม่มีสกุลเงิน"
   },
   "traveler": {
-    "label": "ตัวเอก",
+    "label": "นักเดินทาง",
     "arLabel": "แรงก์ผจญภัย",
     "arExp": "EXP ผจญภัย {exp} / {need}",
     "arExpLabel": "EXP ผจญภัย",

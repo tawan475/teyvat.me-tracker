@@ -72,7 +72,7 @@
     "noCurrency": "無貨幣"
   },
   "traveler": {
-    "label": "主角",
+    "label": "旅行者",
     "arLabel": "冒險等階",
     "arExp": "冒險閱歷 {exp} / {need}",
     "arExpLabel": "冒險閱歷",

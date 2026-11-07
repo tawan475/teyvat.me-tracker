@@ -194,14 +194,14 @@
     "label": "Personajes para compartir",
     "full": "Hasta {n}",
     "buildCard": "Tarjeta de build · {size}",
-    "teamCard": "Tarjeta de escuadrón · {size}",
+    "teamCard": "Tarjeta de equipo · {size}",
     "picked": "Elegidos",
     "remove": "Quitar a {name}"
   },
   "team": {
-    "title": "Tarjeta de escuadrón",
-    "share": "Compartir escuadrón",
-    "unnamed": "Escuadrón {n}"
+    "title": "Tarjeta de equipo",
+    "share": "Compartir equipo",
+    "unnamed": "Equipo {n}"
   },
   "page": {
     "c6": "C6",

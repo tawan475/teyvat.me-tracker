@@ -194,14 +194,14 @@
     "label": "Personaggi da condividere",
     "full": "Fino a {n}",
     "buildCard": "Scheda build · {size}",
-    "teamCard": "Scheda squadra · {size}",
+    "teamCard": "Scheda gruppo · {size}",
     "picked": "Scelti",
     "remove": "Rimuovi {name}"
   },
   "team": {
-    "title": "Scheda squadra",
-    "share": "Condividi squadra",
-    "unnamed": "Squadra {n}"
+    "title": "Scheda gruppo",
+    "share": "Condividi gruppo",
+    "unnamed": "Gruppo {n}"
   },
   "page": {
     "c6": "C6",

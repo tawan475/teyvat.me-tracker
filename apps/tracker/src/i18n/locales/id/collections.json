@@ -139,9 +139,9 @@
     },
     "wornBy": "Dipakai {n}",
     "expiring": "{n} akan kedaluwarsa",
-    "teams": "Beregu",
+    "teams": "Party",
     "inUse": "Dipakai",
-    "noTeams": "Tidak ada regu",
+    "noTeams": "Tidak ada party",
     "items": "Item",
     "trialUntil": "Coba sampai {time}"
   },
@@ -300,7 +300,7 @@
       "human": "Kelompok Manusia Lainnya",
       "beast": "Makhluk Mistis",
       "boss": "Musuh Kuat",
-      "aviary": "Burung",
+      "aviary": "Unggas",
       "animal": "Hewan Darat",
       "fish": "Ikan",
       "critter": "Lainnya"

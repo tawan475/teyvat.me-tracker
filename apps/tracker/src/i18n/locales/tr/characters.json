@@ -194,14 +194,14 @@
     "label": "Paylaşılacak karakterler",
     "full": "En fazla {n}",
     "buildCard": "Yapı kartı · {size}",
-    "teamCard": "Takım kartı · {size}",
+    "teamCard": "Grup kartı · {size}",
     "picked": "Seçilenler",
     "remove": "{name} kaldır"
   },
   "team": {
-    "title": "Takım kartı",
-    "share": "Takımı paylaş",
-    "unnamed": "Takım {n}"
+    "title": "Grup kartı",
+    "share": "Grubu paylaş",
+    "unnamed": "Grup {n}"
   },
   "page": {
     "c6": "C6",

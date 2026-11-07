@@ -101,8 +101,8 @@
       "olderThanOurs": "こちらより古い",
       "ar": "冒険ランク{ar}",
       "wl": "世界ランク{wl}",
-      "lumine": "女性主人公",
-      "aether": "男性主人公"
+      "lumine": "蛍",
+      "aether": "空"
     },
     "server": {
       "AMERICA": "アメリカ",

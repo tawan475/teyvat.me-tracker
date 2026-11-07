@@ -139,9 +139,9 @@
     },
     "wornBy": "{n} 人が装備",
     "expiring": "{n} 件が期限付き",
-    "teams": "小隊",
+    "teams": "チーム",
     "inUse": "使用中",
-    "noTeams": "小隊なし",
+    "noTeams": "チームなし",
     "items": "アイテム",
     "trialUntil": "{time} までテストプレイ"
   },
@@ -300,7 +300,7 @@
       "human": "その他人間勢力",
       "beast": "異種の魔獣",
       "boss": "名前を覚えるべき強敵",
-      "aviary": "鳥",
+      "aviary": "鳥類",
       "animal": "獣類",
       "fish": "魚類",
       "critter": "その他"

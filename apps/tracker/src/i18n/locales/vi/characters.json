@@ -38,8 +38,8 @@
     "notSaved": "Chưa lưu"
   },
   "stat": {
-    "maxHp": "HP Tối Đa",
-    "baseAtk": "Tấn Công Cơ Bản"
+    "maxHp": "Giới Hạn HP",
+    "baseAtk": "Tấn Công Căn Bản"
   },
   "talent": {
     "crowned": "{title} · có Vương Miện"
@@ -194,14 +194,14 @@
     "label": "Nhân vật để chia sẻ",
     "full": "Tối đa {n}",
     "buildCard": "Thẻ build · {size}",
-    "teamCard": "Thẻ đội nhóm · {size}",
+    "teamCard": "Thẻ đội · {size}",
     "picked": "Đã chọn",
     "remove": "Bỏ {name}"
   },
   "team": {
-    "title": "Thẻ đội nhóm",
-    "share": "Chia sẻ đội nhóm",
-    "unnamed": "Đội Nhóm {n}"
+    "title": "Thẻ đội",
+    "share": "Chia sẻ đội",
+    "unnamed": "Đội {n}"
   },
   "page": {
     "c6": "C6",

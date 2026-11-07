@@ -29,8 +29,8 @@
     "blessing": "渊月祝福",
     "floor": "第{n}层",
     "chamber": "第{n}间",
-    "firstHalf": "上半场",
-    "secondHalf": "下半场",
+    "firstHalf": "上半",
+    "secondHalf": "下半",
     "disorder": "地脉异常",
     "floors": "层"
   },

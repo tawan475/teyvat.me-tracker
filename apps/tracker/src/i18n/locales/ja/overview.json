@@ -72,7 +72,7 @@
     "noCurrency": "通貨なし"
   },
   "traveler": {
-    "label": "主人公",
+    "label": "旅人",
     "arLabel": "冒険ランク",
     "arExp": "冒険経験 {exp} / {need}",
     "arExpLabel": "冒険経験",

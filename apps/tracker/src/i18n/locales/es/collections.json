@@ -139,9 +139,9 @@
     },
     "wornBy": "Lo llevan {n}",
     "expiring": "{n} caducan",
-    "teams": "Escuadrones",
+    "teams": "Equipos",
     "inUse": "En uso",
-    "noTeams": "Sin escuadrones",
+    "noTeams": "Sin equipos",
     "items": "Objetos",
     "trialUntil": "De prueba hasta {time}"
   },
@@ -302,7 +302,7 @@
       "boss": "Enemigos memorables",
       "aviary": "Aves",
       "animal": "Animales terrestres",
-      "fish": "Peces",
+      "fish": "Animales acuáticos",
       "critter": "Otros"
     },
     "noMatch": "No hay coincidencias",

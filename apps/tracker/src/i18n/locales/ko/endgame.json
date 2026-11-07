@@ -29,8 +29,8 @@
     "blessing": "연월 축복",
     "floor": "{n}층",
     "chamber": "{n}번째 방",
-    "firstHalf": "전반부",
-    "secondHalf": "후반부",
+    "firstHalf": "전반",
+    "secondHalf": "후반",
     "disorder": "지맥 이상",
     "floors": "층"
   },

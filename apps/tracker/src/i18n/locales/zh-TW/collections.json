@@ -139,9 +139,9 @@
     },
     "wornBy": "{n} 人裝備",
     "expiring": "{n} 個限時",
-    "teams": "小隊",
+    "teams": "隊伍",
     "inUse": "使用中",
-    "noTeams": "無小隊",
+    "noTeams": "無隊伍",
     "items": "物品",
     "trialUntil": "試用至 {time}"
   },
@@ -302,7 +302,7 @@
       "boss": "值得銘記的強敵",
       "aviary": "禽鳥",
       "animal": "走獸",
-      "fish": "魚類",
+      "fish": "游魚",
       "critter": "其他"
     },
     "noMatch": "沒有符合的條目",

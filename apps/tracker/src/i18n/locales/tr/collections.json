@@ -139,9 +139,9 @@
     },
     "wornBy": "{n} kişi giyiyor",
     "expiring": "{n} süresi dolacak",
-    "teams": "Takımlar",
+    "teams": "Gruplar",
     "inUse": "Kullanımda",
-    "noTeams": "Takım yok",
+    "noTeams": "Grup yok",
     "items": "Eşyalar",
     "trialUntil": "{time} tarihine kadar deneme"
   },
@@ -300,7 +300,7 @@
       "human": "Diğer İnsan Grupları",
       "beast": "Efsanevi Canavarlar",
       "boss": "Şanlı Düşmanlar",
-      "aviary": "Kuş",
+      "aviary": "Kuşlar",
       "animal": "Canavarlar",
       "fish": "Balıklar",
       "critter": "Diğer"

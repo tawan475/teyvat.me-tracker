@@ -194,14 +194,14 @@
     "label": "Karakter untuk dibagikan",
     "full": "Maksimal {n}",
     "buildCard": "Kartu build · {size}",
-    "teamCard": "Kartu beregu · {size}",
+    "teamCard": "Kartu party · {size}",
     "picked": "Dipilih",
     "remove": "Lepas {name}"
   },
   "team": {
-    "title": "Kartu beregu",
-    "share": "Bagikan beregu",
-    "unnamed": "Beregu {n}"
+    "title": "Kartu party",
+    "share": "Bagikan party",
+    "unnamed": "Party {n}"
   },
   "page": {
     "c6": "C6",

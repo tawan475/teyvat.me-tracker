@@ -194,14 +194,14 @@
     "label": "Personnages à partager",
     "full": "{n} au maximum",
     "buildCard": "Carte du build · {size}",
-    "teamCard": "Carte d'escouade · {size}",
+    "teamCard": "Carte d'équipe · {size}",
     "picked": "Choisis",
     "remove": "Retirer {name}"
   },
   "team": {
-    "title": "Carte d'escouade",
-    "share": "Partager l'escouade",
-    "unnamed": "Escouade {n}"
+    "title": "Carte d'équipe",
+    "share": "Partager l'équipe",
+    "unnamed": "Équipe {n}"
   },
   "page": {
     "c6": "C6",

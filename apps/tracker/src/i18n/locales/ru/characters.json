@@ -39,7 +39,7 @@
   },
   "stat": {
     "maxHp": "Макс. HP",
-    "baseAtk": "Базовая сила атаки"
+    "baseAtk": "Базовая атака"
   },
   "talent": {
     "crowned": "{title} · с короной"

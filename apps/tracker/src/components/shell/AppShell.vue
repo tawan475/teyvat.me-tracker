@@ -31,7 +31,6 @@ import { copyText } from '@/data/import-setup'
 import { useSession } from '@/stores/session'
 import { useStaff } from '@/stores/staff'
 import AccountSwitcher from './AccountSwitcher.vue'
-import GuestChip from '@/components/guest/GuestChip.vue'
 import AppearanceButton from './AppearanceButton.vue'
 import CaptureButton from './CaptureButton.vue'
 import DiscordButton from './DiscordButton.vue'
@@ -601,10 +600,8 @@ const footButton =
                 <Search class="size-5" aria-hidden="true" />
               </UiIconButton>
             </template>
-            <!-- Guest mode's chip takes their room on phones (design E's phone bar). -->
-            <DiscordButton :class="guestMode && 'max-sm:hidden'" />
-            <KofiButton :class="guestMode && 'max-sm:hidden'" />
-            <GuestChip v-if="guestMode" />
+            <DiscordButton />
+            <KofiButton />
             <CaptureButton v-if="!framed" :account="staffMode ? undefined : current" />
             <AppearanceButton />
             <RouterLink

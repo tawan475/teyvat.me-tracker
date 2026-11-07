@@ -188,7 +188,7 @@ async function submit() {
         </button>
       </div>
     </form>
-    <OAuthButtons v-if="signups !== 'closed'" :next="next" />
+    <OAuthButtons :next="next" guest :no-providers="signups === 'closed'" />
     <template #footer>
       {{ $t('auth.haveAccount') }}
       <RouterLink
@@ -204,14 +204,6 @@ async function submit() {
         :title="$t('demo.tryHint')"
       >
         {{ $t('demo.try') }}
-      </RouterLink>
-      <span aria-hidden="true" class="mx-1.5 text-text-muted">·</span>
-      <RouterLink
-        :to="{ name: 'guest-overview' }"
-        class="font-semibold text-accent-text hover:underline"
-        :title="$t('guest.tryHint')"
-      >
-        {{ $t('guest.try') }}
       </RouterLink>
     </template>
   </AuthFrame>

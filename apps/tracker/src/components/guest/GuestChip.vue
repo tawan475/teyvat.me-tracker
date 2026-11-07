@@ -25,7 +25,7 @@ const withAccount = ['capture', 'alerts', 'accounts', 'backup'] as const
   <span ref="anchor" class="inline-flex shrink-0">
     <button
       type="button"
-      class="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-accent-text bg-surface-overlay px-3 text-sm font-semibold text-accent-text transition-colors hover:bg-surface-sunken"
+      class="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-accent-text bg-surface-raised px-3 text-sm font-semibold text-accent-text transition-colors hover:bg-surface-sunken"
       :aria-expanded="open"
       aria-haspopup="dialog"
       :title="$t('guest.bar')"

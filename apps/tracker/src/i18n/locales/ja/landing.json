@@ -13,7 +13,8 @@
     "track": "記録を始める",
     "open": "ダッシュボードを開く",
     "download": "アプリをダウンロード",
-    "note": "無料。Windows・Android 用アプリ Teyvat.me Capture で常に最新に保てます。"
+    "note": "無料。Windows・Android 用アプリ Teyvat.me Capture で常に最新に保てます。",
+    "tryIt": "試してみる"
   },
   "video": {
     "label": "デモ動画",

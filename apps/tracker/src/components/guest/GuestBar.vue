@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Info, Monitor } from 'lucide-vue-next'
-import UiButton from '@/components/ui/UiButton.vue'
-import { useSession } from '@/stores/session'
+import GuestChip from './GuestChip.vue'
 
 /**
  * Guest mode's quiet bar under the top bar (design E, row A's part,
  * docs/plans/open-site.md §4): "Guest · Saved in this browser only", an ⓘ
- * for what can delete it, and the way to an account. Signed in (a user
- * looking at this browser's guest data), the way back to their accounts.
+ * for what can delete it, and the Guest chip at its end (the user's pick
+ * 3A, 2026-11-08: no separate Create account button; the chip's list has
+ * Create account / Sign in, or the way back to a signed-in user's accounts).
  */
-const session = useSession()
-const signedIn = computed(() => session.status === 'signed-in')
 </script>
 
 <template>
@@ -34,11 +31,6 @@ const signedIn = computed(() => session.status === 'signed-in')
         <Info class="size-[1.125rem]" aria-hidden="true" />
       </span>
     </p>
-    <UiButton v-if="signedIn" size="sm" class="shrink-0" :to="{ name: 'home' }">{{
-      $t('guest.yourAccounts')
-    }}</UiButton>
-    <UiButton v-else variant="primary" size="sm" class="shrink-0" :to="{ name: 'register' }">{{
-      $t('guest.createAccount')
-    }}</UiButton>
+    <GuestChip />
   </div>
 </template>

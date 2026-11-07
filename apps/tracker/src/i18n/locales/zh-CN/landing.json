@@ -13,7 +13,8 @@
     "track": "开始追踪",
     "open": "打开控制台",
     "download": "下载应用",
-    "note": "免费。Windows 和 Android 版 Teyvat.me Capture 应用会让它保持最新。"
+    "note": "免费。Windows 和 Android 版 Teyvat.me Capture 应用会让它保持最新。",
+    "tryIt": "试用"
   },
   "video": {
     "label": "演示视频",

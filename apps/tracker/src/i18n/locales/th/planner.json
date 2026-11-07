@@ -605,7 +605,9 @@
       "signInsNone": "วันนี้ล็อกอินครบแล้ว",
       "bargains": "ซื้อแล้วในเดือนนี้",
       "bargainsNone": "ยังไม่ได้ซื้ออะไรในเดือนนี้",
-      "fateLeft": "{name} ด้วย {currency}: เหลือ {n}"
+      "fateLeft": "{name} ด้วย {currency}: เหลือ {n}",
+      "transformer": "พร้อมใช้อีกครั้ง {time}",
+      "transformerReady": "พร้อมใช้ตั้งแต่ {time}"
     }
   },
   "view": {

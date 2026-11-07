@@ -605,7 +605,9 @@
       "signInsNone": "Hoy ya has iniciado sesión en todos",
       "bargains": "Ya compraste aquí este mes",
       "bargainsNone": "Aún no has comprado nada aquí este mes",
-      "fateLeft": "{name} por {currency}: quedan {n}"
+      "fateLeft": "{name} por {currency}: quedan {n}",
+      "transformer": "Listo de nuevo {time}",
+      "transformerReady": "Listo desde {time}"
     }
   },
   "view": {

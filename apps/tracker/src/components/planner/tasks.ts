@@ -429,6 +429,7 @@ const TASK_PARTS: Record<string, keyof GiTasks> = {
   'sign-ins': 'signIns',
   'ar-rewards': 'arRewards',
   welkin: 'welkin',
+  transformer: 'transformer',
 }
 
 /**
@@ -686,6 +687,35 @@ export function captureRead(
         back: month.bought ? month.resetsAt : null,
         text: limit > 0 ? `${bought}/${limit}` : '',
         title: left ? `${said} · ${left}` : said,
+      }
+    }
+    case 'transformer': {
+      // Capture 1.17.23: the game's own recharge, so the row needs no tick.
+      const x = tasks.transformer
+      if (!x) return null
+      const ready = x.readyAt * 1000
+      const left = ready - now
+      if (left <= 0) {
+        return {
+          at,
+          done: false,
+          back: null,
+          text: '',
+          title: t('planner.tasks.capture.transformerReady', { time: formatTime(ready) }),
+        }
+      }
+      const days = Math.floor(left / 86_400_000)
+      const hours = Math.floor((left % 86_400_000) / 3_600_000)
+      const minutes = Math.floor((left % 3_600_000) / 60_000)
+      return {
+        at,
+        done: true,
+        back: ready,
+        text:
+          days > 0
+            ? t('farm.time.dh', { d: days, h: hours })
+            : t('farm.time.hm', { h: hours, m: minutes }),
+        title: t('planner.tasks.capture.transformer', { time: formatTime(ready) }),
       }
     }
     case 'welkin': {

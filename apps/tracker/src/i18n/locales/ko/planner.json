@@ -605,7 +605,9 @@
       "signInsNone": "오늘 모두 출석함",
       "bargains": "이번 달 구매함",
       "bargainsNone": "이번 달 아직 구매하지 않음",
-      "fateLeft": "{currency} {name}: {n}개 남음"
+      "fateLeft": "{currency} {name}: {n}개 남음",
+      "transformer": "{time}에 다시 사용 가능",
+      "transformerReady": "{time}부터 사용 가능"
     }
   },
   "view": {

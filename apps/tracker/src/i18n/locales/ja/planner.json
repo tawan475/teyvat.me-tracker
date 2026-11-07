@@ -605,7 +605,9 @@
       "signInsNone": "今日はすべてログイン済み",
       "bargains": "今月ここで購入済み",
       "bargainsNone": "今月はまだ何も購入していません",
-      "fateLeft": "{currency}の{name}：残り {n}"
+      "fateLeft": "{currency}の{name}：残り {n}",
+      "transformer": "{time}に再使用可能",
+      "transformerReady": "{time}から使用可能"
     }
   },
   "view": {

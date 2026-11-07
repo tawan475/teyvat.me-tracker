@@ -605,7 +605,9 @@
       "signInsNone": "Signed in everywhere today",
       "bargains": "Bought there this month",
       "bargainsNone": "Nothing bought there yet this month",
-      "fateLeft": "{name} for {currency}: {n} left"
+      "fateLeft": "{name} for {currency}: {n} left",
+      "transformer": "Ready again {time}",
+      "transformerReady": "Ready since {time}"
     }
   },
   "view": {

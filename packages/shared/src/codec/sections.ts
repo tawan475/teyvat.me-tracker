@@ -649,6 +649,8 @@ export interface TasksSection {
   s?: [value: number, day: number, at: number]
   // Capture 1.17.2: Paimon's Bargains [at, bought (1/0), [[item, currency, cost, bought, limit (0: none)]]].
   f?: [at: number, bought: number, fates: [string, string, number, number, number][]]
+  // Capture 1.17.23: the Parametric Transformer [usedAt, readyAt].
+  x?: [usedAt: number, readyAt: number]
 }
 
 export function encodeTasks(tasks: GiTasks): TasksSection {
@@ -689,6 +691,8 @@ export function encodeTasks(tasks: GiTasks): TasksSection {
       g.fates.map((f) => [f.item, f.currency, f.cost, f.bought, f.limit ?? 0]),
     ]
   }
+  const x = tasks.transformer
+  if (x) section.x = [x.usedAt, x.readyAt]
   return section
 }
 
@@ -749,6 +753,7 @@ export function decodeTasks(section: TasksSection): GiTasks {
       })),
     }
   }
+  if (section.x) tasks.transformer = { usedAt: section.x[0], readyAt: section.x[1] }
   return tasks
 }
 

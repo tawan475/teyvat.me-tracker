@@ -605,7 +605,9 @@
       "signInsNone": "Connecté partout aujourd'hui",
       "bargains": "Achat effectué ce mois-ci",
       "bargainsNone": "Rien acheté ce mois-ci",
-      "fateLeft": "{name} contre {currency} : {n} restant(s)"
+      "fateLeft": "{name} contre {currency} : {n} restant(s)",
+      "transformer": "De nouveau prêt {time}",
+      "transformerReady": "Prêt depuis {time}"
     }
   },
   "view": {

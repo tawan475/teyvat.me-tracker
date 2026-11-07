@@ -605,7 +605,9 @@
       "signInsNone": "Сегодня вход отмечен везде",
       "bargains": "В этом месяце покупки были",
       "bargainsNone": "В этом месяце ещё ничего не куплено",
-      "fateLeft": "{name} за {currency}: осталось {n}"
+      "fateLeft": "{name} за {currency}: осталось {n}",
+      "transformer": "Снова готов {time}",
+      "transformerReady": "Готов с {time}"
     }
   },
   "view": {

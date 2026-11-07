@@ -193,6 +193,12 @@ export interface GiTasks {
    * as of `at` (unix s). `bought`: anything at all bought there that month.
    */
   bargains?: GiBargains
+  /**
+   * The Parametric Transformer (Capture 1.17.23): when it was last used and
+   * when it is ready again (unix s; ready = used + its 166-hour recharge).
+   * Every login says it, and so does each use.
+   */
+  transformer?: { usedAt: number; readyAt: number }
 }
 
 /** `gi_tasks.bargains`. */

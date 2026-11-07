@@ -605,7 +605,9 @@
       "signInsNone": "Hôm nay đã đăng nhập hết",
       "bargains": "Đã mua ở đây trong tháng này",
       "bargainsNone": "Chưa mua gì ở đây trong tháng này",
-      "fateLeft": "{name} bằng {currency}: còn {n}"
+      "fateLeft": "{name} bằng {currency}: còn {n}",
+      "transformer": "Sẵn sàng lại lúc {time}",
+      "transformerReady": "Sẵn sàng từ {time}"
     }
   },
   "view": {

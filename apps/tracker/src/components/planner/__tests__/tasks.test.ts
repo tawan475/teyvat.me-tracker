@@ -548,6 +548,19 @@ describe('ticked from a capture', () => {
     })
   })
 
+  it('ticks the Parametric Transformer while it recharges and brings it back when ready', () => {
+    // Used on Oct 10 at 04:00 UTC: ready 166 h later, Oct 17 at 02:00 UTC.
+    const usedAt = at('2026-10-10T04:00:00Z') / 1000
+    const transformer = { usedAt, readyAt: usedAt + 597_600 }
+    const cooling = rowOf('transformer', capture({ transformer }))!
+    expect(cooling).toMatchObject({ due: false, capture: { text: '3d 14h' } })
+    expect(iso(cooling.back)).toBe('2026-10-17T02:00:00.000Z')
+    const ready = rowOf('transformer', capture({ transformer }), [], at('2026-10-17T03:00:00Z'))!
+    expect(ready).toMatchObject({ due: true })
+    // Without the part the row is the hand-ticked one it always was.
+    expect(rowOf('transformer', capture({}))!.capture).toBeUndefined()
+  })
+
   it('brings the Welkin Moon back three days before it runs out', () => {
     // Captured on Oct 13 with 10 days: 9 on the 14th, 3 on the 20th.
     expect(welkinDays(10, at('2026-10-13T02:00:00Z'), at('2026-10-14T12:00:00Z'), 'ASIA')).toBe(9)

@@ -775,6 +775,17 @@ function toTasks(raw: unknown): GiTasks | null {
     }
     if (fates.length === g.fates.length) tasks.bargains = { at: g.at, bought: g.bought, fates }
   }
+  // Capture 1.17.23: the recharge between them is an hour to a month (166 h in 7.2).
+  const x = raw.transformer
+  if (
+    isObject(x) &&
+    isIntIn(x.usedAt, ...TASK_TIME) &&
+    isIntIn(x.readyAt, ...TASK_TIME) &&
+    x.readyAt - x.usedAt >= 3_600 &&
+    x.readyAt - x.usedAt <= 30 * 86_400
+  ) {
+    tasks.transformer = { usedAt: x.usedAt, readyAt: x.readyAt }
+  }
   return Object.keys(tasks).length > 0 ? tasks : null
 }
 

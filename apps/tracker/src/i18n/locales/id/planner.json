@@ -605,7 +605,9 @@
       "signInsNone": "Sudah login di semua hari ini",
       "bargains": "Sudah membeli di sini bulan ini",
       "bargainsNone": "Belum membeli apa pun di sini bulan ini",
-      "fateLeft": "{name} dengan {currency}: sisa {n}"
+      "fateLeft": "{name} dengan {currency}: sisa {n}",
+      "transformer": "Siap lagi {time}",
+      "transformerReady": "Siap sejak {time}"
     }
   },
   "view": {

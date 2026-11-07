@@ -143,6 +143,7 @@ export const KEY_DOCS: KeyDoc[] = [
              currency: 'MasterlessStardust' | 'MasterlessStarglitter';
              cost: number; bought: number; limit?: number }[]   // bought and limit: this month
   }
+  transformer?: { usedAt: number; readyAt: number }   // Parametric Transformer: last use, ready again
 }`,
     example: {
       commissions: { finished: 4, total: 4, claimed: true },
@@ -166,6 +167,7 @@ export const KEY_DOCS: KeyDoc[] = [
           },
         ],
       },
+      transformer: { usedAt: 1792540000, readyAt: 1793137600 },
     } satisfies NonNullable<Leyline['gi_tasks']>,
     note: 'All times in unix seconds. The tracker keeps a part only when all of it is in range.',
   },

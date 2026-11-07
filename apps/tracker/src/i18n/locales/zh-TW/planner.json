@@ -605,7 +605,9 @@
       "signInsNone": "今天已全部簽到",
       "bargains": "本月已在此購買",
       "bargainsNone": "本月尚未在此購買",
-      "fateLeft": "{currency}兌換{name}：剩餘 {n}"
+      "fateLeft": "{currency}兌換{name}：剩餘 {n}",
+      "transformer": "{time}可再次使用",
+      "transformerReady": "自{time}起可用"
     }
   },
   "view": {

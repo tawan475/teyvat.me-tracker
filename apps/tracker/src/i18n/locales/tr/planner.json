@@ -605,7 +605,9 @@
       "signInsNone": "Bugün hepsine giriş yapıldı",
       "bargains": "Bu ay burada alışveriş yapıldı",
       "bargainsNone": "Bu ay henüz bir şey alınmadı",
-      "fateLeft": "{currency} ile {name}: {n} kaldı"
+      "fateLeft": "{currency} ile {name}: {n} kaldı",
+      "transformer": "Yeniden hazır: {time}",
+      "transformerReady": "{time} itibarıyla hazır"
     }
   },
   "view": {

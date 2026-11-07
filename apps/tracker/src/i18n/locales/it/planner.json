@@ -605,7 +605,9 @@
       "signInsNone": "Accesso fatto ovunque oggi",
       "bargains": "Già acquistato qui questo mese",
       "bargainsNone": "Ancora niente acquistato qui questo mese",
-      "fateLeft": "{name} per {currency}: ne restano {n}"
+      "fateLeft": "{name} per {currency}: ne restano {n}",
+      "transformer": "Di nuovo pronto {time}",
+      "transformerReady": "Pronto da {time}"
     }
   },
   "view": {

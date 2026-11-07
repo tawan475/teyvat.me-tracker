@@ -605,7 +605,9 @@
       "signInsNone": "Login feito em todos hoje",
       "bargains": "Já comprou aqui este mês",
       "bargainsNone": "Ainda não comprou nada aqui este mês",
-      "fateLeft": "{name} por {currency}: restam {n}"
+      "fateLeft": "{name} por {currency}: restam {n}",
+      "transformer": "Pronto de novo {time}",
+      "transformerReady": "Pronto desde {time}"
     }
   },
   "view": {

@@ -11,6 +11,7 @@
  */
 
 import type { Achievement, AchievementData, AchievementTexts } from '@gdt/game-data'
+import type { LiveJournalResponse } from '@gdt/shared'
 import {
   isPaimonBackup,
   paimonAccounts,
@@ -56,6 +57,58 @@ export interface CapturedAchievements {
    * the newest snapshot that has a time for the id.
    */
   completedAt: ReadonlyMap<number, number>
+}
+
+/**
+ * The captured achievements with the live journal laid over them (live sync:
+ * Capture sends `["set", ["achievements", id], finish time (unix s, 0 =
+ * unknown)]` as soon as one is finished, and `del` when one is undone). A
+ * journal that does not follow the newest snapshot is ignored. An id the
+ * journal finishes counts as first seen at the journal's last batch, after
+ * the newest snapshot, which lacked it.
+ */
+export function withLiveAchievements(
+  captured: CapturedAchievements,
+  live: LiveJournalResponse | null | undefined,
+  snapshotId: number | null,
+): CapturedAchievements {
+  if (!live?.open || snapshotId === null || live.base?.snapshotId !== snapshotId) return captured
+  const changes = (live.changes ?? []).filter(
+    ([, path]) => path[0] === 'achievements' && path.length === 2,
+  )
+  if (changes.length === 0) return captured
+  const ids = new Set(captured.ids)
+  const completedAt = new Map(captured.completedAt)
+  const firstSeen = new Map(captured.firstSeen)
+  const lastMissing = new Map(captured.lastMissing)
+  const progress = captured.progress ? new Map(captured.progress) : undefined
+  const seenAt = live.updatedAt ?? live.base.takenAt
+  for (const change of changes) {
+    const id = Number(change[1][1])
+    if (!Number.isInteger(id) || id <= 0) continue
+    if (change[0] === 'del') {
+      ids.delete(id)
+      completedAt.delete(id)
+      continue
+    }
+    if (change[0] !== 'set') continue
+    const time = change[2]
+    ids.add(id)
+    progress?.delete(id)
+    if (typeof time === 'number' && time > 0) completedAt.set(id, time * 1000)
+    if (!firstSeen.has(id)) {
+      firstSeen.set(id, seenAt)
+      if (captured.takenAt !== null) lastMissing.set(id, captured.takenAt)
+    }
+  }
+  return {
+    ...captured,
+    ids,
+    completedAt,
+    firstSeen,
+    lastMissing,
+    ...(progress ? { progress } : {}),
+  }
 }
 
 /**

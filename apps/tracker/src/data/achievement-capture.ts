@@ -4,8 +4,12 @@ import {
   decodeProgress,
   type AchievementTimesSection,
 } from '@gdt/shared'
-import { loadBundle, type AccountRef } from '@/data/account-data'
-import { captureAchievements, type CapturedAchievements } from '@/data/achievement-progress'
+import { loadBundle, loadLive, type AccountRef } from '@/data/account-data'
+import {
+  captureAchievements,
+  withLiveAchievements,
+  type CapturedAchievements,
+} from '@/data/achievement-progress'
 
 /**
  * What the captures say about achievements (the Achievements page and the
@@ -21,7 +25,9 @@ export const NO_CAPTURED_ACHIEVEMENTS: CapturedAchievements = {
   completedAt: new Map(),
 }
 
-export async function loadCapturedAchievements(a: AccountRef): Promise<CapturedAchievements> {
+export async function loadCapturedAchievements(
+  a: AccountRef & { latest?: { id: number } | null },
+): Promise<CapturedAchievements> {
   const bundle = await loadBundle(a, {
     sections: ['achievements', 'achievementTimes', 'progress'],
   })
@@ -48,5 +54,8 @@ export async function loadCapturedAchievements(a: AccountRef): Promise<CapturedA
       return decodeAchievementTimes(section, section.b ? json(section.b) : null)
     },
   )
-  return progress ? { ...captured, progress } : captured
+  const snapshots = progress ? { ...captured, progress } : captured
+  // Live sync: achievements finished since the newest snapshot (Capture 1.15.5).
+  const live = await loadLive(a).catch(() => null)
+  return withLiveAchievements(snapshots, live, a.latest?.id ?? null)
 }

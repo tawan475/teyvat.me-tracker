@@ -26,6 +26,7 @@ import {
   unmarkFrom,
   type AchievementFilters,
   type DoneState,
+  withLiveAchievements,
 } from '../achievement-progress'
 
 // A made-up game: two categories (goal 2 comes first in game order).
@@ -485,6 +486,56 @@ describe('real data', () => {
   it('links to stardb', () => {
     expect(stardbAchievementUrl(80001)).toBe(
       'https://stardb.gg/en/genshin/database/achievements/80001',
+    )
+  })
+})
+
+describe('withLiveAchievements', () => {
+  const captured = {
+    ids: new Set([84001]),
+    takenAt: 1_000,
+    firstTakenAt: 500,
+    firstSeen: new Map([[84001, 500]]),
+    lastMissing: new Map<number, number>(),
+    completedAt: new Map<number, number>(),
+    progress: new Map([[84002, { progress: 3, total: 4 }]]),
+  }
+  const journal = (changes: unknown[], snapshotId = 7) =>
+    ({
+      open: true,
+      base: { snapshotId, contentKey: 'k', takenAt: 1_000 },
+      updatedAt: 2_000,
+      changes,
+    }) as never
+
+  it('finishes what the journal finished since the newest snapshot', () => {
+    const now = withLiveAchievements(
+      captured,
+      journal([['set', ['achievements', 84002], 1_794_100_000]]),
+      7,
+    )
+    expect(now.ids.has(84002)).toBe(true)
+    expect(now.completedAt.get(84002)).toBe(1_794_100_000_000)
+    expect(now.firstSeen.get(84002)).toBe(2_000)
+    expect(now.lastMissing.get(84002)).toBe(1_000)
+    expect(now.progress?.has(84002)).toBe(false)
+    // An unknown finish time still counts as done.
+    expect(
+      withLiveAchievements(captured, journal([['set', ['achievements', 84003], 0]]), 7).ids.has(
+        84003,
+      ),
+    ).toBe(true)
+  })
+
+  it('undoes on del and ignores a journal of another snapshot or none', () => {
+    expect(
+      withLiveAchievements(captured, journal([['del', ['achievements', 84001]]]), 7).ids.has(84001),
+    ).toBe(false)
+    const other = journal([['set', ['achievements', 84002], 1]], 6)
+    expect(withLiveAchievements(captured, other, 7)).toBe(captured)
+    expect(withLiveAchievements(captured, null, 7)).toBe(captured)
+    expect(withLiveAchievements(captured, journal([['set', ['materials', 'Mora'], 5]]), 7)).toBe(
+      captured,
     )
   })
 })

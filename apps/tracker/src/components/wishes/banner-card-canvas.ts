@@ -82,6 +82,8 @@ const OUTCOME_COLOR: Record<CardTheme, Record<Outcome, string>> = {
   light: { won: '#2563eb', lost: '#d97706', guaranteed: '#475569', radiance: '#4f46e5' },
 }
 const OUTCOMES: readonly Outcome[] = ['won', 'lost', 'guaranteed', 'radiance']
+/** Between a tally's mark and its count (px). */
+const TALLY_GAP = 7
 /** The banner art behind the card, and the veils over it, per theme. */
 const GROUND_FILTER = {
   dark: { blur: 14, saturate: 1.2, brightness: 0.62 },
@@ -462,11 +464,14 @@ class BannerPainter extends CardPaint {
     OUTCOMES.forEach((outcome, i) => {
       const bx = x + i * (boxW + 10)
       this.glass(bx, y, boxW, h, 16, 'panel')
-      const value = `${OUTCOME_STYLE[outcome].mark} ${this.input.numbers.outcomes[outcome]}`
-      this.line(value, bx + boxW / 2, y + 10, 22, 800, colors[outcome], {
-        lineHeight: 30,
-        align: 'center',
-      })
+      // The mark and the count as two pieces a fixed gap apart (not a space's width).
+      const mark = OUTCOME_STYLE[outcome].mark
+      const count = String(this.input.numbers.outcomes[outcome])
+      const markW = this.textWidth(mark, 22, 800)
+      const left = bx + boxW / 2 - (markW + TALLY_GAP + this.textWidth(count, 22, 800)) / 2
+      const ink = { lineHeight: 30 }
+      this.line(mark, left, y + 10, 22, 800, colors[outcome], ink)
+      this.line(count, left + markW + TALLY_GAP, y + 10, 22, 800, colors[outcome], ink)
       const label =
         outcome === 'radiance' ? t('wishes.share.radiance') : t(`wishes.outcomes.${outcome}`)
       this.line(label, bx + boxW / 2, y + 40, 13, 400, this.v('--card-secondary'), {

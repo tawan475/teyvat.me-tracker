@@ -575,8 +575,29 @@ export class Painter {
       index += word.length
     }
     range.setEnd(node, text.length)
-    const found = { words, starts, width: range.getBoundingClientRect().width }
-    this.layouts.set(key, found)
+    let found = { words, starts, width: range.getBoundingClientRect().width }
+    // The page's figures are trusted only where they agree with the canvas's
+    // own (the kerning across a space is a fraction of a px). One user's
+    // browser gave spans that ignored the spaces, or none at all, and the
+    // card drew "Version6.3·PhaseI" and words over each other: then the
+    // canvas measures every word itself.
+    const own = (end: number) => (end ? ctx.measureText(text.slice(0, end)).width : 0)
+    const off = (page: number, canvas: number) =>
+      !Number.isFinite(page) || Math.abs(page - canvas) > Math.max(1, canvas * 0.03)
+    let end = 0
+    const ownStarts = words.map((word) => {
+      const at = own(end)
+      end += word.length
+      return at
+    })
+    const ownWidth = ctx.measureText(text).width
+    if (off(found.width, ownWidth) || starts.some((s, i) => off(s, ownStarts[i]!))) {
+      found = { words, starts: ownStarts, width: ownWidth }
+    }
+    // Measured before the font arrived, the figures belong to a stand-in font: not kept.
+    if (typeof document === 'undefined' || document.fonts.check(ctx.font)) {
+      this.layouts.set(key, found)
+    }
     return found
   }
 

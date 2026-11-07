@@ -302,7 +302,13 @@ const tipOf = (subject: TipSubject, side = false) =>
               class="inline-flex shrink-0 rounded-full"
               v-bind="tipOf({ kind: 'element' })"
             >
-              <ElementIcon :element="c.element" decorative list class="size-[60px]!" />
+              <ElementIcon
+                :element="c.element"
+                decorative
+                list
+                data-skeleton="off"
+                class="size-[60px]!"
+              />
             </span>
             <!-- The padding (undone by the margin) gives accents and descenders room
                  inside truncate's clip (Xiangling's g was cut). -->
@@ -565,6 +571,7 @@ const tipOf = (subject: TipSubject, side = false) =>
                   :element="row.damage"
                   decorative
                   list
+                  data-skeleton="off"
                   class="size-[26px]!"
                 />
                 {{ row.label }}

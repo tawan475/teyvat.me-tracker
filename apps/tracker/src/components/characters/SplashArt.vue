@@ -50,6 +50,7 @@ function onLoad() {
       alt=""
       aria-hidden="true"
       decoding="async"
+      data-skeleton="off"
       class="pointer-events-none absolute transition-opacity duration-300 motion-reduce:transition-none"
       :class="full ? ['max-w-none', imgClass] : ['inset-0 size-full object-cover', imgClass]"
       :style="[full?.style, loaded || eager ? {} : { opacity: 0 }]"

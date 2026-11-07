@@ -7,7 +7,9 @@ import { isDecoded, markDecoded } from '@/lib/image-preload'
  * new <img> per `src` (keyed), invisible until its own picture has loaded,
  * then faded in; at once when it was preloaded and decoded already
  * (lib/image-preload).
- * Whatever sits behind it (a disc, a rarity strip) shows meanwhile.
+ * Whatever sits behind it (a disc, a rarity strip) shows meanwhile, so it
+ * opts out of the site's loading look (lib/image-loading): its square box drawn
+ * over a round disc or a white glyph read as broken (the user, 2026-11-07).
  * Attributes (class, alt) go to the <img>.
  */
 const props = defineProps<{ src: string }>()
@@ -31,6 +33,7 @@ function onLoad() {
     alt=""
     decoding="async"
     draggable="false"
+    data-skeleton="off"
     class="transition-opacity duration-200 motion-reduce:transition-none"
     :style="loaded ? undefined : { opacity: 0 }"
     @load="onLoad"

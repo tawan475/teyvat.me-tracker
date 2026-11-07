@@ -53,6 +53,12 @@
       "snapshots": "Capturas",
       "plan": "Plan y marcas",
       "wishes": "Historial de deseos"
-    }
+    },
+    "tiles": {
+      "snapshots": "Capturas",
+      "wishes": "Deseos",
+      "goals": "Objetivos"
+    },
+    "intoLabel": "En"
   }
 }

@@ -53,6 +53,12 @@
       "snapshots": "스냅샷",
       "plan": "계획과 표시",
       "wishes": "기원 기록"
-    }
+    },
+    "tiles": {
+      "snapshots": "스냅샷",
+      "wishes": "기원",
+      "goals": "목표"
+    },
+    "intoLabel": "대상"
   }
 }

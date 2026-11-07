@@ -53,6 +53,12 @@
       "snapshots": "Instantanés",
       "plan": "Plan et marques",
       "wishes": "Historique des vœux"
-    }
+    },
+    "tiles": {
+      "snapshots": "Instantanés",
+      "wishes": "Vœux",
+      "goals": "Objectifs"
+    },
+    "intoLabel": "Dans"
   }
 }

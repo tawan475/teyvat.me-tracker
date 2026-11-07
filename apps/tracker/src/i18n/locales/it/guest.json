@@ -53,6 +53,12 @@
       "snapshots": "Istantanee",
       "plan": "Piano e segni",
       "wishes": "Cronologia desideri"
-    }
+    },
+    "tiles": {
+      "snapshots": "Istantanee",
+      "wishes": "Desideri",
+      "goals": "Obiettivi"
+    },
+    "intoLabel": "In"
   }
 }

@@ -53,6 +53,12 @@
       "snapshots": "Snapshot",
       "plan": "Rencana dan tanda",
       "wishes": "Riwayat Permohonan"
-    }
+    },
+    "tiles": {
+      "snapshots": "Snapshot",
+      "wishes": "Permohonan",
+      "goals": "Target"
+    },
+    "intoLabel": "Ke"
   }
 }

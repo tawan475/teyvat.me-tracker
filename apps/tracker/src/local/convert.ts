@@ -46,6 +46,8 @@ export function rememberConvertAnswer(answer: ConvertAnswer): void {
 export interface GuestSummary {
   snapshots: number
   pulls: number
+  /** Planner goals (characters and weapons). */
+  goals: number
   uid: string | null
   name: string | null
 }
@@ -54,9 +56,15 @@ export async function guestSummary(store: LocalStore = guestStore()): Promise<Gu
   await store.ready()
   let pulls = 0
   for (const list of storedPulls(store).values()) pulls += list.length
+  // The plan is read through the guest routes, as the conversion reads it.
+  const goals = await api
+    .plannerTargets(GUEST_ACCOUNT_ID)
+    .then((answer) => answer.targets.length)
+    .catch(() => 0)
   return {
     snapshots: store.snapshots.size,
     pulls,
+    goals,
     uid: store.account?.uid ?? null,
     name: store.account?.name ?? null,
   }

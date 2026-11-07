@@ -53,6 +53,12 @@
       "snapshots": "快照",
       "plan": "規劃和標記",
       "wishes": "祈願紀錄"
-    }
+    },
+    "tiles": {
+      "snapshots": "快照",
+      "wishes": "祈願",
+      "goals": "目標"
+    },
+    "intoLabel": "匯入到"
   }
 }

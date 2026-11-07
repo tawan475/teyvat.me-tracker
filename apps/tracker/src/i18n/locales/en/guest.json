@@ -53,6 +53,12 @@
       "snapshots": "Snapshots",
       "plan": "Plan and marks",
       "wishes": "Wish history"
-    }
+    },
+    "tiles": {
+      "snapshots": "Snapshots",
+      "wishes": "Wishes",
+      "goals": "Goals"
+    },
+    "intoLabel": "Into"
   }
 }

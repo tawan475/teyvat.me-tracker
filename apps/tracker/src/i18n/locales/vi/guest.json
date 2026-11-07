@@ -53,6 +53,12 @@
       "snapshots": "Bản chụp",
       "plan": "Kế hoạch và đánh dấu",
       "wishes": "Lịch sử cầu nguyện"
-    }
+    },
+    "tiles": {
+      "snapshots": "Bản chụp",
+      "wishes": "Cầu nguyện",
+      "goals": "Mục tiêu"
+    },
+    "intoLabel": "Vào"
   }
 }

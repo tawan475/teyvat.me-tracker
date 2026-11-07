@@ -53,6 +53,12 @@
       "snapshots": "スナップショット",
       "plan": "計画とマーク",
       "wishes": "祈願履歴"
-    }
+    },
+    "tiles": {
+      "snapshots": "スナップショット",
+      "wishes": "祈願",
+      "goals": "目標"
+    },
+    "intoLabel": "移行先"
   }
 }

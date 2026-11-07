@@ -15,6 +15,9 @@ import UiIconButton from './UiIconButton.vue'
  * - `bare`: no header bar and no body padding: the content draws its own
  *   title and close button and reaches the dialog's edges (the material
  *   dialog's game panel); `title` stays the dialog's accessible name.
+ * - `sheet`: below `sm` a bottom sheet (full width, pinned to the foot,
+ *   rounded top corners), the same dialog from `sm` up (a short question:
+ *   the guest data prompt, the user's pick 1A, 2026-11-08).
  * Slots: default (body), `heading` (replaces the title), `footer`.
  * Live updates reach an open dialog like any page (the user's call,
  * 2026-11-06): what it shows must find its subject again in fresh data (by
@@ -30,6 +33,7 @@ const props = withDefaults(
     total?: number
     loop?: boolean
     bare?: boolean
+    sheet?: boolean
   }>(),
   { size: 'md', index: undefined, total: undefined },
 )
@@ -92,10 +96,16 @@ const detail = computed(() => props.size === 'detail')
             // caps at 90dvh and scrolls.
             'm-0 h-dvh max-h-dvh w-full max-w-none overflow-hidden sm:m-auto sm:h-fit sm:max-h-[90dvh] sm:w-[calc(100%-2rem)] sm:max-w-6xl sm:rounded-xl sm:border sm:border-border-default',
           ]
-        : [
-            'm-auto w-[calc(100%-2rem)] rounded-xl border border-border-default',
-            size === 'wide' ? 'max-w-3xl' : 'max-w-lg',
-          ]
+        : sheet
+          ? [
+              'mx-0 mt-auto mb-0 w-full max-w-none rounded-t-2xl border-t border-border-default',
+              'sm:m-auto sm:w-[calc(100%-2rem)] sm:rounded-xl sm:border',
+              size === 'wide' ? 'sm:max-w-3xl' : 'sm:max-w-lg',
+            ]
+          : [
+              'm-auto w-[calc(100%-2rem)] rounded-xl border border-border-default',
+              size === 'wide' ? 'max-w-3xl' : 'max-w-lg',
+            ]
     "
     :aria-label="title"
     @cancel.prevent="emit('close')"

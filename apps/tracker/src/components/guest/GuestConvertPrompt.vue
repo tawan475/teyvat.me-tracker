@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
+import UiStat from '@/components/ui/UiStat.vue'
+import { ArrowRight, Monitor } from 'lucide-vue-next'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import {
@@ -47,12 +49,15 @@ const target = computed(() => {
   return uid ? (accounts.list.find((a) => a.uid === uid && a.access !== 'viewer') ?? null) : null
 })
 
-const holds = computed(() => {
+/** The three counts the dialog shows as tiles (the user's pick 1A, 2026-11-08). */
+const tiles = computed(() => {
   const s = summary.value
-  if (!s) return ''
-  const parts = [t('guest.convert.snapshots', { n: formatNumber(s.snapshots) }, s.snapshots)]
-  if (s.pulls > 0) parts.push(t('guest.convert.wishes', { n: formatNumber(s.pulls) }, s.pulls))
-  return parts.join(' · ')
+  if (!s) return []
+  return [
+    { key: 'snapshots', value: s.snapshots },
+    { key: 'wishes', value: s.pulls },
+    { key: 'goals', value: s.goals },
+  ]
 })
 
 function no() {
@@ -101,16 +106,33 @@ const percent = computed(() => {
 </script>
 
 <template>
-  <UiModal :open="open" :title="$t('guest.convert.title')" @close="running || no()">
-    <div class="flex flex-col gap-3">
-      <p class="text-text-secondary">{{ $t('guest.convert.body') }}</p>
-      <p class="tabular font-mono text-sm text-text-primary">{{ holds }}</p>
-      <p class="text-sm text-text-secondary">
-        {{
-          target
-            ? $t('guest.convert.into', { name: accounts.displayName(target) })
-            : $t('guest.convert.intoNew')
-        }}
+  <UiModal sheet :open="open" :title="$t('guest.convert.title')" @close="running || no()">
+    <div class="flex flex-col gap-4">
+      <p class="flex items-center gap-2 text-text-secondary">
+        <Monitor class="size-[1.125rem] shrink-0" aria-hidden="true" />
+        {{ $t('guest.convert.body') }}
+      </p>
+      <div class="grid grid-cols-3 gap-2.5">
+        <UiStat
+          v-for="tile in tiles"
+          :key="tile.key"
+          :label="$t(`guest.convert.tiles.${tile.key}`)"
+          :value="tile.value"
+          exact
+        />
+      </div>
+      <p
+        class="flex min-w-0 items-center gap-2.5 rounded-xl bg-surface-overlay px-3 py-2.5 text-sm text-text-secondary"
+      >
+        <ArrowRight class="size-[1.125rem] shrink-0" aria-hidden="true" />
+        <span class="min-w-0 truncate">
+          <template v-if="target">
+            {{ $t('guest.convert.intoLabel') }}
+            <b class="font-semibold text-text-primary">{{ accounts.displayName(target) }}</b>
+            <span v-if="target.uid" class="tabular"> · UID {{ target.uid }}</span>
+          </template>
+          <template v-else>{{ $t('guest.convert.intoNew') }}</template>
+        </span>
       </p>
       <UiProgress
         v-if="running && progress"

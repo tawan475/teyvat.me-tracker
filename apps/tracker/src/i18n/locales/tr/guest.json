@@ -53,6 +53,12 @@
       "snapshots": "Anlık görüntüler",
       "plan": "Plan ve işaretler",
       "wishes": "Dilek geçmişi"
-    }
+    },
+    "tiles": {
+      "snapshots": "Anlık görüntüler",
+      "wishes": "Dilekler",
+      "goals": "Hedefler"
+    },
+    "intoLabel": "Hedef"
   }
 }

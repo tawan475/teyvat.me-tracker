@@ -53,6 +53,12 @@
       "snapshots": "Snapshots",
       "plan": "Plan und Markierungen",
       "wishes": "Gebetsverlauf"
-    }
+    },
+    "tiles": {
+      "snapshots": "Snapshots",
+      "wishes": "Gebete",
+      "goals": "Ziele"
+    },
+    "intoLabel": "In"
   }
 }

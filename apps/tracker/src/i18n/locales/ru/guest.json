@@ -53,6 +53,12 @@
       "snapshots": "Снимки",
       "plan": "План и отметки",
       "wishes": "История молитв"
-    }
+    },
+    "tiles": {
+      "snapshots": "Снимки",
+      "wishes": "Молитвы",
+      "goals": "Цели"
+    },
+    "intoLabel": "В"
   }
 }

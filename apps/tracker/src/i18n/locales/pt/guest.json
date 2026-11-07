@@ -53,6 +53,12 @@
       "snapshots": "Capturas",
       "plan": "Plano e marcações",
       "wishes": "Histórico de Orações"
-    }
+    },
+    "tiles": {
+      "snapshots": "Capturas",
+      "wishes": "Orações",
+      "goals": "Metas"
+    },
+    "intoLabel": "Para"
   }
 }

@@ -315,7 +315,14 @@ router (guest routes without `meta.auth`), the locked rows, locale files.
 
 ---
 
-## 5. Passkeys (about a week)
+## 5. Passkeys (about a week) — BUILT 2026-11-08
+
+Shipped as described below (README "Passkeys"), with these choices: the
+challenge is a stateless HMAC instead of a cookie (no storage, any number of
+tabs) and single use through a `passkey_challenges` row; WebAuthn checked by
+hand (no library); the user's design picks: the button under Sign in, the
+reminder as a card on Home plus a corner toast, Passkeys in Settings as their
+own panel on desktop and inside Connected accounts on phones.
 
 ### What it is
 

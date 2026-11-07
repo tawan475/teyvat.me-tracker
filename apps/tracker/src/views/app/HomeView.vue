@@ -3,6 +3,7 @@ import { computed, onMounted, shallowRef } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { Plus, Users } from 'lucide-vue-next'
 import AccountCard from '@/components/overview/AccountCard.vue'
+import PasskeyNudge from '@/components/settings/PasskeyNudge.vue'
 import InvitationsPanel from '@/components/sharing/InvitationsPanel.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -70,6 +71,7 @@ const totals = computed(() => {
     </template>
   </PageHeader>
 
+  <PasskeyNudge />
   <InvitationsPanel class="mb-6" />
 
   <UiPanel v-if="!accounts.list.length" flush>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { appPath } from '@gdt/shared'
-import { computed, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { KeyRound } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import HumanCheck from '@/components/auth/HumanCheck.vue'
 import { humanCheckNeeded, humanCheckPassed, siteKeyAfter } from '@/components/auth/human-check'
@@ -13,9 +14,17 @@ import {
   providerLabel,
 } from '@/components/oauth/oauth'
 import UiSpinner from '@/components/ui/UiSpinner.vue'
+import { passkeyCause } from '@/components/settings/passkeys'
 import { ApiRequestError } from '@/api'
 import { t } from '@/i18n'
 import { errorText } from '@/i18n/api-errors'
+import {
+  conditionalAvailable,
+  forgetPasskey,
+  getPasskey,
+  passkeysSupported,
+  type PasskeyAnswer,
+} from '@/lib/passkeys'
 import { useSession } from '@/stores/session'
 import AuthFrame from './AuthFrame.vue'
 
@@ -35,6 +44,9 @@ const human = useTemplateRef<InstanceType<typeof HumanCheck>>('human')
 /** HumanCheck holds a fresh token. */
 const humanReady = ref(false)
 const humanOk = computed(() => humanCheckPassed(siteKey.value, humanReady.value))
+/** Passkeys work on this host and in this browser (design A: a button under Sign in). */
+const passkeys = ref(false)
+const passkeyBusy = ref(false)
 
 /** Where to go after signing in: a page of the app, or irminsul's /link (the server checks it the same way). */
 const next = computed(() =>
@@ -54,7 +66,77 @@ onMounted(async () => {
   const options = await loadSignInOptions()
   emailFeatures.value = options.emailFeatures
   siteKey.value = options.turnstileSiteKey
+  passkeys.value = options.passkeys && passkeysSupported() && !linking.value
+  if (passkeys.value && (await conditionalAvailable())) startAutofill()
 })
+
+onBeforeUnmount(() => {
+  stopped = true
+  stopAutofill()
+})
+
+// The browser's own passkey offer in the username box (conditional UI): one
+// request waits for as long as the page is open, renewed before its
+// challenge runs out (the server's is 10 minutes).
+const AUTOFILL_RENEW_MS = 9 * 60 * 1000
+let autofill: { controller: AbortController; done: Promise<void>; timer: number } | null = null
+let stopped = false
+
+function startAutofill() {
+  if (stopped || autofill) return
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => {
+    stopAutofill()
+    startAutofill()
+  }, AUTOFILL_RENEW_MS)
+  const done = getPasskey({ conditional: true, signal: controller.signal })
+    .then((answer) => {
+      if (answer) return finishPasskey(answer)
+    })
+    .catch(() => undefined)
+  autofill = { controller, done, timer }
+}
+
+async function stopAutofill(): Promise<void> {
+  const current = autofill
+  if (!current) return
+  autofill = null
+  window.clearTimeout(current.timer)
+  current.controller.abort()
+  await current.done
+}
+
+async function finishPasskey(answer: PasskeyAnswer) {
+  error.value = ''
+  passkeyBusy.value = true
+  try {
+    await session.passkeyLogin(answer.credential)
+    stopped = true
+    await router.replace(next.value ?? '/app')
+  } catch (cause) {
+    // Removed from its account: the browser can stop offering it.
+    if (cause instanceof ApiRequestError && cause.code === 'passkey_unknown') forgetPasskey(answer)
+    error.value = errorText(passkeyCause(cause), t('auth.passkey.failed'))
+  } finally {
+    passkeyBusy.value = false
+  }
+}
+
+/** The button: the browser's passkey dialog (the autofill request steps aside meanwhile). */
+async function signInWithPasskey() {
+  error.value = ''
+  passkeyBusy.value = true
+  await stopAutofill()
+  try {
+    const answer = await getPasskey()
+    if (answer) await finishPasskey(answer)
+  } catch (cause) {
+    error.value = errorText(passkeyCause(cause), t('auth.passkey.failed'))
+  } finally {
+    passkeyBusy.value = false
+    if (!stopped && (await conditionalAvailable())) startAutofill()
+  }
+}
 
 async function submit() {
   error.value = ''
@@ -110,7 +192,7 @@ async function submit() {
         <input
           v-model="login"
           class="glass-input"
-          autocomplete="username"
+          :autocomplete="passkeys ? 'username webauthn' : 'username'"
           autocapitalize="none"
           spellcheck="false"
           placeholder="Aether"
@@ -155,6 +237,18 @@ async function submit() {
         >
           <UiSpinner v-if="busy" class="size-4" />
           {{ linking ? $t('auth.signInAndLink') : $t('common.signIn') }}
+        </button>
+        <button
+          v-if="passkeys"
+          type="button"
+          class="btn-glass mt-3 w-full rounded-xl"
+          :disabled="busy || passkeyBusy"
+          :title="$t('settings.passkeys.addTitle')"
+          @click="signInWithPasskey"
+        >
+          <UiSpinner v-if="passkeyBusy" class="size-4" />
+          <KeyRound v-else class="size-[1.125rem]" aria-hidden="true" />
+          {{ $t('auth.passkey.signIn') }}
         </button>
       </div>
     </form>

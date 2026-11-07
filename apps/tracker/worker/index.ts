@@ -19,6 +19,7 @@ import { liveAccounts, liveChanges } from './routes/live-sync'
 import { accountSharing, invitations } from './routes/sharing'
 import { me } from './routes/me'
 import { oauth } from './routes/oauth'
+import { passkeys } from './routes/passkeys'
 import { progress } from './routes/progress'
 import { publicImport } from './routes/public'
 import { recovery } from './routes/recovery'
@@ -61,6 +62,7 @@ app.route('/bootstrap', bootstrap)
 app.route('/auth', auth)
 app.route('/auth', recovery)
 app.route('/auth/oauth', oauth)
+app.route('/auth/passkeys', passkeys)
 app.route('/me', me)
 app.route('/accounts', accounts)
 app.route('/accounts', progress)

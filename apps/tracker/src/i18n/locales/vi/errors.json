@@ -88,7 +88,13 @@
     "upstream_unreachable": "Lịch sử cầu nguyện không phản hồi",
     "user_not_found": "Không có người dùng tên này",
     "username_taken": "Tên đăng nhập đó đã được dùng",
-    "wish_conflict": "Đang có một lần nhập cầu nguyện khác; hãy thử lại"
+    "wish_conflict": "Đang có một lần nhập cầu nguyện khác; hãy thử lại",
+    "passkeys_unavailable": "Khóa truy cập chỉ dùng được trên teyvat.me",
+    "passkey_unknown": "Khóa truy cập này không thuộc tài khoản nào",
+    "passkey_exists": "Khóa truy cập này đã được thêm",
+    "too_many_passkeys": "Quá nhiều khóa truy cập",
+    "passkey_expired": "Quá lâu, hãy thử lại",
+    "passkey_failed": "Khóa truy cập không được chấp nhận"
   },
   "server": "Máy chủ gặp sự cố",
   "request": "Yêu cầu thất bại",

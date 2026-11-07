@@ -151,7 +151,8 @@
       "google": "Masuk dengan Google",
       "reset": "Masuk dengan tautan atur ulang",
       "legacy": "Masuk sebelum perangkat didaftar",
-      "irminsul": "Masuk dari Teyvat.me"
+      "irminsul": "Masuk dari Teyvat.me",
+      "passkey": "Masuk dengan kunci sandi"
     },
     "auto": "Otomatis: cocokkan akun menurut UID",
     "removedAccount": "Akun yang dihapus",
@@ -246,5 +247,30 @@
     "title": "Dukung Teyvat.me",
     "body": "Teyvat.me gratis dan dikelola satu orang. Jika bermanfaat, kamu bisa membantu biaya server di Ko-fi.",
     "button": "Dukung di Ko-fi"
+  },
+  "passkeys": {
+    "title": "Kunci sandi",
+    "ways": "Cara masuk",
+    "add": "Tambah kunci sandi",
+    "addTitle": "Masuk dengan Windows Hello, Touch ID, atau ponselmu",
+    "added": "Kunci sandi ditambahkan",
+    "notAdded": "Tidak bisa menambahkan kunci sandi",
+    "notLoaded": "Kunci sandi tidak dimuat",
+    "none": "Belum ada kunci sandi",
+    "addedOn": "Ditambahkan {date}",
+    "usedAgo": "Dipakai {when}",
+    "notUsed": "Belum dipakai",
+    "rename": "Ganti nama",
+    "nameLabel": "Nama kunci sandi",
+    "removeTitle": "Hapus {name}?",
+    "removeDetail": "Kunci ini tidak bisa lagi masuk ke akun ini. Kamu juga bisa menghapusnya dari perangkatmu.",
+    "removed": "Kunci sandi dihapus",
+    "notRemoved": "Tidak bisa menghapus kunci sandi",
+    "notRenamed": "Tidak bisa mengganti nama kunci sandi",
+    "lastWay": "Atur kata sandi atau tautkan akun dulu",
+    "nudgeTitle": "Masuk lebih cepat lain kali",
+    "nudgeText": "Tambahkan kunci sandi ke perangkat ini",
+    "setUp": "Atur",
+    "notNow": "Nanti saja"
   }
 }

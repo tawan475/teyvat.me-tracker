@@ -571,7 +571,7 @@ export const userSessions = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     method: text('method', {
-      enum: ['password', 'discord', 'google', 'reset', 'legacy', 'irminsul'],
+      enum: ['password', 'discord', 'google', 'reset', 'legacy', 'irminsul', 'passkey'],
     }).notNull(),
     userAgent: text('user_agent'),
     ip: text('ip'),
@@ -667,6 +667,52 @@ export const userIdentities = sqliteTable(
     uniqueIndex('user_identities_user_provider_unique').on(t.userId, t.provider),
   ],
 )
+
+/**
+ * Passkeys (WebAuthn, migration 0037; lib/webauthn, routes/passkeys): one
+ * more way in beside a password, Discord and Google. `credential_id` is the
+ * authenticator's id (base64url, unique across users); `public_key` its COSE
+ * key (base64url) and `algorithm` the COSE number (-7 ES256, -8 EdDSA, -257
+ * RS256); no attestation chain is kept. `sign_count` must climb on every use
+ * unless the authenticator keeps none (0). `user_handle` is what the
+ * authenticator stores as the user id (an HMAC of the user id, no personal
+ * data). `name` is the user's ("Windows Hello"); `last_used_at` NULL until
+ * its first sign-in.
+ */
+export const passkeys = sqliteTable(
+  'passkeys',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    credentialId: text('credential_id').notNull(),
+    publicKey: text('public_key').notNull(),
+    algorithm: integer('algorithm').notNull(),
+    signCount: integer('sign_count').notNull().default(0),
+    /** JSON array of the transports the browser reported ("internal", "hybrid", …). */
+    transports: text('transports', { mode: 'json' }).$type<string[]>(),
+    aaguid: text('aaguid'),
+    userHandle: text('user_handle').notNull(),
+    name: text('name').notNull(),
+    createdAt: timestamp('created_at'),
+    lastUsedAt: integer('last_used_at'),
+  },
+  (t) => [
+    uniqueIndex('passkeys_credential_id_unique').on(t.credentialId),
+    index('passkeys_user_idx').on(t.userId),
+  ],
+)
+
+/**
+ * Passkey challenges already answered (migration 0037): a challenge is
+ * stateless (signed, lib/webauthn), so using one inserts its hash here and a
+ * second use finds it. Maintenance deletes rows past `expires_at`.
+ */
+export const passkeyChallenges = sqliteTable('passkey_challenges', {
+  challengeHash: text('challenge_hash').primaryKey(),
+  expiresAt: integer('expires_at').notNull(),
+})
 
 /**
  * What each user stored per UTC day (migration 0018), for the daily upload

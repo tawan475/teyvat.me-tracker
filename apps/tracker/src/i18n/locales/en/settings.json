@@ -151,7 +151,8 @@
       "google": "Signed in with Google",
       "reset": "Signed in with a reset link",
       "legacy": "Signed in before devices were listed",
-      "irminsul": "Signed in from Teyvat.me"
+      "irminsul": "Signed in from Teyvat.me",
+      "passkey": "Signed in with a passkey"
     },
     "auto": "Auto: match the account by UID",
     "removedAccount": "Removed account",
@@ -246,5 +247,30 @@
     "title": "Support Teyvat.me",
     "body": "Teyvat.me is free and run by one person. If it helps you, you can help pay for the servers on Ko-fi.",
     "button": "Support on Ko-fi"
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "ways": "Ways to sign in",
+    "add": "Add a passkey",
+    "addTitle": "Sign in with Windows Hello, Touch ID or your phone",
+    "added": "Passkey added",
+    "notAdded": "Couldn't add the passkey",
+    "notLoaded": "Couldn't load passkeys",
+    "none": "No passkeys",
+    "addedOn": "Added {date}",
+    "usedAgo": "Used {when}",
+    "notUsed": "Not used yet",
+    "rename": "Rename",
+    "nameLabel": "Passkey name",
+    "removeTitle": "Remove {name}?",
+    "removeDetail": "It can't sign in to this account any more. You can also delete it from your device.",
+    "removed": "Passkey removed",
+    "notRemoved": "Couldn't remove the passkey",
+    "notRenamed": "Couldn't rename the passkey",
+    "lastWay": "Set a password or link an account first",
+    "nudgeTitle": "Sign in faster next time",
+    "nudgeText": "Add a passkey to this device",
+    "setUp": "Set up",
+    "notNow": "Not now"
   }
 }

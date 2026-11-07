@@ -35,6 +35,9 @@ import type {
   OAuthProvider,
   OAuthProvidersResponse,
   OAuthStartResponse,
+  PasskeyCreationOptions,
+  PasskeyRequestOptions,
+  PasskeyResponse,
   PlannerStateResponse,
   PlannerTargetsResponse,
   PlannerTasksResponse,
@@ -188,6 +191,32 @@ export const api = {
       noRefresh: true,
     }),
   identities: () => requestJson<IdentitiesResponse>('/api/auth/identities'),
+
+  // ----------------------------------------------------- passkeys
+  passkeys: () => requestJson<PasskeyResponse[]>('/api/auth/passkeys', { cache: 'no-store' }),
+  passkeyCreationOptions: () =>
+    requestJson<PasskeyCreationOptions>('/api/auth/passkeys/options', { method: 'POST' }),
+  /** Keeps the passkey the browser just made (`credential` = its JSON form). */
+  addPasskey: (credential: unknown, name?: string) =>
+    requestJson<PasskeyResponse>('/api/auth/passkeys', {
+      method: 'POST',
+      json: name ? { credential, name } : { credential },
+    }),
+  renamePasskey: (id: number, name: string) =>
+    requestJson<PasskeyResponse>(`/api/auth/passkeys/${id}`, { method: 'PATCH', json: { name } }),
+  removePasskey: (id: number) =>
+    requestJson<void>(`/api/auth/passkeys/${id}`, { method: 'DELETE' }),
+  passkeyRequestOptions: () =>
+    requestJson<PasskeyRequestOptions>('/api/auth/passkeys/login/options', {
+      method: 'POST',
+      noRefresh: true,
+    }),
+  passkeyLogin: (credential: unknown) =>
+    requestJson<MeResponse>('/api/auth/passkeys/login', {
+      method: 'POST',
+      json: { credential },
+      noRefresh: true,
+    }),
   /** The signed-in devices, this one marked `current`. */
   sessions: () => requestJson<SessionResponse[]>('/api/auth/sessions', { cache: 'no-store' }),
   /** Signs one device out (this one's: a sign-out here). */

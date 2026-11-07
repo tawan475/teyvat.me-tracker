@@ -88,7 +88,13 @@
     "upstream_unreachable": "祈願履歴から応答がありませんでした",
     "user_not_found": "その名前のユーザーはいません",
     "username_taken": "そのユーザー名は使用されています",
-    "wish_conflict": "別の祈願インポートが実行中です。もう一度お試しください"
+    "wish_conflict": "別の祈願インポートが実行中です。もう一度お試しください",
+    "passkeys_unavailable": "パスキーは teyvat.me でのみ使えます",
+    "passkey_unknown": "このパスキーはどのアカウントにも登録されていません",
+    "passkey_exists": "このパスキーは追加済みです",
+    "too_many_passkeys": "パスキーが多すぎます",
+    "passkey_expired": "時間切れです。もう一度お試しください",
+    "passkey_failed": "パスキーが受け付けられませんでした"
   },
   "server": "サーバーで問題が発生しました",
   "request": "リクエストに失敗しました",

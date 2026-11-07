@@ -151,7 +151,8 @@
       "google": "Accesso con Google",
       "reset": "Accesso con link di reimpostazione",
       "legacy": "Accesso prima dell'elenco dei dispositivi",
-      "irminsul": "Accesso da Teyvat.me"
+      "irminsul": "Accesso da Teyvat.me",
+      "passkey": "Accesso con passkey"
     },
     "auto": "Auto: account scelto in base all'UID",
     "removedAccount": "Account rimosso",
@@ -246,5 +247,30 @@
     "title": "Sostieni Teyvat.me",
     "body": "Teyvat.me è gratuito ed è gestito da una sola persona. Se ti è utile, puoi aiutare a pagare i server su Ko-fi.",
     "button": "Sostieni su Ko-fi"
+  },
+  "passkeys": {
+    "title": "Passkey",
+    "ways": "Modi di accesso",
+    "add": "Aggiungi una passkey",
+    "addTitle": "Accedi con Windows Hello, Touch ID o il telefono",
+    "added": "Passkey aggiunta",
+    "notAdded": "Impossibile aggiungere la passkey",
+    "notLoaded": "Passkey non caricate",
+    "none": "Nessuna passkey",
+    "addedOn": "Aggiunta {date}",
+    "usedAgo": "Usata {when}",
+    "notUsed": "Mai usata",
+    "rename": "Rinomina",
+    "nameLabel": "Nome della passkey",
+    "removeTitle": "Rimuovere {name}?",
+    "removeDetail": "Non potrà più accedere a questo account. Puoi anche eliminarla dal tuo dispositivo.",
+    "removed": "Passkey rimossa",
+    "notRemoved": "Impossibile rimuovere la passkey",
+    "notRenamed": "Impossibile rinominare la passkey",
+    "lastWay": "Imposta prima una password o collega un account",
+    "nudgeTitle": "Accedi più velocemente la prossima volta",
+    "nudgeText": "Aggiungi una passkey a questo dispositivo",
+    "setUp": "Configura",
+    "notNow": "Non ora"
   }
 }

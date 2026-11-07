@@ -151,7 +151,8 @@
       "google": "Mit Google angemeldet",
       "reset": "Mit Reset-Link angemeldet",
       "legacy": "Angemeldet, bevor Geräte gelistet wurden",
-      "irminsul": "Über Teyvat.me angemeldet"
+      "irminsul": "Über Teyvat.me angemeldet",
+      "passkey": "Mit Passkey angemeldet"
     },
     "auto": "Auto: Konto nach UID zuordnen",
     "removedAccount": "Entferntes Konto",
@@ -246,5 +247,30 @@
     "title": "Teyvat.me unterstützen",
     "body": "Teyvat.me ist kostenlos und wird von einer Person betrieben. Wenn es dir hilft, kannst du auf Ko-fi bei den Serverkosten helfen.",
     "button": "Auf Ko-fi unterstützen"
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "ways": "Anmeldemöglichkeiten",
+    "add": "Passkey hinzufügen",
+    "addTitle": "Mit Windows Hello, Touch ID oder dem Handy anmelden",
+    "added": "Passkey hinzugefügt",
+    "notAdded": "Passkey konnte nicht hinzugefügt werden",
+    "notLoaded": "Passkeys nicht geladen",
+    "none": "Keine Passkeys",
+    "addedOn": "Hinzugefügt {date}",
+    "usedAgo": "Genutzt {when}",
+    "notUsed": "Noch nicht genutzt",
+    "rename": "Umbenennen",
+    "nameLabel": "Name des Passkeys",
+    "removeTitle": "{name} entfernen?",
+    "removeDetail": "Damit kann man sich nicht mehr bei diesem Konto anmelden. Du kannst ihn auch auf deinem Gerät löschen.",
+    "removed": "Passkey entfernt",
+    "notRemoved": "Passkey konnte nicht entfernt werden",
+    "notRenamed": "Passkey konnte nicht umbenannt werden",
+    "lastWay": "Lege zuerst ein Passwort fest oder verknüpfe ein Konto",
+    "nudgeTitle": "Beim nächsten Mal schneller anmelden",
+    "nudgeText": "Füge diesem Gerät einen Passkey hinzu",
+    "setUp": "Einrichten",
+    "notNow": "Nicht jetzt"
   }
 }

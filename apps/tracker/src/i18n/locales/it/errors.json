@@ -88,7 +88,13 @@
     "upstream_unreachable": "La cronologia desideri non ha risposto",
     "user_not_found": "Nessun utente ha questo nome",
     "username_taken": "Questo nome utente è già in uso",
-    "wish_conflict": "È in corso un'altra importazione dei desideri; riprova"
+    "wish_conflict": "È in corso un'altra importazione dei desideri; riprova",
+    "passkeys_unavailable": "Le passkey funzionano solo su teyvat.me",
+    "passkey_unknown": "Questa passkey non appartiene a nessun account",
+    "passkey_exists": "Questa passkey è già stata aggiunta",
+    "too_many_passkeys": "Troppe passkey",
+    "passkey_expired": "Ci è voluto troppo, riprova",
+    "passkey_failed": "La passkey non è stata accettata"
   },
   "server": "Il server ha avuto un problema",
   "request": "Richiesta non riuscita",

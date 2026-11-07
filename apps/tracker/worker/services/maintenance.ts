@@ -9,7 +9,8 @@
  *   Sections are shared between snapshots, which is why a delete cannot free
  *   them on the spot.
  * - One-time links (auth_tokens) and irminsul's sign-in codes (oauth_codes)
- *   are purged a day after they expired; used ones go then too.
+ *   are purged a day after they expired; used ones go then too. Answered
+ *   passkey challenges go once they expired (an expired one is refused anyway).
  * - Upload days (the daily upload quota's counts) older than UPLOAD_DAYS_KEPT
  *   are purged.
  * - Session rows (user_sessions, with their IPs) are deleted SESSION_KEEP_DAYS
@@ -88,35 +89,46 @@ export async function runMaintenance(
 ): Promise<MaintenanceResult> {
   // One batch: a failure (the v1 tables gone, say) leaves nothing half done.
   const sessionsEnded = now - SESSION_KEEP_DAYS * 86_400_000
-  const [snapshots, sections, tokens, codes, uploadDays, sessions, signupIps, invites, legacy] =
-    await withLegacySchema((withV1) =>
-      d1.batch([
-        d1
-          .prepare('DELETE FROM snapshots WHERE deleted_at IS NOT NULL AND deleted_at < ?1')
-          .bind(now - TRASH_DAYS * 86_400_000),
-        d1.prepare(COLLECT_SECTION_BLOBS),
-        d1.prepare('DELETE FROM auth_tokens WHERE expires_at < ?1').bind(now - KEEP_EXPIRED_MS),
-        d1.prepare('DELETE FROM oauth_codes WHERE expires_at < ?1').bind(now - CODE_KEEP_MS),
-        d1
-          .prepare('DELETE FROM user_upload_days WHERE day < ?1')
-          .bind(utcDay(now - UPLOAD_DAYS_KEPT * 86_400_000)),
-        d1
-          .prepare('DELETE FROM user_sessions WHERE revoked_at < ?1 OR expires_at < ?1')
-          .bind(sessionsEnded),
-        d1
-          .prepare(
-            'UPDATE users SET signup_ip = NULL WHERE signup_ip IS NOT NULL AND created_at < ?1',
-          )
-          .bind(now - SIGNUP_IP_DAYS * 86_400_000),
-        expiredInvitesStatement(d1, now),
-        ...(withV1 ? [d1.prepare(COLLECT_LEGACY_BLOBS)] : []),
-      ]),
-    )
+  const [
+    snapshots,
+    sections,
+    tokens,
+    codes,
+    uploadDays,
+    sessions,
+    signupIps,
+    invites,
+    challenges,
+    legacy,
+  ] = await withLegacySchema((withV1) =>
+    d1.batch([
+      d1
+        .prepare('DELETE FROM snapshots WHERE deleted_at IS NOT NULL AND deleted_at < ?1')
+        .bind(now - TRASH_DAYS * 86_400_000),
+      d1.prepare(COLLECT_SECTION_BLOBS),
+      d1.prepare('DELETE FROM auth_tokens WHERE expires_at < ?1').bind(now - KEEP_EXPIRED_MS),
+      d1.prepare('DELETE FROM oauth_codes WHERE expires_at < ?1').bind(now - CODE_KEEP_MS),
+      d1
+        .prepare('DELETE FROM user_upload_days WHERE day < ?1')
+        .bind(utcDay(now - UPLOAD_DAYS_KEPT * 86_400_000)),
+      d1
+        .prepare('DELETE FROM user_sessions WHERE revoked_at < ?1 OR expires_at < ?1')
+        .bind(sessionsEnded),
+      d1
+        .prepare(
+          'UPDATE users SET signup_ip = NULL WHERE signup_ip IS NOT NULL AND created_at < ?1',
+        )
+        .bind(now - SIGNUP_IP_DAYS * 86_400_000),
+      expiredInvitesStatement(d1, now),
+      d1.prepare('DELETE FROM passkey_challenges WHERE expires_at < ?1').bind(now),
+      ...(withV1 ? [d1.prepare(COLLECT_LEGACY_BLOBS)] : []),
+    ]),
+  )
   const result: MaintenanceResult = {
     snapshots: snapshots!.meta.changes,
     // Rows returned: meta.changes would also count the counter trigger's updates.
     blobs: sections!.results.length + (legacy?.results.length ?? 0),
-    tokens: tokens!.meta.changes + codes!.meta.changes,
+    tokens: tokens!.meta.changes + codes!.meta.changes + challenges!.meta.changes,
     uploadDays: uploadDays!.meta.changes,
     sessions: sessions!.meta.changes,
     signupIps: signupIps!.meta.changes,

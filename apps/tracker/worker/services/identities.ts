@@ -167,7 +167,7 @@ export async function listIdentities(d1: D1Database, userId: number): Promise<Id
 
 /**
  * Removes the user's identity of `provider`, unless it is their last way in
- * (no password and no other identity): one statement, so two unlinks racing
+ * (no password, no other identity, no passkey): one statement, so two unlinks racing
  * can't remove both.
  */
 export async function unlinkIdentity(
@@ -180,7 +180,8 @@ export async function unlinkIdentity(
       `DELETE FROM user_identities
        WHERE user_id = ?1 AND provider = ?2
          AND ((SELECT password_hash FROM users WHERE id = ?1) <> ''
-              OR (SELECT count(*) FROM user_identities WHERE user_id = ?1) > 1)
+              OR (SELECT count(*) FROM user_identities WHERE user_id = ?1) > 1
+              OR EXISTS (SELECT 1 FROM passkeys WHERE user_id = ?1))
        RETURNING id`,
     )
     .bind(userId, provider)

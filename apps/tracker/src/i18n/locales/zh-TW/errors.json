@@ -88,7 +88,13 @@
     "upstream_unreachable": "祈願紀錄沒有回應",
     "user_not_found": "沒有這個使用者名稱",
     "username_taken": "此使用者名稱已被使用",
-    "wish_conflict": "另一個祈願匯入正在進行，請稍後再試"
+    "wish_conflict": "另一個祈願匯入正在進行，請稍後再試",
+    "passkeys_unavailable": "密碼金鑰僅能在 teyvat.me 使用",
+    "passkey_unknown": "此密碼金鑰不屬於任何帳號",
+    "passkey_exists": "此密碼金鑰已新增",
+    "too_many_passkeys": "密碼金鑰過多",
+    "passkey_expired": "逾時，請再試一次",
+    "passkey_failed": "密碼金鑰未被接受"
   },
   "server": "伺服器發生問題",
   "request": "請求失敗",

@@ -151,7 +151,8 @@
       "google": "Đăng nhập bằng Google",
       "reset": "Đăng nhập bằng liên kết đặt lại",
       "legacy": "Đăng nhập trước khi có danh sách thiết bị",
-      "irminsul": "Đăng nhập từ Teyvat.me"
+      "irminsul": "Đăng nhập từ Teyvat.me",
+      "passkey": "Đăng nhập bằng khóa truy cập"
     },
     "auto": "Tự động: khớp tài khoản theo UID",
     "removedAccount": "Tài khoản đã xóa",
@@ -246,5 +247,30 @@
     "title": "Ủng hộ Teyvat.me",
     "body": "Teyvat.me miễn phí và do một người duy trì. Nếu thấy hữu ích, bạn có thể góp phí máy chủ trên Ko-fi.",
     "button": "Ủng hộ trên Ko-fi"
+  },
+  "passkeys": {
+    "title": "Khóa truy cập",
+    "ways": "Cách đăng nhập",
+    "add": "Thêm khóa truy cập",
+    "addTitle": "Đăng nhập bằng Windows Hello, Touch ID hoặc điện thoại",
+    "added": "Đã thêm khóa truy cập",
+    "notAdded": "Không thêm được khóa truy cập",
+    "notLoaded": "Không tải được khóa truy cập",
+    "none": "Chưa có khóa truy cập",
+    "addedOn": "Thêm {date}",
+    "usedAgo": "Dùng {when}",
+    "notUsed": "Chưa dùng",
+    "rename": "Đổi tên",
+    "nameLabel": "Tên khóa truy cập",
+    "removeTitle": "Xóa {name}?",
+    "removeDetail": "Khóa này sẽ không đăng nhập được vào tài khoản này nữa. Bạn cũng có thể xóa nó khỏi thiết bị.",
+    "removed": "Đã xóa khóa truy cập",
+    "notRemoved": "Không xóa được khóa truy cập",
+    "notRenamed": "Không đổi tên được khóa truy cập",
+    "lastWay": "Hãy đặt mật khẩu hoặc liên kết tài khoản trước",
+    "nudgeTitle": "Lần sau đăng nhập nhanh hơn",
+    "nudgeText": "Thêm khóa truy cập cho thiết bị này",
+    "setUp": "Thiết lập",
+    "notNow": "Để sau"
   }
 }

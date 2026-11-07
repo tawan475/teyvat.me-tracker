@@ -88,7 +88,13 @@
     "upstream_unreachable": "L'historique des vœux n'a pas répondu",
     "user_not_found": "Aucun utilisateur ne porte ce nom",
     "username_taken": "Ce nom d'utilisateur est pris",
-    "wish_conflict": "Un autre import de vœux est en cours ; réessayez"
+    "wish_conflict": "Un autre import de vœux est en cours ; réessayez",
+    "passkeys_unavailable": "Les clés d'accès ne fonctionnent que sur teyvat.me",
+    "passkey_unknown": "Cette clé d'accès n'est liée à aucun compte",
+    "passkey_exists": "Cette clé d'accès est déjà ajoutée",
+    "too_many_passkeys": "Trop de clés d'accès",
+    "passkey_expired": "Trop long, réessayez",
+    "passkey_failed": "La clé d'accès n'a pas été acceptée"
   },
   "server": "Le serveur a rencontré un problème",
   "request": "Échec de la requête",

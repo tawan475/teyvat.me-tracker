@@ -7,6 +7,7 @@ import {
 } from '@gdt/shared'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Plus } from 'lucide-vue-next'
 import ProviderMark from '@/components/oauth/ProviderMark.vue'
 import { isProvider, oauthErrorText, providerLabel, providerNames } from '@/components/oauth/oauth'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -16,13 +17,17 @@ import { t } from '@/i18n'
 import { formatDateTime } from '@/lib/format'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
+import PasskeyRows from './PasskeyRows.vue'
+import { usePasskeys } from './passkeys'
 
 /**
  * Discord / Google sign-in: Link (a round trip to the provider, back here)
  * and Unlink, which the server refuses while it is the only way in. Hidden
  * while the server has no provider and nothing is linked. While the email
  * features are paused there is no "forgot password", so a user with nothing
- * linked is nudged to link one.
+ * linked is nudged to link one. On phones it also lists the passkeys under
+ * its title "Ways to sign in" (design B, the user's pick); from 900px they
+ * have their own panel (PasskeysPanel, design A).
  */
 const session = useSession()
 const feedback = useFeedback()
@@ -31,6 +36,9 @@ const router = useRouter()
 
 const data = ref<IdentitiesResponse | null>(null)
 const busy = ref<OAuthProvider | null>(null)
+const passkeys = usePasskeys()
+const passkeyList = passkeys.list
+const passkeysShown = passkeys.shown
 
 const rows = computed(() =>
   OAUTH_PROVIDERS.filter(
@@ -51,14 +59,18 @@ const nudge = computed(() =>
     : '',
 )
 
-/** Unlinking must leave a way in: a password or another linked account. */
+/** Unlinking must leave a way in: a password, another linked account or a passkey. */
 const canUnlink = computed(
-  () => session.me?.hasPassword === true || (data.value?.identities.length ?? 0) > 1,
+  () =>
+    session.me?.hasPassword === true ||
+    (data.value?.identities.length ?? 0) > 1 ||
+    (passkeyList.value?.length ?? 0) > 0,
 )
 
 async function load() {
   try {
     data.value = await api.identities()
+    passkeys.identityCount.value = data.value.identities.length
   } catch (cause) {
     feedback.error(t('settings.connected.notLoaded'), cause)
   }
@@ -160,7 +172,16 @@ function details(identity: IdentityResponse): string {
 </script>
 
 <template>
-  <UiPanel v-if="rows.length" :title="$t('settings.connected.title')">
+  <UiPanel v-if="rows.length || passkeysShown" :class="rows.length ? '' : 'min-[900px]:hidden'">
+    <template #header>
+      <h2 class="text-base font-semibold">
+        <template v-if="passkeysShown">
+          <span class="min-[900px]:hidden">{{ $t('settings.passkeys.ways') }}</span>
+          <span class="hidden min-[900px]:inline">{{ $t('settings.connected.title') }}</span>
+        </template>
+        <template v-else>{{ $t('settings.connected.title') }}</template>
+      </h2>
+    </template>
     <p
       v-if="nudge"
       class="mb-3 text-sm text-text-muted"
@@ -168,7 +189,7 @@ function details(identity: IdentityResponse): string {
     >
       {{ $t('settings.connected.nudge', { providers: nudge }) }}
     </p>
-    <ul class="flex flex-col divide-y divide-border-subtle">
+    <ul v-if="rows.length" class="flex flex-col divide-y divide-border-subtle">
       <li
         v-for="row in rows"
         :key="row.provider"
@@ -227,5 +248,30 @@ function details(identity: IdentityResponse): string {
         </div>
       </li>
     </ul>
+    <div
+      v-if="passkeysShown"
+      class="min-[900px]:hidden"
+      :class="rows.length ? 'mt-4 border-t border-border-subtle pt-4' : ''"
+    >
+      <h3 class="mb-3 text-xs font-semibold tracking-wider text-text-muted uppercase">
+        {{ $t('settings.passkeys.title') }}
+      </h3>
+      <PasskeyRows v-if="passkeyList?.length" compact />
+      <p v-else-if="passkeys.failed.value" class="text-sm text-text-muted">
+        {{ $t('settings.passkeys.notLoaded') }}
+      </p>
+      <UiButton
+        v-if="passkeys.available.value"
+        size="sm"
+        class="mt-4"
+        :loading="passkeys.busy.value === 'add'"
+        :disabled="passkeys.busy.value !== null"
+        :title="$t('settings.passkeys.addTitle')"
+        @click="passkeys.add"
+      >
+        <Plus v-if="passkeys.busy.value !== 'add'" class="size-4" aria-hidden="true" />
+        {{ $t('settings.passkeys.add') }}
+      </UiButton>
+    </div>
   </UiPanel>
 </template>

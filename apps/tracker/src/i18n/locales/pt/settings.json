@@ -151,7 +151,8 @@
       "google": "Conectado com Google",
       "reset": "Conectado com um link de redefinição",
       "legacy": "Conectado antes de os dispositivos serem listados",
-      "irminsul": "Conectado pelo Teyvat.me"
+      "irminsul": "Conectado pelo Teyvat.me",
+      "passkey": "Conectado com chave de acesso"
     },
     "auto": "Automático: conta pelo UID",
     "removedAccount": "Conta removida",
@@ -246,5 +247,30 @@
     "title": "Apoie o Teyvat.me",
     "body": "O Teyvat.me é gratuito e mantido por uma pessoa. Se ele te ajuda, você pode ajudar a pagar os servidores no Ko-fi.",
     "button": "Apoiar no Ko-fi"
+  },
+  "passkeys": {
+    "title": "Chaves de acesso",
+    "ways": "Formas de entrar",
+    "add": "Adicionar chave de acesso",
+    "addTitle": "Entre com Windows Hello, Touch ID ou seu celular",
+    "added": "Chave de acesso adicionada",
+    "notAdded": "Não foi possível adicionar a chave de acesso",
+    "notLoaded": "Chaves de acesso não carregadas",
+    "none": "Nenhuma chave de acesso",
+    "addedOn": "Adicionada {date}",
+    "usedAgo": "Usada {when}",
+    "notUsed": "Ainda não usada",
+    "rename": "Renomear",
+    "nameLabel": "Nome da chave de acesso",
+    "removeTitle": "Remover {name}?",
+    "removeDetail": "Ela não poderá mais entrar nesta conta. Você também pode apagá-la do seu dispositivo.",
+    "removed": "Chave de acesso removida",
+    "notRemoved": "Não foi possível remover a chave de acesso",
+    "notRenamed": "Não foi possível renomear a chave de acesso",
+    "lastWay": "Defina uma senha ou vincule uma conta antes",
+    "nudgeTitle": "Entre mais rápido da próxima vez",
+    "nudgeText": "Adicione uma chave de acesso a este dispositivo",
+    "setUp": "Configurar",
+    "notNow": "Agora não"
   }
 }

@@ -88,7 +88,13 @@
     "upstream_unreachable": "El historial de deseos no respondió",
     "user_not_found": "Ningún usuario tiene ese nombre",
     "username_taken": "Ese nombre de usuario está en uso",
-    "wish_conflict": "Hay otra importación de deseos en curso; inténtalo de nuevo"
+    "wish_conflict": "Hay otra importación de deseos en curso; inténtalo de nuevo",
+    "passkeys_unavailable": "Las llaves de acceso solo funcionan en teyvat.me",
+    "passkey_unknown": "Esa llave de acceso no pertenece a ninguna cuenta",
+    "passkey_exists": "Esa llave de acceso ya está añadida",
+    "too_many_passkeys": "Demasiadas llaves de acceso",
+    "passkey_expired": "Tardó demasiado, inténtalo de nuevo",
+    "passkey_failed": "No se aceptó la llave de acceso"
   },
   "server": "El servidor tuvo un problema",
   "request": "Error en la solicitud",

@@ -726,6 +726,8 @@ export interface OAuthProvidersResponse {
   emailFeatures: boolean
   turnstileSiteKey: string | null
   signups: SignupMode
+  /** Passkeys work on this host (teyvat.me and localhost only; absent from older Workers). */
+  passkeys?: boolean
 }
 
 /** `POST /api/auth/oauth/:provider/start`: where to send the browser. */
@@ -783,7 +785,7 @@ export interface IdentitiesResponse {
  * How a session signed in: a password, Discord or Google, a reset link,
  * `legacy` (signed in before sessions were listed; how is not known), or
  * `irminsul` (the desktop app, signed in through /link; Bearer tokens, no
- * cookies).
+ * cookies), or `passkey`.
  */
 export const SESSION_METHODS = [
   'password',
@@ -792,6 +794,7 @@ export const SESSION_METHODS = [
   'reset',
   'legacy',
   'irminsul',
+  'passkey',
 ] as const
 export type SessionMethod = (typeof SESSION_METHODS)[number]
 

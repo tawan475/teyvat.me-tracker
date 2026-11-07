@@ -23,3 +23,10 @@ export function fromBase64(text: string): Uint8Array | null {
 export function toBase64Url(bytes: Uint8Array): string {
   return toBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
+
+/** Bytes of URL-safe base64 (padding optional); null for anything else. */
+export function fromBase64Url(text: string): Uint8Array | null {
+  if (!/^[A-Za-z0-9_-]*$/.test(text)) return null
+  const padded = text.replace(/-/g, '+').replace(/_/g, '/')
+  return fromBase64(padded + '='.repeat((4 - (padded.length % 4)) % 4))
+}

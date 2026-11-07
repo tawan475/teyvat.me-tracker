@@ -88,7 +88,13 @@
     "upstream_unreachable": "Der Gebetsverlauf hat nicht geantwortet",
     "user_not_found": "Kein Benutzer hat diesen Namen",
     "username_taken": "Dieser Benutzername ist vergeben",
-    "wish_conflict": "Ein anderer Gebetsimport läuft; versuch es erneut"
+    "wish_conflict": "Ein anderer Gebetsimport läuft; versuch es erneut",
+    "passkeys_unavailable": "Passkeys gibt es nur auf teyvat.me",
+    "passkey_unknown": "Dieser Passkey gehört zu keinem Konto",
+    "passkey_exists": "Dieser Passkey ist schon hinzugefügt",
+    "too_many_passkeys": "Zu viele Passkeys",
+    "passkey_expired": "Das hat zu lange gedauert, versuch es noch einmal",
+    "passkey_failed": "Der Passkey wurde nicht angenommen"
   },
   "server": "Der Server hatte ein Problem",
   "request": "Anfrage fehlgeschlagen",

@@ -12,6 +12,7 @@ import { setClockPreference } from '@/lib/format'
 import { applyTheme } from '@/lib/theme'
 import { applyLocale, storedPreference } from '@/i18n/apply'
 import { bootCacheUser, clearBootCache, readBootCache, updateBootCache } from './boot-cache'
+import { markSignedUp } from '@/lib/passkey-nudge-store'
 import { setPushOnHere } from '@/lib/push-flag'
 import { bootstrapOnce, forgetBootstrap } from './bootstrap'
 
@@ -107,6 +108,12 @@ export const useSession = defineStore('session', () => {
     loading = Promise.resolve()
   }
 
+  /** Signs in with a passkey's answer (`credential` = its JSON form). */
+  async function passkeyLogin(credential: unknown) {
+    adopt(await api.passkeyLogin(credential))
+    loading = Promise.resolve()
+  }
+
   async function register(
     username: string,
     email: string | null,
@@ -115,12 +122,14 @@ export const useSession = defineStore('session', () => {
   ) {
     adopt(await api.register({ username, email, password, turnstile }))
     loading = Promise.resolve()
+    markSignedUp()
   }
 
   /** A new account for the provider account waiting on /oauth; signs in. */
   async function oauthRegister(username: string, useEmail: boolean, turnstile?: string) {
     adopt(await api.oauthRegister({ username, useEmail, turnstile }))
     loading = Promise.resolve()
+    markSignedUp()
   }
 
   /** Signs in with a password and links the waiting provider account (unless `problem`). */
@@ -213,6 +222,7 @@ export const useSession = defineStore('session', () => {
     register,
     oauthRegister,
     oauthLinkLogin,
+    passkeyLogin,
     logout,
     logoutAll,
     updateProfile,

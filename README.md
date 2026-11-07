@@ -309,7 +309,7 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   told apart by a `typ` claim: access `gdt_at` (15 min, path `/api`, verified
   without D1) and refresh `gdt_rt` (30 days, path `/api/auth`, SameSite
   Strict). Both carry `sid`, the device's row in `user_sessions` (migration
-  0019: method password / discord / google / reset / legacy / `irminsul` (the capture app), user agent, IP
+  0019: method password / discord / google / reset / legacy / `irminsul` (the capture app) / `passkey`, user agent, IP
   and first IP, `request.cf` country and city, created, last seen, expiry,
   revoked), and `users.token_version`. A refresh is one `UPDATE … RETURNING`
   of that row (active, unexpired, version current); it slides the expiry and
@@ -331,6 +331,37 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   2026-11-20. `users` also keeps `signup_ip`, `signup_country` and
   `last_active_at` (written at most hourly). Cookie-authed writes need
   `x-gdt-csrf: 1`.
+- **Passkeys** (WebAuthn; `worker/lib/webauthn.ts`, `worker/routes/passkeys.ts`,
+  migration 0037, plan `docs/plans/open-site.md` §5). One more way in beside a
+  password, Discord and Google; a sign-in with one makes a `passkey` session
+  row and the same cookies (Turnstile and Argon2 skipped, the per-IP limiter
+  kept). Routes under `/api/auth/passkeys`: `GET /` (list), `POST /options` +
+  `POST /` (register), `PATCH /:id` (rename), `DELETE /:id` (remove) behind
+  `requireActiveSession`; `POST /login/options` + `POST /login` signed out.
+  Verified by hand on WebCrypto (no library): a small CBOR reader, COSE keys
+  ES256 / EdDSA / RS256, attestation `none` (the key is kept, not the chain),
+  user verification required, the origin and RP ID hash checked, the sign
+  count must climb unless the authenticator keeps none (0). Challenges are
+  stateless (16 random bytes + expiry + an HMAC of `JWT_SECRET` over both
+  and what they are for: one user's registration, 5 min, or a sign-in,
+  10 min), so options cost no storage and work in any number of tabs; an
+  answered challenge's hash goes into `passkey_challenges` and a second use
+  is refused (maintenance drops expired rows). RP ID `teyvat.me` (https
+  only) and `localhost` under `vite dev`; any other host (the old
+  genshin-tracker.475.dev too) answers 404 `passkeys_unavailable` and
+  `/api/auth/oauth/providers` says `passkeys: false`. Removing the last
+  passkey, or unlinking the last provider, is refused (409 `last_sign_in`)
+  while nothing else gets in. `user_handle` is an HMAC of the user id (no
+  personal data). The website: "Sign in with a passkey" under Sign in on
+  /login plus the browser's autofill in the username box (conditional UI,
+  renewed every 9 min); Settings → Account's Passkeys panel from 900px
+  (phones list them inside the Connected accounts card, titled "Ways to
+  sign in"); a reminder on Home (a card at the top and a corner toast that
+  fades after 12 s) only on a device that can make one, for an account
+  with none, at most every 30 days, never after the third Not now, not in
+  the first 7 days after signing up (`lib/passkey-nudge.ts`, localStorage
+  `gdt:passkey-nudge`). A passkey the server no longer knows is reported to
+  the browser (`signalUnknownCredential`) where it supports that.
 - **Capture app contract**: `POST
   /api/genshin-accounts-public/import-by-key` (multipart `file` + optional
   `timestamp`, header `x-import-key`) and `GET .../verify-key`. Any 2xx is

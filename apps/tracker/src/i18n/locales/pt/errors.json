@@ -88,7 +88,13 @@
     "upstream_unreachable": "O histórico de Orações não respondeu",
     "user_not_found": "Nenhum usuário tem esse nome",
     "username_taken": "Esse nome de usuário já está em uso",
-    "wish_conflict": "Outra importação de Orações está em andamento; tente de novo"
+    "wish_conflict": "Outra importação de Orações está em andamento; tente de novo",
+    "passkeys_unavailable": "As chaves de acesso só funcionam no teyvat.me",
+    "passkey_unknown": "Essa chave de acesso não pertence a nenhuma conta",
+    "passkey_exists": "Essa chave de acesso já foi adicionada",
+    "too_many_passkeys": "Chaves de acesso demais",
+    "passkey_expired": "Demorou demais, tente de novo",
+    "passkey_failed": "A chave de acesso não foi aceita"
   },
   "server": "O servidor teve um problema",
   "request": "Falha na solicitação",

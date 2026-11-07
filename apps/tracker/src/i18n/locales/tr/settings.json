@@ -151,7 +151,8 @@
       "google": "Google ile giriş yapıldı",
       "reset": "Sıfırlama bağlantısıyla giriş yapıldı",
       "legacy": "Cihazlar listelenmeden önce giriş yapıldı",
-      "irminsul": "Teyvat.me'dan giriş yapıldı"
+      "irminsul": "Teyvat.me'dan giriş yapıldı",
+      "passkey": "Geçiş anahtarıyla giriş yapıldı"
     },
     "auto": "Otomatik: hesabı UID'ye göre eşle",
     "removedAccount": "Kaldırılmış hesap",
@@ -246,5 +247,30 @@
     "title": "Teyvat.me'yi destekle",
     "body": "Teyvat.me ücretsizdir ve tek bir kişi tarafından yürütülür. İşine yarıyorsa Ko-fi'de sunucu masraflarına yardım edebilirsin.",
     "button": "Ko-fi'de destekle"
+  },
+  "passkeys": {
+    "title": "Geçiş anahtarları",
+    "ways": "Giriş yolları",
+    "add": "Geçiş anahtarı ekle",
+    "addTitle": "Windows Hello, Touch ID veya telefonunla giriş yap",
+    "added": "Geçiş anahtarı eklendi",
+    "notAdded": "Geçiş anahtarı eklenemedi",
+    "notLoaded": "Geçiş anahtarları yüklenemedi",
+    "none": "Geçiş anahtarı yok",
+    "addedOn": "Eklendi: {date}",
+    "usedAgo": "Kullanıldı: {when}",
+    "notUsed": "Henüz kullanılmadı",
+    "rename": "Yeniden adlandır",
+    "nameLabel": "Geçiş anahtarı adı",
+    "removeTitle": "{name} kaldırılsın mı?",
+    "removeDetail": "Artık bu hesaba giriş yapamaz. Cihazından da silebilirsin.",
+    "removed": "Geçiş anahtarı kaldırıldı",
+    "notRemoved": "Geçiş anahtarı kaldırılamadı",
+    "notRenamed": "Geçiş anahtarı yeniden adlandırılamadı",
+    "lastWay": "Önce bir şifre belirle veya bir hesap bağla",
+    "nudgeTitle": "Bir dahaki sefere daha hızlı giriş yap",
+    "nudgeText": "Bu cihaza bir geçiş anahtarı ekle",
+    "setUp": "Kur",
+    "notNow": "Şimdi değil"
   }
 }

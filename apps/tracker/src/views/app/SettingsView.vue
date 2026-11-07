@@ -4,6 +4,7 @@ import AppearancePanel from '@/components/settings/AppearancePanel.vue'
 import ConnectedAccountsPanel from '@/components/settings/ConnectedAccountsPanel.vue'
 import DeleteUserPanel from '@/components/settings/DeleteUserPanel.vue'
 import DevicesSummary from '@/components/settings/DevicesSummary.vue'
+import PasskeysPanel from '@/components/settings/PasskeysPanel.vue'
 import PasswordPanel from '@/components/settings/PasswordPanel.vue'
 import ProfilePanel from '@/components/settings/ProfilePanel.vue'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
@@ -27,6 +28,8 @@ import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
       <ProfilePanel class="col-span-full" />
       <PasswordPanel class="min-w-0" />
       <ConnectedAccountsPanel class="min-w-0" />
+      <!-- Phones list passkeys inside Connected accounts instead (the user's pick). -->
+      <PasskeysPanel class="col-span-full hidden min-w-0 min-[900px]:block" />
       <DevicesSummary class="min-w-0" />
       <UserImportKeyPanel class="min-w-0" />
     </SettingsSection>

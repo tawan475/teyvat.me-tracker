@@ -88,7 +88,13 @@
     "upstream_unreachable": "Riwayat permohonan tidak menjawab",
     "user_not_found": "Tidak ada pengguna dengan nama itu",
     "username_taken": "Nama pengguna itu sudah dipakai",
-    "wish_conflict": "Impor permohonan lain sedang berjalan; coba lagi"
+    "wish_conflict": "Impor permohonan lain sedang berjalan; coba lagi",
+    "passkeys_unavailable": "Kunci sandi hanya berfungsi di teyvat.me",
+    "passkey_unknown": "Kunci sandi itu tidak terhubung ke akun mana pun",
+    "passkey_exists": "Kunci sandi itu sudah ditambahkan",
+    "too_many_passkeys": "Terlalu banyak kunci sandi",
+    "passkey_expired": "Terlalu lama, coba lagi",
+    "passkey_failed": "Kunci sandi tidak diterima"
   },
   "server": "Server mengalami masalah",
   "request": "Permintaan gagal",

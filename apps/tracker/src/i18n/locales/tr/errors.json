@@ -88,7 +88,13 @@
     "upstream_unreachable": "Dilek geçmişi yanıt vermedi",
     "user_not_found": "Bu adda kullanıcı yok",
     "username_taken": "Bu kullanıcı adı alınmış",
-    "wish_conflict": "Başka bir dilek içe aktarımı çalışıyor; tekrar dene"
+    "wish_conflict": "Başka bir dilek içe aktarımı çalışıyor; tekrar dene",
+    "passkeys_unavailable": "Geçiş anahtarları yalnızca teyvat.me'de çalışır",
+    "passkey_unknown": "Bu geçiş anahtarı hiçbir hesaba ait değil",
+    "passkey_exists": "Bu geçiş anahtarı zaten eklendi",
+    "too_many_passkeys": "Çok fazla geçiş anahtarı",
+    "passkey_expired": "Çok uzun sürdü, tekrar dene",
+    "passkey_failed": "Geçiş anahtarı kabul edilmedi"
   },
   "server": "Sunucuda bir sorun oluştu",
   "request": "İstek başarısız",

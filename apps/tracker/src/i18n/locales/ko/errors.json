@@ -88,7 +88,13 @@
     "upstream_unreachable": "기원 기록이 응답하지 않았습니다",
     "user_not_found": "해당 이름의 사용자가 없습니다",
     "username_taken": "이미 사용 중인 사용자 이름입니다",
-    "wish_conflict": "다른 기원 가져오기가 진행 중입니다. 다시 시도하세요"
+    "wish_conflict": "다른 기원 가져오기가 진행 중입니다. 다시 시도하세요",
+    "passkeys_unavailable": "패스키는 teyvat.me에서만 사용할 수 있습니다",
+    "passkey_unknown": "이 패스키는 어떤 계정에도 등록되어 있지 않습니다",
+    "passkey_exists": "이미 추가된 패스키입니다",
+    "too_many_passkeys": "패스키가 너무 많습니다",
+    "passkey_expired": "시간이 초과되었습니다. 다시 시도하세요",
+    "passkey_failed": "패스키가 승인되지 않았습니다"
   },
   "server": "서버에 문제가 발생했습니다",
   "request": "요청 실패",

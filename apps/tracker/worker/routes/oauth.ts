@@ -47,6 +47,7 @@ import { Hono, type Context, type MiddlewareHandler } from 'hono'
 import { getDb } from '../db/client'
 import { userSessions, users } from '../db/schema'
 import type { AppEnv } from '../env'
+import { relyingParty } from '../lib/webauthn'
 import { emailFeatures } from '../lib/email'
 import { ApiError, clientIp, isUniqueViolation, notFound, parseJson, rateLimit } from '../lib/http'
 import {
@@ -148,6 +149,7 @@ export const oauth = new Hono<AppEnv>()
       emailFeatures: emailFeatures(c.env),
       turnstileSiteKey: turnstileConfig(c.env)?.siteKey ?? null,
       signups: await signupMode(c.env.DB),
+      passkeys: relyingParty(c.req.url) !== null,
     } satisfies OAuthProvidersResponse)
   })
 

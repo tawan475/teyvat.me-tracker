@@ -20,6 +20,8 @@ export interface SignInOptions {
   emailFeatures: boolean
   turnstileSiteKey: string | null
   signups: SignupMode
+  /** Passkeys work on this host (teyvat.me, localhost). */
+  passkeys: boolean
 }
 
 let options: Promise<SignInOptions> | null = null
@@ -45,6 +47,7 @@ export function loadSignInOptions(fresh = false): Promise<SignInOptions> {
       signups: (SIGNUP_MODES as readonly string[]).includes(response.signups)
         ? response.signups
         : 'open',
+      passkeys: response.passkeys === true,
     }))
     .catch(() => {
       options = null
@@ -53,6 +56,7 @@ export function loadSignInOptions(fresh = false): Promise<SignInOptions> {
         emailFeatures: false,
         turnstileSiteKey: null,
         signups: 'open' as const,
+        passkeys: false,
       }
     })
   return options

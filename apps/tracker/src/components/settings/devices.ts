@@ -1,6 +1,6 @@
 import type { SessionMethod, SessionResponse } from '@gdt/shared'
 import type { Component } from 'vue'
-import { History, KeyRound, LifeBuoy, Monitor, Smartphone } from 'lucide-vue-next'
+import { Fingerprint, History, KeyRound, LifeBuoy, Monitor, Smartphone } from 'lucide-vue-next'
 import { t } from '@/i18n'
 import { describeUserAgent } from '@/lib/user-agent'
 
@@ -12,6 +12,7 @@ export const METHOD_ICONS: Record<SessionMethod, Component | undefined> = {
   reset: LifeBuoy,
   legacy: History,
   irminsul: Monitor,
+  passkey: Fingerprint,
 }
 
 export const methodTitle = (method: SessionMethod): string => t(`settings.devices.method.${method}`)

@@ -151,7 +151,8 @@
       "google": "使用 Google 登录",
       "reset": "使用重置链接登录",
       "legacy": "在设备列表功能上线前登录",
-      "irminsul": "从 Teyvat.me 登录"
+      "irminsul": "从 Teyvat.me 登录",
+      "passkey": "使用通行密钥登录"
     },
     "auto": "自动：按 UID 匹配账号",
     "removedAccount": "已删除的账号",
@@ -246,5 +247,30 @@
     "title": "支持 Teyvat.me",
     "body": "Teyvat.me 免费使用，由一个人维护。如果它对你有帮助，可以在 Ko-fi 上帮忙分担服务器费用。",
     "button": "在 Ko-fi 上支持"
+  },
+  "passkeys": {
+    "title": "通行密钥",
+    "ways": "登录方式",
+    "add": "添加通行密钥",
+    "addTitle": "使用 Windows Hello、Touch ID 或手机登录",
+    "added": "已添加通行密钥",
+    "notAdded": "无法添加通行密钥",
+    "notLoaded": "未能加载通行密钥",
+    "none": "暂无通行密钥",
+    "addedOn": "添加于 {date}",
+    "usedAgo": "{when}使用",
+    "notUsed": "尚未使用",
+    "rename": "重命名",
+    "nameLabel": "通行密钥名称",
+    "removeTitle": "移除 {name}？",
+    "removeDetail": "它将无法再登录此账号。你也可以从设备上删除它。",
+    "removed": "已移除通行密钥",
+    "notRemoved": "无法移除通行密钥",
+    "notRenamed": "无法重命名通行密钥",
+    "lastWay": "请先设置密码或关联账号",
+    "nudgeTitle": "下次登录更快",
+    "nudgeText": "为此设备添加通行密钥",
+    "setUp": "设置",
+    "notNow": "以后再说"
   }
 }

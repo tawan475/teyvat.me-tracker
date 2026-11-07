@@ -151,7 +151,8 @@
       "google": "使用 Google 登入",
       "reset": "使用重設連結登入",
       "legacy": "在裝置列表功能上線前登入",
-      "irminsul": "從 Teyvat.me 登入"
+      "irminsul": "從 Teyvat.me 登入",
+      "passkey": "使用密碼金鑰登入"
     },
     "auto": "自動：依 UID 對應帳號",
     "removedAccount": "已刪除的帳號",
@@ -246,5 +247,30 @@
     "title": "支持 Teyvat.me",
     "body": "Teyvat.me 免費使用，由一個人維護。如果它對你有幫助，可以在 Ko-fi 上幫忙分擔伺服器費用。",
     "button": "在 Ko-fi 上支持"
+  },
+  "passkeys": {
+    "title": "密碼金鑰",
+    "ways": "登入方式",
+    "add": "新增密碼金鑰",
+    "addTitle": "使用 Windows Hello、Touch ID 或手機登入",
+    "added": "已新增密碼金鑰",
+    "notAdded": "無法新增密碼金鑰",
+    "notLoaded": "未能載入密碼金鑰",
+    "none": "尚無密碼金鑰",
+    "addedOn": "新增於 {date}",
+    "usedAgo": "{when}使用",
+    "notUsed": "尚未使用",
+    "rename": "重新命名",
+    "nameLabel": "密碼金鑰名稱",
+    "removeTitle": "移除 {name}？",
+    "removeDetail": "它將無法再登入此帳號。你也可以從裝置上刪除它。",
+    "removed": "已移除密碼金鑰",
+    "notRemoved": "無法移除密碼金鑰",
+    "notRenamed": "無法重新命名密碼金鑰",
+    "lastWay": "請先設定密碼或連結帳號",
+    "nudgeTitle": "下次登入更快",
+    "nudgeText": "為此裝置新增密碼金鑰",
+    "setUp": "設定",
+    "notNow": "以後再說"
   }
 }

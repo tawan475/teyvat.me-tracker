@@ -286,6 +286,7 @@ describe('configuration', () => {
       emailFeatures: false,
       turnstileSiteKey: null,
       signups: 'open',
+      passkeys: true,
     })
     const start = await post(client, '/api/auth/oauth/discord/start', {})
     expect(start).toMatchObject({ status: 404, code: 'provider_unavailable' })
@@ -298,6 +299,7 @@ describe('configuration', () => {
       emailFeatures: false,
       turnstileSiteKey: null,
       signups: 'open',
+      passkeys: true,
     })
     expect(providers.requests).toEqual([])
   })
@@ -309,6 +311,7 @@ describe('configuration', () => {
       emailFeatures: false,
       turnstileSiteKey: null,
       signups: 'open',
+      passkeys: true,
     })
   })
 
@@ -319,6 +322,7 @@ describe('configuration', () => {
       emailFeatures: false,
       turnstileSiteKey: null,
       signups: 'open',
+      passkeys: true,
     })
     expect(
       await new Client(via(MAIL_ON)).json<OAuthProvidersResponse>('/api/auth/oauth/providers'),
@@ -327,6 +331,7 @@ describe('configuration', () => {
       emailFeatures: true,
       turnstileSiteKey: null,
       signups: 'open',
+      passkeys: true,
     })
     const discord = new URL(await startSignIn(client, 'discord'))
     expect(discord.origin + discord.pathname).toBe('https://discord.com/oauth2/authorize')

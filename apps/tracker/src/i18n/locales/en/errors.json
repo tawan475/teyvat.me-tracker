@@ -88,7 +88,13 @@
     "upstream_unreachable": "The wish history did not answer",
     "user_not_found": "No user has that name",
     "username_taken": "That username is taken",
-    "wish_conflict": "Another wish import is running; try again"
+    "wish_conflict": "Another wish import is running; try again",
+    "passkeys_unavailable": "Passkeys work on teyvat.me only",
+    "passkey_unknown": "That passkey isn't on any account",
+    "passkey_exists": "That passkey is already added",
+    "too_many_passkeys": "Too many passkeys",
+    "passkey_expired": "That took too long, try again",
+    "passkey_failed": "The passkey was not accepted"
   },
   "server": "The server had a problem",
   "request": "Request failed",

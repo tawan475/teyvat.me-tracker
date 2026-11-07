@@ -151,7 +151,8 @@
       "google": "Google でログイン",
       "reset": "リセットリンクでログイン",
       "legacy": "デバイス一覧の導入前にログイン",
-      "irminsul": "Teyvat.me からログイン"
+      "irminsul": "Teyvat.me からログイン",
+      "passkey": "パスキーでログイン"
     },
     "auto": "自動：UID でアカウントを判定",
     "removedAccount": "削除されたアカウント",
@@ -246,5 +247,30 @@
     "title": "Teyvat.me を支援",
     "body": "Teyvat.me は無料で、一人で運営しています。役に立っていたら、Ko-fi でサーバー費用を支援していただけると助かります。",
     "button": "Ko-fi で支援する"
+  },
+  "passkeys": {
+    "title": "パスキー",
+    "ways": "ログイン方法",
+    "add": "パスキーを追加",
+    "addTitle": "Windows Hello、Touch ID、スマートフォンでログイン",
+    "added": "パスキーを追加しました",
+    "notAdded": "パスキーを追加できませんでした",
+    "notLoaded": "パスキーを読み込めませんでした",
+    "none": "パスキーなし",
+    "addedOn": "追加 {date}",
+    "usedAgo": "使用 {when}",
+    "notUsed": "未使用",
+    "rename": "名前を変更",
+    "nameLabel": "パスキーの名前",
+    "removeTitle": "{name} を削除しますか？",
+    "removeDetail": "このアカウントにはログインできなくなります。端末からも削除できます。",
+    "removed": "パスキーを削除しました",
+    "notRemoved": "パスキーを削除できませんでした",
+    "notRenamed": "パスキーの名前を変更できませんでした",
+    "lastWay": "先にパスワードを設定するか、アカウントを連携してください",
+    "nudgeTitle": "次回はもっと速くログイン",
+    "nudgeText": "この端末にパスキーを追加",
+    "setUp": "設定する",
+    "notNow": "今はしない"
   }
 }

@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { loadAchievements } from '@gdt/game-data'
-import { decodeTasks, type SnapshotResponse, type TasksSection } from '@gdt/shared'
+import {
+  decodeCharacterExtras,
+  decodeTasks,
+  type KeyRef,
+  type SnapshotResponse,
+  type TasksSection,
+} from '@gdt/shared'
+import { withLiveParts } from '@/data/live-now'
 import { computed, shallowRef, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { History, Upload } from 'lucide-vue-next'
@@ -155,23 +162,40 @@ const latestParts = useResource(
   () => account.value,
   async (a) => {
     if (!a.latest) return null
-    const bundle = await loadBundle(a, {
-      ids: [a.latest.id],
-      sections: ['characterExtras', 'tasks'],
-    })
+    const [bundle, live] = await Promise.all([
+      loadBundle(a, { ids: [a.latest.id], sections: ['characterExtras', 'tasks'] }),
+      // Friendship and the Abyss move between snapshots too (live sync).
+      loadLive(a).catch(() => null),
+    ])
     const snapshot = bundle.snapshots.at(-1)
     const text = (key: string | null | undefined) => (key ? bundle.texts.get(key) : undefined)
     const extras = text(snapshot?.characterExtras)
     const tasks = text(snapshot?.tasks)
-    const rows = extras === undefined ? null : (JSON.parse(extras) as unknown[][])
+    const now = withLiveParts(
+      {
+        ...(extras === undefined
+          ? {}
+          : {
+              gi_characters: Object.fromEntries(
+                decodeCharacterExtras(JSON.parse(extras) as KeyRef[][]),
+              ),
+            }),
+        ...(tasks === undefined
+          ? {}
+          : { gi_tasks: decodeTasks(JSON.parse(tasks) as TasksSection) }),
+      },
+      live,
+      a.latest.id,
+      ['gi_characters', 'gi_tasks'],
+    )
+    const friendship = Object.values(now.gi_characters ?? {}).map((c) => c.friendship ?? 0)
     return {
       accountId: a.id,
       // Captures before friendship was read have none above 0: unknown, not 0.
-      maxFriendship: rows?.some((row) => Number(row[1]) > 0)
-        ? rows.filter((row) => row[1] === 10).length
+      maxFriendship: friendship.some((level) => level > 0)
+        ? friendship.filter((level) => level === 10).length
         : null,
-      abyss:
-        tasks === undefined ? null : (decodeTasks(JSON.parse(tasks) as TasksSection).abyss ?? null),
+      abyss: now.gi_tasks?.abyss ?? null,
     }
   },
 )

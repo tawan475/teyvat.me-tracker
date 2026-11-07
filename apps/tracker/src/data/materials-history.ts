@@ -248,3 +248,61 @@ export function changeOver(history: MaterialsHistory, key: string, frame: ChartF
   const series = history.series.get(key)
   return valueAt(series, history.times.length - 1) - valueAt(series, frame.baseline)
 }
+
+// --------------------------------------------------------------------- live
+
+/** The open live journal as the Materials page reads it (live sync). */
+export interface MaterialsJournal {
+  open?: boolean
+  base?: { snapshotId: number; takenAt: number } | null
+  updatedAt?: number | null
+  changes?: readonly (readonly [string, readonly (string | number)[], unknown?])[]
+}
+
+/**
+ * The history with the live journal's material changes as one more point
+ * ("now", at the journal's last batch), so the bag, the wallet, the changes
+ * and the charts show what Capture has sent since the newest snapshot. A
+ * journal that isn't open on the newest snapshot, or names no material,
+ * leaves the history as it is.
+ */
+export function withLiveMaterials(
+  history: MaterialsHistory,
+  live: MaterialsJournal | null | undefined,
+): MaterialsHistory {
+  const newest = history.ids.at(-1)
+  if (!live?.open || newest === undefined || live.base?.snapshotId !== newest) return history
+  const latest = new Map(history.latest)
+  let touched = false
+  for (const [op, path, value] of live.changes ?? []) {
+    if (path[0] !== 'materials' || path.length !== 2) continue
+    const key = String(path[1])
+    if (op === 'del') latest.delete(key)
+    else if (op === 'set' && typeof value === 'number' && Number.isFinite(value)) {
+      latest.set(key, value)
+    } else continue
+    touched = true
+  }
+  if (!touched) return history
+  const index = history.times.length
+  const at = Math.max(live.updatedAt ?? 0, history.times.at(-1)!)
+  const series = new Map(history.series)
+  for (const key of new Set([...history.latest.keys(), ...latest.keys()])) {
+    const next = latest.get(key) ?? 0
+    const before = history.latest.get(key) ?? 0
+    if (next === before && latest.has(key) === history.latest.has(key)) continue
+    const entry = series.get(key)
+    series.set(key, {
+      at: [...(entry?.at ?? []), index],
+      value: [...(entry?.value ?? []), next],
+    })
+  }
+  return {
+    times: [...history.times, at],
+    // The live point is no snapshot: -1 matches none.
+    ids: [...history.ids, -1],
+    lastSeenAt: Math.max(history.lastSeenAt, at),
+    series,
+    latest,
+  }
+}

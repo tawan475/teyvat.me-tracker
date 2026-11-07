@@ -111,3 +111,23 @@ function identityOf(a: LiveArtifact): string {
     unactivatedSubstats: a.unactivatedSubstats ?? [],
   })
 }
+
+/**
+ * Some sections of the newest snapshot with the open journal's changes to
+ * them applied, for pages that read a section or two rather than the whole
+ * inventory (anecdotes, gi_characters, gi_tasks, gi_wardrobe). `sections`
+ * are the journal paths' first parts to apply. A journal that doesn't follow
+ * `snapshotId` leaves `parts` as they are.
+ */
+export function withLiveParts(
+  parts: Partial<Good>,
+  live: LiveJournalResponse | null | undefined,
+  snapshotId: number | null,
+  sections: readonly string[],
+): Partial<Good> {
+  if (!live?.open || snapshotId === null || live.base?.snapshotId !== snapshotId) return parts
+  const changes = (live.changes ?? []).filter(([, path]) => sections.includes(String(path[0])))
+  if (changes.length === 0) return parts
+  const base = { artifacts: [], weapons: [], characters: [], materials: {}, ...parts }
+  return applyDelta(base as unknown as LiveGood, changes) as unknown as Partial<Good>
+}

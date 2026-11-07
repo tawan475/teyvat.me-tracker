@@ -1,9 +1,11 @@
 <script lang="ts">
-import type { AccountRef } from '@/data/account-data'
+import { loadLive, type AccountRef } from '@/data/account-data'
 import {
   loadMaterialsHistory as loadHistory,
+  withLiveMaterials,
   type MaterialsHistory as History,
 } from '@/data/materials'
+import { liveVersions } from '@/live/journal'
 import { loadMaterialMeta as loadMeta } from '@/components/materials-page/material-meta'
 import { preloadMaterialRarities as preloadRarities } from '@/utils/materials'
 
@@ -14,8 +16,14 @@ async function loadMaterials(
   a: AccountRef & { latest: { id: number } | null },
 ): Promise<MaterialsLoad> {
   if (!a.latest) return { accountId: a.id, history: null }
-  const [history] = await Promise.all([loadHistory(a), loadMeta(), preloadRarities()])
-  return { accountId: a.id, history }
+  const [history, live] = await Promise.all([
+    loadHistory(a),
+    // Capture's changes since the newest snapshot (live sync).
+    loadLive(a).catch(() => null),
+    loadMeta(),
+    preloadRarities(),
+  ])
+  return { accountId: a.id, history: withLiveMaterials(history, live) }
 }
 </script>
 
@@ -99,7 +107,7 @@ void preloadMaterialNames()
 const resource = useResource(
   () => account.value,
   (a) => {
-    const key = `${(a as AccountRef).source ?? 'own'}:${a.id}:${a.dataVersion}`
+    const key = `${(a as AccountRef).source ?? 'own'}:${a.id}:${a.dataVersion}:${liveVersions.get(a.id) ?? 0}`
     let entry = materialsLoads.get(key)
     if (!entry) {
       entry = loadMaterials(a)

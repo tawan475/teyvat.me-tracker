@@ -3,11 +3,11 @@ import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { ChevronLeft } from 'lucide-vue-next'
 import type { AccountResponse } from '@gdt/shared'
+import CardLoading from '@/components/share/CardLoading.vue'
 import ShareActions from '@/components/share/ShareActions.vue'
 import ShareMenu from '@/components/share/ShareMenu.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
-import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { buildPanel, shareUid, talentLevels } from '@/data/character-build'
 import type { CharacterView } from '@/data/characters'
 import { t } from '@/i18n'
@@ -82,12 +82,23 @@ interface Drawing {
 }
 const drawing = shallowRef<Promise<Drawing> | null>(null)
 const shown = shallowRef<DrawnTeam | null>(null)
+/** The drawing's pictures loaded so far, of all (CardLoading's bar). */
+const progress = ref<{ loaded: number; total: number } | null>(null)
+let drawId = 0
+/** A progress callback for one drawing: only the newest one moves the bar. */
+function progressOf(): (loaded: number, total: number) => void {
+  const id = ++drawId
+  progress.value = null
+  return (loaded, total) => {
+    if (id === drawId) progress.value = { loaded, total }
+  }
+}
 const host = useTemplateRef<HTMLElement>('host')
 watch([shown, host], ([drawn, el]) => {
   if (!el || !drawn) return
   // As big as the dialog allows, whole: width-bound, or height-bound on a short screen.
-  drawn.canvas.className =
-    'mx-auto block h-auto w-auto max-w-full max-h-[calc(100dvh-6rem)] sm:max-h-[calc(90dvh-6rem)]'
+  // As wide as the dialog (a tall card scrolls; height-bound left the sides empty: the user, 2026-11-07).
+  drawn.canvas.className = 'mx-auto block h-auto w-full'
   drawn.canvas.setAttribute('role', 'img')
   drawn.canvas.setAttribute('aria-label', title.value)
   el.replaceChildren(drawn.canvas)
@@ -97,6 +108,7 @@ function redraw() {
   if (!props.open || props.members.length === 0) return
   const boosts = boostTable.value
   const need = expNeed.value
+  const onProgress = progressOf()
   const promise = (async (): Promise<Drawing> => {
     const drawn = await drawTeamCard(
       {
@@ -117,6 +129,7 @@ function redraw() {
         crown: crown.value,
       },
       TEAM_CARD_SCALE,
+      onProgress,
     )
     return { drawn, png: null }
   })()
@@ -210,10 +223,11 @@ const size = computed(
 
     <!-- The card: the canvas the PNG is encoded from, scaled to fit -->
     <div v-show="shown" ref="host" class="w-full" />
-    <UiSkeleton
+    <CardLoading
       v-if="!shown"
-      class="mx-auto w-full max-w-full rounded-xl"
-      :style="{ aspectRatio: `${TEAM_CARD_WIDTH} / ${teamCardHeight(members.length)}` }"
+      :aspect="`${TEAM_CARD_WIDTH} / ${teamCardHeight(members.length)}`"
+      :progress="progress"
+      :label="title"
     />
   </UiModal>
 </template>

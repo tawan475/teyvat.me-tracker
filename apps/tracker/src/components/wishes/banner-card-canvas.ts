@@ -26,6 +26,7 @@ import {
   linearGradient,
   roundCorners,
   type Shadow,
+  type CardProgress,
 } from '@/lib/card-canvas'
 import { formatDate, formatNumber } from '@/lib/format'
 import { RARITY_GRADIENT, qualityCell } from '@/lib/item-art'
@@ -116,7 +117,11 @@ async function artToDraw(url: string): Promise<string> {
 }
 
 /** The card at `scale` device pixels per CSS pixel (1: the PNG). */
-export async function drawBannerCard(input: BannerDrawing, scale = 1): Promise<DrawnBanner> {
+export async function drawBannerCard(
+  input: BannerDrawing,
+  scale = 1,
+  progress?: CardProgress,
+): Promise<DrawnBanner> {
   const layout = bannerCardLayout(input.numbers.fives.length)
   const [art, second] = await Promise.all([
     artToDraw(bannerArt(input.banner)),
@@ -133,7 +138,7 @@ export async function drawBannerCard(input: BannerDrawing, scale = 1): Promise<D
     ...input.numbers.fives.map((f) => wishIcon(f.row.pull.item)),
   ]
   const [images, fonts] = await Promise.all([
-    CardImages.load(urls),
+    CardImages.load(urls, progress),
     cardFonts([400, 600, 700, 800]),
   ])
   const p = new Painter(layout.width, layout.height, scale)

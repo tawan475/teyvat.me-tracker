@@ -21,6 +21,7 @@ import {
   cardFonts,
   drawQualityCell,
   roundCorners,
+  type CardProgress,
 } from '@/lib/card-canvas'
 import { dateFormat, formatDate, formatNumber } from '@/lib/format'
 import { qualityCell } from '@/lib/item-art'
@@ -209,7 +210,11 @@ const ABYSS_FIGURES = [
   ['bursts', 'endgame.captured.bursts'],
 ] as const
 
-export async function drawAbyssCard(input: AbyssDrawing, scale = 1): Promise<DrawnRecord> {
+export async function drawAbyssCard(
+  input: AbyssDrawing,
+  scale = 1,
+  progress?: CardProgress,
+): Promise<DrawnRecord> {
   const r = input.record
   const figures = ABYSS_FIGURES.flatMap(([key, label]) => {
     const figure = r[key]
@@ -226,7 +231,7 @@ export async function drawAbyssCard(input: AbyssDrawing, scale = 1): Promise<Dra
     ...keys.map((key) => characterIcon(key)),
     ...rarities(r.picked.map((p) => p.key)).map((n) => qualityCell(n)),
   ].filter(Boolean)
-  return paint(urls, scale, (p, images, family) => {
+  return paint(urls, scale, progress, (p, images, family) => {
     const card = new RecordPainter(p, 'abyss', input, images, family)
     card.ground()
     const header = stygianHeader(card.pillWidth(String(r.stars), input.total))
@@ -241,7 +246,11 @@ export async function drawAbyssCard(input: AbyssDrawing, scale = 1): Promise<Dra
   })
 }
 
-export async function drawTheaterCard(input: TheaterDrawing, scale = 1): Promise<DrawnRecord> {
+export async function drawTheaterCard(
+  input: TheaterDrawing,
+  scale = 1,
+  progress?: CardProgress,
+): Promise<DrawnRecord> {
   const cast = [...input.opening, ...input.guests]
   const urls = [
     giCdnArt(THEATER_STELLA),
@@ -252,7 +261,7 @@ export async function drawTheaterCard(input: TheaterDrawing, scale = 1): Promise
     ...cast.map((key) => characterIcon(key)),
     ...rarities(cast).map((n) => qualityCell(n)),
   ].filter(Boolean)
-  return paint(urls, scale, (p, images, family) => {
+  return paint(urls, scale, progress, (p, images, family) => {
     const card = new RecordPainter(p, 'theater', input, images, family)
     card.ground()
     const header = stygianHeader(card.pillWidth(String(input.stars), input.maxStars))
@@ -274,10 +283,11 @@ const rarities = (keys: readonly string[]) => [
 async function paint(
   urls: string[],
   scale: number,
+  progress: CardProgress | undefined,
   draw: (p: Painter, images: CardImages, family: string) => void,
 ): Promise<DrawnRecord> {
   const [images, fonts] = await Promise.all([
-    CardImages.load(urls),
+    CardImages.load(urls, progress),
     cardFonts([400, 600, 700, 800]),
   ])
   const p = new Painter(STYGIAN_CARD.width, STYGIAN_CARD.height, scale)

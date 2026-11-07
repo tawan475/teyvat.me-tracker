@@ -22,6 +22,7 @@ import {
   cardFonts,
   drawQualityCell,
   roundCorners,
+  type CardProgress,
 } from '@/lib/card-canvas'
 import { dateFormat, formatDate, formatNumber, formatSeconds } from '@/lib/format'
 import { qualityCell } from '@/lib/item-art'
@@ -142,7 +143,11 @@ const CREAM_INK = '#4a5366'
 
 const rgba = (rgb: readonly number[], a: number) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`
 
-export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise<DrawnStygian> {
+export async function drawStygianCard(
+  input: StygianDrawing,
+  scale = 1,
+  progress?: CardProgress,
+): Promise<DrawnStygian> {
   const fights = input.record.fights
   const members = fights.map((f) => fightMembers(input.record, f))
   const keys = [
@@ -177,7 +182,7 @@ export async function drawStygianCard(input: StygianDrawing, scale = 1): Promise
     ...input.players.map((pl) => pl.picture),
   ].filter(Boolean)
   const [images, fonts] = await Promise.all([
-    CardImages.load(urls),
+    CardImages.load(urls, progress),
     cardFonts([400, 600, 700, 800]),
   ])
   const { width, height } = STYGIAN_CARD

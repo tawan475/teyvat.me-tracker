@@ -2,10 +2,10 @@
 import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { AccountResponse, UigfGachaType } from '@gdt/shared'
+import CardLoading from '@/components/share/CardLoading.vue'
 import ShareActions from '@/components/share/ShareActions.vue'
 import ShareMenu from '@/components/share/ShareMenu.vue'
 import UiModal from '@/components/ui/UiModal.vue'
-import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { shareUid } from '@/data/character-build'
 import type { EventBanner, PullRow } from '@/data/wish-history'
 import { t } from '@/i18n'
@@ -74,11 +74,22 @@ interface Drawing {
 }
 const drawing = shallowRef<Promise<Drawing> | null>(null)
 const shown = shallowRef<DrawnBanner | null>(null)
+/** The drawing's pictures loaded so far, of all (CardLoading's bar). */
+const progress = ref<{ loaded: number; total: number } | null>(null)
+let drawId = 0
+/** A progress callback for one drawing: only the newest one moves the bar. */
+function progressOf(): (loaded: number, total: number) => void {
+  const id = ++drawId
+  progress.value = null
+  return (loaded, total) => {
+    if (id === drawId) progress.value = { loaded, total }
+  }
+}
 const host = useTemplateRef<HTMLElement>('host')
 watch([shown, host], ([drawn, el]) => {
   if (!el || !drawn) return
-  drawn.canvas.className =
-    'mx-auto block h-auto w-auto max-w-full max-h-[calc(100dvh-6rem)] sm:max-h-[calc(90dvh-6rem)]'
+  // As wide as the dialog (a tall card scrolls; height-bound left the sides empty: the user, 2026-11-07).
+  drawn.canvas.className = 'mx-auto block h-auto w-full'
   drawn.canvas.setAttribute('role', 'img')
   drawn.canvas.setAttribute('aria-label', title.value)
   el.replaceChildren(drawn.canvas)
@@ -87,16 +98,21 @@ watch([shown, host], ([drawn, el]) => {
 function redraw() {
   const banner = props.banner
   if (!props.open || !banner) return
+  const onProgress = progressOf()
   const promise = (async (): Promise<Drawing> => ({
-    drawn: await drawBannerCard({
-      banner,
-      type: props.type,
-      phase: props.phase,
-      numbers: numbers.value,
-      theme: theme.value,
-      owner: owner.value,
-      open: isOpen.value,
-    }),
+    drawn: await drawBannerCard(
+      {
+        banner,
+        type: props.type,
+        phase: props.phase,
+        numbers: numbers.value,
+        theme: theme.value,
+        owner: owner.value,
+        open: isOpen.value,
+      },
+      1,
+      onProgress,
+    ),
     png: null,
   }))()
   drawing.value = promise
@@ -158,10 +174,11 @@ const exporter = useCardExport({
     </template>
 
     <div v-show="shown" ref="host" class="w-full" />
-    <UiSkeleton
+    <CardLoading
       v-if="!shown"
-      class="mx-auto w-full max-w-full rounded-xl"
-      :style="{ aspectRatio: `${layout.width} / ${layout.height}` }"
+      :aspect="`${layout.width} / ${layout.height}`"
+      :progress="progress"
+      :label="title"
     />
   </UiModal>
 </template>

@@ -64,20 +64,30 @@ function imageBlob(url: string): Promise<Blob | null> {
 }
 
 /** Decoded pictures for one draw, by URL; `close` frees them once drawn. */
+/** A card's pictures loaded so far, of all (the dialogs' loading bar). */
+export type CardProgress = (loaded: number, total: number) => void
+
 export class CardImages {
   private readonly map = new Map<string, ImageBitmap | null>()
   /** Pictures that couldn't be had (drawn without them). */
   missing = 0
 
-  /** Fetches and decodes every URL (blank ones are skipped). */
-  static async load(urls: Iterable<string>): Promise<CardImages> {
+  /**
+   * Fetches and decodes every URL (blank ones are skipped); `progress` hears
+   * how many are done of all (0 first), for the dialogs' loading bar.
+   */
+  static async load(urls: Iterable<string>, progress?: CardProgress): Promise<CardImages> {
     const images = new CardImages()
+    const list = [...new Set(urls)].filter(Boolean)
+    let done = 0
+    progress?.(0, list.length)
     await Promise.all(
-      [...new Set(urls)].filter(Boolean).map(async (url) => {
+      list.map(async (url) => {
         const blob = await imageBlob(url)
         const bitmap = blob ? await createImageBitmap(blob).catch(() => null) : null
         if (!bitmap) images.missing++
         images.map.set(url, bitmap)
+        progress?.(++done, list.length)
       }),
     )
     return images

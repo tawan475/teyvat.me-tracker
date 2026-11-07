@@ -3,12 +3,11 @@ import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { TriangleAlert } from 'lucide-vue-next'
 import type { AccountResponse } from '@gdt/shared'
+import CardLoading from '@/components/share/CardLoading.vue'
 import ShareActions from '@/components/share/ShareActions.vue'
 import ShareMenu from '@/components/share/ShareMenu.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
-import UiProgress from '@/components/ui/UiProgress.vue'
-import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { shareUid, talentLevels } from '@/data/character-build'
 import type { CharacterView } from '@/data/characters'
 import { t } from '@/i18n'
@@ -91,8 +90,8 @@ const host = useTemplateRef<HTMLElement>('host')
 watch([shown, host], ([drawn, el]) => {
   if (!el || !drawn) return
   // As big as the dialog allows, whole: width-bound, or height-bound on a short screen.
-  drawn.canvas.className =
-    'mx-auto block h-auto w-auto max-w-full max-h-[calc(100dvh-6rem)] sm:max-h-[calc(90dvh-6rem)]'
+  // As wide as the dialog (a tall card scrolls; height-bound left the sides empty: the user, 2026-11-07).
+  drawn.canvas.className = 'mx-auto block h-auto w-full'
   drawn.canvas.setAttribute('role', 'img')
   drawn.canvas.setAttribute('aria-label', t('characters.roster.title'))
   el.replaceChildren(drawn.canvas)
@@ -191,29 +190,22 @@ const pngSize = computed(() =>
 
     <!-- The card: the canvas the PNG is encoded from, scaled to fit -->
     <div v-show="shown" ref="host" class="w-full" />
-    <div v-if="!shown" class="relative">
-      <UiSkeleton class="aspect-[16/11] w-full rounded-xl" :class="!started && 'animate-none'" />
-      <div class="absolute inset-0 flex items-center justify-center p-6">
-        <div v-if="!started" class="flex max-w-xs flex-col items-center gap-3 text-center">
+    <CardLoading
+      v-if="!shown"
+      aspect="16 / 11"
+      :progress="started ? progress : null"
+      :label="$t('characters.roster.title')"
+      :still="!started"
+    >
+      <template v-if="!started">
+        <div class="flex max-w-xs flex-col items-center gap-3 text-center">
           <TriangleAlert class="size-6 text-warning-text" aria-hidden="true" />
           <p class="text-sm text-text-secondary">{{ $t('characters.roster.slow') }}</p>
           <UiButton variant="primary" @click="agreed = true">
             {{ $t('characters.roster.start') }}
           </UiButton>
         </div>
-        <div v-else-if="progress" class="flex w-full max-w-xs flex-col items-center gap-2">
-          <UiProgress
-            :value="progress.loaded"
-            :max="progress.total"
-            :label="$t('characters.roster.title')"
-          />
-          <span class="tabular font-mono text-xs text-text-muted">{{
-            progress.loaded < progress.total
-              ? $t('characters.roster.pictures', { n: progress.loaded, total: progress.total })
-              : $t('characters.roster.drawing')
-          }}</span>
-        </div>
-      </div>
-    </div>
+      </template>
+    </CardLoading>
   </UiModal>
 </template>

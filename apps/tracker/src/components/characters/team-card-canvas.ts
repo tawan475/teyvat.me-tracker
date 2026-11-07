@@ -33,6 +33,7 @@ import {
   parseInsetRing,
   parseShadows,
   roundCorners,
+  type CardProgress,
 } from '@/lib/card-canvas'
 import { cvTier, rvTier } from '@/lib/crit-tiers'
 import { formatDate } from '@/lib/format'
@@ -183,11 +184,15 @@ function rowImages(member: TeamMember, crown: string): string[] {
 // ------------------------------------------------------------------ drawing
 
 /** The card at `scale` device pixels per CSS pixel (1: the PNG). */
-export async function drawTeamCard(input: TeamDrawing, scale = 1): Promise<DrawnTeam> {
+export async function drawTeamCard(
+  input: TeamDrawing,
+  scale = 1,
+  progress?: CardProgress,
+): Promise<DrawnTeam> {
   const city = regionBackground(teamRegion(input.members.map((m) => m.character.key)))
   const urls = [EMBLEM_URL, city, ...input.members.flatMap((m) => rowImages(m, input.crown))]
   const [images, fonts] = await Promise.all([
-    CardImages.load(urls),
+    CardImages.load(urls, progress),
     cardFonts([400, 500, 600, 700]),
   ])
   // A splash that failed: the portrait shows in its place.
@@ -241,18 +246,32 @@ class TeamPainter extends CardPaint {
     const painting = this.images.get(city)
     if (!painting) return
     this.city = painting
-    // A little wider than the card, so the softening has no edge.
+    // A little larger than the card on every side, so the softening has no edge.
     const w = TEAM_CARD_WIDTH + 16
     const h = (w * painting.height) / painting.width
-    p.filtered(CITY_FILTER[this.cardTheme], () => {
-      for (let k = 0; k * h < height; k++) {
-        ctx.save()
-        ctx.translate(-8, k * h + (k % 2 ? h : 0))
-        if (k % 2) ctx.scale(1, -1)
-        ctx.drawImage(painting, 0, 0, w, h)
-        ctx.restore()
-      }
-    })
+    const tall = height + 16
+    // The copies are laid edge to edge on one canvas first and softened as one
+    // picture: softened one by one, each copy's edge faded into the ground and
+    // left a line across a taller card where they met (the user, 2026-11-07).
+    // Each copy reaches 1px into the next, which is drawn over it, so no
+    // half-covered pixel row shows the ground either.
+    const strip = document.createElement('canvas')
+    strip.width = Math.round(w * p.scale)
+    strip.height = Math.round(tall * p.scale)
+    const sctx = strip.getContext('2d')!
+    sctx.scale(strip.width / w, strip.height / tall)
+    sctx.imageSmoothingQuality = 'high'
+    for (let k = 0; k * h < tall; k++) {
+      sctx.save()
+      sctx.translate(0, k * h + (k % 2 ? h : 0))
+      if (k % 2) sctx.scale(1, -1)
+      // Flipped, y −1 lands 1px below the copy's foot: both kinds reach down into the next.
+      if (k % 2) sctx.drawImage(painting, 0, -1, w, h + 1)
+      else sctx.drawImage(painting, 0, 0, w, h + 1)
+      sctx.restore()
+    }
+    p.filtered(CITY_FILTER[this.cardTheme], () => ctx.drawImage(strip, -8, -8, w, tall))
+    strip.width = strip.height = 0
     ctx.fillStyle = withAlpha(ground, CITY_VEIL[this.cardTheme])
     ctx.fillRect(0, 0, TEAM_CARD_WIDTH, height)
   }

@@ -3,10 +3,10 @@ import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { GiStygianRecord } from '@gdt/shared'
 import type { StygianSeason } from '@gdt/game-data/endgame'
+import CardLoading from '@/components/share/CardLoading.vue'
 import ShareActions from '@/components/share/ShareActions.vue'
 import ShareMenu from '@/components/share/ShareMenu.vue'
 import UiModal from '@/components/ui/UiModal.vue'
-import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { loadLatestInventory } from '@/data/account-data'
 import { shareUid } from '@/data/character-build'
 import { stygianBossPicture, type EndgameData } from '@/data/endgame'
@@ -161,11 +161,22 @@ interface Drawing {
 }
 const drawing = shallowRef<Promise<Drawing> | null>(null)
 const shown = shallowRef<DrawnStygian | null>(null)
+/** The drawing's pictures loaded so far, of all (CardLoading's bar). */
+const progress = ref<{ loaded: number; total: number } | null>(null)
+let drawId = 0
+/** A progress callback for one drawing: only the newest one moves the bar. */
+function progressOf(): (loaded: number, total: number) => void {
+  const id = ++drawId
+  progress.value = null
+  return (loaded, total) => {
+    if (id === drawId) progress.value = { loaded, total }
+  }
+}
 const host = useTemplateRef<HTMLElement>('host')
 watch([shown, host], ([drawn, el]) => {
   if (!el || !drawn) return
-  drawn.canvas.className =
-    'mx-auto block h-auto w-auto max-w-full max-h-[calc(100dvh-6rem)] sm:max-h-[calc(90dvh-6rem)]'
+  // As wide as the dialog (a tall card scrolls; height-bound left the sides empty: the user, 2026-11-07).
+  drawn.canvas.className = 'mx-auto block h-auto w-full'
   drawn.canvas.setAttribute('role', 'img')
   drawn.canvas.setAttribute('aria-label', title.value)
   el.replaceChildren(drawn.canvas)
@@ -174,19 +185,24 @@ watch([shown, host], ([drawn, el]) => {
 function redraw() {
   const record = props.record
   if (!props.open || !record || latest.loading.value || extras.loading.value) return
+  const onProgress = progressOf()
   const promise = (async (): Promise<Drawing> => ({
-    drawn: await drawStygianCard({
-      record,
-      seasonName: props.seasonName,
-      start: props.season.start,
-      end: props.season.end,
-      version: version.value,
-      bosses: bosses.value,
-      roster: roster.value,
-      theme: theme.value,
-      profile: profile.value,
-      players: players.value,
-    }),
+    drawn: await drawStygianCard(
+      {
+        record,
+        seasonName: props.seasonName,
+        start: props.season.start,
+        end: props.season.end,
+        version: version.value,
+        bosses: bosses.value,
+        roster: roster.value,
+        theme: theme.value,
+        profile: profile.value,
+        players: players.value,
+      },
+      1,
+      onProgress,
+    ),
     png: null,
   }))()
   drawing.value = promise
@@ -257,10 +273,11 @@ const exporter = useCardExport({
     </template>
 
     <div v-show="shown" ref="host" class="w-full" />
-    <UiSkeleton
+    <CardLoading
       v-if="!shown"
-      class="mx-auto w-full max-w-full rounded-xl"
-      :style="{ aspectRatio: `${STYGIAN_CARD.width} / ${STYGIAN_CARD.height}` }"
+      :aspect="`${STYGIAN_CARD.width} / ${STYGIAN_CARD.height}`"
+      :progress="progress"
+      :label="title"
     />
   </UiModal>
 </template>

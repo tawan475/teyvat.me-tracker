@@ -46,6 +46,14 @@ export interface MaterialsHistory {
 /** In a stored delta, this count means "the key is gone" (see @gdt/shared). */
 const REMOVED = -1
 
+/**
+ * Counts that come with the player's properties, not the bag. A capture taken
+ * before that message arrived has the bag but neither of these (see
+ * currencyMissing in overview.ts); its series hold the count before it
+ * instead of dropping to 0 and back.
+ */
+const CURRENCY: ReadonlySet<string> = new Set(['Mora', 'Primogem'])
+
 export function buildMaterialsHistory(
   snapshots: readonly MaterialsSnapshotRef[],
   texts: ReadonlyMap<string, string>,
@@ -101,17 +109,22 @@ export function buildMaterialsHistory(
       candidates = new Set([...state.keys(), ...base.keys(), ...delta.keys()])
     }
 
+    const currencyMissing = !countOf('Mora') && !countOf('Primogem')
     for (const key of candidates) {
       const next = countOf(key)
       const current = state.get(key)
       if (next === current) continue
       if (next === undefined) state.delete(key)
       else state.set(key, next)
+      // `state` stays exact (`latest` is the file as listed); only the series skip it.
+      if (currencyMissing && CURRENCY.has(key)) continue
       let entry = series.get(key)
       if (!entry) {
         entry = { at: [], value: [] }
         series.set(key, entry)
       }
+      // The capture after a skipped one usually brings the count held already.
+      if (entry.value.at(-1) === (next ?? 0)) continue
       entry.at.push(index)
       entry.value.push(next ?? 0)
     }

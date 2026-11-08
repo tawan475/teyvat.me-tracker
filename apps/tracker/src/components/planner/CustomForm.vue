@@ -128,7 +128,7 @@ const weaponOptions = computed(() =>
       />
     </div>
     <div
-      class="scroll-hide scroll-fade-x -mx-1 flex gap-1.5 overflow-x-auto px-1"
+      class="flex flex-wrap gap-1.5"
       role="radiogroup"
       :aria-label="$t('planner.custom.element')"
     >

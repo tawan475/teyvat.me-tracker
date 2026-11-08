@@ -110,7 +110,7 @@ const weaponOptions = computed(() => [
       </span>
     </div>
     <div
-      class="scroll-hide scroll-fade-x -mx-1 flex gap-1.5 overflow-x-auto px-1"
+      class="scroll-hide scroll-fade-x -mx-1 flex gap-1.5 overflow-x-auto px-1 sm:mx-0 sm:scroll-fade-none sm:flex-wrap sm:overflow-visible sm:px-0"
       role="group"
       :aria-label="$t('planner.custom.element')"
     >

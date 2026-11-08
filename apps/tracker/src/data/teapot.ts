@@ -108,3 +108,35 @@ export function companionCards(
   }
   return [...cards.values()]
 }
+
+/**
+ * Whether a companion is one of `owned` (GOOD keys of the account's
+ * characters). A companion whose key the game data doesn't know counts as
+ * owned: hiding it could hide a character the account has.
+ */
+export function isOwnedCompanion(key: string, owned: ReadonlySet<string>): boolean {
+  return !key || owned.has(key)
+}
+
+/** The companions the account owns ("Owned only"). */
+export function ownedCompanions(
+  cards: readonly CompanionCard[],
+  owned: ReadonlySet<string>,
+): CompanionCard[] {
+  return cards.filter((c) => isOwnedCompanion(c.key, owned))
+}
+
+/**
+ * Every set card with only the owned companions on it, `claimed` recounted.
+ * The cards stay (the furniture is worth having whoever rewards it).
+ */
+export function setsWithOwnedCompanions(
+  sets: readonly FurnishingSetCard[],
+  owned: ReadonlySet<string>,
+): FurnishingSetCard[] {
+  return sets.map((set) => {
+    const companions = set.companions.filter((c) => isOwnedCompanion(c.key, owned))
+    if (companions.length === set.companions.length) return set
+    return { ...set, companions, claimed: companions.filter((c) => c.claimed).length }
+  })
+}

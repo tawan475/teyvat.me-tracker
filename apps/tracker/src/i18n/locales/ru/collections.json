@@ -246,7 +246,9 @@
     "setClaimed": "Получено наград компаньонов: {n} из {total}",
     "rewardClaimed": "{name} · награда получена",
     "rewardWaiting": "{name} · награда ждёт",
-    "noRewardLeft": "Наград не осталось"
+    "noRewardLeft": "Наград не осталось",
+    "ownedOnly": "Только имеющиеся",
+    "ownedOnlyHint": "Скрыть спутников, которых у вас нет"
   },
   "crafting": {
     "kinds": {

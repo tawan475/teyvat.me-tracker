@@ -246,7 +246,9 @@
     "setClaimed": "{n} of {total} companion rewards claimed",
     "rewardClaimed": "{name} · reward claimed",
     "rewardWaiting": "{name} · reward waiting",
-    "noRewardLeft": "No rewards left"
+    "noRewardLeft": "No rewards left",
+    "ownedOnly": "Owned only",
+    "ownedOnlyHint": "Hide companions you don't have"
   },
   "crafting": {
     "kinds": {

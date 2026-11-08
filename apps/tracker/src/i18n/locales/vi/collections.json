@@ -246,7 +246,9 @@
     "setClaimed": "Đã nhận {n} / {total} phần thưởng Bạn Đồng Hành",
     "rewardClaimed": "{name} · đã nhận thưởng",
     "rewardWaiting": "{name} · chờ nhận thưởng",
-    "noRewardLeft": "Không còn phần thưởng"
+    "noRewardLeft": "Không còn phần thưởng",
+    "ownedOnly": "Chỉ nhân vật đã có",
+    "ownedOnlyHint": "Ẩn bạn đồng hành bạn chưa có"
   },
   "crafting": {
     "kinds": {

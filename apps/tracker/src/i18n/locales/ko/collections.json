@@ -246,7 +246,9 @@
     "setClaimed": "동행 동료 보상 {n} / {total} 수령",
     "rewardClaimed": "{name} · 보상 수령",
     "rewardWaiting": "{name} · 보상 대기",
-    "noRewardLeft": "남은 보상 없음"
+    "noRewardLeft": "남은 보상 없음",
+    "ownedOnly": "보유만",
+    "ownedOnlyHint": "보유하지 않은 동료 숨기기"
   },
   "crafting": {
     "kinds": {

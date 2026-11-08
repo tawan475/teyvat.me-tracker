@@ -246,7 +246,9 @@
     "setClaimed": "同行する仲間の報酬 {n} / {total} を受取済み",
     "rewardClaimed": "{name} · 報酬受取済み",
     "rewardWaiting": "{name} · 報酬未受取",
-    "noRewardLeft": "未受取の報酬はありません"
+    "noRewardLeft": "未受取の報酬はありません",
+    "ownedOnly": "所持のみ",
+    "ownedOnlyHint": "所持していない仲間を非表示"
   },
   "crafting": {
     "kinds": {

@@ -246,7 +246,9 @@
     "setClaimed": "{n} dari {total} hadiah Rekan Perjalanan diambil",
     "rewardClaimed": "{name} · hadiah diambil",
     "rewardWaiting": "{name} · hadiah menunggu",
-    "noRewardLeft": "Tidak ada hadiah tersisa"
+    "noRewardLeft": "Tidak ada hadiah tersisa",
+    "ownedOnly": "Yang dimiliki saja",
+    "ownedOnlyHint": "Sembunyikan pendamping yang tidak kamu miliki"
   },
   "crafting": {
     "kinds": {

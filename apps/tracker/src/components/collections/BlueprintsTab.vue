@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Check, CheckCheck, Gift, SearchX, Users } from 'lucide-vue-next'
+import { Check, CheckCheck, Gift, SearchX, UserCheck, Users } from 'lucide-vue-next'
 import { characterInfo } from '@gdt/game-data/catalog'
 import EntryGrid, { type GridEntry } from './EntryGrid.vue'
 import HaveFilter, { type HaveFilterValue } from './HaveFilter.vue'
@@ -14,7 +14,15 @@ import UiSegmented, { type SegmentedOption } from '@/components/ui/UiSegmented.v
 import UiStat from '@/components/ui/UiStat.vue'
 import type { CapturedCollections } from '@/data/collections'
 import { idLabel, nameOf, wikiGuide, type CollectionCatalog } from '@/data/collection-names'
-import { companionCards, furnishingSetCards } from '@/data/teapot'
+import {
+  companionCards,
+  furnishingSetCards,
+  ownedCompanions,
+  setsWithOwnedCompanions,
+} from '@/data/teapot'
+import { loadLatestInventory } from '@/data/account-data'
+import { useResource } from '@/data/use-resource'
+import { useAccount } from '@/views/account/context'
 import { t } from '@/i18n'
 import { characterIcon, gameIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
@@ -79,9 +87,39 @@ const shown = computed<GridEntry[]>(() =>
 
 // ------------------------------------------------------------------ sets and companions
 
-const setCards = computed(() => furnishingSetCards(props.catalog, learnedSets.value, claimed.value))
-const companions = computed(() => companionCards(props.catalog, claimed.value))
-const giftSets = computed(() => setCards.value.filter((s) => s.companions.length > 0))
+// "Owned only" (a Discord user's ask, 2026-11-09): companions the account
+// doesn't have are left off the companion list and the set cards, and the
+// counts follow, so the bar can reach the end. Off by default, per device.
+const account = useAccount()
+const inventory = useResource(
+  () => (claimed.value && account.value.latest ? account.value : null),
+  (a) => (a ? loadLatestInventory(a) : Promise.resolve(null)),
+)
+/** GOOD keys of the account's characters (newest capture + live sync); null until known. */
+const ownedKeys = computed(() => {
+  const characters = inventory.data.value?.good.characters
+  return characters ? new Set(characters.map((c) => c.key)) : null
+})
+const OWNED_KEY = 'collections:teapot-owned'
+const ownedOnly = ref(readStorage(OWNED_KEY) === '1')
+watch(ownedOnly, (value) => writeStorage(OWNED_KEY, value ? '1' : null))
+const owned = computed(() => (ownedOnly.value ? ownedKeys.value : null))
+
+const allSetCards = computed(() =>
+  furnishingSetCards(props.catalog, learnedSets.value, claimed.value),
+)
+const setCards = computed(() =>
+  owned.value ? setsWithOwnedCompanions(allSetCards.value, owned.value) : allSetCards.value,
+)
+const allCompanions = computed(() => companionCards(props.catalog, claimed.value))
+const companions = computed(() =>
+  owned.value ? ownedCompanions(allCompanions.value, owned.value) : allCompanions.value,
+)
+// A gift set stays one when none of its companions is owned.
+const giftIds = computed(
+  () => new Set(allSetCards.value.filter((s) => s.companions.length > 0).map((s) => s.id)),
+)
+const giftSets = computed(() => setCards.value.filter((s) => giftIds.value.has(s.id)))
 const rewardLeft = computed(() =>
   giftSets.value.filter((s) => s.learned && s.claimed < s.companions.length),
 )
@@ -223,22 +261,34 @@ const view = computed<View>({
           <UiSegmented v-model="view" :options="views" :label="$t('collections.blueprints.view')" />
         </div>
       </template>
-      <template v-if="view === 'sets'" #actions>
-        <div
-          class="scroll-hide scroll-fade-x flex max-w-full gap-2 overflow-x-auto"
-          role="radiogroup"
-          :aria-label="$t('collections.archive.show')"
-        >
-          <FilterChip
-            v-for="chip in setChips"
-            :key="chip.value"
-            radio
-            :pressed="setFilter === chip.value"
-            :count="chip.count"
-            @toggle="setFilter = chip.value"
+      <template v-if="view === 'sets' || (view === 'companions' && ownedKeys)" #actions>
+        <div class="scroll-hide scroll-fade-x flex max-w-full gap-2 overflow-x-auto">
+          <div
+            v-if="view === 'sets'"
+            class="flex gap-2"
+            role="radiogroup"
+            :aria-label="$t('collections.archive.show')"
           >
-            <Gift v-if="chip.value !== 'all'" class="size-4" aria-hidden="true" />
-            {{ chip.label }}
+            <FilterChip
+              v-for="chip in setChips"
+              :key="chip.value"
+              radio
+              :pressed="setFilter === chip.value"
+              :count="chip.count"
+              @toggle="setFilter = chip.value"
+            >
+              <Gift v-if="chip.value !== 'all'" class="size-4" aria-hidden="true" />
+              {{ chip.label }}
+            </FilterChip>
+          </div>
+          <FilterChip
+            v-if="ownedKeys"
+            :pressed="ownedOnly"
+            :title="$t('collections.blueprints.ownedOnlyHint')"
+            @toggle="ownedOnly = !ownedOnly"
+          >
+            <UserCheck class="size-4" aria-hidden="true" />
+            {{ $t('collections.blueprints.ownedOnly') }}
           </FilterChip>
         </div>
       </template>

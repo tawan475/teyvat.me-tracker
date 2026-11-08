@@ -246,7 +246,9 @@
     "setClaimed": "{n} de {total} recompensas de companheiros coletadas",
     "rewardClaimed": "{name} · recompensa coletada",
     "rewardWaiting": "{name} · recompensa pendente",
-    "noRewardLeft": "Nenhuma recompensa pendente"
+    "noRewardLeft": "Nenhuma recompensa pendente",
+    "ownedOnly": "Só os que tem",
+    "ownedOnlyHint": "Oculta os companheiros que você não tem"
   },
   "crafting": {
     "kinds": {

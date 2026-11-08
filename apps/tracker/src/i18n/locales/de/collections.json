@@ -246,7 +246,9 @@
     "setClaimed": "{n} von {total} Gefährten-Belohnungen erhalten",
     "rewardClaimed": "{name} · Belohnung erhalten",
     "rewardWaiting": "{name} · Belohnung offen",
-    "noRewardLeft": "Keine Belohnungen offen"
+    "noRewardLeft": "Keine Belohnungen offen",
+    "ownedOnly": "Nur eigene",
+    "ownedOnlyHint": "Begleiter ausblenden, die du nicht hast"
   },
   "crafting": {
     "kinds": {

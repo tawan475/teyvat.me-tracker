@@ -246,7 +246,9 @@
     "setClaimed": "{n} ricompense dei compagni su {total} ritirate",
     "rewardClaimed": "{name} · ricompensa ritirata",
     "rewardWaiting": "{name} · ricompensa da ritirare",
-    "noRewardLeft": "Nessuna ricompensa da ritirare"
+    "noRewardLeft": "Nessuna ricompensa da ritirare",
+    "ownedOnly": "Solo posseduti",
+    "ownedOnlyHint": "Nascondi i compagni che non hai"
   },
   "crafting": {
     "kinds": {

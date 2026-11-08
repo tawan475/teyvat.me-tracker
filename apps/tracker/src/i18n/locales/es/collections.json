@@ -246,7 +246,9 @@
     "setClaimed": "{n} de {total} recompensas de personajes reclamadas",
     "rewardClaimed": "{name} · recompensa reclamada",
     "rewardWaiting": "{name} · recompensa pendiente",
-    "noRewardLeft": "No quedan recompensas"
+    "noRewardLeft": "No quedan recompensas",
+    "ownedOnly": "Solo los tuyos",
+    "ownedOnlyHint": "Oculta a los compañeros que no tienes"
   },
   "crafting": {
     "kinds": {

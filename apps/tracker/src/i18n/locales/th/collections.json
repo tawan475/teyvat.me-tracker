@@ -246,7 +246,9 @@
     "setClaimed": "รับรางวัลเพื่อนร่วมทางแล้ว {n} / {total}",
     "rewardClaimed": "{name} · รับรางวัลแล้ว",
     "rewardWaiting": "{name} · รอรับรางวัล",
-    "noRewardLeft": "ไม่มีรางวัลค้าง"
+    "noRewardLeft": "ไม่มีรางวัลค้าง",
+    "ownedOnly": "เฉพาะที่มี",
+    "ownedOnlyHint": "ซ่อนเพื่อนร่วมทางที่คุณยังไม่มี"
   },
   "crafting": {
     "kinds": {

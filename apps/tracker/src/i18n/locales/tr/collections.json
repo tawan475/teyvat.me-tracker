@@ -246,7 +246,9 @@
     "setClaimed": "Yoldaş ödüllerinin {n} / {total} tanesi alındı",
     "rewardClaimed": "{name} · ödül alındı",
     "rewardWaiting": "{name} · ödül bekliyor",
-    "noRewardLeft": "Bekleyen ödül yok"
+    "noRewardLeft": "Bekleyen ödül yok",
+    "ownedOnly": "Yalnızca sahip olunanlar",
+    "ownedOnlyHint": "Sahip olmadığın yol arkadaşlarını gizle"
   },
   "crafting": {
     "kinds": {

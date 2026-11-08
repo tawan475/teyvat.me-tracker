@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { CollectionCatalog } from '../collection-names'
 import { musicSongs, musicSummary, shownSongs } from '../music'
-import { companionCards, furnishingSetCards } from '../teapot'
+import {
+  companionCards,
+  furnishingSetCards,
+  ownedCompanions,
+  setsWithOwnedCompanions,
+} from '../teapot'
 
 const texts = (entries: Record<string, [number, Record<string, string>][]>) =>
   Object.fromEntries(
@@ -108,5 +113,22 @@ describe('Serenitea Pot gift sets', () => {
       ['Jean', 2, 2],
       ['Razor', 0, 1],
     ])
+  })
+
+  it('keeps only the companions the account owns', () => {
+    const owned = new Set(['Jean'])
+    expect(ownedCompanions(companionCards(catalog, [1]), owned).map((c) => c.name)).toEqual([
+      'Jean',
+    ])
+    // Razor claimed: set 31 shows Jean alone, recounted; no set card is dropped.
+    const sets = setsWithOwnedCompanions(furnishingSetCards(catalog, [31], [2]), owned)
+    expect(sets.map((c) => [c.id, c.companions.map((x) => x.name), c.claimed])).toEqual([
+      [31, ['Jean'], 0],
+      [32, ['Jean'], 0],
+      [1, [], 0],
+    ])
+    // A companion the game data has no character key for stays.
+    const unknown = { ...companionCards(catalog, null)[0]!, key: '' }
+    expect(ownedCompanions([unknown], new Set())).toHaveLength(1)
   })
 })

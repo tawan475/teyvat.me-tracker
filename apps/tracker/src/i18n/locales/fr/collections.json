@@ -246,7 +246,9 @@
     "setClaimed": "{n} récompenses de compagnons sur {total} récupérées",
     "rewardClaimed": "{name} · récompense récupérée",
     "rewardWaiting": "{name} · récompense en attente",
-    "noRewardLeft": "Aucune récompense en attente"
+    "noRewardLeft": "Aucune récompense en attente",
+    "ownedOnly": "Possédés seulement",
+    "ownedOnlyHint": "Masquer les compagnons que vous n’avez pas"
   },
   "crafting": {
     "kinds": {

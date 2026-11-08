@@ -246,7 +246,9 @@
     "setClaimed": "已領取 {n} / {total} 份同行夥伴獎勵",
     "rewardClaimed": "{name} · 獎勵已領取",
     "rewardWaiting": "{name} · 獎勵待領取",
-    "noRewardLeft": "沒有待領取的獎勵"
+    "noRewardLeft": "沒有待領取的獎勵",
+    "ownedOnly": "僅已擁有",
+    "ownedOnlyHint": "隱藏未擁有的同伴"
   },
   "crafting": {
     "kinds": {

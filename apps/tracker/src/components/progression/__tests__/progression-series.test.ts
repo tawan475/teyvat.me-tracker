@@ -13,7 +13,8 @@ import {
   SNAPSHOT_BAR_WIDTH,
   snapshotBarWidth,
   snapshotTotals,
-  withCharacterExp,
+  withMaterialFigures,
+  wishesHeld,
 } from '../progression-series'
 
 const at = (y: number, m: number, d: number, h = 0, min = 0) =>
@@ -298,7 +299,7 @@ describe('character EXP', () => {
       // A later sighting of snapshot 7 shows its books, not the newest snapshot's.
       { at: at(2026, 10, 3), summary: summary(1, 1), snapshot: 7 },
     ]
-    expect(withCharacterExp(captures, materials).map((c) => c.summary.characterExp)).toEqual([
+    expect(withMaterialFigures(captures, materials).map((c) => c.summary.characterExp)).toEqual([
       2 * 20_000 + 5_000 + 3 * 1_000,
       5 * 20_000 + 3 * 1_000,
       5 * 20_000 + 3 * 1_000,
@@ -307,7 +308,7 @@ describe('character EXP', () => {
   })
 
   it('charts like the other figures', () => {
-    const captures = withCharacterExp(
+    const captures = withMaterialFigures(
       [
         { at: at(2026, 10, 1), summary: summary(1, 1), snapshot: 7 },
         { at: at(2026, 10, 2), summary: summary(1, 1), snapshot: 9 },
@@ -321,5 +322,28 @@ describe('character EXP', () => {
       gained: 55_000,
       spent: 0,
     })
+  })
+
+  it('counts whole wishes: (Primogems + Genesis Crystals) / 160, rounded down, plus Intertwined Fates', () => {
+    expect(wishesHeld(0, 0, 0)).toBe(0)
+    expect(wishesHeld(159, 0, 0)).toBe(0)
+    expect(wishesHeld(100, 60, 0)).toBe(1)
+    expect(wishesHeld(2_087, 0, 34)).toBe(13 + 34)
+    const withGems: MaterialsHistory = {
+      ...materials,
+      series: new Map([
+        ['Primogem', { at: [0, 1], value: [319, 2_087] }],
+        ['GenesisCrystal', { at: [0], value: [1] }],
+        ['IntertwinedFate', { at: [0, 1], value: [3, 34] }],
+      ]),
+    }
+    const captures = withMaterialFigures(
+      [
+        { at: at(2026, 10, 1), summary: summary(1, 1), snapshot: 7 },
+        { at: at(2026, 10, 2), summary: summary(1, 1), snapshot: 9 },
+      ],
+      withGems,
+    )
+    expect(captures.map((c) => c.summary.wishes)).toEqual([2 + 3, 13 + 34])
   })
 })

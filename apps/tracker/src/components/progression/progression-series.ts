@@ -40,12 +40,14 @@ import { nextPeriod } from '@/data/progression'
 import { dateLocale } from '@/lib/format'
 
 /**
- * A figure the progression card can chart: a snapshot summary count, or the
- * character EXP held in books (from the materials, see withCharacterExp).
+ * A figure the progression card can chart: a snapshot summary count, or one
+ * read from the materials (character EXP held in books, wishes held: see
+ * withMaterialFigures).
  */
 export type FigureKey =
   | 'mora'
   | 'primogem'
+  | 'wishes'
   | 'characterExp'
   | 'artifacts'
   | 'artifact4'
@@ -55,6 +57,7 @@ export type FigureKey =
 export const FIGURE_KEYS: readonly FigureKey[] = [
   'mora',
   'primogem',
+  'wishes',
   'characterExp',
   'artifacts',
   'artifact4',
@@ -70,21 +73,37 @@ export const CHARACTER_EXP_BOOKS = {
   WanderersAdvice: 1_000,
 } as const
 
-/** What the series read from a capture: its summary, plus character EXP once known. */
-export interface ProgressionCapture {
-  at: number
-  summary: SnapshotSummary & { characterExp?: number }
+/** Figures read from the materials history rather than the snapshot summary. */
+export const MATERIAL_FIGURES: readonly FigureKey[] = ['wishes', 'characterExp']
+
+/** Primogems (or Genesis Crystals) a wish costs. */
+export const WISH_PRICE = 160
+
+/**
+ * Wishes held: (Primogems + Genesis Crystals) ÷ 160, rounded down, plus
+ * Intertwined Fates (a Discord user's ask, 2026-11-08; whole wishes, the
+ * user's call).
+ */
+export function wishesHeld(primogem: number, genesis: number, fates: number): number {
+  return Math.floor((primogem + genesis) / WISH_PRICE) + fates
 }
 
-/** A figure of a capture; character EXP is 0 until withCharacterExp adds it. */
+/** What the series read from a capture: its summary, plus the materials' figures once known. */
+export interface ProgressionCapture {
+  at: number
+  summary: SnapshotSummary & { characterExp?: number; wishes?: number }
+}
+
+/** A figure of a capture; the materials' figures are 0 until withMaterialFigures adds them. */
 const figureOf = (capture: ProgressionCapture, key: FigureKey): number => capture.summary[key] ?? 0
 
 /**
- * `captures` with the character EXP held in books at each one, from the
- * materials history: a capture reads the snapshot it shows (a re-sighting its
- * own), a live sync point carries the capture before it.
+ * `captures` with the materials' figures at each one (character EXP held in
+ * books, wishes held), from the materials history: a capture reads the
+ * snapshot it shows (a re-sighting its own), a live sync point carries the
+ * capture before it.
  */
-export function withCharacterExp(
+export function withMaterialFigures(
   captures: readonly Capture[],
   materials: MaterialsHistory,
 ): ProgressionCapture[] {
@@ -92,16 +111,21 @@ export function withCharacterExp(
   const books = Object.entries(CHARACTER_EXP_BOOKS).map(
     ([key, exp]) => [materials.series.get(key), exp] as const,
   )
-  const expAt = (index: number) =>
-    books.reduce((sum, [series, exp]) => sum + valueAt(series, index) * exp, 0)
-  let carried = 0
+  const [primogem, genesis, fates] = ['Primogem', 'GenesisCrystal', 'IntertwinedFate'].map((key) =>
+    materials.series.get(key),
+  )
+  const figuresAt = (index: number) => ({
+    characterExp: books.reduce((sum, [series, exp]) => sum + valueAt(series, index) * exp, 0),
+    wishes: wishesHeld(valueAt(primogem, index), valueAt(genesis, index), valueAt(fates, index)),
+  })
+  let carried = { characterExp: 0, wishes: 0 }
   return captures.map((capture) => {
     if (capture.snapshot !== undefined) {
-      carried = expAt(
+      carried = figuresAt(
         indexById.get(capture.snapshot) ?? indexAtOrBefore(materials.times, capture.at),
       )
     }
-    return { at: capture.at, summary: { ...capture.summary, characterExp: carried } }
+    return { at: capture.at, summary: { ...capture.summary, ...carried } }
   })
 }
 

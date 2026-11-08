@@ -6,7 +6,12 @@
 import type { DeviceAlerts, PresenceResponseForAccount } from './alerts'
 import { z } from 'zod'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './password'
-import { MAX_FAVORITE_CHARACTERS, SITE_LANGUAGES, TAB_BAR_MAX } from './settings'
+import {
+  MAX_FAVORITE_CHARACTERS,
+  MAX_PROGRESSION_GRAPHS,
+  SITE_LANGUAGES,
+  TAB_BAR_MAX,
+} from './settings'
 import type { OAuthProvider } from './oauth'
 import type {
   AccountSettings,
@@ -211,6 +216,9 @@ export interface UsageResponse extends StorageSplit {
 /** A GOOD key (character, weapon or material), as irminsul writes them. */
 export const goodKeySchema = z.string().regex(/^[A-Za-z0-9]{1,64}$/, 'Not a GOOD key')
 
+/** A typed y axis end on a progression graph: any count the game could hold. */
+const axisNumber = z.number().finite().min(-1e15).max(1e15)
+
 export const userSettingsPatch = z
   .object({
     theme: z.enum(['system', 'light', 'dark']),
@@ -220,6 +228,19 @@ export const userSettingsPatch = z
       .array(z.string().regex(/^[a-z][a-zA-Z]{0,23}$/))
       .max(TAB_BAR_MAX)
       .refine((pages) => new Set(pages).size === pages.length, 'Each page once'),
+    progressionGraphs: z
+      .array(
+        z
+          .object({
+            figure: z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/),
+            from: z.union([z.enum(['auto', 'zero']), axisNumber]),
+            to: z.union([z.enum(['auto', 'bag']), axisNumber]),
+            delta: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(MAX_PROGRESSION_GRAPHS)
+      .nullable(),
   })
   .partial()
   .strict()

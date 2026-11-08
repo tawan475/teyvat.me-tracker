@@ -113,10 +113,33 @@ export interface UserSettings {
    * most TAB_BAR_MAX), shown in the sidebar's order; "More" holds the rest.
    */
   tabBar: string[]
+  /**
+   * The Overview's progression graphs, in the order shown (the Graphs
+   * dialog); null: the defaults (mora and primogems).
+   */
+  progressionGraphs: ProgressionGraph[] | null
 }
 
 /** Pages the phone tab bar holds besides "More". */
 export const TAB_BAR_MAX = 4
+
+/**
+ * One graph on the Overview's progression card: the figure it shows (a
+ * progression figure key; one this build doesn't know is skipped), where its
+ * y axis starts (`auto` = the lowest value, `zero`, or a number) and ends
+ * (`auto` = the highest value, `bag` = the game's bag limit for artifacts and
+ * weapons, or a number), and whether its delta graph (change per snapshot or
+ * period) is drawn under it.
+ */
+export interface ProgressionGraph {
+  figure: string
+  from: 'auto' | 'zero' | number
+  to: 'auto' | 'bag' | number
+  delta: boolean
+}
+
+/** Graphs the progression card holds at most. */
+export const MAX_PROGRESSION_GRAPHS = 12
 
 /** What a PATCH may carry: any subset, nested objects included. */
 export type UserSettingsPatch = Partial<UserSettings>
@@ -135,6 +158,7 @@ export const USER_SETTINGS_DEFAULTS: UserSettings = {
   use24Hour: false,
   language: 'system',
   tabBar: ['overview', 'characters', 'materials', 'planner'],
+  progressionGraphs: null,
 }
 
 export const MATERIALS_GRAPH_DEFAULTS: MaterialsGraphSettings = {

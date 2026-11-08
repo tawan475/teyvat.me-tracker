@@ -398,7 +398,6 @@ const importRoute = computed(() => accountLink('account-import'))
         :captures="chartCaptures"
         :title="$t('overview.progression')"
         storage="overview-progression"
-        :defaults="['mora', 'primogem']"
         default-group="snapshot"
       />
       <EndgameGlance class="rise-in" />

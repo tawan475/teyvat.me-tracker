@@ -34,8 +34,8 @@ export interface ChangeBar {
 }
 
 /**
- * Change per period as columns from a zero line: gains in green, losses in
- * red (the sign in the tooltip carries the meaning too). Same tokens and
+ * Change per period as columns from a zero line: gains in blue, losses in
+ * amber (the sign in the tooltip carries the meaning too). Same tokens and
  * tooltip as TimelineChart, re-read when the theme flips.
  *
  * With `domain`, the bars stand at their `x` on a time axis ticked like
@@ -105,8 +105,9 @@ function config(): ChartConfiguration<'bar', Datum[]> {
   const grid = token('--chart-grid')
   const zero = token('--border-strong')
   const muted = token('--text-muted')
-  const gain = token('--chart-3')
-  const loss = token('--danger')
+  // Blue up, amber down: never red against green (the site's colour-blind rule).
+  const gain = token('--chart-4')
+  const loss = token('--chart-2')
   return {
     type: 'bar',
     data: {

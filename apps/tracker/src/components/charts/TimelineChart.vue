@@ -55,8 +55,11 @@ const props = withDefaults(
     yAxisWidth?: number
     /** Room after the plot (px). */
     padRight?: number
+    /** Fixed ends of the y axis (undefined: fitted to the values). */
+    yMin?: number
+    yMax?: number
   }>(),
-  { height: 260, fill: undefined, yAxisWidth: 0, padRight: 0 },
+  { height: 260, fill: undefined, yAxisWidth: 0, padRight: 0, yMin: undefined, yMax: undefined },
 )
 
 /** The y axis's own width after each layout, for charts that line up with this one. */
@@ -124,6 +127,20 @@ function config(): ChartConfiguration<'line'> {
           },
         },
         y: {
+          min: props.yMin,
+          max: props.yMax,
+          // A fixed end (a bag limit) gets its own tick: drop a round one too close to it.
+          afterBuildTicks: (scale) => {
+            const ticks = scale.ticks
+            if (ticks.length < 3) return
+            const step = Math.abs(ticks[1]!.value - ticks[0]!.value)
+            const near = (a: number, b: number) => a !== b && Math.abs(a - b) < step * 0.6
+            scale.ticks = ticks.filter(
+              (tick) =>
+                !(props.yMax !== undefined && near(tick.value, props.yMax)) &&
+                !(props.yMin !== undefined && near(tick.value, props.yMin)),
+            )
+          },
           grid: { color: grid },
           border: { display: false },
           ticks: {
@@ -171,7 +188,11 @@ function render() {
 const later = useAfterPaint()
 onMounted(() => later(() => chart.value ?? render()))
 onBeforeUnmount(() => chart.value?.destroy())
-watch(() => [props.series, props.stepped, props.fill, props.padRight], render, { deep: true })
+watch(
+  () => [props.series, props.stepped, props.fill, props.padRight, props.yMin, props.yMax],
+  render,
+  { deep: true },
+)
 // A wider y axis only moves the plot: lay it out again.
 watch(
   () => props.yAxisWidth,

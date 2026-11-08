@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import ChartRangeSelect from '@/components/charts/ChartRangeSelect.vue'
-import TimelineChart, { type TimelineSeries } from '@/components/charts/TimelineChart.vue'
 import { useChartRange } from '@/components/charts/use-chart-range'
-import ChangeValue from '@/components/overview/ChangeValue.vue'
 import { Settings, TrendingUp } from 'lucide-vue-next'
-import FilterChip from '@/components/ui/FilterChip.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSegmented, { type SegmentedOption } from '@/components/ui/UiSegmented.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import type { TimelineSeries } from '@/components/charts/TimelineChart.vue'
 import { axisFormat, fitGroupBy, formatWindow, groupFits } from '@/data/chart-range'
 import { loadMaterialsHistory } from '@/data/materials'
 import type { Capture, Point } from '@/data/overview'
@@ -20,7 +19,9 @@ import { clock24, formatDateTime, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useAccount } from '@/views/account/context'
 import type { ChangeBar } from './ChangeBarChart.vue'
-import ChangeBarChart from './ChangeBarChart.vue'
+import { bagLimit, yBounds, type Graph } from './graphs'
+import ProgressionGraphsDialog from './ProgressionGraphsDialog.vue'
+import ProgressionGraphView, { type GraphView } from './ProgressionGraphView.vue'
 import {
   buildProgression,
   buildSnapshotProgression,
@@ -31,45 +32,45 @@ import {
   periodTotals,
   SNAPSHOT_BAR_WIDTH,
   snapshotTotals,
-  withCharacterExp,
-  FIGURE_KEYS,
+  withMaterialFigures,
   LINE_SHAPES,
+  MATERIAL_FIGURES,
   type FigureKey,
   type LineShape,
   type PeriodTotals,
   type ProgressionGroup,
 } from './progression-series'
+import { useProgressionGraphs } from './use-progression-graphs'
 
 /**
- * A report card of the figures picked on it (mora, primogems, character EXP,
+ * A report card of graphs (mora, primogems, wishes, character EXP,
  * artifacts, 4★ / 3★ artifacts, characters, weapons): each figure's value as
  * a line, stepped or straight from capture to capture (the button left of the
- * grouping), and its gains and losses under it as columns, per snapshot (each
- * capture that changed the figure, under its step on the same time axis) or
- * per period. Character EXP (books held) comes from the materials history,
- * loaded only while it is picked. The figures (picked under the cog left of
- * the controls), line shape, group-by and range are remembered on this
- * device per card (`storage`); until a grouping is picked, ranges up to a week show
- * snapshots and longer ones days. A period too coarse for the range is
- * greyed out and the next finer one shown (6h is per hour), the choice
- * coming back with a longer range. `captures` is undefined while the
- * history loads.
+ * grouping), and its delta graph under it (gains and losses as columns, per
+ * snapshot, each under its step on the same time axis, or per period).
+ * Wishes and character EXP come from the materials history, loaded only
+ * while a graph needs them. The cog opens the Graphs dialog: which graphs, in
+ * what order, each one's y axis (from the lowest value / 0 / a number, to the
+ * highest / the bag limit / a number) and delta graph, saved in the user's
+ * settings (useProgressionGraphs). Line shape, group-by and range are
+ * remembered on this device per card (`storage`); until a grouping is picked,
+ * ranges up to a week show snapshots and longer ones days. A period too
+ * coarse for the range is greyed out and the next finer one shown (6h is per
+ * hour), the choice coming back with a longer range. `captures` is undefined
+ * while the history loads.
  */
 const props = withDefaults(
   defineProps<{
     captures: Capture[] | undefined
     title?: string
-    /** Storage key prefix for this card's choices (figures, line, group-by, range). */
+    /** Storage key prefix for this card's choices on this device (line, group-by, range). */
     storage?: string
-    /** Figures shown until some are picked. */
-    defaults?: readonly FigureKey[]
     /** The grouping until one is picked (else per snapshot up to a week, per day beyond). */
     defaultGroup?: ProgressionGroup
   }>(),
   {
     title: undefined,
     storage: 'progression',
-    defaults: () => ['mora', 'primogem'],
     defaultGroup: undefined,
   },
 )
@@ -77,6 +78,7 @@ const props = withDefaults(
 const COLORS: Record<FigureKey, TimelineSeries['color']> = {
   mora: 2,
   primogem: 4,
+  wishes: 6,
   characterExp: 1,
   artifacts: 5,
   artifact4: 6,
@@ -87,20 +89,28 @@ const COLORS: Record<FigureKey, TimelineSeries['color']> = {
 /** A figure's name in the language on screen. */
 const figureTitle = (key: FigureKey) => t(`overview.figure.${key}`)
 
-/** The figures picked on this card (in FIGURE_KEYS order), remembered per device. */
-const FIGURES_KEY = `${props.storage}-figures`
-const storedFigures = (readStorage(FIGURES_KEY) ?? '')
-  .split(',')
-  .filter((key): key is FigureKey => (FIGURE_KEYS as readonly string[]).includes(key))
-const picked = ref<FigureKey[]>(storedFigures.length ? storedFigures : [...props.defaults])
-function toggleFigure(key: FigureKey) {
-  const on = picked.value.includes(key)
-  if (on && picked.value.length === 1) return // at least one
-  picked.value = FIGURE_KEYS.filter((k) => (k === key ? !on : picked.value.includes(k)))
-  writeStorage(FIGURES_KEY, picked.value.join(','))
+/** The card's graphs (the user's settings, see useProgressionGraphs). */
+const saved = useProgressionGraphs()
+/** While the Graphs dialog is open: its graphs, shown on the card as they change. */
+const editing = ref<Graph[] | null>(null)
+const graphs = computed<readonly Graph[]>(() => editing.value ?? saved.graphs.value)
+const dialogOpen = ref(false)
+function openGraphs() {
+  editing.value = [...saved.graphs.value]
+  dialogOpen.value = true
 }
-/** The figure chips show only while the cog beside the range is on. */
-const picking = ref(false)
+const saveGraphs = useDebounceFn((next: Graph[]) => saved.save(next).catch(() => undefined), 600)
+function graphsChanged(next: Graph[]) {
+  editing.value = next
+  void saveGraphs(next)
+}
+function closeGraphs() {
+  dialogOpen.value = false
+  const last = editing.value
+  editing.value = null
+  // Saved at once on close (the debounced save may not have run yet).
+  if (last) void saved.save(last).catch(() => undefined)
+}
 
 /** Stepped (the default) or straight lines, remembered per device. */
 const LINE_KEY = `${props.storage}-line`
@@ -111,29 +121,25 @@ function toggleLine() {
   writeStorage(LINE_KEY, line.value)
 }
 
-// Character EXP: the books in each capture's materials, loaded while picked.
+// Wishes and character EXP: read from each capture's materials, loaded while a graph shows one.
 const account = useAccount()
-const wantsExp = computed(() => picked.value.includes('characterExp'))
+const wantsMaterials = computed(() =>
+  graphs.value.some((graph) => MATERIAL_FIGURES.includes(graph.figure)),
+)
 const books = useResource(
-  () => (wantsExp.value && account.value.latest ? account.value : null),
+  () => (wantsMaterials.value && account.value.latest ? account.value : null),
   (a) => (a ? loadMaterialsHistory(a) : Promise.resolve(null)),
 )
-/** The captures the series read: with character EXP once it has loaded, undefined while it loads. */
+/** The captures the series read: with the materials' figures once loaded, undefined while they load. */
 const seriesCaptures = computed(() => {
   const all = props.captures
-  if (!all || !wantsExp.value || books.error.value) return all
+  if (!all || !wantsMaterials.value || books.error.value) return all
   if (books.loading.value) return undefined
   const history = books.data.value
-  return history ? withCharacterExp(all, history) : all
+  return history ? withMaterialFigures(all, history) : all
 })
-/** Without the materials (none captured, or they failed to load) EXP has no chart. */
-const hasExp = computed(() => !books.error.value && !!books.data.value)
-
-const CHARTS = computed(() =>
-  picked.value
-    .filter((key) => key !== 'characterExp' || hasExp.value)
-    .map((key) => ({ key, title: figureTitle(key), color: COLORS[key] })),
-)
+/** Without the materials (none captured, or they failed to load) their figures have no graph. */
+const hasMaterials = computed(() => !books.error.value && !!books.data.value)
 
 const GROUPS: SegmentedOption<ProgressionGroup>[] = [
   {
@@ -210,21 +216,6 @@ const shown = computed<{ lines: Record<FigureKey, Point[]>; truncated: boolean }
   () => perSnapshot.value ?? periodic.value,
 )
 
-interface ChartView {
-  key: FigureKey
-  title: string
-  value: string
-  net: number
-  gained: number
-  spent: number
-  series: TimelineSeries[]
-  lineLabel: string
-  bars: ChangeBar[]
-  /** The line's time axis, for bars standing under its steps (per snapshot). */
-  domain?: [number, number]
-  barsLabel: string
-}
-
 // Labels for the periods are shared by both charts.
 const periodLabels = computed(() => {
   const p = periodic.value
@@ -246,7 +237,7 @@ const periodLabels = computed(() => {
 
 /** The window both charts cover, for the range tooltip and the charts' accessible names. */
 const span = computed(() => {
-  const line = shown.value?.lines[picked.value[0] ?? 'mora']
+  const line = shown.value?.lines[graphs.value[0]?.figure ?? 'mora']
   const first = line?.[0]
   const last = line?.[line.length - 1]
   return first && last ? formatWindow(first.x, last.x, !clock24()) : ''
@@ -291,44 +282,75 @@ function barsOf(key: FigureKey): { bars: ChangeBar[]; totals: PeriodTotals } | n
   }
 }
 
-const charts = computed<ChartView[]>(() => {
+/** How a computed figure is counted, for its title's tooltip. */
+const FIGURE_HINTS: Partial<Record<FigureKey, () => string>> = {
+  wishes: () => t('progression.graphs.wishesHint'),
+}
+
+/** A graph as the card draws it (null while its figure has no data). */
+function viewOf(graph: Graph, id: string): GraphView | null {
   const lines = shown.value?.lines
-  if (!lines) return []
-  return CHARTS.value.flatMap((def) => {
-    const figure = barsOf(def.key)
-    if (!figure) return []
-    const { bars, totals } = figure
-    const value = formatNumber(totals.last)
-    return {
-      key: def.key,
-      title: def.title,
-      value,
-      net: totals.net,
-      gained: totals.gained,
-      spent: totals.spent,
-      series: [{ label: def.title, color: def.color, points: lines[def.key] }],
-      lineLabel: t('progression.lineLabel', { figure: def.title, span: span.value, value }),
-      bars,
-      domain: perSnapshot.value?.domain,
-      barsLabel: t('progression.barsLabel', {
-        figure: def.title,
-        per: perLabel.value.toLowerCase(),
-        span: span.value,
-        gained: formatNumber(totals.gained),
-        spent: formatNumber(totals.spent),
-      }),
-    }
-  })
-})
+  if (!lines) return null
+  if (MATERIAL_FIGURES.includes(graph.figure) && !hasMaterials.value) return null
+  const figure = barsOf(graph.figure)
+  if (!figure) return null
+  const { bars, totals } = figure
+  const title = figureTitle(graph.figure)
+  const value = formatNumber(totals.last)
+  const { min, max } = yBounds(graph)
+  return {
+    id,
+    title,
+    hint: FIGURE_HINTS[graph.figure]?.(),
+    last: totals.last,
+    net: totals.net,
+    gained: totals.gained,
+    spent: totals.spent,
+    series: [{ label: title, color: COLORS[graph.figure], points: lines[graph.figure] }],
+    lineLabel: t('progression.lineLabel', { figure: title, span: span.value, value }),
+    bars,
+    domain: perSnapshot.value?.domain,
+    barsLabel: t('progression.barsLabel', {
+      figure: title,
+      per: perLabel.value.toLowerCase(),
+      span: span.value,
+      gained: formatNumber(totals.gained),
+      spent: formatNumber(totals.spent),
+    }),
+    bag: bagLimit(graph),
+    yMin: min,
+    yMax: max,
+    delta: graph.delta,
+  }
+}
+
+/** The Graphs dialog's picked graph, drawn in its Preview (a computed: a new view each render would redraw it). */
+const previewGraph = ref<Graph | null>(null)
+const previewView = computed(() =>
+  previewGraph.value ? viewOf(previewGraph.value, 'preview') : null,
+)
+
+const charts = computed<GraphView[]>(() =>
+  graphs.value.flatMap((graph, i) => viewOf(graph, `g${i}`) ?? []),
+)
+
+/** A figure's values along its line (at most ~25), for the dialog's sparklines. */
+function spark(figure: FigureKey): readonly number[] | null {
+  const points = shown.value?.lines[figure]
+  if (!points || points.length < 2) return null
+  const step = Math.max(1, Math.floor(points.length / 24))
+  return points.filter((_, i) => i % step === 0 || i === points.length - 1).map((p) => p.y)
+}
+const colorOf = (figure: FigureKey) => COLORS[figure]
 
 /**
- * Each chart's own y-axis width, by figure and chart: the line and its bars
+ * Each graph's own y-axis width, by graph and chart: the line and its bars
  * both take the wider, so their plots start and end at the same x and the
  * snapshot bars stand under their steps.
  */
 const axisFits = reactive<Record<string, number>>({})
-const yAxisWidth = (key: FigureKey) =>
-  Math.max(axisFits[`${key}-line`] ?? 0, axisFits[`${key}-bars`] ?? 0)
+const yAxisWidth = (id: string) =>
+  Math.max(axisFits[`${id}-line`] ?? 0, axisFits[`${id}-bars`] ?? 0)
 function fitAxis(id: string, width: number) {
   if (axisFits[id] !== width) axisFits[id] = width
 }
@@ -337,11 +359,7 @@ function fitAxis(id: string, width: number) {
 <template>
   <UiPanel :title="title ?? $t('progression.title')">
     <template #actions>
-      <UiIconButton
-        :label="$t('progression.figures')"
-        :active="picking"
-        @click="picking = !picking"
-      >
+      <UiIconButton :label="$t('progression.graphs.open')" @click="openGraphs">
         <Settings class="size-5" aria-hidden="true" />
       </UiIconButton>
       <UiIconButton
@@ -361,25 +379,6 @@ function fitAxis(id: string, width: number) {
       <ChartRangeSelect v-model="range" :detail="span || undefined" />
     </template>
 
-    <!-- Which figures this card charts (behind the cog) -->
-    <div
-      v-if="picking"
-      class="scroll-hide scroll-fade-x -mt-1 mb-4 flex gap-1.5 overflow-x-auto sm:scroll-fade-none sm:flex-wrap"
-      role="group"
-      :aria-label="$t('progression.figures')"
-    >
-      <FilterChip
-        v-for="key in FIGURE_KEYS"
-        :key="key"
-        :pressed="picked.includes(key)"
-        :title="
-          picked.includes(key) && picked.length === 1 ? $t('progression.atLeastOne') : undefined
-        "
-        @toggle="toggleFigure(key)"
-        >{{ figureTitle(key) }}</FilterChip
-      >
-    </div>
-
     <div v-if="!seriesCaptures" class="grid gap-8 lg:grid-cols-2" role="status">
       <span class="sr-only">{{ $t('progression.loading') }}</span>
       <div v-for="n in 2" :key="n" class="flex flex-col gap-3">
@@ -397,52 +396,45 @@ function fitAxis(id: string, width: number) {
     </p>
 
     <div v-else class="grid gap-8 lg:grid-cols-2">
-      <section
-        v-for="chart in charts"
-        :key="chart.key"
-        class="min-w-0"
-        :aria-labelledby="`progression-${chart.key}`"
-      >
-        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h3 :id="`progression-${chart.key}`" class="font-display text-lg font-bold">
-            {{ chart.title }}
-          </h3>
-          <p class="flex items-baseline gap-2">
-            <span class="tabular font-mono font-medium">{{ chart.value }}</span>
-            <ChangeValue :value="chart.net" :hint="$t('progression.inRange')" class="text-sm" />
-          </p>
-        </div>
-        <TimelineChart
-          :series="chart.series"
-          :label="chart.lineLabel"
-          :height="220"
-          fill
-          :stepped="line === 'stepped'"
-          :y-axis-width="yAxisWidth(chart.key)"
-          :pad-right="PAD_RIGHT"
-          @y-axis-fit="(width) => fitAxis(`${chart.key}-line`, width)"
-        />
-
-        <div class="mt-5 mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h4 class="text-sm font-medium text-text-secondary" :title="perDetail">
-            {{ perLabel }}
-          </h4>
-          <p class="flex items-baseline gap-3 text-sm">
-            <ChangeValue :value="chart.gained" :hint="$t('progression.gainedInRange')" />
-            <ChangeValue :value="-chart.spent" :hint="$t('progression.spentInRange')" />
-          </p>
-        </div>
-        <ChangeBarChart
-          :bars="chart.bars"
-          :name="chart.title"
-          :label="chart.barsLabel"
-          :height="150"
-          :domain="chart.domain"
-          :y-axis-width="yAxisWidth(chart.key)"
-          :pad-right="PAD_RIGHT"
-          @y-axis-fit="(width) => fitAxis(`${chart.key}-bars`, width)"
-        />
-      </section>
+      <ProgressionGraphView
+        v-for="view in charts"
+        :key="view.id"
+        :view="view"
+        :stepped="line === 'stepped'"
+        :per-label="perLabel"
+        :per-detail="perDetail"
+        :y-axis-width="yAxisWidth(view.id)"
+        :pad-right="PAD_RIGHT"
+        @fit="(part, width) => fitAxis(`${view.id}-${part}`, width)"
+      />
     </div>
+
+    <ProgressionGraphsDialog
+      :open="dialogOpen"
+      :graphs="graphs"
+      :signed-in="saved.signedIn.value"
+      :spark="spark"
+      :color-of="colorOf"
+      @change="graphsChanged"
+      @close="closeGraphs"
+      @preview="(graph) => (previewGraph = graph)"
+    >
+      <template #preview>
+        <ProgressionGraphView
+          v-if="previewView"
+          :view="previewView"
+          compact
+          :stepped="line === 'stepped'"
+          :per-label="perLabel"
+          :per-detail="perDetail"
+          :y-axis-width="yAxisWidth('preview')"
+          :pad-right="PAD_RIGHT"
+          @fit="(part, width) => fitAxis(`preview-${part}`, width)"
+        />
+        <p v-else class="py-6 text-center text-sm text-text-muted">
+          {{ $t('progression.noData') }}
+        </p>
+      </template>
+    </ProgressionGraphsDialog>
   </UiPanel>
 </template>

@@ -97,6 +97,7 @@ describe('auth', () => {
       use24Hour: false,
       language: 'system',
       tabBar: ['overview', 'characters', 'materials', 'planner'],
+      progressionGraphs: null,
     })
     expect((await client.json<{ id: number }>('/api/auth/me')).id).toBe(me.id)
 
@@ -120,6 +121,25 @@ describe('auth', () => {
     expect((await patch({ tabBar: [] })).status).toBe(200)
     expect((await patch({ tabBar: ['a', 'b', 'c', 'd', 'e'] })).status).toBe(400)
     expect((await patch({ tabBar: ['overview', 'overview'] })).status).toBe(400)
+
+    // The Overview's graphs (the Graphs dialog): checked, kept whole, null = the defaults.
+    const graphs = [
+      { figure: 'artifacts', from: 'zero', to: 'bag', delta: true },
+      { figure: 'wishes', from: 'auto', to: 5_000, delta: false },
+    ]
+    const withGraphs = await patch({ progressionGraphs: graphs })
+    expect(withGraphs.status).toBe(200)
+    expect(
+      ((await withGraphs.json()) as { settings: { progressionGraphs: unknown } }).settings
+        .progressionGraphs,
+    ).toEqual(graphs)
+    expect((await patch({ progressionGraphs: null })).status).toBe(200)
+    const bad = (graph: object) => patch({ progressionGraphs: [{ ...graphs[0], ...graph }] })
+    expect((await bad({ from: 'bag' })).status).toBe(400)
+    expect((await bad({ to: 'zero' })).status).toBe(400)
+    expect((await bad({ figure: '<script>' })).status).toBe(400)
+    expect((await bad({ extra: 1 })).status).toBe(400)
+    expect((await patch({ progressionGraphs: Array(13).fill(graphs[0]) })).status).toBe(400)
 
     const again = await new Client().fetch('/api/auth/register', {
       method: 'POST',

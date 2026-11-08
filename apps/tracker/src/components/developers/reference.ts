@@ -337,6 +337,7 @@ export const DELTA_PATHS: [string, string][] = [
   ['gi_anecdotes.unlockedAreas | reward | wish', 'that value; del'],
   ['gi_tasks.<part>', 'that part whole; del'],
   ['gi_wardrobe.teams | currentTeam', 'that value whole; del'],
+  ['quests.<id>', 'a parent quest: 1 finished, 0 accepted; del'],
 ]
 
 /** What `POST /api/irminsul/changes` answers. */

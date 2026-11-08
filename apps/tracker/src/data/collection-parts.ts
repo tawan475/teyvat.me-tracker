@@ -1,3 +1,5 @@
+import type { LiveJournalResponse } from '@gdt/shared'
+import { withLiveParts } from '@/data/live-now'
 import {
   decodeCollections,
   decodeExploration,
@@ -111,4 +113,44 @@ export function capturedCollections(bundle: CollectionsBundle): CapturedCollecti
     }
   }
   return out
+}
+
+/** Pure: the journal's saved teams, respawn times and quests over the captured ones. */
+export function withLiveCollections(
+  captured: CapturedCollections,
+  live: LiveJournalResponse | null | undefined,
+  snapshotId: number | null,
+): CapturedCollections {
+  const wardrobe = captured.wardrobe?.value
+  const respawns = captured.respawns?.value
+  const quests = captured.quests?.value
+  const now = withLiveParts(
+    {
+      ...(wardrobe ? { gi_wardrobe: wardrobe } : {}),
+      ...(respawns ? { gi_tasks: { respawns } } : {}),
+      ...(quests ? { gi_collections: { quests } } : {}),
+    },
+    live,
+    snapshotId,
+    ['gi_wardrobe', 'gi_tasks', 'quests'],
+  )
+  const at = live?.updatedAt ?? Date.now()
+  const out = { ...captured }
+  let changed = false
+  if (now.gi_wardrobe && now.gi_wardrobe !== wardrobe) {
+    out.wardrobe = { value: now.gi_wardrobe, takenAt: at }
+    changed = true
+  }
+  const nextRespawns = now.gi_tasks?.respawns
+  if (nextRespawns !== respawns) {
+    if (nextRespawns) out.respawns = { value: nextRespawns, takenAt: at }
+    else delete out.respawns
+    changed = true
+  }
+  const nextQuests = now.gi_collections?.quests
+  if (nextQuests && nextQuests !== quests) {
+    out.quests = { value: nextQuests, takenAt: at }
+    changed = true
+  }
+  return changed ? out : captured
 }

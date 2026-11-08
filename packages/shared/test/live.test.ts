@@ -256,6 +256,45 @@ describe('GOOD-X delta contract', () => {
   })
 })
 
+describe('quests (Capture 1.17.25)', () => {
+  const withQuests: LiveGood = {
+    ...base,
+    gi_collections: { quests: { finished: [1001, 1005], active: [1003] } },
+  }
+
+  it('moves a quest between the lists, sorted, never back from finished', () => {
+    const applied = applyDelta(withQuests, [
+      ['set', ['quests', '1003'], 1],
+      ['set', ['quests', '1002'], 0],
+      ['set', ['quests', '1005'], 0],
+    ])
+    expect(applied.gi_collections?.quests).toEqual({
+      finished: [1001, 1003, 1005],
+      active: [1002],
+    })
+    expect(withQuests.gi_collections!.quests!.active).toEqual([1003])
+  })
+
+  it('drops a deleted quest and refuses what a snapshot would', () => {
+    expect(applyDelta(withQuests, [['del', ['quests', '1003']]]).gi_collections?.quests).toEqual({
+      finished: [1001, 1005],
+    })
+    const bad = applyDelta(withQuests, [
+      ['set', ['quests', '1004'], 2],
+      ['set', ['quests', 'x'], 1],
+      ['set', ['quests', '1000000'], 1],
+      ['set', ['quests', '1004', 'state'], 1],
+    ])
+    expect(bad.gi_collections).toEqual(withQuests.gi_collections)
+    // A base without the list starts one.
+    const bare: LiveGood = { ...base, gi_collections: undefined }
+    expect(applyDelta(bare, [['set', ['quests', '1001'], 1]]).gi_collections).toEqual({
+      quests: { finished: [1001] },
+    })
+    expect(applyDelta(bare, [['del', ['quests', '1001']]]).gi_collections).toBeUndefined()
+  })
+})
+
 describe('mergeChanges', () => {
   it('keeps the last value per path', () => {
     const merged = mergeChanges(

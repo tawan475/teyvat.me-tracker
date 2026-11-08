@@ -25,6 +25,7 @@
  * | `gi_tasks.resin` | `{value, nextAt}`: the resin clock (Capture 1.12.0); `del` |
  * | `gi_tasks.<part>` | any other part of `gi_tasks`, whole, checked as a snapshot's (Capture 1.16.0); `del` |
  * | `gi_wardrobe.teams\|currentTeam` | the saved teams whole / the slot in use, checked as a snapshot's (Capture 1.17.1); `del` |
+ * | `quests.<id>` | a parent quest (`gi_collections.quests`): 1 finished, 0 accepted and not finished; `del` (Capture 1.17.25) |
  *
  * Items (weapons, artifacts) are named by the game's guid, `gi_guid` on the
  * item; an item without one never appears in a journal. Unknown paths are
@@ -330,6 +331,25 @@ export function applyDelta(good: LiveGood, changes: readonly DeltaChange[]): Liv
         }
         break
       }
+      case 'quests': {
+        // One parent quest (Capture 1.17.25); kept sorted like a snapshot's lists.
+        if (parts.length !== 2) break
+        const id = Number(name)
+        if (!Number.isInteger(id) || id < 1 || id > 999_999) break
+        if (op === 'set' && value !== 0 && value !== 1) break
+        if (op === 'del' && !next.gi_collections?.quests) break
+        const collections = own('gi_collections', (c) => ({ ...c }))!
+        const held = collections.quests
+        const finished = (held?.finished ?? []).filter((q) => q !== id)
+        const active = (held?.active ?? []).filter((q) => q !== id)
+        if (op === 'set') {
+          // A finished quest never goes back to accepted.
+          if (value === 1 || held?.finished.includes(id)) insertSorted(finished, id)
+          else insertSorted(active, id)
+        }
+        collections.quests = { finished, ...(active.length > 0 ? { active } : {}) }
+        break
+      }
       case 'gi_anecdotes': {
         if (parts.length !== 2 || !ANECDOTE_FIELDS.has(name)) break
         if (op === 'del' && !next.gi_anecdotes) break
@@ -343,6 +363,12 @@ export function applyDelta(good: LiveGood, changes: readonly DeltaChange[]): Liv
     }
   }
   return next
+}
+
+function insertSorted(list: number[], id: number): void {
+  let at = list.findIndex((q) => q > id)
+  if (at < 0) at = list.length
+  list.splice(at, 0, id)
 }
 
 function copyBook(book: GiAnecdotes | undefined): GiAnecdotes {

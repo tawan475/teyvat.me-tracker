@@ -1,6 +1,6 @@
 import type { LiveJournalResponse } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
-import { withLiveCollections } from '@/data/collections'
+import { withLiveCollections } from '@/data/collection-parts'
 import { withLiveParts } from '@/data/live-now'
 import { withLiveMaterials, type MaterialsHistory } from '@/data/materials-history'
 
@@ -107,6 +107,16 @@ describe('withLiveCollections', () => {
       7,
     )
     expect(now.wardrobe).toEqual({ value: { teams, currentTeam: 1 }, takenAt: 5_000 })
+  })
+
+  it('takes a quest finished since the snapshot (Capture 1.17.25)', () => {
+    const withQuests = {
+      ...captured,
+      quests: { value: { finished: [1001], active: [1003] }, takenAt: 2_000 },
+    }
+    const now = withLiveCollections(withQuests, journal([['set', ['quests', '1003'], 1]]), 7)
+    expect(now.quests).toEqual({ value: { finished: [1001, 1003] }, takenAt: 5_000 })
+    expect(now.wardrobe).toBe(captured.wardrobe)
   })
 
   it('returns the captured parts when nothing they hold moved', () => {

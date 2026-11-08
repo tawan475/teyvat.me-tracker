@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Check, ChevronDown, ExternalLink, EyeOff, Repeat } from 'lucide-vue-next'
+import SyncedMark from '@/components/live/SyncedMark.vue'
 import type { AnecdoteTexts } from '@gdt/game-data'
 import {
   markTarget,
@@ -25,6 +26,8 @@ const props = defineProps<{
   /** The English text: the wiki's pages are titled with it (`Nefer: Reliable or Not`). */
   english?: AnecdoteTexts
   readOnly: boolean
+  /** When a capture finished it while the page was open (lib/just-synced.ts). */
+  synced?: number
 }>()
 const emit = defineEmits<{ mark: [id: number]; unmark: [id: number] }>()
 
@@ -67,7 +70,10 @@ const FILL = {
 </script>
 
 <template>
-  <li class="flex items-start gap-2 px-2 py-0.5 sm:px-3">
+  <li
+    class="flex items-start gap-2 px-2 py-0.5 sm:px-3"
+    :class="synced !== undefined ? 'just-synced rounded-md' : ''"
+  >
     <button
       type="button"
       class="group flex size-10 shrink-0 items-center justify-center rounded-full"
@@ -156,6 +162,7 @@ const FILL = {
           :title="$t('anecdotes.row.addedIn', { version: entry.anecdote.version })"
           >v{{ entry.anecdote.version }}</span
         >
+        <SyncedMark v-if="synced !== undefined" class="ml-1 align-middle" :at="synced" />
       </p>
     </div>
   </li>

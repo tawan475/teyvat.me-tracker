@@ -13,6 +13,8 @@ defineProps<{
   text: AchievementTexts
   /** The English names, for the wiki links. */
   english: AchievementTexts
+  /** Entries a capture finished while the page was open, and when. */
+  synced?: ReadonlyMap<number, number>
   state: DoneState
   capture: CapturedAchievements
 }>()
@@ -50,6 +52,7 @@ defineEmits<{ mark: [ids: number[]]; unmark: [ids: number[]] }>()
         :entry="entry"
         :text="text"
         :english="english"
+        :synced="synced?.get(entry.id)"
         :state="state"
         :capture="capture"
         @mark="$emit('mark', $event)"

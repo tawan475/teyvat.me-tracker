@@ -56,5 +56,11 @@
       "snapshot": "Asked Capture to send a capture"
     },
     "notSent": "Not sent"
+  },
+  "justSynced": {
+    "mark": "Synced {time}",
+    "title": "Finished by live sync at {time}; it stays until the filters change",
+    "count": "{n} synced just now | {n} synced just now",
+    "hide": "Hide"
   }
 }

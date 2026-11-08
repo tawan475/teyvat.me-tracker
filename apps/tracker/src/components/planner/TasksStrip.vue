@@ -22,7 +22,10 @@ import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { t } from '@/i18n'
 import { IMAGE_BASE, giCdnArt } from '@/lib/assets'
 import { formatDateTime, formatNumber } from '@/lib/format'
+import { useJustSynced } from '@/lib/just-synced'
 import { readStorage, writeStorage } from '@/lib/storage'
+import JustSyncedBar from '@/components/live/JustSyncedBar.vue'
+import SyncedMark from '@/components/live/SyncedMark.vue'
 import { useFeedback } from '@/stores/feedback'
 import { daysText, weekdayShort } from './farm-format'
 import TaskEditor from './TaskEditor.vue'
@@ -118,11 +121,29 @@ const TABS = computed(() => [
   { value: 'event' as const, label: t('planner.tasks.events'), count: dueCount('event') },
   { value: 'custom' as const, label: t('planner.card.custom'), count: dueCount('custom') },
 ])
+/**
+ * Rows a capture ticked while the page is open (live sync or a snapshot):
+ * they stay in the list, marked "Synced", until the tab or "Show done"
+ * changes, Hide, or the page is left (lib/just-synced.ts).
+ */
+const capturedDone = computed(() =>
+  props.capture === undefined
+    ? null
+    : new Set(rows.value.filter((r) => !r.due && r.capture?.rules).map((r) => r.key)),
+)
+const justSynced = useJustSynced(
+  () => capturedDone.value,
+  () => [tab.value, showAll.value],
+)
+const synced = justSynced.synced
 const shown = computed(() =>
   rows.value.filter(
     (r) =>
       (tab.value === 'all' || r.kind === tab.value) &&
-      (r.due || showAll.value || (tab.value === 'custom' && r.kind === 'custom')),
+      (r.due ||
+        showAll.value ||
+        synced.value.has(r.key) ||
+        (tab.value === 'custom' && r.kind === 'custom')),
   ),
 )
 const resting = computed(
@@ -453,6 +474,7 @@ const summary = computed(() => {
       </template>
     </header>
 
+    <JustSyncedBar v-if="open" class="mx-2 mb-2" :count="synced.size" @hide="justSynced.hide" />
     <ul
       v-if="open"
       class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,22rem),1fr))] gap-x-2 border-t border-border-subtle py-1"
@@ -466,6 +488,7 @@ const summary = computed(() => {
         :key="row.key"
         class="flex min-h-10 min-w-0 items-center gap-1.5 border-l-2 pr-1 pl-1.5"
         :class="[
+          synced.has(row.key) ? 'just-synced' : '',
           row.tone === 'soon' ? 'border-danger' : 'border-transparent',
           drag.over.value === `task:${row.id}` && drag.dragging.value !== `task:${row.id}`
             ? 'bg-surface-overlay'
@@ -556,6 +579,7 @@ const summary = computed(() => {
             aria-hidden="true"
           />
         </component>
+        <SyncedMark v-if="synced.has(row.key)" :at="synced.get(row.key)!" />
         <span
           class="tabular inline-flex shrink-0 items-center gap-1 font-mono text-xs"
           :class="TONE[row.tone]"

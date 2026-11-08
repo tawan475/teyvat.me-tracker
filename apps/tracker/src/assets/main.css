@@ -561,6 +561,20 @@ dialog[open]::backdrop {
   }
 }
 
+/* A row a capture just finished (lib/just-synced.ts): one soft accent wash
+   when it changes, then the "Synced" mark carries it (no colour alone). */
+.just-synced {
+  animation: just-synced 2.4s ease-out both;
+}
+@keyframes just-synced {
+  from {
+    background-color: color-mix(in oklab, var(--color-accent) 22%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;

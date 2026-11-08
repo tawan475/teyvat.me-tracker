@@ -35,6 +35,8 @@ import AchievementCategories, {
   type CategoryItem,
 } from '@/components/achievements/AchievementCategories.vue'
 import AchievementGroup from '@/components/achievements/AchievementGroup.vue'
+import JustSyncedBar from '@/components/live/JustSyncedBar.vue'
+import { useJustSynced } from '@/lib/just-synced'
 import AchievementImportDialog from '@/components/achievements/AchievementImportDialog.vue'
 import AchievementSummary from '@/components/achievements/AchievementSummary.vue'
 import AchievementToolbar from '@/components/achievements/AchievementToolbar.vue'
@@ -164,7 +166,8 @@ const hiddenSeries = computed(() => {
   if (showDoneSeries.value) return new Set<number | null>()
   const hidden = new Set<number | null>()
   for (const id of doneSeries.value)
-    if (id !== filters.goal && !keptSeries.value.has(id as number)) hidden.add(id)
+    if (id !== filters.goal && !keptSeries.value.has(id as number) && !syncedGoals.value.has(id))
+      hidden.add(id)
   return hidden
 })
 /** The rail and the category select. */
@@ -251,6 +254,29 @@ function keep(ids: number[]) {
   kept.value = next
 }
 
+/**
+ * Entries a capture finished while the page is open (a live sync batch or a
+ * snapshot; the user's ask): they stay in view, marked, until the filters
+ * change, Hide, or the page is left (lib/just-synced.ts).
+ */
+const justSynced = useJustSynced(
+  () => captured.value?.ids ?? null,
+  () => [JSON.stringify(filters), account.value.id],
+)
+/** Entry id → when its newest synced tier came in. */
+const syncedEntries = computed(() => {
+  const map = new Map<number, number>()
+  for (const [tier, at] of justSynced.synced.value) {
+    const entry = entryOfTier.value.get(tier)
+    if (entry !== undefined) map.set(entry, Math.max(at, map.get(entry) ?? 0))
+  }
+  return map
+})
+const syncedGoals = computed(() => {
+  const goalOf = new Map(entries.value.map((e) => [e.id, e.goal]))
+  return new Set<number | null>([...syncedEntries.value.keys()].map((id) => goalOf.get(id) ?? null))
+})
+
 /** Entries matching every filter but completion. */
 const matching = computed<AchievementEntry[]>(() => {
   const g = game.data.value
@@ -260,8 +286,12 @@ const matching = computed<AchievementEntry[]>(() => {
 const shown = computed<AchievementEntry[]>(() =>
   matching.value.filter(
     (entry) =>
-      (kept.value.has(entry.id) || matchesCompletion(entry, filters.completion, state.value)) &&
-      (!hideSeriesEntries.value || !hiddenSeries.value.has(entry.goal)),
+      (kept.value.has(entry.id) ||
+        syncedEntries.value.has(entry.id) ||
+        matchesCompletion(entry, filters.completion, state.value)) &&
+      (!hideSeriesEntries.value ||
+        !hiddenSeries.value.has(entry.goal) ||
+        syncedGoals.value.has(entry.goal)),
   ),
 )
 /**
@@ -494,6 +524,8 @@ async function importIds(ids: number[]): Promise<boolean> {
             @unmark-all="unmarkAll"
           />
 
+          <JustSyncedBar :count="syncedEntries.size" @hide="justSynced.hide" />
+
           <UiPanel v-if="empty" flush>
             <UiEmpty v-if="empty === 'allDone'" :title="$t('achievements.allDone')">
               <template #icon><CheckCheck class="text-success-text" aria-hidden="true" /></template>
@@ -520,6 +552,7 @@ async function importIds(ids: number[]): Promise<boolean> {
             :entries="group.entries"
             :text="game.data.value.text"
             :english="game.data.value.english"
+            :synced="syncedEntries"
             :state="state"
             :capture="captured"
             @mark="mark"

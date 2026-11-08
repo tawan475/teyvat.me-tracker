@@ -14,6 +14,8 @@ import {
   type CapturedAnecdotes,
 } from '@/data/anecdote-progress'
 import AnecdoteGroup from '@/components/anecdotes/AnecdoteGroup.vue'
+import JustSyncedBar from '@/components/live/JustSyncedBar.vue'
+import { useJustSynced } from '@/lib/just-synced'
 import AnecdoteSummary from '@/components/anecdotes/AnecdoteSummary.vue'
 import AnecdoteToolbar, { type AreaTab } from '@/components/anecdotes/AnecdoteToolbar.vue'
 import { useAnecdoteMarks } from '@/components/anecdotes/use-anecdote-marks'
@@ -121,8 +123,32 @@ watch(showDone, (on) => writeStorage(SHOW_DONE_KEY, on ? '1' : null))
 const fold = computed(() => filters.completion === 'all' && !showDone.value)
 
 /** Rows toggled since the filters (or the folding) last changed stay where they were. */
-const kept = shallowRef<ReadonlySet<number>>(new Set())
-watch([filters, () => account.value.id, showDone], () => (kept.value = new Set()))
+const toggled = shallowRef<ReadonlySet<number>>(new Set())
+watch([filters, () => account.value.id, showDone], () => (toggled.value = new Set()))
+
+/**
+ * Rows a capture finished while the page is open (live sync or a snapshot):
+ * they stay where they were too, marked, until the filters change, Hide, or
+ * the page is left (lib/just-synced.ts).
+ */
+const capturedDone = computed(() => {
+  const p = progress.value
+  if (!p) return null
+  const ids = new Set<number>()
+  for (const area of p.areas)
+    for (const group of area.groups)
+      for (const entry of group.entries) if (entry.source === 'captured') ids.add(entry.anecdote.id)
+  return ids
+})
+const justSynced = useJustSynced(
+  () => capturedDone.value,
+  () => [JSON.stringify(filters), account.value.id, showDone.value],
+)
+const kept = computed<ReadonlySet<number>>(() =>
+  justSynced.synced.value.size === 0
+    ? toggled.value
+    : new Set([...toggled.value, ...justSynced.synced.value.keys()]),
+)
 
 const shownAreas = computed(() => {
   const g = game.data.value
@@ -157,7 +183,7 @@ function clearFilters() {
 
 function keep(id: number) {
   if (filters.completion === 'all' && !fold.value) return
-  kept.value = new Set([...kept.value, id])
+  toggled.value = new Set([...toggled.value, id])
 }
 function mark(id: number) {
   keep(id)
@@ -213,6 +239,8 @@ function unmark(id: number) {
           @clear="clearFilters"
         />
 
+        <JustSyncedBar class="mb-4" :count="justSynced.synced.value.size" @hide="justSynced.hide" />
+
         <section
           v-for="area in drawnAreas"
           :key="area.area"
@@ -244,6 +272,7 @@ function unmark(id: number) {
               :read-only="readOnly"
               :fold="fold"
               :kept="kept"
+              :synced="justSynced.synced.value"
               @mark="mark"
               @unmark="unmark"
             />

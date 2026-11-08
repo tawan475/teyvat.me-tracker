@@ -16,6 +16,7 @@ import {
 } from '@/data/achievement-progress'
 import { materialIcon } from '@/lib/assets'
 import { wikiPage } from '@/lib/wiki'
+import SyncedMark from '@/components/live/SyncedMark.vue'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { completionText } from './completion'
@@ -33,6 +34,8 @@ const props = defineProps<{
   text: AchievementTexts
   /** The English names: the Fandom wiki's page titles. */
   english: AchievementTexts
+  /** When a capture finished it while the page was open (lib/just-synced.ts). */
+  synced?: number
   state: DoneState
   /** Where the completion dates come from: the game's own, or the snapshots. */
   capture: CapturedAchievements
@@ -154,7 +157,10 @@ const FILL: Record<DoneSource, string> = {
 </script>
 
 <template>
-  <li class="flex items-start gap-3 px-3 py-3 sm:gap-4 sm:px-5">
+  <li
+    class="flex items-start gap-3 px-3 py-3 sm:gap-4 sm:px-5"
+    :class="synced !== undefined ? 'just-synced' : ''"
+  >
     <button
       type="button"
       class="group -m-0.5 flex size-11 shrink-0 items-center justify-center rounded-full"
@@ -235,6 +241,7 @@ const FILL: Record<DoneSource, string> = {
           </button>
           <span class="tabular ml-1 font-mono">{{ doneCount }}/{{ tiers.length }}</span>
         </span>
+        <SyncedMark v-if="synced !== undefined" :at="synced" />
         <span
           v-if="entry.version"
           class="tabular font-mono"

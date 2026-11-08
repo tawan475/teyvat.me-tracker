@@ -56,5 +56,11 @@
       "snapshot": "Capture'dan veri göndermesi istendi"
     },
     "notSent": "Gönderilmedi"
+  },
+  "justSynced": {
+    "mark": "Eşitlendi {time}",
+    "title": "{time} saatinde canlı eşitlemeyle tamamlandı; filtreler değişene kadar görünür",
+    "count": "{n} az önce eşitlendi",
+    "hide": "Gizle"
   }
 }

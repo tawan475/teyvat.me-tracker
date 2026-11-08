@@ -28,6 +28,8 @@ const props = defineProps<{
   fold: boolean
   /** Rows toggled since the filters changed: they stay unfolded. */
   kept: ReadonlySet<number>
+  /** Rows a capture finished while the page was open, and when. */
+  synced?: ReadonlyMap<number, number>
 }>()
 defineEmits<{ mark: [id: number]; unmark: [id: number] }>()
 
@@ -94,6 +96,7 @@ const opened = ref(false)
         :text="text"
         :english="english"
         :read-only="readOnly"
+        :synced="synced?.get(entry.anecdote.id)"
         @mark="$emit('mark', $event)"
         @unmark="$emit('unmark', $event)"
       />

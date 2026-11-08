@@ -56,5 +56,11 @@
       "snapshot": "Capture にデータ送信を依頼しました"
     },
     "notSent": "送信できませんでした"
+  },
+  "justSynced": {
+    "mark": "同期 {time}",
+    "title": "{time} にライブ同期で完了。フィルターを変えるまで表示されます",
+    "count": "{n} 件が今同期されました",
+    "hide": "非表示"
   }
 }

@@ -56,5 +56,11 @@
       "snapshot": "Chiesto a Capture di inviare un'acquisizione"
     },
     "notSent": "Non inviato"
+  },
+  "justSynced": {
+    "mark": "Sincronizzato {time}",
+    "title": "Completato dalla sincronizzazione live alle {time}; resta visibile finché non cambi i filtri",
+    "count": "{n} appena sincronizzato | {n} appena sincronizzati",
+    "hide": "Nascondi"
   }
 }

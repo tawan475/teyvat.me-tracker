@@ -56,5 +56,11 @@
       "snapshot": "已请求 Capture 发送数据"
     },
     "notSent": "未发送"
+  },
+  "justSynced": {
+    "mark": "已同步 {time}",
+    "title": "于 {time} 通过实时同步完成；在更改筛选前保持显示",
+    "count": "刚刚同步了 {n} 项",
+    "hide": "隐藏"
   }
 }

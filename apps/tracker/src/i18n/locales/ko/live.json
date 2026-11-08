@@ -56,5 +56,11 @@
       "snapshot": "Capture에 데이터 전송을 요청했습니다"
     },
     "notSent": "보내지 못했습니다"
+  },
+  "justSynced": {
+    "mark": "동기화 {time}",
+    "title": "{time}에 실시간 동기화로 완료됨. 필터를 바꿀 때까지 표시됩니다",
+    "count": "방금 {n}개 동기화됨",
+    "hide": "숨기기"
   }
 }

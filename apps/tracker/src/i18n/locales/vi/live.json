@@ -56,5 +56,11 @@
       "snapshot": "Đã nhờ Capture gửi dữ liệu"
     },
     "notSent": "Chưa gửi được"
+  },
+  "justSynced": {
+    "mark": "Đã đồng bộ {time}",
+    "title": "Hoàn thành qua đồng bộ trực tiếp lúc {time}; vẫn hiện cho đến khi đổi bộ lọc",
+    "count": "Vừa đồng bộ {n} mục",
+    "hide": "Ẩn"
   }
 }

@@ -56,5 +56,11 @@
       "snapshot": "已請 Capture 傳送資料"
     },
     "notSent": "未傳送"
+  },
+  "justSynced": {
+    "mark": "已同步 {time}",
+    "title": "於 {time} 透過即時同步完成；在變更篩選前保持顯示",
+    "count": "剛剛同步了 {n} 項",
+    "hide": "隱藏"
   }
 }

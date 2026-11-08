@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import type { GiCollections } from '@gdt/shared'
 import { Check, ExternalLink, Pencil, Search, SearchX } from 'lucide-vue-next'
 import { useHandMarks, type MarksApi } from '@/components/anecdotes/use-anecdote-marks'
+import JustSyncedBar from '@/components/live/JustSyncedBar.vue'
+import SyncedMark from '@/components/live/SyncedMark.vue'
 import FilterChip from '@/components/ui/FilterChip.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -19,6 +21,7 @@ import {
 } from '@/data/quest-markers'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
+import { useJustSynced } from '@/lib/just-synced'
 import { normalizeSearch } from '@/lib/search'
 import { readJson, readStorage, writeJson, writeStorage } from '@/lib/storage'
 import { useAccount, useReadOnly } from '@/views/account/context'
@@ -109,12 +112,37 @@ const groupOptions = computed(() =>
   })),
 )
 
+/**
+ * Rows ticked since the filters last changed, and rows a capture finished
+ * while the page is open (live sync or a snapshot, marked "Synced"), stay
+ * in view under Left / Done until the filters change, Hide, or the page is
+ * left (lib/just-synced.ts).
+ */
+const toggled = shallowRef<ReadonlySet<number>>(new Set())
+const view = () => [kind.value, pickedGroups.value[kind.value], filter.value, needle.value]
+watch([view, () => account.value.id], () => (toggled.value = new Set()), { deep: true })
+const capturedDone = computed(() => {
+  if (!props.quests) return null
+  const ids = new Set<number>()
+  for (const k of QUEST_KINDS)
+    for (const g of all.value[k]) for (const row of g.rows) if (row.captured) ids.add(row.id)
+  return ids
+})
+const justSynced = useJustSynced(
+  () => capturedDone.value,
+  () => [...view(), account.value.id],
+)
+const synced = justSynced.synced
+
 /** One chapter, or every chapter of the kind while searching. */
 const rows = computed<QuestRow[]>(() => {
   const source = needle.value ? groups.value.flatMap((g) => g.rows) : (group.value?.rows ?? [])
   return source.filter(
     (row) =>
-      (filter.value === 'all' || (filter.value === 'done') === (row.state === 'done')) &&
+      (filter.value === 'all' ||
+        toggled.value.has(row.id) ||
+        synced.value.has(row.id) ||
+        (filter.value === 'done') === (row.state === 'done')) &&
       (!needle.value ||
         normalizeSearch(row.name).includes(needle.value) ||
         normalizeSearch(row.sub).includes(needle.value)),
@@ -124,7 +152,9 @@ const rows = computed<QuestRow[]>(() => {
 function toggle(row: QuestRow) {
   if (readOnly) return
   const change = markChange(row)
-  if (change) void marks.change(change.done, change.undone)
+  if (!change) return
+  toggled.value = new Set([...toggled.value, row.id])
+  void marks.change(change.done, change.undone)
 }
 const stateLabel = (row: QuestRow) => t(`collections.quests.states.${row.state}`)
 function markerTitle(row: QuestRow): string {
@@ -237,11 +267,14 @@ const percent = (done: number, total: number) => (total ? Math.round((done / tot
           {{ $t('collections.quests.needsCapture') }}
         </p>
 
+        <JustSyncedBar :count="synced.size" @hide="justSynced.hide" />
+
         <ul v-if="rows.length" class="flex flex-col">
           <li
             v-for="row in rows"
             :key="row.id"
             class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto_2.75rem] items-center gap-2 rounded-lg px-1 py-1 hover:bg-surface-overlay/40"
+            :class="synced.has(row.id) ? 'just-synced' : ''"
           >
             <button
               type="button"
@@ -270,6 +303,7 @@ const percent = (done: number, total: number) => (total ? Math.round((done / tot
               >
             </span>
             <span class="flex items-center gap-1.5 text-xs text-text-muted">
+              <SyncedMark v-if="synced.has(row.id)" :at="synced.get(row.id)!" />
               <Pencil
                 v-if="row.hand"
                 class="size-3.5 text-warning-text"

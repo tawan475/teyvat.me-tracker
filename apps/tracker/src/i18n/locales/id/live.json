@@ -56,5 +56,11 @@
       "snapshot": "Capture diminta mengirim data"
     },
     "notSent": "Tidak terkirim"
+  },
+  "justSynced": {
+    "mark": "Tersinkron {time}",
+    "title": "Selesai lewat sinkron langsung pukul {time}; tetap tampil sampai filter diubah",
+    "count": "{n} baru tersinkron | {n} baru tersinkron",
+    "hide": "Sembunyikan"
   }
 }

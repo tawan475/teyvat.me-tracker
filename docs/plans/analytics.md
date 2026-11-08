@@ -96,6 +96,14 @@ not `/app/a/123/planner`).
      first/last build, sample stack)
    - speed (vitals per route and build)
    - filters: date range, build, language, device; the sample rates
+6. **Where a visit came from** (built separately first, 2026-11-08): other
+   sites' tracking values (`fbclid`, `gclid`, every `utm_*`…) are already
+   dropped from the address before the app starts (`src/lib/strip-tracking.ts`,
+   imported first in `main.ts`; list in `src/lib/tracking-params.ts`). When
+   this plan is built, read `utm_source` / `utm_medium` / `utm_campaign`
+   there, just before the strip, into the per-tab session (`sessionStorage`)
+   for the first `page` event's referrer kind. Never record the click ids
+   (`fbclid` and the like identify the person on the other site).
 
 ## Cost (100k online round the clock, per month)
 

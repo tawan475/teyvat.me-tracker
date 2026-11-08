@@ -1,3 +1,5 @@
+// First: drops fbclid / utm_* from the address before the router reads it.
+import './lib/strip-tracking'
 import './assets/main.css'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'

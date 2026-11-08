@@ -99,8 +99,7 @@
     "compact": "圧縮…",
     "thisAccount": "このアカウント",
     "allAccounts": "すべてのアカウント ({n})",
-    "inTrash": "ゴミ箱に {n} 件（30日後に解放）",
-    "liveNote": "ライブ同期はこれとは別に {size} を保持"
+    "inTrash": "ゴミ箱に {n} 件（30日後に解放）"
   },
   "pagination": {
     "perPage": "表示件数",

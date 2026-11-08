@@ -99,8 +99,7 @@
     "compact": "精简…",
     "thisAccount": "此账号",
     "allAccounts": "你的全部账号（{n}）",
-    "inTrash": "回收站中 {n} 个（30 天后释放）",
-    "liveNote": "实时同步另占 {size}"
+    "inTrash": "回收站中 {n} 个（30 天后释放）"
   },
   "pagination": {
     "perPage": "每页",

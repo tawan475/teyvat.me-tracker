@@ -99,8 +99,7 @@
     "compact": "Compatta…",
     "thisAccount": "Questo account",
     "allAccounts": "Tutti i tuoi account ({n})",
-    "inTrash": "{n} nel cestino (liberati dopo 30 giorni)",
-    "liveNote": "La sincronizzazione live salva altri {size}"
+    "inTrash": "{n} nel cestino (liberati dopo 30 giorni)"
   },
   "pagination": {
     "perPage": "Per pagina",

@@ -6,7 +6,7 @@ import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
-import { formatBytes as formatBytesShort, formatNumber } from '@/lib/format'
+import { formatNumber } from '@/lib/format'
 
 /**
  * The Snapshots page's "Storage" card: this account's counters (snapshots,
@@ -159,9 +159,6 @@ const thisAccount = computed(
           :pulls="usage.accounts.reduce((sum, a) => sum + a.wishPulls, 0)"
           legend
         />
-        <span class="text-xs text-text-muted">{{
-          $t('snapshots.storage.liveNote', { size: formatBytesShort(usage.liveBytes) })
-        }}</span>
       </div>
     </div>
   </div>

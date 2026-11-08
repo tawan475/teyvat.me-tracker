@@ -99,8 +99,7 @@
     "compact": "Compact…",
     "thisAccount": "This account",
     "allAccounts": "All your accounts ({n})",
-    "inTrash": "{n} in the trash (freed after 30 days)",
-    "liveNote": "Live sync keeps {size} more beside this"
+    "inTrash": "{n} in the trash (freed after 30 days)"
   },
   "pagination": {
     "perPage": "Per page",

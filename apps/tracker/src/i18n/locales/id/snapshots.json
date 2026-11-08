@@ -99,8 +99,7 @@
     "compact": "Padatkan…",
     "thisAccount": "Akun ini",
     "allAccounts": "Semua akunmu ({n})",
-    "inTrash": "{n} di sampah (dibebaskan setelah 30 hari)",
-    "liveNote": "Sinkronisasi live menyimpan {size} lagi"
+    "inTrash": "{n} di sampah (dibebaskan setelah 30 hari)"
   },
   "pagination": {
     "perPage": "Per halaman",

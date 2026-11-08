@@ -99,8 +99,7 @@
     "compact": "Compactar…",
     "thisAccount": "Esta conta",
     "allAccounts": "Todas as suas contas ({n})",
-    "inTrash": "{n} na lixeira (libertados após 30 dias)",
-    "liveNote": "A sincronização ao vivo guarda mais {size}"
+    "inTrash": "{n} na lixeira (libertados após 30 dias)"
   },
   "pagination": {
     "perPage": "Por página",

@@ -99,8 +99,7 @@
     "compact": "Verdichten…",
     "thisAccount": "Dieses Konto",
     "allAccounts": "Alle deine Konten ({n})",
-    "inTrash": "{n} im Papierkorb (nach 30 Tagen frei)",
-    "liveNote": "Live-Sync hält daneben {size} mehr"
+    "inTrash": "{n} im Papierkorb (nach 30 Tagen frei)"
   },
   "pagination": {
     "perPage": "Pro Seite",

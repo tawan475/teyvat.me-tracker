@@ -99,8 +99,7 @@
     "compact": "압축…",
     "thisAccount": "이 계정",
     "allAccounts": "내 모든 계정 ({n})",
-    "inTrash": "휴지통에 {n}개 (30일 후 비워짐)",
-    "liveNote": "실시간 동기화가 {size} 더 보관 중"
+    "inTrash": "휴지통에 {n}개 (30일 후 비워짐)"
   },
   "pagination": {
     "perPage": "페이지당",

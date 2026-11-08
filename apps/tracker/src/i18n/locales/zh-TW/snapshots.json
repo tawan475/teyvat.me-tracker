@@ -99,8 +99,7 @@
     "compact": "精簡…",
     "thisAccount": "此帳號",
     "allAccounts": "你的全部帳號（{n}）",
-    "inTrash": "資源回收筒中 {n} 個（30 天後釋放）",
-    "liveNote": "即時同步另占 {size}"
+    "inTrash": "資源回收筒中 {n} 個（30 天後釋放）"
   },
   "pagination": {
     "perPage": "每頁",

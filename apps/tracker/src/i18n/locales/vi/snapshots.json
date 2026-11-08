@@ -99,8 +99,7 @@
     "compact": "Gọn lại…",
     "thisAccount": "Tài khoản này",
     "allAccounts": "Tất cả tài khoản của bạn ({n})",
-    "inTrash": "{n} trong thùng rác (giải phóng sau 30 ngày)",
-    "liveNote": "Đồng bộ trực tiếp lưu thêm {size}"
+    "inTrash": "{n} trong thùng rác (giải phóng sau 30 ngày)"
   },
   "pagination": {
     "perPage": "Mỗi trang",

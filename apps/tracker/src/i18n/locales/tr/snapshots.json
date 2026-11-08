@@ -99,8 +99,7 @@
     "compact": "Sıkıştır…",
     "thisAccount": "Bu hesap",
     "allAccounts": "Tüm hesapların ({n})",
-    "inTrash": "Çöp kutusunda {n} (30 gün sonra boşalır)",
-    "liveNote": "Canlı senkronizasyon {size} daha tutuyor"
+    "inTrash": "Çöp kutusunda {n} (30 gün sonra boşalır)"
   },
   "pagination": {
     "perPage": "Sayfa başına",

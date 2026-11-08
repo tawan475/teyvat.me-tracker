@@ -301,6 +301,7 @@
     "none": "該当する祈願はありません",
     "version": "Ver.{version}",
     "phase": "第{n}弾",
+    "featuredFive": "ピックアップ★5",
     "fours": "ピックアップ★4",
     "wishes": "回",
     "skipped": "この祈願は引いていません",

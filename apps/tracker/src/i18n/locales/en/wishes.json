@@ -301,6 +301,7 @@
     "none": "No banners match",
     "version": "Version {version}",
     "phase": "Phase {n}",
+    "featuredFive": "Featured 5★",
     "fours": "Featured 4★",
     "wishes": "wishes",
     "skipped": "No wishes on this banner",

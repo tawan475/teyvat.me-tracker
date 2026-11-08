@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
 import { ChevronDown, Search, SearchX, Share2 } from 'lucide-vue-next'
 import { characterInfo, weaponInfo } from '@gdt/game-data/catalog'
 import type { AccountResponse, UigfGachaType } from '@gdt/shared'
@@ -32,6 +33,7 @@ import { characterName } from '@/i18n/game-names'
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { normalizeSearch } from '@/lib/search'
+import { useAccountLink } from '@/views/account/context'
 import { readStorage, writeStorage } from '@/lib/storage'
 import BannerRunStats from './BannerRunStats.vue'
 import BannerShareModal from './BannerShareModal.vue'
@@ -83,6 +85,12 @@ const isCharacter = (key: string) => !!characterInfo(key)
 const nameOf = (key: string) => (isCharacter(key) ? characterName(key) : itemName(key))
 const iconOf = (key: string) => (isCharacter(key) ? characterIcon(key) : weaponIcon(key))
 const rarityOf = (key: string) => characterInfo(key)?.rarity ?? weaponInfo(key)?.rarity
+/** Its page: the character or weapon dialog (owned or not). */
+const accountLink = useAccountLink()
+const itemPage = (key: string): RouteLocationRaw => ({
+  ...(accountLink(isCharacter(key) ? 'account-characters' : 'account-weapons') as object),
+  query: isCharacter(key) ? { c: key } : { w: key },
+})
 
 const banner = computed(() => KINDS.find((k) => k.kind === kind.value)!.banner)
 const now = Date.now() / 1000
@@ -251,9 +259,9 @@ const outcomes = (row: BannerHistoryRow) => {
             expanded.has(rowKey(row))
               ? 'sticky top-16 z-[5] rounded-t-[11px] border-b border-border-default'
               : 'rounded-[11px]',
-            row.run?.pulls ? 'cursor-pointer transition-colors hover:bg-surface-overlay/40' : '',
+            'cursor-pointer transition-colors hover:bg-surface-overlay/40',
           ]"
-          @click="row.run?.pulls && toggle(row)"
+          @click="toggle(row)"
         >
           <div class="flex w-36 shrink-0 flex-col">
             <span class="text-sm font-medium">{{
@@ -366,12 +374,20 @@ const outcomes = (row: BannerHistoryRow) => {
               aria-hidden="true"
             />
           </button>
-          <div
+          <!-- No wishes (or not open yet): it still opens, onto everything it features. -->
+          <button
             v-else
-            class="flex min-h-12 w-full shrink-0 items-center sm:w-[19rem] rounded-lg border border-dashed border-border-default px-3 py-1.5 text-xs text-text-muted"
+            type="button"
+            class="flex min-h-12 w-full shrink-0 items-center gap-3 rounded-lg border border-dashed border-border-default px-3 py-1.5 text-left text-xs text-text-muted transition-colors hover:bg-surface-overlay sm:w-[19rem]"
+            :aria-expanded="expanded.has(rowKey(row))"
           >
-            {{ $t('wishes.history.skipped') }}
-          </div>
+            <span class="min-w-0 flex-1">{{ $t('wishes.history.skipped') }}</span>
+            <ChevronDown
+              class="size-4 shrink-0 transition-transform"
+              :class="expanded.has(rowKey(row)) ? 'rotate-180' : ''"
+              aria-hidden="true"
+            />
+          </button>
         </div>
 
         <template v-if="row.run && expanded.has(rowKey(row))">
@@ -383,6 +399,38 @@ const outcomes = (row: BannerHistoryRow) => {
           />
           <WishTable :rows="pullsOf(row)" :banner="banner" embedded class="m-3" />
         </template>
+        <!-- A banner without wishes (an upcoming one too): every featured item, each opening its page. -->
+        <div v-else-if="expanded.has(rowKey(row))" class="flex flex-col gap-4 px-4 py-4">
+          <section
+            v-for="part in [
+              { label: $t('wishes.history.featuredFive'), keys: row.banner.featured5 },
+              { label: $t('wishes.history.fours'), keys: row.banner.featured4 },
+            ]"
+            v-show="part.keys.length > 0"
+            :key="part.label"
+          >
+            <h3 class="mb-2 text-xs font-medium text-text-muted">{{ part.label }}</h3>
+            <ul
+              class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,12rem),1fr))] gap-2"
+              :aria-label="part.label"
+            >
+              <li v-for="key in part.keys" :key="key" class="min-w-0">
+                <RouterLink
+                  :to="itemPage(key)"
+                  class="flex min-w-0 items-center gap-2 rounded-lg border border-border-default bg-surface-sunken px-2 py-1.5 text-sm transition-colors hover:bg-surface-overlay"
+                >
+                  <GameIcon
+                    :src="iconOf(key)"
+                    :name="nameOf(key)"
+                    :rarity="rarityOf(key)"
+                    size="sm"
+                  />
+                  <span class="truncate">{{ nameOf(key) }}</span>
+                </RouterLink>
+              </li>
+            </ul>
+          </section>
+        </div>
       </article>
     </section>
 

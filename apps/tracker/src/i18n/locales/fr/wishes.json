@@ -301,6 +301,7 @@
     "none": "Aucune bannière ne correspond",
     "version": "Version {version}",
     "phase": "Phase {n}",
+    "featuredFive": "5★ en vedette",
     "fours": "4★ en vedette",
     "wishes": "vœux",
     "skipped": "Aucun vœu sur cette bannière",

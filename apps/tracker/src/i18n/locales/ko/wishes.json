@@ -301,6 +301,7 @@
     "none": "일치하는 배너가 없습니다",
     "version": "{version} 버전",
     "phase": "{n}차",
+    "featuredFive": "픽업 5★",
     "fours": "픽업 4★",
     "wishes": "회",
     "skipped": "이 배너에서 기원하지 않음",

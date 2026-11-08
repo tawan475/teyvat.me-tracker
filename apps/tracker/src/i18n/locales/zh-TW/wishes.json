@@ -301,6 +301,7 @@
     "none": "沒有符合的卡池",
     "version": "{version} 版本",
     "phase": "第 {n} 期",
+    "featuredFive": "UP 5★",
     "fours": "UP 4★",
     "wishes": "次祈願",
     "skipped": "未在此卡池祈願",

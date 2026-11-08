@@ -15,6 +15,7 @@ import {
   type DoneState,
 } from '@/data/achievement-progress'
 import { materialIcon } from '@/lib/assets'
+import { wikiPage } from '@/lib/wiki'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { completionText } from './completion'
@@ -30,6 +31,8 @@ import { completionText } from './completion'
 const props = defineProps<{
   entry: AchievementEntry
   text: AchievementTexts
+  /** The English names: the Fandom wiki's page titles. */
+  english: AchievementTexts
   state: DoneState
   /** Where the completion dates come from: the game's own, or the snapshots. */
   capture: CapturedAchievements
@@ -37,6 +40,16 @@ const props = defineProps<{
 const emit = defineEmits<{ mark: [ids: number[]]; unmark: [ids: number[]] }>()
 
 const primogem = materialIcon('Primogem')
+
+/**
+ * The achievement's page on the Fandom wiki (titled by its English name;
+ * the user's call, 2026-11-09: it says how to complete it, stardb doesn't).
+ * stardb.gg only when the English name is missing.
+ */
+const guideUrl = computed(() => {
+  const name = props.english.achievements.get(props.entry.id)?.title
+  return name ? wikiPage(name) : stardbAchievementUrl(props.entry.tiers.at(-1)!.id)
+})
 
 const tiers = computed(() =>
   props.entry.tiers.map((tier) => ({ tier, source: doneSource(props.state, tier.id) })),
@@ -270,7 +283,7 @@ const FILL: Record<DoneSource, string> = {
             <span v-else class="sm:whitespace-nowrap">{{ completedLine.text }}</span>
           </span>
           <a
-            :href="stardbAchievementUrl(entry.tiers.at(-1)!.id)"
+            :href="guideUrl"
             target="_blank"
             rel="noopener noreferrer"
             class="-my-1 inline-flex min-h-7 items-center gap-1 rounded px-1 hover:text-text-primary"

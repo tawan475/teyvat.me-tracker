@@ -11,6 +11,8 @@ defineProps<{
   category: CategoryItem
   entries: AchievementEntry[]
   text: AchievementTexts
+  /** The English names, for the wiki links. */
+  english: AchievementTexts
   state: DoneState
   capture: CapturedAchievements
 }>()
@@ -47,6 +49,7 @@ defineEmits<{ mark: [ids: number[]]; unmark: [ids: number[]] }>()
         :key="entry.id"
         :entry="entry"
         :text="text"
+        :english="english"
         :state="state"
         :capture="capture"
         @mark="$emit('mark', $event)"

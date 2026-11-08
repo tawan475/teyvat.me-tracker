@@ -67,12 +67,14 @@ const feedback = useFeedback()
 const game = useResource(
   () => locale.value,
   async (lang) => {
-    const [data, text] = await Promise.all([
+    const [data, text, english] = await Promise.all([
       loadAchievements(),
       achievementText(lang),
+      // The guide links go to the Fandom wiki, whose pages are titled in English.
+      lang === 'en' ? null : achievementText('en'),
       loadGameIcons(),
     ])
-    return { data, text, entries: groupAchievements(data) }
+    return { data, text, english: english ?? text, entries: groupAchievements(data) }
   },
 )
 
@@ -517,6 +519,7 @@ async function importIds(ids: number[]): Promise<boolean> {
             :category="group.category"
             :entries="group.entries"
             :text="game.data.value.text"
+            :english="game.data.value.english"
             :state="state"
             :capture="captured"
             @mark="mark"

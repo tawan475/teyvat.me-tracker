@@ -114,7 +114,7 @@ in place of "N newer captures".
   `historyAt`, `stepFrom`, `keepPast`, `sameAccount`), the write guard
   `blockedInThePast` (api/http.ts answers 409 `read_only_past` before
   sending a non-GET to the travelled account), `travelling` for the shell.
-- `AccountLayout.vue`: reads now's snapshot list, gives the pages a travelled
+- `use-time-travel.ts` (was in `AccountLayout.vue`): reads now's snapshot list, gives the pages a travelled
   account (`latest` = that snapshot, `liveSync: false`, `travel`), read-only,
   pages keyed by `access@at`; an unknown id shows "That snapshot is gone".
 - `account-data.ts`: cache keys carry `@<at>`; `loadSnapshots`/`loadBundle`
@@ -133,6 +133,6 @@ in place of "N newer captures".
   (month calendar with capture days underlined + bold, that day's captures),
   the top bar's clock (from `sm`, accounts with 2+ snapshots), a clock on
   each Snapshots row (the row actions now show on read-only own pages too).
-- Not in demo, guest mode or staff Inspect (their layouts keep no past).
+- Every account layout has it: the owner's and shared accounts (`AccountLayout`), the demo (`DemoLayout`, `/demo?at=`) and guest mode (`GuestLayout`, `/guest?at=`), through `views/account/use-time-travel.ts` + `components/time-travel/TimeTravelPages.vue` (the user's ask, 2026-11-09). Not staff Inspect.
 - Tests: `src/data/__tests__/time-travel.test.ts`. QA: headless Chrome at
   390 / 1366 / 1920 px on a 12-capture account, no writes sent in the past.

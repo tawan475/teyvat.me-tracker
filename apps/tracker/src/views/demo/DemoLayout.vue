@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DemoBar from '@/components/demo/DemoBar.vue'
 import AppShell from '@/components/shell/AppShell.vue'
+import TimeTravelPages from '@/components/time-travel/TimeTravelPages.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { requestJson } from '@/api/http'
@@ -17,6 +18,7 @@ import { preload } from '@/data/use-resource'
 import { loadGameIcons } from '@/lib/assets'
 import { prefetchRoute, savingData, whenIdle } from '@/router/prefetch'
 import { provideAccount } from '@/views/account/context'
+import { useTimeTravel } from '@/views/account/use-time-travel'
 
 /**
  * The public demo (docs/plans/open-site.md §2): the account pages of one
@@ -86,10 +88,18 @@ watch(
 )
 onBeforeUnmount(() => cancelIdle?.())
 
+/** Time travel: `?at=<snapshot>`, read-only like on an owner's account (use-time-travel.ts). */
+const past = useTimeTravel(() => account.value)
+
 provideAccount(
-  computed(() => account.value as AccountResponse),
+  computed(() => {
+    const value = account.value as AccountResponse
+    return value && past.travel.value ? past.travelled(value) : value
+  }),
   {
-    readOnly: false,
+    get readOnly() {
+      return past.at.value !== null
+    },
     demo: true,
     route: (name) => (name.startsWith('account-') ? `demo-${name.slice(8)}` : name),
   },
@@ -104,6 +114,12 @@ provideAccount(
       <UiSkeleton class="h-28" />
       <UiSkeleton class="h-64" />
     </div>
-    <RouterView v-else />
+    <TimeTravelPages
+      v-else
+      :lost="past.lost.value"
+      :ready="past.ready.value"
+      :page-key="past.key.value"
+      @now="past.backToNow"
+    />
   </AppShell>
 </template>

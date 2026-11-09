@@ -62,9 +62,9 @@ const readOnly = mode.readOnly
 const owner = useAccess().value === 'owner'
 const canDelete = (!readOnly && owner) || mode.purge !== undefined
 // The row actions (time travel, Download GOOD; Delete only when writable):
-// read-only on the account's own pages too (the past, view-only sharing),
-// not in staff Inspect, whose layout keeps neither.
-const rowActions = !readOnly || !mode.route
+// read-only on the account's own, the demo's and the guest's pages too (the
+// past, view-only sharing), not in staff Inspect, whose layout keeps neither.
+const rowActions = !readOnly || mode.demo === true || mode.guest === true || !mode.route
 const feedback = useFeedback()
 
 const {

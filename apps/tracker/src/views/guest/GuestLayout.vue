@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GuestBar from '@/components/guest/GuestBar.vue'
 import AppShell from '@/components/shell/AppShell.vue'
+import TimeTravelPages from '@/components/time-travel/TimeTravelPages.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { ACCOUNT_SECTIONS } from '@/components/shell/nav'
@@ -16,6 +17,7 @@ import { guestAccount, loadGuestAccount } from '@/local/guest-account'
 import { GUEST_ACCOUNT_ID } from '@/local/guest-id'
 import { prefetchRoute, savingData, whenIdle } from '@/router/prefetch'
 import { provideAccount } from '@/views/account/context'
+import { useTimeTravel } from '@/views/account/use-time-travel'
 
 /**
  * Guest mode (docs/plans/open-site.md §4): the account pages of one Genshin
@@ -68,10 +70,18 @@ watch(
 )
 onBeforeUnmount(() => cancelIdle?.())
 
+/** Time travel: `?at=<snapshot>`, read-only like on an owner's account (use-time-travel.ts). */
+const past = useTimeTravel(() => guestAccount.value)
+
 provideAccount(
-  computed(() => guestAccount.value as AccountResponse),
+  computed(() => {
+    const value = guestAccount.value as AccountResponse
+    return value && past.travel.value ? past.travelled(value) : value
+  }),
   {
-    readOnly: false,
+    get readOnly() {
+      return past.at.value !== null
+    },
     guest: true,
     route: (name) => (name.startsWith('account-') ? `guest-${name.slice(8)}` : name),
   },
@@ -86,6 +96,12 @@ provideAccount(
       <UiSkeleton class="h-28" />
       <UiSkeleton class="h-64" />
     </div>
-    <RouterView v-else />
+    <TimeTravelPages
+      v-else
+      :lost="past.lost.value"
+      :ready="past.ready.value"
+      :page-key="past.key.value"
+      @now="past.backToNow"
+    />
   </AppShell>
 </template>

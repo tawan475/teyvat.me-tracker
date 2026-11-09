@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Download, History, Trash2 } from 'lucide-vue-next'
 import UiSpinner from '@/components/ui/UiSpinner.vue'
-import { useAccess, useAccountLink, useAccountMode, useReadOnly } from '@/views/account/context'
+import { useAccess, useAccountLink, useReadOnly } from '@/views/account/context'
 
 /**
  * One snapshot's Time travel, Download GOOD and Delete: the old table's DL /
@@ -21,10 +21,8 @@ const travelTo = computed(() => ({
   query: { at: String(props.id) },
 }))
 const here = computed(() => route.query.at === String(props.id))
-// The owner's and shared accounts' pages (AccountLayout); not the demo, a
-// guest's account or staff Inspect, whose layouts keep no past.
-const mode = useAccountMode()
-const canTravel = computed(() => !mode.demo && !mode.guest && route.meta.staff !== true)
+// Every account layout keeps a past (use-time-travel.ts) but staff Inspect's.
+const canTravel = computed(() => route.meta.staff !== true)
 defineEmits<{ download: []; delete: [] }>()
 </script>
 

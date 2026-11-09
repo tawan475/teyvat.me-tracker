@@ -155,12 +155,7 @@ const travelHere = computed(() => {
   return state && current.value && state.accountId === current.value.id ? state.travel : null
 })
 const canTravel = computed(
-  () =>
-    !staffMode.value &&
-    !demoMode.value &&
-    !guestMode.value &&
-    !!current.value &&
-    (current.value.snapshotCount ?? 0) > 1,
+  () => !staffMode.value && !!current.value && (current.value.snapshotCount ?? 0) > 1,
 )
 const travelPicking = ref(false)
 const travelAnchor = ref<HTMLElement | null>(null)

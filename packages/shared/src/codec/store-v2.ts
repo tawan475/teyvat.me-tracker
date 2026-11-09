@@ -37,6 +37,7 @@ import {
   type MaterialsSection,
   type SectionKind,
 } from './sections'
+import { deflate } from './deflate'
 import { splitPlayer, type PlayerVars } from './snapshot-meta'
 
 /** The sixteen section slots of a v2 snapshot row, in column order (append-only). */
@@ -165,6 +166,22 @@ export const DELTA_GROWTH_BYTES_V2 = 25
  */
 const REANCHOR = 2
 
+/**
+ * The neighbour test (docs/plans/storage-efficiency.md, phase 2): a full
+ * section compressed against its anchor is stored standalone instead (the
+ * next anchor) when that costs more than STALE_RATIO times compressing it
+ * against the neighbour snapshot's own blob of the slot, and more than
+ * STALE_MIN_BYTES. An anchor goes stale as the section drifts from it (a
+ * part added later, months of small changes) while staying under half the
+ * standalone size, so REANCHOR alone never fires: collections2 rows cost
+ * ~1.7 KB against a months-old anchor where the previous row gives ~245 B.
+ * Measured on three real accounts: K = 3 beat 2 and 4; the floor (256 /
+ * 512 / 1024 B) moved the total by under 5 KB. Chains stay one deep: the
+ * neighbour is only measured, never made the base.
+ */
+const STALE_RATIO = 3
+const STALE_MIN_BYTES = 512
+
 /** The player section v2 stores (the part that does not move every login), and its hash. */
 export async function storedPlayer(
   player: GiPlayer,
@@ -267,16 +284,31 @@ export async function planSections(
     return { hash }
   }
 
-  /** A full section: against its anchor when that pays, else standalone. */
+  /**
+   * A full section: against its anchor when that pays, else standalone.
+   * `neighbour`: the neighbour snapshot's blob of the slot, for the
+   * stale-anchor test (STALE_RATIO).
+   */
   const storeFull = (
     kind: SectionKind,
     value: unknown,
     hash: string,
     anchor: KnownBlob | null,
+    neighbour: KnownBlob | null,
   ): { ref: BlobRef; size: number; base: KnownBlob | null; blob: EncodedBlob } => {
     const { standalone, withBase } = encodeSectionBlobVariants(kind, value, anchor?.decoded ?? null)
-    const useBase = withBase !== null && withBase.data.length * REANCHOR <= standalone.data.length
-    const blob = useBase ? withBase : standalone
+    let useBase = withBase !== null && withBase.data.length * REANCHOR <= standalone.data.length
+    if (
+      useBase &&
+      neighbour &&
+      neighbour.id !== anchor?.id &&
+      withBase!.data.length > STALE_MIN_BYTES
+    ) {
+      const againstNeighbour =
+        deflate(standalone.payload.subarray(1), neighbour.decoded.payload).length + 1
+      if (withBase!.data.length > STALE_RATIO * againstNeighbour) useBase = false
+    }
+    const blob = useBase ? withBase! : standalone
     const base = useBase ? anchor : null
     return { ref: { hash }, size: blob.data.length, base, blob }
   }
@@ -310,7 +342,7 @@ export async function planSections(
     const candidate = !latest ? null : kindOfCode(latest.code).delta ? latest.base : latest
     const keyframe = candidate && !candidate.base?.base ? candidate : null
     if (!DELTA_KINDS.has(slot) || !keyframe) {
-      const full = storeFull(slot, value, hash, anchorOf(latest))
+      const full = storeFull(slot, value, hash, anchorOf(latest), latest)
       refs[slot] = store(hash, kindCode(slot, false), full.base, full.blob)
       continue
     }
@@ -354,7 +386,7 @@ export async function planSections(
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
       continue
     }
-    const full = storeFull(slot, value, hash, anchorOf(keyframe))
+    const full = storeFull(slot, value, hash, anchorOf(keyframe), keyframe)
     if (deltaBlob.data.length ** 2 <= 2 * growth * full.size) {
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
     } else {

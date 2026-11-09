@@ -88,7 +88,15 @@ const days = computed(() => {
   return cells
 })
 function step(months: number) {
-  shown.value = new Date(shown.value.getFullYear(), shown.value.getMonth() + months, 1)
+  const month = new Date(shown.value.getFullYear(), shown.value.getMonth() + months, 1)
+  shown.value = month
+  // The list follows the calendar: that month's latest day with captures.
+  const prefix = dayKey(month.getTime()).slice(0, 8)
+  picked.value =
+    [...byDay.value.keys()]
+      .filter((k) => k.startsWith(prefix))
+      .sort()
+      .at(-1) ?? ''
 }
 const pickedCaptures = computed(() => byDay.value.get(picked.value) ?? [])
 const pickedLabel = computed(() => {
@@ -122,12 +130,13 @@ function now() {
     :label="$t('shell.timeTravel.pick')"
     @close="emit('close')"
   >
-    <div class="flex w-full flex-col gap-3 sm:w-80">
-      <!-- Phones: the sheet's own header carries the title. -->
-      <div class="hidden items-center gap-2 font-semibold sm:flex">
-        <History class="size-4 text-warning-text" aria-hidden="true" />
+    <template #heading>
+      <h2 class="flex min-w-0 flex-1 items-center gap-2 truncate text-base font-semibold">
+        <History class="size-4 shrink-0 text-warning-text" aria-hidden="true" />
         {{ $t('shell.timeTravel.pick') }}
-      </div>
+      </h2>
+    </template>
+    <div class="flex flex-col gap-3 p-4">
       <div class="flex items-center justify-between">
         <button
           type="button"
@@ -181,35 +190,45 @@ function now() {
           </button>
         </template>
       </div>
-      <div v-if="pickedCaptures.length" class="flex flex-col gap-1.5">
-        <span class="text-xs text-text-muted">{{
+      <div
+        v-if="pickedCaptures.length"
+        class="flex flex-col gap-2 border-t border-border-default pt-3"
+      >
+        <span class="text-xs font-medium text-text-secondary">{{
           $t(
             'shell.timeTravel.dayHeading',
             { day: pickedLabel, n: formatNumber(pickedCaptures.length) },
             pickedCaptures.length,
           )
         }}</span>
-        <button
-          v-for="s in pickedCaptures"
-          :key="s.id"
-          type="button"
-          class="flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3 text-left text-sm transition-colors"
-          :class="
-            s.id === at
-              ? 'border-amber-400 bg-amber-400/15 font-semibold'
-              : 'border-border-default hover:bg-surface-overlay'
-          "
-          :aria-current="s.id === at ? 'true' : undefined"
-          @click="go(s.id)"
-        >
-          <span class="tabular font-mono">{{ formatTime(s.takenAt) }}</span>
-          <span class="truncate text-xs text-text-muted">{{
-            $t('shell.timeTravel.captureLine', {
-              id: s.id,
-              characters: formatNumber(s.summary.characters),
-            })
-          }}</span>
-        </button>
+        <div class="grid grid-cols-3 gap-1.5">
+          <button
+            v-for="s in pickedCaptures"
+            :key="s.id"
+            type="button"
+            class="flex min-h-11 flex-col items-center justify-center rounded-lg border px-2 py-1 transition-colors"
+            :class="
+              s.id === at
+                ? 'border-amber-400 bg-amber-300 text-stone-900'
+                : 'border-border-default hover:bg-surface-overlay'
+            "
+            :aria-current="s.id === at ? 'true' : undefined"
+            :title="
+              $t('shell.timeTravel.captureLine', {
+                id: s.id,
+                characters: formatNumber(s.summary.characters),
+              })
+            "
+            @click="go(s.id)"
+          >
+            <span class="tabular font-mono text-sm font-semibold">{{ formatTime(s.takenAt) }}</span>
+            <span
+              class="tabular text-[11px]"
+              :class="s.id === at ? 'text-stone-700' : 'text-text-muted'"
+              >#{{ s.id }}</span
+            >
+          </button>
+        </div>
       </div>
       <button
         v-if="at !== null"

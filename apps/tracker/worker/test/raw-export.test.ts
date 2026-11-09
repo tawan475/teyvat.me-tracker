@@ -1,21 +1,21 @@
 import { env, SELF } from 'cloudflare:test'
 import {
   decodeBundle,
-  decodeCatalogChunk,
   decodeSectionBlob,
   type AccountResponse,
   type CatalogRow,
   type DecodedBlob,
 } from '@gdt/shared'
-import { inflateSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
+import { zipEntryNames } from '@/data/export-zip'
 import { rawExportFiles, writeRawZip, type RawCatalog } from '@/data/raw-export'
-import { inflateAll } from '@/data/raw-export/inflate.mjs'
+import { inflateAll } from '@/data/raw-export/inflate'
 import { ORIGIN, bigGood, irminsulForm, signUp } from './client'
 
 // The Snapshots page's raw download for developers (src/data/raw-export.ts):
 // the stored blobs and catalog chunks as they are, and inflate.mjs, which
-// must inflate every one of them back to the payload the codec reads.
+// must turn them into readable JSON: every section decoded, the catalog, and
+// each snapshot as the same Leyline file the site's Download gives.
 
 async function account() {
   const { client } = await signUp()
@@ -44,8 +44,8 @@ async function account() {
   return { client, base, bundle, catalog, rows }
 }
 
-/** What the codec reads for a stored blob: its payload without the layout byte. */
-function codecPayloads(files: Map<string, Uint8Array>, sections: SectionEntry[]) {
+/** What the codec decodes a stored blob to (a delta names its base as the bundle reader does). */
+function codecValues(files: Map<string, Uint8Array>, sections: SectionEntry[]) {
   const byId = new Map(sections.map((s) => [s.id, s]))
   const decoded = new Map<number, DecodedBlob>()
   const decode = (id: number): DecodedBlob => {
@@ -54,11 +54,16 @@ function codecPayloads(files: Map<string, Uint8Array>, sections: SectionEntry[])
     const entry = byId.get(id)!
     const code = (KIND_CODES[entry.kind] ?? 0) | (entry.delta ? 0x10 : 0)
     const base = entry.base === null ? null : decode(entry.base)
-    const blob = decodeSectionBlob(code, files.get(entry.file)!, base, 'b')
+    const blob = decodeSectionBlob(
+      code,
+      files.get(entry.file)!,
+      base,
+      entry.base === null ? null : `#${entry.base}`,
+    )
     decoded.set(id, blob)
     return blob
   }
-  return new Map(sections.map((s) => [s.id, decode(s.id).payload.subarray(1)]))
+  return new Map(sections.map((s) => [s.id, decode(s.id).value]))
 }
 
 interface SectionEntry {
@@ -106,29 +111,26 @@ const REFS = [
   'collections2',
 ] as const
 
-const inflateRaw = (bytes: Uint8Array, dictionary?: Uint8Array) =>
-  inflateSync(bytes, dictionary ? { dictionary } : {})
-
-function run(files: readonly { name: string; data: Uint8Array }[]) {
+async function run(files: readonly { name: string; data: Uint8Array }[]) {
   const read = new Map(files.map((f) => [f.name, f.data]))
   const written = new Map<string, Uint8Array>()
-  const done = inflateAll(
-    {
-      read: (path) => {
-        const data = read.get(path)
-        if (!data) throw new Error(`No ${path}`)
-        return data
-      },
-      write: (path, bytes) => void written.set(path, bytes),
+  const done = await inflateAll({
+    read: (path) => {
+      const data = read.get(path)
+      if (!data) throw new Error(`No ${path}`)
+      return data
     },
-    inflateRaw,
-  )
+    write: (path, bytes) => void written.set(path, bytes),
+  })
   return { read, written, done }
 }
 
+const parse = (bytes: Uint8Array | undefined) =>
+  bytes === undefined ? undefined : (JSON.parse(new TextDecoder().decode(bytes)) as unknown)
+
 describe('raw download', () => {
   it('holds every stored blob and catalog chunk, and its script inflates them all', async () => {
-    const { bundle, catalog, rows } = await account()
+    const { client, base, bundle, catalog, rows } = await account()
     const files = rawExportFiles({ bundle, catalog, ids: null })
     const names = files.map((f) => f.name)
     expect(names.slice(0, 5)).toEqual([
@@ -139,40 +141,41 @@ describe('raw download', () => {
       'catalog.json',
     ])
 
-    const { read, written, done } = run(files)
-    const sections = JSON.parse(
-      new TextDecoder().decode(read.get('sections.json')),
-    ) as SectionEntry[]
-    const snapshots = JSON.parse(new TextDecoder().decode(read.get('snapshots.json'))) as Record<
-      string,
-      unknown
-    >[]
+    const { read, written, done } = await run(files)
+    const sections = parse(read.get('sections.json')) as SectionEntry[]
+    const snapshots = parse(read.get('snapshots.json')) as { id: number; takenAt: number }[]
     expect(snapshots).toHaveLength(3)
     expect(done.sections).toBe(sections.length)
+    expect(done.snapshots).toBe(3)
 
-    // Every section inflates to exactly what the codec reads.
-    const expected = codecPayloads(read, sections)
+    // Every section decodes to what the codec reads, written as readable JSON
+    // (no line past 100 characters but an unbreakable one).
+    const expected = codecValues(read, sections)
     for (const entry of sections) {
-      const out =
-        written.get(`inflated/sections/${entry.id}.bin`) ??
-        written.get(`inflated/sections/${entry.id}.json`)
-      expect(out, `section ${entry.id}`).toEqual(expected.get(entry.id))
+      const out = written.get(`inflated/sections/${entry.id}.json`)
+      expect(parse(out), `section ${entry.id}`).toEqual(expected.get(entry.id))
+      const lines = new TextDecoder().decode(out).split('\n')
+      expect(lines.length, `section ${entry.id} lines`).toBeGreaterThan(1)
     }
-    // Some were compressed against a base: the script's dictionary path ran.
+    // Some were compressed against a base: the dictionary path ran.
     expect(sections.some((s) => s.base !== null)).toBe(true)
 
-    // Every catalog chunk inflates to the identities the catalog route serves.
-    let identities = 0
-    for (const chunk of catalog.chunks) {
-      const body = written.get(`inflated/catalog/${chunk.first}-${chunk.last}.bin`)!
-      const stored = new Uint8Array(body.length + 1)
-      stored[0] = 1 // CHUNK_STORED
-      stored.set(body, 1)
-      const entries = decodeCatalogChunk(stored)
-      expect(entries).toHaveLength(chunk.count)
-      identities += entries.length
+    // The catalog: every identity the catalog route serves, by id.
+    const catalogOut = parse(written.get('inflated/catalog.json')) as { id: number }[]
+    expect(catalogOut.map((a) => a.id)).toEqual(rows.map((r) => r[0]))
+    expect(done.artifacts).toBe(rows.length)
+
+    // Each snapshot: the Leyline file the site's own Download gives for it.
+    const leyline = [...written.keys()].filter((k) => k.startsWith('inflated/snapshots/'))
+    expect(leyline).toHaveLength(3)
+    // Named like the site's zip (these captures share a second: `_<id>` added).
+    const leylineNames = zipEntryNames(snapshots)
+    for (const snapshot of snapshots) {
+      const name = `inflated/snapshots/${leylineNames.get(snapshot.id)}`
+      const site = await (await client.fetch(`${base}/snapshots/${snapshot.id}/good`)).json()
+      expect(leyline, `snapshot ${snapshot.id}`).toContain(name)
+      expect(parse(written.get(name)), `snapshot ${snapshot.id}`).toEqual(site)
     }
-    expect(identities + catalog.pending.length).toBe(rows.length)
   })
 
   it('takes only the chosen snapshots and every blob they need', async () => {
@@ -204,7 +207,7 @@ describe('raw download', () => {
       ).length,
     )
     // And the script still inflates the smaller set on its own.
-    expect(() => run(one)).not.toThrow()
+    expect((await run(one)).done.snapshots).toBe(1)
   })
 
   it('serves GDT3 to the app: the same sections, the manifest deflated', async () => {

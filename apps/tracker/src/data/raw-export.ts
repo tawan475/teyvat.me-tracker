@@ -1,15 +1,17 @@
+/// <reference path="./raw-export/script.d.ts" />
 /**
  * The Snapshots page's "Raw download" for developers: the selected
  * snapshots' sections and the artifact catalog exactly as stored
  * (compressed, deduplicated), with `inflate.mjs`, a dependency-free Node
- * script that inflates them, and a README of the formats. Built in the
+ * script (the site's decoder bundled in, build/script-bundle.ts) that turns
+ * them into readable JSON, and a README of the formats. Built in the
  * export worker from a GDT2 bundle and `catalog?raw=1`; nothing is decoded.
  */
 
 import { Zip, ZipDeflate, ZipPassThrough } from 'fflate'
 import { kindOfCode, readBundleV2Raw, type BundleSnapshotV2, type CatalogRow } from '@gdt/shared'
 import readme from './raw-export/README.md?raw'
-import script from './raw-export/inflate.mjs?raw'
+import script from './raw-export/inflate-main.ts?script'
 
 /** `GET …/catalog?raw=1`. */
 export interface RawCatalog {

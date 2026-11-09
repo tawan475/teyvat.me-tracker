@@ -10,6 +10,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 import { GI_CDN_HOST, IMAGE_HOST } from '@gdt/game-data/image-url'
 import { prerender, sitemap } from './build/prerender.ts'
+import { scriptBundle } from './build/script-bundle.ts'
 import { oauthMock } from './dev/oauth-mock.ts'
 import pkg from './package.json' with { type: 'json' }
 
@@ -165,6 +166,8 @@ export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     vueDevTools(),
+    // `?script`: the raw download's inflate.mjs, the site's decoder inside.
+    scriptBundle(),
     tailwindcss(),
     // `vite dev` only: the fake Discord / Google at /__oauth-mock.
     oauthMock(),
@@ -176,6 +179,9 @@ export default defineConfig(({ command }) => ({
     sitemap(),
     prerender(),
   ],
+  // Web Workers are bundled with their own plugins: the export worker builds
+  // the raw download, whose inflate.mjs is a `?script` import.
+  worker: { plugins: () => [scriptBundle()] },
   // Pre-bundle every client dependency up front. Discovering one at runtime
   // makes Vite re-optimise and invalidate loaded modules, which shows up as
   // "Failed to fetch dynamically imported module" in an open tab.

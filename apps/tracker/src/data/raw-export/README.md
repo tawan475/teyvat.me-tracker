@@ -3,8 +3,19 @@
 Your snapshots exactly as Teyvat.me stores them: compressed, deduplicated,
 nothing decoded. For developers; the normal Download gives GOOD files.
 
-Run `node inflate.mjs` in this folder (Node 18+, no packages) to inflate
-everything into `inflated/`.
+Run `node inflate.mjs` in this folder (Node 18+, no packages: the site's own
+decoder is bundled inside it) to turn everything into readable JSON in
+`inflated/`:
+
+| Output                                   | What                                                                                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `inflated/snapshots/leyline-<time>.json` | Each snapshot whole, as a Leyline file (GOOD + `gi_*`): the same content the site's Download gives. Captures that share a second get `_<id>` appended. |
+| `inflated/sections/<id>.json`            | Each stored section decoded to its canonical value (names as dictionary ids; a delta holds only what changed against its keyframe).                    |
+| `inflated/catalog.json`                  | Every artifact identity, by catalog id.                                                                                                                |
+
+Short arrays and objects stay on one line, so the files read well in an
+editor. Whole snapshots are large: about 1 MB of JSON each, against a few
+hundred bytes stored.
 
 ## Files
 
@@ -15,7 +26,7 @@ everything into `inflated/`.
 | `sections/<id>.bin`          | A blob as stored.                                                                                                                                                                                                                                                                                      |
 | `catalog.json`               | The artifact catalog: `chunks` (each `first`–`last` artifact id, `count`, `file`) and `pending` (identities an import had not packed into a chunk yet, as JSON rows).                                                                                                                                  |
 | `catalog/<first>-<last>.bin` | A catalog chunk as stored.                                                                                                                                                                                                                                                                             |
-| `inflate.mjs`                | The script.                                                                                                                                                                                                                                                                                            |
+| `inflate.mjs`                | The script (bundled from the tracker's `src/data/raw-export/inflate.ts`).                                                                                                                                                                                                                              |
 
 ## Section blobs
 

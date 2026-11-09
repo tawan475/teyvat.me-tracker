@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-pool-workers'
 import { defineConfig } from 'vitest/config'
+import { scriptBundle } from './build/script-bundle.ts'
 
 // Worker tests run inside workerd against a local D1, with the real migrations
 // applied before each test file (see worker/test/setup.ts). The app's pure
@@ -13,6 +14,7 @@ export default defineConfig(async () => {
   )
   return {
     plugins: [
+      scriptBundle(),
       cloudflareTest({
         wrangler: { configPath: './wrangler.jsonc' },
         miniflare: {

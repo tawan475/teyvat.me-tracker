@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-2">
     <section v-for="g in visible" :key="g.rarity" :aria-label="`${g.rarity}★`">
-      <h2 class="sticky top-16 z-10 -mx-1 bg-surface-base px-1">
+      <h2 class="sticky top-[var(--app-bar-bottom,4rem)] z-10 -mx-1 bg-surface-base px-1">
         <button
           type="button"
           class="flex min-h-10 w-full items-center gap-2 text-sm font-medium"

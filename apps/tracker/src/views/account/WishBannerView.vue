@@ -85,11 +85,9 @@ function retry() {
         <ArrowLeft class="size-5" aria-hidden="true" />
       </UiIconButton>
       <h2 class="min-w-0 flex-1 truncate text-lg font-semibold">{{ info.title }}</h2>
-      <div
-        v-if="bannerOptions.length > 1"
-        class="scroll-hide scroll-fade-x max-w-full min-w-0 overflow-x-auto sm:scroll-fade-none"
-      >
-        <UiSegmented v-model="banner" :options="bannerOptions" :label="$t('wishes.banner')" />
+      <!-- A phone gives the banners a full row, each an equal share (UiSegmented `fill`). -->
+      <div v-if="bannerOptions.length > 1" class="w-full min-w-0 sm:w-auto">
+        <UiSegmented v-model="banner" :options="bannerOptions" :label="$t('wishes.banner')" fill />
       </div>
     </div>
 

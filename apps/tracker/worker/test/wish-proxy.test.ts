@@ -153,7 +153,8 @@ describe('wish link proxy', () => {
     }
     expect(status).toBe(429)
     expect(n).toBe(121)
-  })
+    // 121 requests one after another: past the 20 s default when the whole suite loads the machine.
+  }, 60_000)
 
   it('logs no authkey when the API fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

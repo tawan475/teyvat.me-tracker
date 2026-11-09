@@ -34,7 +34,7 @@ const countTitle = computed(() => {
   <section class="border-t border-border-subtle" :aria-labelledby="headingId">
     <!-- Sticks under the shell's h-16 top bar. -->
     <div
-      class="sticky top-16 z-10 flex items-center gap-x-3 border-b border-border-subtle bg-surface-raised px-2 md:px-3"
+      class="sticky top-[var(--app-bar-bottom,4rem)] z-10 flex items-center gap-x-3 border-b border-border-subtle bg-surface-raised px-2 md:px-3"
     >
       <label class="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center">
         <input

@@ -39,7 +39,7 @@ function onHeader(event: MouseEvent) {
       ref="head"
       :class="
         sticky
-          ? 'rounded-t-xl border-b border-border-default bg-surface-raised lg:sticky lg:top-16 lg:z-20 data-[stuck]:rounded-none data-[stuck]:shadow-md'
+          ? 'rounded-t-xl border-b border-border-default bg-surface-raised lg:sticky lg:top-[var(--app-bar-bottom,4rem)] lg:z-20 data-[stuck]:rounded-none data-[stuck]:shadow-md'
           : ''
       "
     >

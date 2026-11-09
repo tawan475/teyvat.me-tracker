@@ -52,7 +52,7 @@ const progress = computed(() => {
 </script>
 
 <template>
-  <div class="sticky top-16 z-40 w-full h-0">
+  <div class="sticky top-[var(--app-bar-bottom,4rem)] z-40 w-full h-0">
     <transition name="slide-down">
       <div
         v-if="selected > 0 || job"

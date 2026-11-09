@@ -261,7 +261,7 @@ const outcomes = (row: BannerHistoryRow) => {
           class="flex flex-wrap items-center gap-x-5 gap-y-3 bg-surface-raised px-4 py-3"
           :class="[
             expanded.has(rowKey(row))
-              ? 'sticky top-16 z-[5] rounded-t-[11px] border-b border-border-default'
+              ? 'sticky top-[var(--app-bar-bottom,4rem)] z-[5] rounded-t-[11px] border-b border-border-default'
               : 'rounded-[11px]',
             'cursor-pointer transition-colors hover:bg-surface-overlay/40',
           ]"

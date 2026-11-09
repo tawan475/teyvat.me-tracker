@@ -172,6 +172,19 @@ const percent = computed(() =>
   object-fit: contain;
   pointer-events: none;
 }
+/* A narrow card on a phone puts the title on its own row under the icon,
+   full width: the picture stays inside the icon row's band so it never
+   covers the title or its chevron (the user's report, 2026-11-10). */
+@media (max-width: 639.98px) {
+  @container (max-width: 359.98px) {
+    .art {
+      top: 6px;
+      right: 8px;
+      width: min(var(--w), 72px);
+      height: min(var(--h), 42px);
+    }
+  }
+}
 @media (min-width: 640px) {
   .art {
     top: var(--top-sm);

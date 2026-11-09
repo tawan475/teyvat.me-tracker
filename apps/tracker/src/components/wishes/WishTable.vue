@@ -121,7 +121,11 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
     <div
       ref="filters"
       class="flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
-      :class="embedded ? '' : 'sticky top-16 z-10 data-[stuck]:rounded-none data-[stuck]:shadow-md'"
+      :class="
+        embedded
+          ? ''
+          : 'sticky top-[var(--app-bar-bottom,4rem)] z-10 data-[stuck]:rounded-none data-[stuck]:shadow-md'
+      "
     >
       <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
         <FilterChip
@@ -278,7 +282,7 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
                 :tone="OUTCOME_STYLE[row.outcome].tone"
                 :title="outcomeTitle(row.outcome, banner, row.pull.item.rank)"
                 ><span aria-hidden="true">{{ OUTCOME_STYLE[row.outcome].mark }}</span>
-                {{ outcomeLabel(row.outcome) }}</UiBadge
+                <span class="max-sm:sr-only">{{ outcomeLabel(row.outcome) }}</span></UiBadge
               >
               <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
             </td>
@@ -292,20 +296,15 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
         </tbody>
       </table>
     </div>
-    <div
+    <UiPager
       v-if="pageCount > 1"
-      class="rounded-b-xl border-t border-border-default bg-surface-raised px-4 py-3"
-      :class="
-        embedded ? '' : 'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 lg:bottom-0'
-      "
-    >
-      <UiPager
-        v-model="page"
-        :page-count="pageCount"
-        :total="filtered.length"
-        :page-size="PAGE_SIZE"
-        :label="$t('wishes.table.pages')"
-      />
-    </div>
+      v-model="page"
+      :page-count="pageCount"
+      :total="filtered.length"
+      :page-size="PAGE_SIZE"
+      :label="$t('wishes.table.pages')"
+      :sticky="!embedded"
+      :class="embedded ? 'border-t border-border-default px-4 py-3' : 'rounded-b-xl'"
+    />
   </section>
 </template>

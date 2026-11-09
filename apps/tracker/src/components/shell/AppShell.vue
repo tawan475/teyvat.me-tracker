@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
-import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
+import {
+  useEventListener,
+  useMediaQuery,
+  usePreferredReducedMotion,
+  useResizeObserver,
+} from '@vueuse/core'
 import {
   ArrowLeft,
   History,
@@ -167,6 +172,18 @@ const travelSnapshots = useResource(
   () => (canTravel.value && current.value ? current.value : null),
   (a) => (a ? loadSnapshots(a) : Promise.resolve([] as SnapshotResponse[])),
 )
+
+/**
+ * The pinned block's height as `--app-bar-bottom` on the root: what pinned
+ * toolbars, headings and table headers use as their `top` (64px for the bar
+ * alone; more with the demo/guest band or the time travel bar).
+ */
+const appBarBlock = useTemplateRef<HTMLElement>('appBarBlock')
+useResizeObserver(appBarBlock, (entries) => {
+  const height = entries[0]?.borderBoxSize?.[0]?.blockSize ?? appBarBlock.value?.offsetHeight
+  if (height) document.documentElement.style.setProperty('--app-bar-bottom', `${height}px`)
+})
+onBeforeUnmount(() => document.documentElement.style.removeProperty('--app-bar-bottom'))
 
 /** Site-wide search: the top bar's button, Ctrl+K (⌘K) anywhere, "/" outside a text field. */
 const searching = ref(false)
@@ -534,12 +551,12 @@ const footButton =
       <!-- Solid, no backdrop blur (also the tab bar below): a blurred bar redraws
            everything scrolling under it on every frame, over 90% of a scroll
            frame's work on a long page (measured 2026-10-30). -->
-      <!-- The demo's band rides with the bar; sticky headings measure the
-           bar's foot (`data-app-bar`), so they clear both. -->
-      <div class="sticky top-0 z-30">
+      <!-- The demo's band and the time travel bar ride with the bar: the whole
+           block is `data-app-bar`, its height `--app-bar-bottom`, and every
+           pinned toolbar, heading and table header sits under it. -->
+      <div ref="appBarBlock" data-app-bar class="sticky top-0 z-30">
         <slot name="band" />
         <header
-          data-app-bar
           class="flex h-16 shrink-0 items-center gap-3 border-b border-border-default bg-surface-nav px-4 shadow-sm sm:px-8"
         >
           <UiIconButton

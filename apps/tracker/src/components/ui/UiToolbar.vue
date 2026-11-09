@@ -25,7 +25,7 @@ useStickyToolbar(root, () => !!props.sticky)
     class="flex flex-col gap-3 rounded-xl border border-border-default bg-surface-raised p-3 shadow-sm sm:p-4"
     :class="
       sticky &&
-      'lg:sticky lg:top-16 lg:z-20 data-[stuck]:rounded-none data-[stuck]:border-t-0 data-[stuck]:shadow-md'
+      'lg:sticky lg:top-[var(--app-bar-bottom,4rem)] lg:z-20 data-[stuck]:rounded-none data-[stuck]:border-t-0 data-[stuck]:shadow-md'
     "
     role="search"
     :aria-label="label"

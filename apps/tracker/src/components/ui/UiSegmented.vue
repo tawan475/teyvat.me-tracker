@@ -24,6 +24,8 @@ export interface SegmentedOption<V> {
  * - `compact`: options with an icon hide their label below `sm`.
  * - `size`: `sm` (default) is the 45px row height of inputs and selects;
  *   `md` gives 44px+ items for touch-first rows.
+ * - `fill`: below `sm`, the row spans its box with equal options and tighter
+ *   padding, so four or five labels fit a phone instead of running off it.
  */
 const props = withDefaults(
   defineProps<{
@@ -32,6 +34,7 @@ const props = withDefaults(
     iconOnly?: boolean
     compact?: boolean
     size?: 'sm' | 'md'
+    fill?: boolean
   }>(),
   { size: 'sm' },
 )
@@ -70,7 +73,8 @@ const hideLabel = (option: SegmentedOption<T>) =>
 <template>
   <div
     ref="group"
-    class="inline-flex shrink-0 rounded-lg bg-surface-overlay p-1"
+    class="shrink-0 rounded-lg bg-surface-overlay p-1"
+    :class="fill ? 'flex w-full sm:inline-flex sm:w-auto' : 'inline-flex'"
     role="radiogroup"
     :aria-label="label"
   >
@@ -87,7 +91,13 @@ const hideLabel = (option: SegmentedOption<T>) =>
       class="inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] duration-150 disabled:opacity-50"
       :class="[
         size === 'md' ? 'min-h-10 min-w-10' : 'min-h-8 min-w-8',
-        iconOnly ? 'px-0' : compact && option.icon ? 'px-2 sm:px-3' : 'px-3',
+        iconOnly
+          ? 'px-0'
+          : fill
+            ? 'min-w-0 flex-1 px-1.5 sm:flex-none sm:px-3'
+            : compact && option.icon
+              ? 'px-2 sm:px-3'
+              : 'px-3',
         model === option.value
           ? 'bg-surface-raised text-text-primary shadow-sm'
           : 'text-text-secondary enabled:hover:text-text-primary',
@@ -102,7 +112,7 @@ const hideLabel = (option: SegmentedOption<T>) =>
         :class="option.iconClass"
         aria-hidden="true"
       />
-      <span :class="hideLabel(option)">{{ option.label }}</span>
+      <span :class="[hideLabel(option), fill ? 'truncate' : '']">{{ option.label }}</span>
       <!-- On the track, muted text is under 4.5:1: counts step up to secondary there. -->
       <span
         v-if="option.count !== undefined"

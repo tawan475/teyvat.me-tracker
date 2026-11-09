@@ -81,7 +81,9 @@
     "blocked": "Hay otra exportación en curso",
     "downloadTitle": "Descargar un zip de archivos Leyline",
     "download": "Descargar",
-    "delete": "Borrar"
+    "delete": "Borrar",
+    "raw": "Descarga en bruto",
+    "rawTitle": "Para desarrolladores: las instantáneas tal como se guardan (secciones comprimidas y catálogo de artefactos) con un script de Node que las descomprime"
   },
   "card": {
     "stored": "Guardado"
@@ -128,5 +130,6 @@
     "confirm": "Compactar",
     "done": "{n} instantánea eliminada | {n} instantáneas eliminadas",
     "failed": "No compactado"
-  }
+  },
+  "rawSaved": "{n} instantánea, bytes guardados | {n} instantáneas, bytes guardados"
 }

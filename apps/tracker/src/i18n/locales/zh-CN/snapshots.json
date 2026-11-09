@@ -81,7 +81,9 @@
     "blocked": "另一个导出正在进行",
     "downloadTitle": "下载 Leyline 文件的 zip 压缩包",
     "download": "下载",
-    "delete": "删除"
+    "delete": "删除",
+    "raw": "原始数据下载",
+    "rawTitle": "供开发者使用：按存储原样的快照（压缩的分段与圣遗物目录），附带用于解压的 Node 脚本"
   },
   "card": {
     "stored": "已存储"
@@ -128,5 +130,6 @@
     "confirm": "精简",
     "done": "已删除 {n} 个快照",
     "failed": "未能精简"
-  }
+  },
+  "rawSaved": "{n} 个快照，存储字节"
 }

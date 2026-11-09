@@ -147,6 +147,8 @@ export async function exportZip(options: {
   fileName: string
   /** Add live sync's `live/` folder (export-protocol.ts). */
   live?: boolean
+  /** The raw download for developers (export-protocol.ts `raw`). */
+  raw?: boolean
 }): Promise<ExportResult | null> {
   if (job.value) throw new Error(t('transfer.export.alreadyRunning'))
   if (starting) return null // A second click while the picker is open.
@@ -272,6 +274,7 @@ export async function exportZip(options: {
         ids: options.ids,
         level: 6,
         live: options.live ?? false,
+        raw: options.raw ?? false,
       }
       worker.postMessage(start)
     })

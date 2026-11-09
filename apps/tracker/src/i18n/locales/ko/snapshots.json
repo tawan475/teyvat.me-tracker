@@ -81,7 +81,9 @@
     "blocked": "다른 내보내기가 진행 중입니다",
     "downloadTitle": "Leyline 파일 zip 다운로드",
     "download": "다운로드",
-    "delete": "삭제"
+    "delete": "삭제",
+    "raw": "원본 다운로드",
+    "rawTitle": "개발자용: 저장된 그대로의 스냅샷(압축된 섹션과 성유물 카탈로그)과 압축을 푸는 Node 스크립트"
   },
   "card": {
     "stored": "저장"
@@ -128,5 +130,6 @@
     "confirm": "압축",
     "done": "스냅샷 {n}개 제거됨",
     "failed": "압축 실패"
-  }
+  },
+  "rawSaved": "스냅샷 {n}개, 저장된 바이트"
 }

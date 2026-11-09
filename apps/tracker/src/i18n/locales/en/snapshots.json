@@ -81,7 +81,9 @@
     "blocked": "Another export is running",
     "downloadTitle": "Download a zip of Leyline files",
     "download": "Download",
-    "delete": "Delete"
+    "delete": "Delete",
+    "raw": "Raw download",
+    "rawTitle": "For developers: the snapshots as stored (compressed sections and artifact catalog) with a Node script that inflates them"
   },
   "card": {
     "stored": "Stored"
@@ -128,5 +130,6 @@
     "confirm": "Compact",
     "done": "Removed {n} snapshot | Removed {n} snapshots",
     "failed": "Not compacted"
-  }
+  },
+  "rawSaved": "{n} snapshot, stored bytes | {n} snapshots, stored bytes"
 }

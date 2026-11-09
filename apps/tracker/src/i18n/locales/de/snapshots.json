@@ -81,7 +81,9 @@
     "blocked": "Ein anderer Export läuft",
     "downloadTitle": "ZIP mit Leyline-Dateien herunterladen",
     "download": "Herunterladen",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "raw": "Rohdaten",
+    "rawTitle": "Für Entwickler: die Snapshots wie gespeichert (komprimierte Abschnitte und Artefaktkatalog) mit einem Node-Skript zum Entpacken"
   },
   "card": {
     "stored": "Gespeichert"
@@ -128,5 +130,6 @@
     "confirm": "Verdichten",
     "done": "{n} Snapshot entfernt | {n} Snapshots entfernt",
     "failed": "Nicht verdichtet"
-  }
+  },
+  "rawSaved": "{n} Snapshot, gespeicherte Bytes | {n} Snapshots, gespeicherte Bytes"
 }

@@ -33,7 +33,13 @@ import {
   uploadsRefused,
 } from '../services/accounts'
 import { listSnapshots, parseIds, parseSections } from '../services/account-views'
-import { buildBundle, buildGood, catalogJson, goodFileName } from '../services/export'
+import {
+  buildBundle,
+  buildGood,
+  catalogJson,
+  catalogRawJson,
+  goodFileName,
+} from '../services/export'
 import { importSnapshot } from '../services/import'
 import {
   listenerOf,
@@ -350,10 +356,14 @@ export const accounts = new Hono<AppEnv>()
   /** Every artifact the account has ever held, as CatalogRow arrays. */
   .get('/:id/catalog', async (c) => {
     const account = await loadAccount(getDb(c.env.DB), c.get('userId'), idParam(c, 'id'), 'view')
-    const cached = checkEtag(c, accountEtag(account, 'catalog'))
+    // `?raw=1`: the stored chunks, for the Snapshots page's raw download.
+    const raw = c.req.query('raw') === '1'
+    const cached = checkEtag(c, accountEtag(account, raw ? 'catalog-raw' : 'catalog'))
     if (cached) return cached
     c.header('Content-Type', 'application/json; charset=utf-8')
-    return c.body(await catalogJson(c.env.DB, account.id))
+    return c.body(
+      raw ? await catalogRawJson(c.env.DB, account.id) : await catalogJson(c.env.DB, account.id),
+    )
   })
 
   /**

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { X } from 'lucide-vue-next'
+import { FileArchive, X } from 'lucide-vue-next'
 import UiButton from '@/components/ui/UiButton.vue'
 import type { ExportJob } from '@/data/export'
 import { t } from '@/i18n'
@@ -25,10 +25,12 @@ const props = withDefaults(
     deleting: boolean
     /** Offer Download (not on staff Inspect: the files are the owner's). */
     downloadable?: boolean
+    /** Offer the raw download for developers (stored bytes; not for guests or the demo). */
+    rawDownloadable?: boolean
   }>(),
-  { downloadable: true },
+  { downloadable: true, rawDownloadable: false },
 )
-const emit = defineEmits<{ download: []; delete: []; clear: []; cancel: [] }>()
+const emit = defineEmits<{ download: []; raw: []; delete: []; clear: []; cancel: [] }>()
 
 const progress = computed(() => {
   const job = props.job
@@ -102,6 +104,18 @@ const progress = computed(() => {
             {{ $t('snapshots.bar.cancel') }}
           </UiButton>
           <template v-else>
+            <UiButton
+              v-if="rawDownloadable"
+              variant="ghost"
+              size="sm"
+              class="gap-1.5 text-slate-200 hover:text-white"
+              :disabled="blocked || deleting"
+              :title="blocked ? $t('snapshots.bar.blocked') : $t('snapshots.bar.rawTitle')"
+              @click="emit('raw')"
+            >
+              <FileArchive class="size-4" aria-hidden="true" />
+              {{ $t('snapshots.bar.raw') }}
+            </UiButton>
             <UiButton
               v-if="downloadable"
               variant="secondary"

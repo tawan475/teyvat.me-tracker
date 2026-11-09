@@ -81,7 +81,9 @@
     "blocked": "Un autre export est en cours",
     "downloadTitle": "Télécharger un zip de fichiers Leyline",
     "download": "Télécharger",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "raw": "Téléchargement brut",
+    "rawTitle": "Pour les développeurs : les instantanés tels que stockés (sections compressées et catalogue d’artéfacts) avec un script Node qui les décompresse"
   },
   "card": {
     "stored": "Stocké"
@@ -128,5 +130,6 @@
     "confirm": "Compacter",
     "done": "{n} instantané retiré | {n} instantanés retirés",
     "failed": "Non compacté"
-  }
+  },
+  "rawSaved": "{n} instantané, octets stockés | {n} instantanés, octets stockés"
 }

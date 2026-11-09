@@ -21,6 +21,7 @@ import { BUNDLE_FORMAT } from '@/api/format'
 import type { ExportCommand, ExportEvent, ExportStart } from '@/data/export-protocol'
 import { decodeFromSections, writeGoodZip } from '@/data/export-zip'
 import { liveFiles } from '@/data/live-export'
+import { rawExportFiles, writeRawZip, type RawCatalog } from '@/data/raw-export'
 
 /** The parts of DedicatedWorkerGlobalScope used here (the app compiles against the DOM lib). */
 interface WorkerScope {
@@ -85,6 +86,35 @@ async function loadLive(root: string) {
     json<LivePointsResponse>(`${root}/points`),
   ])
   return { live, points: points?.points ?? [] }
+}
+
+/** The raw download: stored bytes and the inflate script, nothing decoded. */
+async function runRaw({ root, ids }: ExportStart) {
+  // Always GDT2: the stored blobs as they are, whatever the app's own format.
+  const query = ids && ids.length <= MAX_IDS_IN_URL ? `&ids=${ids.join(',')}` : ''
+  const [bundleResponse, catalogResponse] = await Promise.all([
+    request(`${root}/bundle?format=2${query}`),
+    request(`${root}/catalog?raw=1`),
+  ])
+  let loaded = 0
+  const onBytes = (count: number) => {
+    loaded += count
+    post({ type: 'fetching', loaded, total: null })
+  }
+  const [bundle, catalogBytes] = await Promise.all([
+    readBody(bundleResponse, onBytes),
+    readBody(catalogResponse, onBytes),
+  ])
+  const catalog = JSON.parse(new TextDecoder().decode(catalogBytes)) as RawCatalog
+  const files = rawExportFiles({ bundle, catalog, ids })
+  if (!files.some((file) => file.name.startsWith('sections/'))) {
+    throw new Error('Snapshots no longer exist')
+  }
+  const totals = writeRawZip(files, (chunk) => {
+    const data = chunk.slice()
+    post({ type: 'chunk', data }, [data.buffer])
+  })
+  post({ type: 'done', files: totals.files, jsonBytes: 0, zipBytes: totals.zipBytes })
 }
 
 async function run({ root, ids, level, live: withLive }: ExportStart) {
@@ -153,7 +183,7 @@ async function run({ root, ids, level, live: withLive }: ExportStart) {
 scope.onmessage = (event) => {
   const command = event.data
   if (command.type !== 'start') return
-  run(command).catch((error: unknown) => {
+  ;(command.raw ? runRaw(command) : run(command)).catch((error: unknown) => {
     post({
       type: 'error',
       message: error instanceof Error ? error.message : 'The export failed.',

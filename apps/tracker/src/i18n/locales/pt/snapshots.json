@@ -81,7 +81,9 @@
     "blocked": "Outra exportação está em andamento",
     "downloadTitle": "Baixar um zip de arquivos Leyline",
     "download": "Baixar",
-    "delete": "Excluir"
+    "delete": "Excluir",
+    "raw": "Download bruto",
+    "rawTitle": "Para desenvolvedores: os snapshots como armazenados (seções comprimidas e catálogo de artefatos) com um script Node que os descomprime"
   },
   "card": {
     "stored": "Armazenado"
@@ -128,5 +130,6 @@
     "confirm": "Compactar",
     "done": "{n} snapshot removido | {n} snapshots removidos",
     "failed": "Não compactado"
-  }
+  },
+  "rawSaved": "{n} snapshot, bytes armazenados | {n} snapshots, bytes armazenados"
 }

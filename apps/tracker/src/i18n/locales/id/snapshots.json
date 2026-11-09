@@ -81,7 +81,9 @@
     "blocked": "Ekspor lain sedang berjalan",
     "downloadTitle": "Unduh zip berisi file Leyline",
     "download": "Unduh",
-    "delete": "Hapus"
+    "delete": "Hapus",
+    "raw": "Unduh mentah",
+    "rawTitle": "Untuk pengembang: snapshot sebagaimana disimpan (bagian terkompresi dan katalog artefak) dengan skrip Node untuk mengekstraknya"
   },
   "card": {
     "stored": "Disimpan"
@@ -128,5 +130,6 @@
     "confirm": "Padatkan",
     "done": "{n} snapshot dihapus",
     "failed": "Tidak dipadatkan"
-  }
+  },
+  "rawSaved": "{n} snapshot, byte tersimpan | {n} snapshot, byte tersimpan"
 }

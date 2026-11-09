@@ -27,6 +27,11 @@ export interface ExportStart {
    * snapshot with the journal applied: the account as of now).
    */
   live?: boolean
+  /**
+   * The raw download for developers: the stored sections and catalog chunks
+   * as they are, with an inflate script (data/raw-export.ts), not GOOD files.
+   */
+  raw?: boolean
 }
 
 export type ExportCommand = ExportStart

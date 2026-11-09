@@ -171,6 +171,28 @@ function read(bytes: Uint8Array): { magic: 1 | 2; manifest: unknown; parts: Uint
   return { magic, manifest, parts }
 }
 
+/**
+ * A GDT2 bundle as stored: its manifest's snapshots and every blob's stored
+ * bytes, nothing inflated (the Snapshots page's raw download for developers).
+ * `legacy` are v1 blobs by hash, each with LEGACY_FORMAT in front.
+ */
+export function readBundleV2Raw(buffer: ArrayBuffer | Uint8Array): {
+  snapshots: BundleSnapshotV2[]
+  blobs: RawBlob[]
+  legacy: Map<string, Uint8Array>
+} {
+  const { magic, manifest, parts } = read(asBytes(buffer))
+  if (magic !== 2) throw new Error('Not a GDT2 bundle')
+  const v2 = manifest as BundleManifestV2
+  const blobs: RawBlob[] = []
+  const legacy = new Map<string, Uint8Array>()
+  v2.blobs.forEach((entry, i) => {
+    if (typeof entry === 'string') legacy.set(entry, parts[i]!)
+    else blobs.push({ id: entry[0], code: entry[1], baseId: entry[2], data: parts[i]! })
+  })
+  return { snapshots: v2.snapshots, blobs, legacy }
+}
+
 const asBytes = (buffer: ArrayBuffer | Uint8Array) =>
   buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
 

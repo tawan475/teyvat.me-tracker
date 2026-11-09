@@ -81,7 +81,9 @@
     "blocked": "Başka bir dışa aktarma çalışıyor",
     "downloadTitle": "Leyline dosyalarını zip olarak indir",
     "download": "İndir",
-    "delete": "Sil"
+    "delete": "Sil",
+    "raw": "Ham indirme",
+    "rawTitle": "Geliştiriciler için: anlık görüntüler saklandığı gibi (sıkıştırılmış bölümler ve eser kataloğu), açan bir Node betiğiyle"
   },
   "card": {
     "stored": "Saklanan"
@@ -128,5 +130,6 @@
     "confirm": "Sıkıştır",
     "done": "{n} anlık görüntü silindi",
     "failed": "Sıkıştırılmadı"
-  }
+  },
+  "rawSaved": "{n} anlık görüntü, saklanan baytlar"
 }

@@ -81,7 +81,9 @@
     "blocked": "Đang có một lần xuất khác",
     "downloadTitle": "Tải tệp zip gồm các tệp Leyline",
     "download": "Tải xuống",
-    "delete": "Xóa"
+    "delete": "Xóa",
+    "raw": "Tải dữ liệu thô",
+    "rawTitle": "Cho nhà phát triển: các snapshot đúng như khi lưu (phần nén và danh mục thánh di vật) kèm một script Node để giải nén"
   },
   "card": {
     "stored": "Đã lưu"
@@ -128,5 +130,6 @@
     "confirm": "Gọn lại",
     "done": "Đã xóa {n} ảnh chụp",
     "failed": "Không gọn lại được"
-  }
+  },
+  "rawSaved": "{n} snapshot, byte đã lưu"
 }

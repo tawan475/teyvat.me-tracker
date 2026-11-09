@@ -479,10 +479,51 @@ export async function loadCatalog(
   return catalog
 }
 
+/**
+ * The catalog as stored, for the Snapshots page's raw download: each
+ * `artifact_chunks` row's bytes (base64; a format byte, then the chunk,
+ * deflated or not: packages/shared/src/codec/catalog-binary.ts), and the few
+ * identities an import keeps in `artifacts` until the chunks take them, as
+ * CatalogRow.
+ */
+export async function catalogRawJson(d1: D1Database, accountId: number): Promise<string> {
+  const [chunks, rows] = await d1.batch<Record<string, unknown>>([
+    d1
+      .prepare(
+        'SELECT first_id, last_id, count, data FROM artifact_chunks WHERE account_id = ?1 ORDER BY first_id',
+      )
+      .bind(accountId),
+    d1.prepare(`SELECT ${CATALOG_COLUMNS} FROM artifacts WHERE account_id = ?1`).bind(accountId),
+  ])
+  const pending = new Map<number, ArtifactIdentity>()
+  for (const row of rows!.results) pending.set(row.id as number, identityOfRow(row))
+  return JSON.stringify({
+    format: 1,
+    chunks: chunks!.results.map((row) => ({
+      first: row.first_id as number,
+      last: row.last_id as number,
+      count: row.count as number,
+      data: bytesToBase64(toBytes(row.data)),
+    })),
+    pending: catalogRows(pending),
+  })
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let text = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    text += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  }
+  return btoa(text)
+}
+
 /** The whole catalog as a JSON array of CatalogRow, ordered by id. */
 export async function catalogJson(d1: D1Database, accountId: number): Promise<string> {
-  const catalog = await loadCatalog(d1, accountId, null)
-  const rows = [...catalog]
+  return JSON.stringify(catalogRows(await loadCatalog(d1, accountId, null)))
+}
+
+function catalogRows(catalog: ReadonlyMap<number, ArtifactIdentity>): CatalogRow[] {
+  return [...catalog]
     .sort((a, b) => a[0] - b[0])
     .map(
       ([id, a]): CatalogRow => [
@@ -502,7 +543,6 @@ export async function catalogJson(d1: D1Database, accountId: number): Promise<st
         ),
       ],
     )
-  return JSON.stringify(rows)
 }
 
 /** Gives a Leyline download a stable, sortable file name (`leyline-<time>.json`). */

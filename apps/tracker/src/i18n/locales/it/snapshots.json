@@ -81,7 +81,9 @@
     "blocked": "È in corso un'altra esportazione",
     "downloadTitle": "Scarica uno zip di file Leyline",
     "download": "Scarica",
-    "delete": "Elimina"
+    "delete": "Elimina",
+    "raw": "Download grezzo",
+    "rawTitle": "Per sviluppatori: gli snapshot come salvati (sezioni compresse e catalogo dei manufatti) con uno script Node che li decomprime"
   },
   "card": {
     "stored": "Salvati"
@@ -128,5 +130,6 @@
     "confirm": "Compatta",
     "done": "{n} snapshot rimosso | {n} snapshot rimossi",
     "failed": "Non compattato"
-  }
+  },
+  "rawSaved": "{n} snapshot, byte salvati | {n} snapshot, byte salvati"
 }

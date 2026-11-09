@@ -326,19 +326,25 @@ function zipFileName(items: readonly SnapshotResponse[]): string {
   return `leyline-${name}-${from === to ? from : `${from}_to_${to}`}.zip`
 }
 
-/** Runs from a click: the save picker inside needs the gesture, so nothing awaits first. */
-const handleBulkDownload = async () => {
+/**
+ * Runs from a click: the save picker inside needs the gesture, so nothing
+ * awaits first. `raw`: the raw download for developers (stored sections and
+ * catalog chunks with an inflate script, data/raw-export.ts).
+ */
+const handleBulkDownload = async (raw = false) => {
   if (exportJob.value) return
   const ids = new Set(selectedIdList())
   const items = list.value.filter((s) => ids.has(s.id))
   if (items.length === 0) return
   try {
+    const name = zipFileName(items)
     const result = await exportZip({
       accountId: account.value.id,
       ids: items.length === list.value.length ? null : items.map((s) => s.id),
       requested: items.length,
-      fileName: zipFileName(items),
-      live: account.value.liveSync ?? false,
+      fileName: raw ? name.replace(/^leyline-/, 'teyvatme-raw-') : name,
+      live: !raw && (account.value.liveSync ?? false),
+      raw,
     })
     if (!result) return
     resetSelection()
@@ -346,10 +352,12 @@ const handleBulkDownload = async () => {
     feedback.toast({
       tone: 'success',
       title: t('snapshots.saved', { name: result.fileName }),
-      detail:
-        `${t('snapshots.files', { n: formatNumber(result.files) }, result.files)} · ` +
-        formatBytes(result.zipBytes) +
-        (missing > 0 ? ` · ${t('snapshots.gone', { n: formatNumber(missing) })}` : ''),
+      detail: raw
+        ? `${t('snapshots.rawSaved', { n: formatNumber(items.length) }, items.length)} · ` +
+          formatBytes(result.zipBytes)
+        : `${t('snapshots.files', { n: formatNumber(result.files) }, result.files)} · ` +
+          formatBytes(result.zipBytes) +
+          (missing > 0 ? ` · ${t('snapshots.gone', { n: formatNumber(missing) })}` : ''),
     })
   } catch (cause) {
     feedback.error(t('snapshots.exportFailed'), cause)
@@ -492,13 +500,15 @@ function selectionClearance(): number {
         v-if="canDelete"
         class="mb-0"
         :downloadable="!readOnly"
+        :raw-downloadable="!readOnly && owner && !mode.guest && !mode.demo"
         :selected="selectedCount"
         :total="list.length"
         :hidden="hiddenSelected"
         :job="job"
         :blocked="exportBlocked"
         :deleting="deleting"
-        @download="handleBulkDownload"
+        @download="handleBulkDownload()"
+        @raw="handleBulkDownload(true)"
         @delete="handleBulkDelete"
         @clear="resetSelection"
         @cancel="cancelExport"

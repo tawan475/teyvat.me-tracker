@@ -2227,7 +2227,7 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
     ).toBeNull()
   })
 
-  it('stores collections2 and progress in their binary layouts, the tasks as JSON', async () => {
+  it('stores collections2, progress and the tasks in their binary layouts', async () => {
     const good = normalizeGood(input)
     const c2 = JSON.parse(JSON.stringify(encodeCollections2(good.collections!)))
     const progress = JSON.parse(
@@ -2246,10 +2246,13 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
       expect(decode(back.value as never)).toEqual(decode(value as never))
     }
     expect(encodeSectionBlob('progress', progress, false, null).data.length).toBeLessThan(1_500)
-    // The deployed tasks layout has no place for the new letters: JSON, which old decoders read.
+    // The first tasks layout has no place for the new letters: its second form
+    // holds them (2026-11-09; old builds get JSON from the server instead).
     const tasks = JSON.parse(JSON.stringify(encodeTasks(good.tasks!)))
-    expect(encodeSectionBlob('tasks', tasks, false, null).payload[0]).toBe(0x00)
-    expect(decodeTasks(tasks)).toEqual(good.tasks)
+    const tasksBlob = encodeSectionBlob('tasks', tasks, false, null)
+    expect(tasksBlob.payload[0]).toBe(0x10)
+    const tasksBack = decodeSectionBlob(kindCode('tasks', false), tasksBlob.data, null, null)
+    expect(decodeTasks(tasksBack.value as never)).toEqual(good.tasks)
   })
 })
 

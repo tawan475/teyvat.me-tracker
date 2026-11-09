@@ -406,7 +406,8 @@ describe('section blobs', () => {
       ['characters', [[1, 90.5]]],
       ['achievements', [-3, 4]],
       ['artifacts', { i: [1], l: [0], f: [1], extra: true }],
-      ['player', { ar: 60, nested: { a: 1 } }],
+      // Objects of whole numbers have a binary form (2026-11-09); of anything else, not.
+      ['player', { ar: 60, nested: { a: 'x' } }],
     ]
     for (const [kind, value] of odd) {
       const blob = encodeSectionBlob(kind, value, false, null)

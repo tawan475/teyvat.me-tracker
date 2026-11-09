@@ -217,6 +217,8 @@
     "rowTitle": "Du hành thời gian: xem tài khoản như lúc snapshot này",
     "lostTitle": "Snapshot đó không còn",
     "lostBody": "Địa chỉ trỏ đến một snapshot mà tài khoản này không còn.",
-    "loading": "Đang du hành…"
+    "loading": "Đang du hành…",
+    "planNotRecorded": "Không có kế hoạch nào được lưu cho ngày này. Kế hoạch được lưu từ {date}.",
+    "planNotRecordedYet": "Không có kế hoạch nào được lưu cho ngày này."
   }
 }

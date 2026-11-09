@@ -1,4 +1,4 @@
-import type { PlannerTarget } from '@gdt/shared'
+import type { ProgressHistory, PlannerTarget } from '@gdt/shared'
 import { shallowRef, watch, type Ref } from 'vue'
 import { api } from '@/api'
 import { t } from '@/i18n'
@@ -86,6 +86,8 @@ export function usePlannerTargets(accountId: Ref<number>) {
   const targets = shallowRef<PlannerTarget[] | null>(null)
   const error = shallowRef<unknown>(null)
   const saving = shallowRef(false)
+  /** Time travel: whether a plan was recorded for the time shown (progress_history). */
+  const history = shallowRef<ProgressHistory | null>(null)
   /** Server state; `targets` is this plus the pending ops. */
   let server: PlannerTarget[] = []
   const pending = new Map<string, Op>()
@@ -108,6 +110,7 @@ export function usePlannerTargets(accountId: Ref<number>) {
       const response = await api.plannerTargets(loadedId)
       if (mine !== generation) return
       server = response.targets
+      history.value = response.history ?? null
       targets.value = server
     } catch (cause) {
       if (mine === generation) error.value = cause
@@ -184,6 +187,7 @@ export function usePlannerTargets(accountId: Ref<number>) {
 
   return {
     targets,
+    history,
     error,
     saving,
     reload: () => load(),

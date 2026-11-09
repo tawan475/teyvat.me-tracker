@@ -43,6 +43,15 @@ import { ApiError, idParam, parseJson } from '../lib/http'
 import { requireUser } from '../lib/session'
 import { assertAccount } from '../services/accounts'
 import {
+  AT_SQL,
+  SINCE_SQL,
+  goalsAt,
+  historyStatements,
+  marksAt,
+  type HistoryArea,
+  type HistoryRow,
+} from '../services/progress-history'
+import {
   listenerOf,
   listenerStatement,
   notifyAccount,
@@ -200,12 +209,78 @@ export async function readPlannerTasks(d1: D1Database, id: number): Promise<Plan
   return { tasks: toTasks(results) }
 }
 
+/**
+ * Time travel's `?at=<ms>`: the hand-set state as it was then
+ * (services/progress-history.ts), or null for now.
+ */
+function atParam(c: { req: { query(name: string): string | undefined } }): number | null {
+  const raw = c.req.query('at')
+  if (raw === undefined) return null
+  if (!/^\d{1,15}$/.test(raw)) throw new ApiError(400, 'bad_at', 'at must be a time in ms')
+  return Number(raw)
+}
+
+/**
+ * What held at `at`: the versions of `areas` once recording had begun; before
+ * it (`recorded` false) nothing is known, and marks fall back to those whose
+ * last change was by then (`fallback`, a SELECT of ids for `?1`, `?2` = at).
+ */
+async function readAt(
+  d1: D1Database,
+  id: number,
+  at: number,
+  areas: readonly HistoryArea[],
+  fallback?: string,
+): Promise<{ rows: HistoryRow[]; since: number | null; recorded: boolean; earlier: number[] }> {
+  const [since, rows, earlier] = await d1.batch([
+    d1.prepare(SINCE_SQL),
+    d1.prepare(AT_SQL).bind(id, JSON.stringify(areas), at),
+    ...(fallback ? [d1.prepare(fallback).bind(id, at)] : []),
+  ])
+  const start = (since?.results[0] as { since?: number } | undefined)?.since ?? null
+  const recorded = start !== null && at >= start
+  return {
+    rows: recorded ? ((rows?.results ?? []) as unknown as HistoryRow[]) : [],
+    since: start,
+    recorded,
+    earlier: recorded ? [] : ((earlier?.results ?? []) as { id: number }[]).map((r) => r.id),
+  }
+}
+
+/** Hand marks of `area` at `at` (see readAt). */
+async function marksAtTime(
+  d1: D1Database,
+  id: number,
+  at: number,
+  area: HistoryArea,
+  table: string,
+  column: string,
+): Promise<AchievementMarksResponse> {
+  const past = await readAt(
+    d1,
+    id,
+    at,
+    [area],
+    `SELECT ${column} AS id FROM ${table} WHERE account_id = ?1 AND updated_at <= ?2 ORDER BY ${column}`,
+  )
+  return {
+    done: past.recorded ? marksAt(past.rows, area) : past.earlier,
+    history: { since: past.since, recorded: past.recorded },
+  }
+}
+
 export const progress = new Hono<AppEnv>()
   .use(requireUser)
 
   .get('/:id/achievement-marks', async (c) => {
     const id = idParam(c, 'id')
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const at = atParam(c)
+    if (at !== null) {
+      return c.json<AchievementMarksResponse>(
+        await marksAtTime(c.env.DB, id, at, 'achievement', 'achievement_marks', 'achievement_id'),
+      )
+    }
     return c.json<AchievementMarksResponse>(await readAchievementMarks(c.env.DB, id))
   })
 
@@ -215,6 +290,7 @@ export const progress = new Hono<AppEnv>()
     const body = await parseJson(c, achievementMarksPatch)
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'edit')
     const d1 = c.env.DB
+    const now = Date.now()
     const statements: D1PreparedStatement[] = []
     if (body.done.length > 0) {
       statements.push(
@@ -225,7 +301,7 @@ export const progress = new Hono<AppEnv>()
              SELECT ?1, value, ?2 FROM json_each(?3) WHERE true
              ON CONFLICT (account_id, achievement_id) DO UPDATE SET updated_at = excluded.updated_at`,
           )
-          .bind(id, Date.now(), JSON.stringify(body.done)),
+          .bind(id, now, JSON.stringify(body.done)),
       )
     }
     if (body.undone.length > 0) {
@@ -238,7 +314,11 @@ export const progress = new Hono<AppEnv>()
           .bind(id, JSON.stringify(body.undone)),
       )
     }
-    const results = await d1.batch([...statements, d1.prepare(SELECT_MARKS).bind(id)])
+    const results = await d1.batch([
+      ...statements,
+      ...historyStatements(d1, id, now, ['achievement']),
+      d1.prepare(SELECT_MARKS).bind(id),
+    ])
     const rows = (results.at(-1)!.results ?? []) as { id: number }[]
     return c.json<AchievementMarksResponse>({ done: rows.map((r) => r.id) })
   })
@@ -246,6 +326,12 @@ export const progress = new Hono<AppEnv>()
   .get('/:id/anecdote-marks', async (c) => {
     const id = idParam(c, 'id')
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const at = atParam(c)
+    if (at !== null) {
+      return c.json<AnecdoteMarksResponse>(
+        await marksAtTime(c.env.DB, id, at, 'anecdote', 'anecdote_marks', 'anecdote_id'),
+      )
+    }
     return c.json<AnecdoteMarksResponse>(await readAnecdoteMarks(c.env.DB, id))
   })
 
@@ -255,6 +341,7 @@ export const progress = new Hono<AppEnv>()
     const body = await parseJson(c, anecdoteMarksPatch)
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'edit')
     const d1 = c.env.DB
+    const now = Date.now()
     const statements: D1PreparedStatement[] = []
     if (body.done.length > 0) {
       statements.push(
@@ -265,7 +352,7 @@ export const progress = new Hono<AppEnv>()
              SELECT ?1, value, ?2 FROM json_each(?3) WHERE true
              ON CONFLICT (account_id, anecdote_id) DO UPDATE SET updated_at = excluded.updated_at`,
           )
-          .bind(id, Date.now(), JSON.stringify(body.done)),
+          .bind(id, now, JSON.stringify(body.done)),
       )
     }
     if (body.undone.length > 0) {
@@ -280,6 +367,7 @@ export const progress = new Hono<AppEnv>()
     }
     const results = await d1.batch([
       ...statements,
+      ...historyStatements(d1, id, now, ['anecdote']),
       d1.prepare(SELECT_ANECDOTE_MARKS).bind(id),
       listenerStatement(d1, id),
     ])
@@ -296,6 +384,12 @@ export const progress = new Hono<AppEnv>()
   .get('/:id/quest-marks', async (c) => {
     const id = idParam(c, 'id')
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const at = atParam(c)
+    if (at !== null) {
+      return c.json<QuestMarksResponse>(
+        await marksAtTime(c.env.DB, id, at, 'quest', 'quest_marks', 'quest_id'),
+      )
+    }
     const rows = await c.env.DB.prepare(SELECT_QUEST_MARKS).bind(id).all<{ id: number }>()
     return c.json<QuestMarksResponse>({ done: rows.results.map((r) => r.id) })
   })
@@ -306,6 +400,7 @@ export const progress = new Hono<AppEnv>()
     const body = await parseJson(c, questMarksPatch)
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'edit')
     const d1 = c.env.DB
+    const now = Date.now()
     const statements: D1PreparedStatement[] = []
     if (body.done.length > 0) {
       statements.push(
@@ -316,7 +411,7 @@ export const progress = new Hono<AppEnv>()
              SELECT ?1, value, ?2 FROM json_each(?3) WHERE true
              ON CONFLICT (account_id, quest_id) DO UPDATE SET updated_at = excluded.updated_at`,
           )
-          .bind(id, Date.now(), JSON.stringify(body.done)),
+          .bind(id, now, JSON.stringify(body.done)),
       )
     }
     if (body.undone.length > 0) {
@@ -331,6 +426,7 @@ export const progress = new Hono<AppEnv>()
     }
     const results = await d1.batch([
       ...statements,
+      ...historyStatements(d1, id, now, ['quest']),
       d1.prepare(SELECT_QUEST_MARKS).bind(id),
       listenerStatement(d1, id),
     ])
@@ -347,6 +443,14 @@ export const progress = new Hono<AppEnv>()
   .get('/:id/planner-targets', async (c) => {
     const id = idParam(c, 'id')
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const at = atParam(c)
+    if (at !== null) {
+      const past = await readAt(c.env.DB, id, at, ['target', 'weapon'])
+      return c.json<PlannerTargetsResponse>({
+        targets: goalsAt(past.rows).targets,
+        history: { since: past.since, recorded: past.recorded },
+      })
+    }
     return c.json<PlannerTargetsResponse>(await readPlannerTargets(c.env.DB, id))
   })
 
@@ -435,6 +539,7 @@ export const progress = new Hono<AppEnv>()
     }
     const results = await d1.batch([
       ...statements,
+      ...historyStatements(d1, id, now, ['target', 'weapon']),
       d1.prepare(SELECT_TARGETS).bind(id),
       listenerStatement(d1, id),
     ])
@@ -451,6 +556,18 @@ export const progress = new Hono<AppEnv>()
   .get('/:id/planner-state', async (c) => {
     const id = idParam(c, 'id')
     await assertAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const at = atParam(c)
+    if (at !== null) {
+      // The goals' hand-set states then; hand edits of material counts are
+      // kept only against the newest capture, so the past has none.
+      const past = await readAt(c.env.DB, id, at, ['target', 'weapon'])
+      return c.json<PlannerStateResponse>({
+        capturedAt: null,
+        adjustments: [],
+        overrides: goalsAt(past.rows).overrides,
+        history: { since: past.since, recorded: past.recorded },
+      })
+    }
     return c.json<PlannerStateResponse>(await readPlannerState(c.env.DB, id))
   })
 
@@ -567,6 +684,8 @@ export const progress = new Hono<AppEnv>()
     }
     const results = await d1.batch([
       ...statements,
+      // Only the goals' hand-set states are history (material edits follow captures).
+      ...historyStatements(d1, id, now, ['target', 'weapon']),
       d1.prepare(`SELECT ${CAPTURED} AS captured`).bind(id),
       d1.prepare(SELECT_ADJUSTMENTS).bind(id),
       d1.prepare(SELECT_OVERRIDES).bind(id),

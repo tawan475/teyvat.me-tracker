@@ -22,7 +22,13 @@ import {
   type KeyRef,
 } from '@gdt/shared'
 import { yieldToMain } from '@/lib/yield'
-import { loadBundle, loadCatalog, loadSnapshots, type AccountRef } from './account-data'
+import {
+  accountCacheKey,
+  loadBundle,
+  loadCatalog,
+  loadSnapshots,
+  type AccountRef,
+} from './account-data'
 import {
   gearDays,
   knownGear,
@@ -231,7 +237,7 @@ const built = new Map<string, Promise<BuildIndex>>()
 
 /** Every capture's builds for the account; one per data version. */
 export function loadBuildIndex(account: AccountRef): Promise<BuildIndex> {
-  const key = `${account.source ?? 'own'}:${account.id}:${account.dataVersion}`
+  const key = accountCacheKey(account)
   let index = built.get(key)
   if (!index) {
     index = buildIndex(account)

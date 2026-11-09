@@ -84,10 +84,19 @@ export interface DecodedBundle {
 const cache = new Map<string, Promise<unknown>>()
 const MAX_ENTRIES = 40
 
+/**
+ * What a cache of an account's data is keyed by: whose (own, staff Inspect,
+ * demo, guest), which account, which data version and, in the past, which
+ * snapshot (time travel). Every cache of account data uses it.
+ */
+export function accountCacheKey(account: AccountRef): string {
+  const travel = account.travel ? `@${account.travel.at}` : ''
+  return `${account.source ?? 'own'}:${account.id}:${account.dataVersion}${travel}`
+}
+
 function cached<T>(account: AccountRef, kind: string, load: () => Promise<T>): Promise<T> {
   // The bundle layout is part of the key: a decoded bundle never outlives a layout change.
-  const travel = account.travel ? `@${account.travel.at}` : ''
-  const key = `${account.source ?? 'own'}:${account.id}:${account.dataVersion}${travel}:${BUNDLE_FORMAT}:${kind}`
+  const key = `${accountCacheKey(account)}:${BUNDLE_FORMAT}:${kind}`
   let entry = cache.get(key) as Promise<T> | undefined
   if (!entry) {
     entry = load()

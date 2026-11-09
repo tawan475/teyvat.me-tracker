@@ -62,6 +62,7 @@ import type { plannerStatePatch, plannerTargetsPatch, plannerTasksPatch } from '
 import type { z } from 'zod'
 import { BUNDLE_FORMAT } from './format'
 import { request, requestJson } from './http'
+import { travelling } from '@/data/time-travel'
 
 export { BUNDLE_FORMAT }
 export * from './http'
@@ -72,12 +73,28 @@ export interface BundleOptions {
   sections?: string[]
 }
 
+/** Hand-set state the server keeps a history of (progress_history), read with `?at=`. */
+const WITH_HISTORY = new Set([
+  'achievement-marks',
+  'anecdote-marks',
+  'quest-marks',
+  'planner-targets',
+  'planner-state',
+])
+
 /**
  * A read of the account's state the planner, marks and settings change: the
  * demo account's from the tab's copy (changes kept there), the rest as served.
+ * While the account is shown in the past (time travel), goals and marks are
+ * read as they were at that capture (`?at=`; the demo's are made up, so its
+ * own stay).
  */
 function accountState<T>(id: number, rest: string): Promise<T> {
-  return isDemoAccount(id) ? demoRead<T>(rest) : requestJson<T>(accountRead(id, rest))
+  if (isDemoAccount(id)) return demoRead<T>(rest)
+  const past = travelling.value
+  const at =
+    past && past.accountId === id && WITH_HISTORY.has(rest) ? `?at=${past.travel.takenAt}` : ''
+  return requestJson<T>(accountRead(id, rest) + at)
 }
 
 /** Where an account's bundle of `options` is read (GDT3: GDT2 with its manifest deflated). */

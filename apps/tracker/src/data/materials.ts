@@ -7,7 +7,12 @@
  * measured at 8 ms for 151 snapshots and 22 ms for 1,208, so no worker.
  */
 
-import { loadBundle, loadMaterialsDictionary, type AccountRef } from './account-data'
+import {
+  accountCacheKey,
+  loadBundle,
+  loadMaterialsDictionary,
+  type AccountRef,
+} from './account-data'
 import { buildMaterialsHistory, type MaterialsHistory } from './materials-history'
 
 export * from './materials-history'
@@ -16,7 +21,7 @@ const cache = new Map<string, Promise<MaterialsHistory>>()
 const MAX_ENTRIES = 4
 
 export function loadMaterialsHistory(account: AccountRef): Promise<MaterialsHistory> {
-  const key = `${account.id}:${account.dataVersion}`
+  const key = accountCacheKey(account)
   let entry = cache.get(key)
   if (!entry) {
     entry = (async () => {

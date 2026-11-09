@@ -481,6 +481,41 @@ export const plannerWeaponGoals = sqliteTable(
 )
 
 /**
+ * The history of what the player sets by hand (migration 0038, time travel:
+ * docs/plans/time-travel.md §8): every version of every planner goal and
+ * every hand mark, with the time it began and ended (`valid_to` NULL while
+ * it holds). Written by the routes in routes/progress.ts in the same batch
+ * as the change (services/progress-history.ts diffs the live rows against
+ * the open versions), so it is transactional; read with `?at=`. Areas:
+ * `target` (planner_targets; item = kind \0 key \0 owner), `weapon`
+ * (planner_weapon_goals; item = its id), `achievement`, `anecdote`, `quest`
+ * (the marks; item = the id, value NULL). Recording began when 0038 ran
+ * (site_settings `history.since`, seeded with every row there was).
+ */
+export const progressHistory = sqliteTable(
+  'progress_history',
+  {
+    accountId: integer('account_id')
+      .notNull()
+      .references(() => genshinAccounts.id, { onDelete: 'cascade' }),
+    area: text('area', {
+      enum: ['target', 'weapon', 'achievement', 'anecdote', 'quest'],
+    }).notNull(),
+    item: text('item').notNull(),
+    /** The row as JSON (goals); NULL for a mark. Append-only shape. */
+    value: text('value'),
+    validFrom: integer('valid_from').notNull(),
+    validTo: integer('valid_to'),
+  },
+  (t) => [
+    index('progress_history_open_idx')
+      .on(t.accountId, t.area, t.item)
+      .where(sql`${t.validTo} is null`),
+    index('progress_history_at_idx').on(t.accountId, t.area, t.validFrom),
+  ],
+)
+
+/**
  * Planner tasks (migration 0013): built-in ones by their id (daily
  * commissions, the Spiral Abyss…: only the state, `{next?, hidden?}`) and
  * the player's own by an id the app makes (`{task, due, position?}`). The

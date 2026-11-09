@@ -217,6 +217,8 @@
     "rowTitle": "Zeitreise: den Account so sehen, wie ihn dieser Snapshot hatte",
     "lostTitle": "Dieser Snapshot ist weg",
     "lostBody": "Die Adresse nennt einen Snapshot, den dieser Account nicht mehr hat.",
-    "loading": "Reise …"
+    "loading": "Reise …",
+    "planNotRecorded": "Für dieses Datum wurde kein Plan gespeichert. Pläne werden ab dem {date} aufbewahrt.",
+    "planNotRecordedYet": "Für dieses Datum wurde kein Plan gespeichert."
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { pageNow, useTravel } from '@/views/account/context'
 import { computed, shallowRef } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { Sparkles } from 'lucide-vue-next'
@@ -31,8 +32,10 @@ const props = defineProps<{
 }>()
 
 // The countdown moves once a minute.
-const now = shallowRef(Date.now())
-useIntervalFn(() => (now.value = Date.now()), 60_000)
+// Time travel: counted from the capture's time.
+const travel = useTravel()
+const now = shallowRef(pageNow(travel.value))
+useIntervalFn(() => (now.value = pageNow(travel.value)), 60_000)
 
 /**
  * The next wish (choosing whom to meet): when it opens, how long until then

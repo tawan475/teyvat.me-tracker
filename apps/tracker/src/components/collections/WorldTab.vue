@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { pageNow, useTravel } from '@/views/account/context'
 import { computed, reactive, ref, watch } from 'vue'
 import {
   CheckCheck,
@@ -53,6 +54,8 @@ import { t } from '@/i18n'
 const props = defineProps<{ captured: CapturedCollections; catalog: CollectionCatalog }>()
 
 const exploration = computed(() => props.captured.exploration?.value ?? null)
+/** Time travel: respawns counted from the capture's time. */
+const travel = useTravel()
 const farming = useResource(
   () => 0,
   () => loadFarming().catch(() => null),
@@ -61,7 +64,7 @@ const respawns = computed(() => {
   const value = props.captured.respawns?.value
   if (!value) return []
   const data = farming.data.value
-  return respawnRows(value, data ? localizeFarming(data) : null, Date.now())
+  return respawnRows(value, data ? localizeFarming(data) : null, pageNow(travel.value))
 })
 const waiting = computed(() => respawns.value.filter((r) => r.next !== null))
 

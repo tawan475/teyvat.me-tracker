@@ -217,6 +217,8 @@
     "rowTitle": "時間旅行：檢視帳號在此快照時的樣子",
     "lostTitle": "該快照已不存在",
     "lostBody": "此網址指向的快照已不在此帳號中。",
-    "loading": "正在旅行…"
+    "loading": "正在旅行…",
+    "planNotRecorded": "此日期沒有儲存的計畫。計畫從 {date} 起開始儲存。",
+    "planNotRecordedYet": "此日期沒有儲存的計畫。"
   }
 }

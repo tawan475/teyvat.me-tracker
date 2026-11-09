@@ -102,6 +102,66 @@ function present(store: LocalStore, rest: string, value: unknown): unknown {
   return value
 }
 
+/**
+ * Time travel (docs/plans/time-travel.md §8): the server keeps every version
+ * of goals and marks (progress_history); the guest store keeps each version
+ * of these resources whole, under `history:<rest>` as `{at, value}` oldest
+ * first (changes within a minute fold into one). Recording begins the first
+ * time a guest with data opens this build (`history.since`, seeded with
+ * what there was), like migration 0038 on the server.
+ */
+const WITH_HISTORY = new Set([
+  'achievement-marks',
+  'anecdote-marks',
+  'quest-marks',
+  'planner-targets',
+  'planner-state',
+])
+const SINCE_KEY = 'history.since'
+const FOLD_MS = 60_000
+const historyKey = (rest: string) => `history:${rest}`
+
+interface Version {
+  at: number
+  value: unknown
+}
+
+/** Starts the history for a guest who has data and none yet. */
+async function startHistory(store: LocalStore): Promise<void> {
+  if (store.state.has(SINCE_KEY) || !store.hasData()) return
+  await store.transact((tx) => {
+    if (store.state.has(SINCE_KEY)) return
+    const now = Date.now()
+    tx.setState(SINCE_KEY, now)
+    for (const rest of WITH_HISTORY) {
+      const value = store.state.get(rest)
+      if (value !== undefined) tx.setState(historyKey(rest), [{ at: now, value }])
+    }
+  })
+}
+
+/** `rest` as it was at `at`, answered like the server's `?at=`. */
+function readAt(store: LocalStore, rest: string, at: number): unknown {
+  const since = (store.state.get(SINCE_KEY) as number | undefined) ?? null
+  const recorded = since !== null && at >= since
+  let value = initial(store, rest)
+  if (recorded) {
+    for (const version of (store.state.get(historyKey(rest)) ?? []) as Version[]) {
+      if (version.at <= at) value = version.value
+    }
+  }
+  const history = { since, recorded }
+  if (rest === 'planner-state') {
+    // Material edits follow the newest capture: the past has none.
+    const overrides = recorded ? ((value as PlannerStateResponse).overrides ?? []) : []
+    return { capturedAt: null, adjustments: [], overrides, history }
+  }
+  if (rest === 'planner-targets') {
+    return { targets: recorded ? ((value as { targets?: unknown[] }).targets ?? []) : [], history }
+  }
+  return { done: recorded ? ((value as { done?: number[] }).done ?? []) : [], history }
+}
+
 /** The demo-store emulation's resources, kept in the guest store. */
 export function guestHolder(store: LocalStore): StateHolder {
   const current = (rest: string) => store.state.get(rest) ?? initial(store, rest)
@@ -116,6 +176,15 @@ export function guestHolder(store: LocalStore): StateHolder {
         const before = rest === 'settings' ? current(rest) : present(store, rest, current(rest))
         const value = await apply(structuredClone(before) as T)
         tx.setState(rest, value)
+        if (WITH_HISTORY.has(rest)) {
+          const now = Date.now()
+          if (!store.state.has(SINCE_KEY)) tx.setState(SINCE_KEY, now)
+          const list = [...((store.state.get(historyKey(rest)) ?? []) as Version[])]
+          const last = list.at(-1)
+          if (last && now - last.at < FOLD_MS) list[list.length - 1] = { at: last.at, value }
+          else list.push({ at: now, value })
+          tx.setState(historyKey(rest), list)
+        }
         return value
       })
       return structuredClone(present(store, rest, next)) as T
@@ -200,6 +269,13 @@ export async function handleLocal(
   const method = (request.method ?? 'GET').toUpperCase()
   const holder = guestHolder(store)
   await store.ready()
+  await startHistory(store)
+  // Time travel: goals and marks as they were.
+  const at = url.searchParams.get('at')
+  if (at !== null && method === 'GET' && WITH_HISTORY.has(rest)) {
+    if (!/^\d{1,15}$/.test(at)) throw new LocalApiError(400, 'bad_at', 'at must be a time in ms')
+    return json(readAt(store, rest, Number(at)))
+  }
 
   // The account itself.
   if (rest === '' || rest === 'announce') {

@@ -217,6 +217,8 @@
     "rowTitle": "Voyage dans le temps : voir le compte tel qu’il était lors de cet instantané",
     "lostTitle": "Cet instantané n’existe plus",
     "lostBody": "L’adresse désigne un instantané que ce compte n’a plus.",
-    "loading": "Voyage…"
+    "loading": "Voyage…",
+    "planNotRecorded": "Aucun plan n’a été enregistré à cette date. Les plans sont conservés depuis le {date}.",
+    "planNotRecordedYet": "Aucun plan n’a été enregistré à cette date."
   }
 }

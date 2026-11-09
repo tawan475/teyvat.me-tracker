@@ -217,6 +217,8 @@
     "rowTitle": "时间旅行：查看账号在此快照时的样子",
     "lostTitle": "该快照已不存在",
     "lostBody": "此地址指向的快照已不在此账号中。",
-    "loading": "正在旅行…"
+    "loading": "正在旅行…",
+    "planNotRecorded": "此日期没有保存的计划。计划从 {date} 起开始保存。",
+    "planNotRecordedYet": "此日期没有保存的计划。"
   }
 }

@@ -253,6 +253,13 @@
       "when": 1794079570901,
       "tag": "0037_passkeys",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1794195836035,
+      "tag": "0038_progress_history",
+      "breakpoints": true
     }
   ]
 }

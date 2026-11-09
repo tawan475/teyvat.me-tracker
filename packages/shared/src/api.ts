@@ -1180,19 +1180,44 @@ export interface BootstrapResponse {
   capture?: { device: string | null; lastSeenAt: number } | null
 }
 
+/** Time travel's view of the hand-set state (progress_history, migration 0038). */
+export interface ProgressHistory {
+  /** When recording began (ms); null before migration 0038 ran. */
+  since: number | null
+  recorded: boolean
+}
+
 export interface AchievementMarksResponse {
   /** Achievement ids marked done by hand, ascending. */
   done: number[]
+  /**
+   * With `?at=` (time travel): when recording of hand-set state began, and
+   * whether `at` is after it. Before it (`recorded` false) goals are unknown
+   * (none are answered) and marks are those last changed by then.
+   */
+  history?: ProgressHistory
 }
 
 export interface AnecdoteMarksResponse {
   /** Anecdote ids marked done by hand, ascending. */
   done: number[]
+  /**
+   * With `?at=` (time travel): when recording of hand-set state began, and
+   * whether `at` is after it. Before it (`recorded` false) goals are unknown
+   * (none are answered) and marks are those last changed by then.
+   */
+  history?: ProgressHistory
 }
 
 export interface QuestMarksResponse {
   /** MainQuest ids marked done by hand, ascending. */
   done: number[]
+  /**
+   * With `?at=` (time travel): when recording of hand-set state began, and
+   * whether `at` is after it. Before it (`recorded` false) goals are unknown
+   * (none are answered) and marks are those last changed by then.
+   */
+  history?: ProgressHistory
 }
 
 export type CharacterTarget = z.infer<typeof characterTarget>
@@ -1221,6 +1246,12 @@ export type PlannerTarget =
 
 export interface PlannerTargetsResponse {
   targets: PlannerTarget[]
+  /**
+   * With `?at=` (time travel): when recording of hand-set state began, and
+   * whether `at` is after it. Before it (`recorded` false) goals are unknown
+   * (none are answered) and marks are those last changed by then.
+   */
+  history?: ProgressHistory
 }
 
 export type InventoryChange = z.input<typeof inventoryChange>
@@ -1252,6 +1283,12 @@ export interface PlannerStateResponse {
   capturedAt: number | null
   adjustments: InventoryAdjustment[]
   overrides: CurrentOverride[]
+  /**
+   * With `?at=` (time travel): when recording of hand-set state began, and
+   * whether `at` is after it. Before it (`recorded` false) goals are unknown
+   * (none are answered) and marks are those last changed by then.
+   */
+  history?: ProgressHistory
 }
 
 export type CustomTask = z.infer<typeof customTask>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { pageNow, useTravel } from '@/views/account/context'
 import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { AccountResponse, UigfGachaType } from '@gdt/shared'
@@ -65,7 +66,8 @@ const owner = computed<CardOwner>(() => ({
 }))
 const numbers = computed(() => bannerCardNumbers(props.pulls, props.rolls))
 const title = computed(() => t('wishes.share.title'))
-const now = Date.now() / 1000
+// Time travel: banners open or upcoming as at the capture.
+const now = pageNow(useTravel().value) / 1000
 const isOpen = computed(() => !!props.banner && props.banner.start <= now && now < props.banner.end)
 
 interface Drawing {

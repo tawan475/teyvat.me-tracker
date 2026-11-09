@@ -14,10 +14,11 @@ import { useResource } from '@/data/use-resource'
 import { bannerTitle } from '@/data/wish-banner-names'
 import { parseRunKey, runRowKey } from '@/data/wish-run-key'
 import {
+  announcedBy,
   bannerHistory,
+  type BannerHistoryRow,
   featuring,
   pulledOnly,
-  type BannerHistoryRow,
 } from '@/data/wish-banner-history'
 import {
   eventBanners,
@@ -33,7 +34,7 @@ import { characterName } from '@/i18n/game-names'
 import { characterIcon, weaponIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { normalizeSearch } from '@/lib/search'
-import { useAccountLink } from '@/views/account/context'
+import { pageNow, useAccountLink, useTravel } from '@/views/account/context'
 import { readStorage, writeStorage } from '@/lib/storage'
 import BannerRunStats from './BannerRunStats.vue'
 import BannerShareModal from './BannerShareModal.vue'
@@ -93,12 +94,15 @@ const itemPage = (key: string): RouteLocationRaw => ({
 })
 
 const banner = computed(() => KINDS.find((k) => k.kind === kind.value)!.banner)
-const now = Date.now() / 1000
+// Time travel: banners open or upcoming as at the capture, later ones not known yet.
+const travel = useTravel()
+const now = pageNow(travel.value) / 1000
 const versions = computed(() => {
   const f = file.data.value
   if (!f) return null
   const list = eventBanners(f, props.history.timezone).get(kind.value) ?? []
   let out = bannerHistory(list, props.stats.get(banner.value)?.runs ?? [])
+  if (travel.value) out = announcedBy(out, now)
   if (mine.value) out = pulledOnly(out)
   if (needle.value)
     out = featuring(out, (key) => normalizeSearch(nameOf(key)).includes(needle.value))

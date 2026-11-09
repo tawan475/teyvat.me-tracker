@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
+import { WEAPON_KEYS } from '@gdt/game-data/catalog'
+import { loadReleaseDates, releasedKeys } from '@/data/release-dates'
+import { useTravel } from '@/views/account/context'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import RarityStars from '@/components/ui/RarityStars.vue'
@@ -24,7 +27,22 @@ const OPEN_KEY = 'weapons:unowned-open'
 const open = ref(readStorage(OPEN_KEY) === '1')
 watch(open, (value) => writeStorage(OPEN_KEY, value ? '1' : null))
 
-const list = computed(() => unownedWeapons(new Set(props.owned), props.filters, itemName))
+// Time travel: only the weapons out by the capture (release-dates.ts).
+const travel = useTravel()
+const releases = shallowRef<ReadonlyMap<string, number> | null>(null)
+if (travel.value) void loadReleaseDates().then((dates) => (releases.value = dates))
+const list = computed(() =>
+  unownedWeapons(
+    new Set(props.owned),
+    props.filters,
+    itemName,
+    travel.value
+      ? releases.value
+        ? releasedKeys(WEAPON_KEYS, releases.value, travel.value.takenAt)
+        : []
+      : WEAPON_KEYS,
+  ),
+)
 const searching = computed(() => props.filters.query.trim() !== '')
 const shown = computed(() => open.value || (searching.value && list.value.length > 0))
 </script>

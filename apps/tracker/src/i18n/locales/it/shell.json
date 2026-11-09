@@ -217,6 +217,8 @@
     "rowTitle": "Viaggio nel tempo: vedi l’account com’era in questo snapshot",
     "lostTitle": "Quello snapshot non c’è più",
     "lostBody": "L’indirizzo indica uno snapshot che questo account non ha più.",
-    "loading": "In viaggio…"
+    "loading": "In viaggio…",
+    "planNotRecorded": "Nessun piano è stato salvato per questa data. I piani sono conservati dal {date}.",
+    "planNotRecordedYet": "Nessun piano è stato salvato per questa data."
   }
 }

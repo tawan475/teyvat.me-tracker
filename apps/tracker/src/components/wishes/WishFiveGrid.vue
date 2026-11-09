@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { pageNow, useTravel } from '@/views/account/context'
 import { computed } from 'vue'
 import { bannerTitle } from '@/data/wish-banner-names'
 import { runPullNumbers, type BannerStats } from '@/data/wish-history'
@@ -32,7 +33,8 @@ const legendLabel = (key: (typeof LEGEND)[number]['key']) => t(`wishes.legend.${
 const groups = computed(() =>
   fiveGroups(props.stats.fives, props.stats.runs, runPullNumbers(props.stats.rows)),
 )
-const now = Date.now() / 1000
+// Time travel: banners open or upcoming as at the capture.
+const now = pageNow(useTravel().value) / 1000
 
 /** A run's banner by name: the weapons it features (one name for every run), else its title(s). */
 function title(group: FiveGroup): string {

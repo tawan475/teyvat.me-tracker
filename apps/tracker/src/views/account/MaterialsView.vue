@@ -1,5 +1,5 @@
 <script lang="ts">
-import { loadLive, type AccountRef } from '@/data/account-data'
+import { accountCacheKey, loadLive, type AccountRef } from '@/data/account-data'
 import {
   loadMaterialsHistory as loadHistory,
   withLiveMaterials,
@@ -107,7 +107,7 @@ void preloadMaterialNames()
 const resource = useResource(
   () => account.value,
   (a) => {
-    const key = `${(a as AccountRef).source ?? 'own'}:${a.id}:${a.dataVersion}:${liveVersions.get(a.id) ?? 0}`
+    const key = `${accountCacheKey(a as AccountRef)}:${liveVersions.get(a.id) ?? 0}`
     let entry = materialsLoads.get(key)
     if (!entry) {
       entry = loadMaterials(a)

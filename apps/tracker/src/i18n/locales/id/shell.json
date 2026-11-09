@@ -217,6 +217,8 @@
     "rowTitle": "Lompat waktu: lihat akun seperti pada snapshot ini",
     "lostTitle": "Snapshot itu sudah tidak ada",
     "lostBody": "Alamat ini menunjuk snapshot yang tidak lagi dimiliki akun ini.",
-    "loading": "Sedang berpindah…"
+    "loading": "Sedang berpindah…",
+    "planNotRecorded": "Tidak ada rencana yang tersimpan untuk tanggal ini. Rencana disimpan sejak {date}.",
+    "planNotRecordedYet": "Tidak ada rencana yang tersimpan untuk tanggal ini."
   }
 }

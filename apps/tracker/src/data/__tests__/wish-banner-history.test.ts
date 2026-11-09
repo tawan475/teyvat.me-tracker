@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { bannerHistory, featuring, pulledOnly } from '../wish-banner-history'
+import {
+  ANNOUNCED_DAYS,
+  announcedBy,
+  bannerHistory,
+  featuring,
+  pulledOnly,
+} from '../wish-banner-history'
 import type { BannerRun, EventBanner } from '../wish-history'
 
 const banner = (version: string, start: number, five: string, name = five): EventBanner => ({
@@ -47,5 +53,16 @@ describe('banner history', () => {
         v.rows.map((r) => r.banner.name),
       ),
     ).toEqual(['Second'])
+  })
+
+  it('in the past, lists only banners announced by then (time travel)', () => {
+    const week = ANNOUNCED_DAYS * 86_400
+    const dated = [
+      banner('1.0', 1_000, 'Venti'),
+      banner('1.1', 1_000 + week, 'Klee'),
+      banner('1.2', 1_001 + week, 'Albedo'),
+    ]
+    const out = announcedBy(bannerHistory(dated, []), 1_000)
+    expect(out.flatMap((v) => v.rows.map((r) => r.banner.name))).toEqual(['Klee', 'Venti'])
   })
 })

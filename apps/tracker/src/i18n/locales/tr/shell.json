@@ -217,6 +217,8 @@
     "rowTitle": "Zamanda yolculuk: hesabı bu anlık görüntüdeki haliyle gör",
     "lostTitle": "O anlık görüntü artık yok",
     "lostBody": "Adres, bu hesapta artık olmayan bir anlık görüntüyü gösteriyor.",
-    "loading": "Yolculuk…"
+    "loading": "Yolculuk…",
+    "planNotRecorded": "Bu tarih için kaydedilmiş bir plan yok. Planlar {date} tarihinden itibaren saklanıyor.",
+    "planNotRecordedYet": "Bu tarih için kaydedilmiş bir plan yok."
   }
 }

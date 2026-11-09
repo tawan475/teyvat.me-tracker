@@ -217,6 +217,8 @@
     "rowTitle": "Time travel: see the account as this capture had it",
     "lostTitle": "That snapshot is gone",
     "lostBody": "The address names a snapshot this account no longer has.",
-    "loading": "Travelling…"
+    "loading": "Travelling…",
+    "planNotRecorded": "No plan was recorded for this date. Plans are kept from {date} on.",
+    "planNotRecordedYet": "No plan was recorded for this date."
   }
 }

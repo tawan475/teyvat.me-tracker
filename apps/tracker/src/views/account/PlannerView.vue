@@ -37,6 +37,7 @@ import {
   Eye,
   EyeOff,
   FileInput,
+  History,
   Info,
   Plus,
   SearchX,
@@ -152,7 +153,7 @@ import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { t } from '@/i18n'
-import { formatNumber } from '@/lib/format'
+import { formatDate, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useFeedback } from '@/stores/feedback'
 import { materialName } from '@/utils/materials'
@@ -1745,7 +1746,12 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
           <FileInput class="size-4" aria-hidden="true" />
           Seelie / paimon
         </UiButton>
-        <UiButton variant="primary" :title="$t('planner.view.addGoals')" @click="openPicker()">
+        <UiButton
+          v-if="!readOnly"
+          variant="primary"
+          :title="$t('planner.view.addGoals')"
+          @click="openPicker()"
+        >
           <Plus class="size-4" aria-hidden="true" />
           {{ $t('planner.picker.add') }}
         </UiButton>
@@ -1778,6 +1784,18 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       requirementCache
     "
   >
+    <p
+      v-if="travel && store.history.value && !store.history.value.recorded"
+      class="mb-3 flex items-start gap-2 rounded-lg border border-amber-400/50 bg-amber-400/10 px-3 py-2 text-sm text-text-secondary"
+      role="note"
+    >
+      <History class="mt-0.5 size-4 shrink-0 text-warning-text" aria-hidden="true" />
+      {{
+        store.history.value.since
+          ? $t('shell.timeTravel.planNotRecorded', { date: formatDate(store.history.value.since) })
+          : $t('shell.timeTravel.planNotRecordedYet')
+      }}
+    </p>
     <div
       v-if="!travel && tasks?.tasks.value && (!hasGoals || tab === 'farm')"
       class="mb-3 flex flex-col gap-3"
@@ -1816,11 +1834,11 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
     <UiPanel v-if="!hasGoals" flush>
       <UiEmpty :title="$t('planner.view.noGoals')">
         <template #icon><Target aria-hidden="true" /></template>
-        <UiButton variant="primary" @click="openPicker()">
+        <UiButton v-if="!readOnly" variant="primary" @click="openPicker()">
           <Plus class="size-4" aria-hidden="true" />
           {{ $t('planner.view.addGoals') }}
         </UiButton>
-        <UiButton @click="importOpen = true">
+        <UiButton v-if="!readOnly" @click="importOpen = true">
           <FileInput class="size-4" aria-hidden="true" />
           {{ $t('planner.view.importSeelie') }}
         </UiButton>

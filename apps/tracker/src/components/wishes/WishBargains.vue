@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { pageNow, useTravel } from '@/views/account/context'
 import { computed, shallowRef, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import type { GiTasks } from '@gdt/shared'
@@ -33,9 +34,11 @@ const icon = useMaterialIcons()
 const OPEN_KEY = 'wishes:bargains-open'
 const open = shallowRef(readStorage(OPEN_KEY) === '1')
 watch(open, (value) => writeStorage(OPEN_KEY, value ? '1' : null))
-const tick = shallowRef(Date.now())
-useIntervalFn(() => (tick.value = Date.now()), 60_000)
-const now = computed(() => Math.max(props.now, tick.value))
+// Time travel: the month's stock as it stood at the capture, standing still.
+const travel = useTravel()
+const tick = shallowRef(pageNow(travel.value))
+useIntervalFn(() => (tick.value = pageNow(travel.value)), 60_000)
+const now = computed(() => (travel.value ? props.now : Math.max(props.now, tick.value)))
 const month = computed(() => bargainsThisMonth(props.bargains, now.value, props.server))
 const groups = computed(() => {
   const by = new Map<string, BargainFate[]>()

@@ -217,6 +217,8 @@
     "rowTitle": "Viaje en el tiempo: ver la cuenta como estaba en esta instantánea",
     "lostTitle": "Esa instantánea ya no existe",
     "lostBody": "La dirección indica una instantánea que esta cuenta ya no tiene.",
-    "loading": "Viajando…"
+    "loading": "Viajando…",
+    "planNotRecorded": "No se guardó ningún plan para esta fecha. Los planes se guardan desde el {date}.",
+    "planNotRecordedYet": "No se guardó ningún plan para esta fecha."
   }
 }

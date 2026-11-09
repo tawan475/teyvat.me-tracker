@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref, shallowRef, watch } from 'vue'
 import { t } from '@/i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { SearchX, Upload, Users } from 'lucide-vue-next'
@@ -38,7 +38,9 @@ import { unownedCharacters } from '@/data/unowned-characters'
 import { characterName } from '@/i18n/game-names'
 import { useResource } from '@/data/use-resource'
 import { readJson, writeJson } from '@/lib/storage'
-import { useAccount, useAccountLink, useDemo, useReadOnly } from './context'
+import { useAccount, useAccountLink, useDemo, useReadOnly, useTravel } from './context'
+import { CHARACTER_KEYS } from '@gdt/game-data/catalog'
+import { loadReleaseDates, releasedKeys } from '@/data/release-dates'
 
 // The details (also the share card) carry the game's stat tables: loaded on first open.
 const CharacterModal = defineAsyncComponent(
@@ -127,11 +129,34 @@ const FIRST_SCREEN = 12
 // filters. Always a section under the roster; the Don't have sort makes it
 // the page (a phone's way to it, asked on Discord 2026-11-04).
 const unownedOnly = computed(() => sort.value === 'unowned')
+// Time travel: only the characters out by the capture (release-dates.ts).
+const travel = useTravel()
+const releases = shallowRef<ReadonlyMap<string, number> | null>(null)
+if (travel.value) void loadReleaseDates().then((dates) => (releases.value = dates))
+const unownedKeys = computed(() =>
+  travel.value
+    ? releases.value
+      ? releasedKeys(CHARACTER_KEYS, releases.value, travel.value.takenAt)
+      : []
+    : CHARACTER_KEYS,
+)
 const unowned = computed(() =>
-  unownedCharacters(new Set(ownedKeys.value), filters, characterName, undefined, direction.value),
+  unownedCharacters(
+    new Set(ownedKeys.value),
+    filters,
+    characterName,
+    unownedKeys.value,
+    direction.value,
+  ),
 )
 const unownedTotal = computed(
-  () => unownedCharacters(new Set(ownedKeys.value), NO_CHARACTER_FILTERS, characterName).length,
+  () =>
+    unownedCharacters(
+      new Set(ownedKeys.value),
+      NO_CHARACTER_FILTERS,
+      characterName,
+      unownedKeys.value,
+    ).length,
 )
 const searching = computed(() => filters.query.trim() !== '')
 

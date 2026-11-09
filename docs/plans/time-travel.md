@@ -136,3 +136,33 @@ in place of "N newer captures".
 - Every account layout has it: the owner's and shared accounts (`AccountLayout`), the demo (`DemoLayout`, `/demo?at=`) and guest mode (`GuestLayout`, `/guest?at=`), through `views/account/use-time-travel.ts` + `components/time-travel/TimeTravelPages.vue` (the user's ask, 2026-11-09). Not staff Inspect.
 - Tests: `src/data/__tests__/time-travel.test.ts`. QA: headless Chrome at
   390 / 1366 / 1920 px on a 12-capture account, no writes sent in the past.
+
+## 8. Hand-set state in the past (2026-11-09)
+
+The user's call: "record from now on; old data I don't care; make our data
+transactional".
+
+- Table `progress_history` (migration 0038): every version of every planner
+  goal (`target`: planner_targets, `weapon`: planner_weapon_goals, each with
+  its hand-set `current`) and every hand mark (`achievement`, `anecdote`,
+  `quest`), with `valid_from` / `valid_to`. `worker/services/progress-history.ts`
+  appends a diff to each write's own D1 batch (close what changed or went,
+  open what is new; a write that changes nothing records nothing). Account
+  deletes cascade. 0038 seeded every existing row and `site_settings`
+  `history.since`.
+- Reads: `GET …/planner-targets|planner-state|achievement-marks|anecdote-marks|quest-marks?at=<ms>`
+  answer what held then plus `history {since, recorded}`. Before `since`
+  goals are unknown (none; the Planner says "No plan was recorded for this
+  date") and marks fall back to those last changed by then. Material count
+  edits follow the newest capture, so the past has none.
+- The app adds `?at=` itself (`api/index.ts` `accountState`) whenever the
+  account is travelled; guest mode keeps the same history in its IndexedDB
+  store (`local/server.ts`, folded per minute); the demo keeps its made-up plan.
+- Also following the capture's time: Wish banner history (banners announced by
+  then, `announcedBy`), Paimon's Bargains, the 5★ grid, the banner card, the
+  anecdote wish cooldown, World respawns, and the "Don't have" lists
+  (characters/weapons released by then: `data/release-dates.ts`, first banner).
+- Caches of account data are keyed by `accountCacheKey` (travel included):
+  the build history and the Materials page had missed it.
+- Not history: account settings (saved teams, planner order, resin marks),
+  tasks (now-only, hidden in the past).

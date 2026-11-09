@@ -58,6 +58,23 @@ export function pulledOnly(versions: readonly BannerHistoryVersion[]): BannerHis
     .filter((v) => v.rows.length > 0)
 }
 
+/** Banners are announced about a week before they open (the version's Special Program). */
+export const ANNOUNCED_DAYS = 7
+
+/**
+ * Time travel: the banners known at `now` (Unix s): those opening within
+ * ANNOUNCED_DAYS, not the ones still months away then.
+ */
+export function announcedBy(
+  versions: readonly BannerHistoryVersion[],
+  now: number,
+): BannerHistoryVersion[] {
+  const last = now + ANNOUNCED_DAYS * 86_400
+  return versions
+    .map((v) => ({ ...v, rows: v.rows.filter((row) => row.banner.start <= last) }))
+    .filter((v) => v.rows.length > 0)
+}
+
 /** Banners featuring something whose name matches (`matches` gets each featured key). */
 export function featuring(
   versions: readonly BannerHistoryVersion[],

@@ -17,7 +17,7 @@ import {
   type LivePointsResponse,
 } from '@gdt/shared'
 import { env, SELF } from 'cloudflare:test'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   COLLAPSE_CHANGES,
   DAILY_BATCHES,
@@ -352,6 +352,49 @@ describe('live sync on', () => {
     expect(older.status).toBe('created')
     expect(older.live).toBeUndefined()
     expect(await journalRow(account.id)).toMatchObject({ base_key: newest.live!.base })
+  })
+
+  it('a website import that becomes the newest ends a journal on an older snapshot', async () => {
+    const { client, account, importKey } = await setup()
+    const first = await snapshot(importKey, liveGood(), 1_000)
+    await sendOk(importKey, delta(first.live!.base, 1, [['set', ['materials', 'Mora'], 7]]))
+    expect(await journalRow(account.id)).toMatchObject({ last_seq: 1 })
+
+    // An older file through the website leaves it.
+    const old = new FormData()
+    old.append(
+      'file',
+      new Blob([JSON.stringify(sampleGood())], { type: 'application/json' }),
+      'a.json',
+    )
+    old.append('timestamp', '500')
+    const older = await client.fetch(`/api/accounts/${account.id}/import`, {
+      method: 'POST',
+      body: old,
+    })
+    expect(older.ok).toBe(true)
+    expect(await journalRow(account.id)).not.toBeNull()
+
+    // A newer one ends it (and its batches); Capture is told to resync.
+    const form = new FormData()
+    form.append(
+      'file',
+      new Blob([JSON.stringify(sampleGood())], { type: 'application/json' }),
+      'b.json',
+    )
+    form.append('timestamp', '9000')
+    const newer = await client.fetch(`/api/accounts/${account.id}/import`, {
+      method: 'POST',
+      body: form,
+    })
+    expect(newer.ok).toBe(true)
+    await vi.waitFor(async () => expect(await journalRow(account.id)).toBeNull())
+    expect(await batchRows(account.id)).toHaveLength(0)
+    const after = await send(
+      importKey,
+      delta(first.live!.base, 2, [['set', ['materials', 'Mora'], 8]]),
+    )
+    expect(after.status).toBe(409)
   })
 
   it('a UID without an account, or a malformed batch, is refused', async () => {

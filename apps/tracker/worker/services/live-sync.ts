@@ -581,6 +581,38 @@ export async function endJournalOn(
   ])
 }
 
+/**
+ * A snapshot that became the account's newest without opening a journal (a
+ * website import) ends a journal that follows an older one: the pages read
+ * a journal only on the newest snapshot (data/live-now.ts), so it was dead
+ * weight, and Capture's next batch is answered `resync`, so it sends a
+ * snapshot that opens a new one (docs/plans/storage-efficiency.md, phase 5).
+ */
+export async function endJournalBehind(
+  live: D1Database | null,
+  accountId: number,
+  newestSnapshotId: number,
+): Promise<void> {
+  if (!live) return
+  await live.batch([
+    flushPointsStatement(
+      live,
+      'account_id = ?1 AND base_snapshot_id <> ?2',
+      accountId,
+      newestSnapshotId,
+    ),
+    live
+      .prepare(
+        `DELETE FROM live_batches WHERE account_id = ?1 AND EXISTS (SELECT 1 FROM live_journals
+           WHERE account_id = ?1 AND base_snapshot_id <> ?2)`,
+      )
+      .bind(accountId, newestSnapshotId),
+    live
+      .prepare('DELETE FROM live_journals WHERE account_id = ?1 AND base_snapshot_id <> ?2')
+      .bind(accountId, newestSnapshotId),
+  ])
+}
+
 /** Everything `gdt-live` keeps for these users (users deleted). */
 export async function deleteUsersLiveData(
   live: D1Database | null,

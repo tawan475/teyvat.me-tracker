@@ -51,7 +51,7 @@ import {
   tellAlertFacts,
 } from '../services/live'
 import { snapshotFacts } from '../services/alerts'
-import { deleteLiveData, endJournalOn, liveDb } from '../services/live-sync'
+import { deleteLiveData, endJournalBehind, endJournalOn, liveDb } from '../services/live-sync'
 import { collectAccountBlobs } from '../services/maintenance'
 
 /** Work that must not hold the response (or fail it): logged when it fails. */
@@ -225,6 +225,7 @@ export const accounts = new Hono<AppEnv>()
     )
     meter.report(c)
     if (newest) {
+      afterResponse(c, endJournalBehind(liveDb(c.env), id, response.snapshotId))
       tellAlertFacts(c, listener, id, {
         ...snapshotFacts(prepared.good, response.takenAt),
         name: account.name,

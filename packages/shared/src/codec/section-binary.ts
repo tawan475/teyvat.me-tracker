@@ -311,6 +311,16 @@ const PLAYER_KEYS = [
 const VALUE_INT = 0
 const VALUE_STRING = 1
 const VALUE_HEX = 2
+/**
+ * Player v2 (2026-11-09): an object of whole numbers by key (Capture 1.14's
+ * `profilePicture`, `birthday`), which made those player sections JSON. A
+ * section holding one is written after PLAYER_V2 in place of the count: a
+ * count no player section reaches, which the deployed builds' decoder
+ * refuses (past the data), so the server sends those builds JSON instead
+ * (worker/services/export.ts). Sections without one keep the first form.
+ */
+const VALUE_OBJECT = 3
+const PLAYER_V2 = 2_000_001
 
 const playerLayout: Layout = {
   variants: [0],
@@ -320,6 +330,8 @@ const playerLayout: Layout = {
       throw new TypeError('Not an object')
     }
     const entries = Object.entries(value)
+    const objects = entries.some(([, field]) => field !== null && typeof field === 'object')
+    if (objects) w.uint(PLAYER_V2)
     w.uint(entries.length)
     for (const [key, field] of entries) {
       const index = (PLAYER_KEYS as readonly string[]).indexOf(key)
@@ -335,15 +347,21 @@ const playerLayout: Layout = {
         for (let i = 0; i < field.length; i += 2) w.byte(parseInt(field.slice(i, i + 2), 16))
       } else if (typeof field === 'string') {
         w.uint(VALUE_STRING).string(field)
+      } else if (objects && field !== null && typeof field === 'object' && !Array.isArray(field)) {
+        const pairs = Object.entries(field)
+        w.uint(VALUE_OBJECT).uint(pairs.length)
+        for (const [name, n] of pairs) w.string(name).int(int(n))
       } else {
         throw new TypeError(`Unsupported player value for ${key}`)
       }
     }
   },
   decode(r) {
-    const count = r.uint()
+    let count = r.uint()
+    const v2 = count === PLAYER_V2
+    if (v2) count = r.uint()
     if (count > r.remaining) throw new CorruptDataError('Count past the data')
-    const player: Record<string, number | string> = {}
+    const player: Record<string, number | string | Record<string, number>> = {}
     for (let n = 0; n < count; n++) {
       const tag = r.uint()
       let key: string
@@ -359,6 +377,13 @@ const playerLayout: Layout = {
         let hex = ''
         for (const byte of r.bytes(r.uint())) hex += byte.toString(16).padStart(2, '0')
         player[key] = hex
+      } else if (v2 && type === VALUE_OBJECT) {
+        const object: Record<string, number> = {}
+        for (let n = r.uint(); n > 0; n--) {
+          const name = r.string()
+          object[name] = r.int()
+        }
+        player[key] = object
       } else throw new CorruptDataError(`Unknown player value type ${type}`)
     }
     return player
@@ -430,10 +455,276 @@ const anecdotesLayout: Layout = {
 
 const TASK_PARTS = ['c', 'a', 'e', 'r', 'w'] as const
 
+// tasks v2 (2026-11-09, docs/plans/storage-efficiency.md phase 4): the parts
+// Capture added later (`t p n q m k i s f x`) made every tasks section JSON
+// on every snapshot. A section the first layout cannot hold is written as
+// TASKS_V2 (a byte the deployed builds' decoder refuses, so the server sends
+// those builds JSON instead: worker/services/export.ts), then a bit per
+// present part (TASK_PARTS_V2 order, the section's own key order), then each
+// part. Times are written as the zigzag difference from the time before
+// (in that order), so a section's many nearby timestamps take a byte or two.
+
+const TASKS_V2 = 0xf0
+const TASK_PARTS_V2 = [
+  'c',
+  't',
+  'a',
+  'e',
+  'r',
+  'w',
+  'p',
+  'n',
+  'q',
+  'm',
+  'k',
+  'i',
+  's',
+  'f',
+  'x',
+] as const
+
+function encodeTasksV2(w: ByteWriter, value: unknown): void {
+  const v = fields(value, TASK_PARTS_V2, TASK_PARTS_V2)
+  let present = 0
+  TASK_PARTS_V2.forEach((part, bit) => {
+    if (v[part] !== undefined) present |= 1 << bit
+  })
+  w.byte(TASKS_V2).uint(present)
+  let previous = 0
+  const time = (t: unknown) => {
+    const at = int(t)
+    w.int(at - previous)
+    previous = at
+  }
+  const cells = (part: unknown, n: number) => {
+    const values = array(part)
+    if (values.length !== n) throw new RangeError(`Not ${n} values`)
+    return values
+  }
+  const idList = (list: unknown[], each: (row: unknown[]) => void) => {
+    w.uint(list.length)
+    let id = 0
+    for (const entry of list) {
+      const row = array(entry)
+      w.int(int(row[0]) - id)
+      id = int(row[0])
+      each(row)
+    }
+  }
+  if (v.c !== undefined) for (const n of cells(v.c, 2)) w.uint(uint(n))
+  if (v.t !== undefined) w.uint(uint(v.t))
+  if (v.a !== undefined) {
+    const [start, end, stars, maxStars] = cells(v.a, 4)
+    time(start)
+    time(end)
+    w.uint(uint(stars)).uint(uint(maxStars))
+  }
+  if (v.e !== undefined) {
+    const list = array(v.e)
+    w.uint(list.length)
+    for (const entry of list) {
+      const [character, id, start, hours, doneAt] = cells(entry, 5)
+      if (typeof character !== 'string') throw new TypeError('Not an expedition')
+      w.string(character).uint(uint(id))
+      time(start)
+      w.uint(uint(hours))
+      time(doneAt)
+    }
+  }
+  if (v.r !== undefined) for (const n of cells(v.r, 2)) w.uint(uint(n))
+  if (v.w !== undefined) w.uint(uint(v.w))
+  if (v.p !== undefined) {
+    const [weapon, points, max] = cells(v.p, 3)
+    if (typeof weapon !== 'string') throw new TypeError('Not a weapon key')
+    w.string(weapon).uint(uint(points)).uint(uint(max))
+  }
+  if (v.n !== undefined) {
+    const [resin, nextAt] = cells(v.n, 2)
+    w.uint(uint(resin))
+    time(nextAt)
+  }
+  if (v.q !== undefined) {
+    const values = array(v.q)
+    if (values.length !== 4 && values.length !== 5) throw new RangeError('Not 4 or 5 values')
+    w.uint(values.length)
+    for (const n of values) w.uint(uint(n))
+  }
+  if (v.m !== undefined) {
+    idList(array(v.m), (row) => {
+      if (row.length !== 2) throw new TypeError('Not a respawn row')
+      const times = array(row[1])
+      w.uint(times.length)
+      for (const t of times) time(t)
+    })
+  }
+  if (v.k !== undefined) {
+    const list = array(v.k)
+    w.uint(list.length)
+    let k = 0
+    for (const n of list) {
+      w.int(int(n) - k)
+      k = int(n)
+    }
+  }
+  if (v.i !== undefined) {
+    idList(array(v.i), (row) => {
+      if (row.length !== 6) throw new TypeError('Not a sign-in row')
+      const claimed = array(row[2])
+      w.uint(uint(row[1])).uint(claimed.length)
+      for (const day of claimed) w.uint(uint(day))
+      time(row[3])
+      time(row[4])
+      time(row[5])
+    })
+  }
+  if (v.s !== undefined) {
+    const [spent, day, at] = cells(v.s, 3)
+    w.uint(uint(spent)).uint(uint(day))
+    time(at)
+  }
+  if (v.f !== undefined) {
+    const [at, bought, fates] = cells(v.f, 3)
+    time(at)
+    w.uint(uint(bought))
+    const list = array(fates)
+    w.uint(list.length)
+    for (const entry of list) {
+      const [item, currency, cost, count, limit] = cells(entry, 5)
+      if (typeof item !== 'string' || typeof currency !== 'string') {
+        throw new TypeError('Not a bargain')
+      }
+      w.string(item).string(currency).uint(uint(cost)).uint(uint(count)).uint(uint(limit))
+    }
+  }
+  if (v.x !== undefined) {
+    const [usedAt, readyAt] = cells(v.x, 2)
+    time(usedAt)
+    time(readyAt)
+  }
+}
+
+function decodeTasksV2(r: ByteReader): Record<string, unknown> {
+  const present = r.uint()
+  if (present >= 1 << TASK_PARTS_V2.length) {
+    throw new CorruptDataError(`Unknown tasks parts ${present}`)
+  }
+  const has = (part: (typeof TASK_PARTS_V2)[number]) =>
+    (present & (1 << TASK_PARTS_V2.indexOf(part))) !== 0
+  let previous = 0
+  const time = () => (previous += r.int())
+  const count = () => {
+    const n = r.uint()
+    if (n > r.remaining) throw new CorruptDataError('Count past the data')
+    return n
+  }
+  const idList = <T>(each: (id: number) => T): T[] => {
+    const out: T[] = []
+    let id = 0
+    for (let n = count(); n > 0; n--) out.push(each((id += r.int())))
+    return out
+  }
+  const section: Record<string, unknown> = {}
+  if (has('c')) section.c = [r.uint(), r.uint()]
+  if (has('t')) section.t = r.uint()
+  if (has('a')) {
+    const start = time()
+    const end = time()
+    section.a = [start, end, r.uint(), r.uint()]
+  }
+  if (has('e')) {
+    const e: unknown[] = []
+    for (let n = count(); n > 0; n--) {
+      const character = r.string()
+      const id = r.uint()
+      const start = time()
+      const hours = r.uint()
+      e.push([character, id, start, hours, time()])
+    }
+    section.e = e
+  }
+  if (has('r')) section.r = [r.uint(), r.uint()]
+  if (has('w')) section.w = r.uint()
+  if (has('p')) section.p = [r.string(), r.uint(), r.uint()]
+  if (has('n')) {
+    const resin = r.uint()
+    section.n = [resin, time()]
+  }
+  if (has('q')) {
+    const n = r.uint()
+    if (n !== 4 && n !== 5) throw new CorruptDataError('Not 4 or 5 weekly boss values')
+    section.q = Array.from({ length: n }, () => r.uint())
+  }
+  if (has('m')) {
+    section.m = idList((id) => {
+      const times: number[] = []
+      for (let n = count(); n > 0; n--) times.push(time())
+      return [id, times]
+    })
+  }
+  if (has('k')) {
+    const k: number[] = []
+    let at = 0
+    for (let n = count(); n > 0; n--) k.push((at += r.int()))
+    section.k = k
+  }
+  if (has('i')) {
+    section.i = idList((id) => {
+      const days = r.uint()
+      const claimed: number[] = []
+      for (let n = count(); n > 0; n--) claimed.push(r.uint())
+      const lastAt = time()
+      const start = time()
+      return [id, days, claimed, lastAt, start, time()]
+    })
+  }
+  if (has('s')) {
+    const spent = r.uint()
+    const day = r.uint()
+    section.s = [spent, day, time()]
+  }
+  if (has('f')) {
+    const at = time()
+    const bought = r.uint()
+    const fates: unknown[] = []
+    for (let n = count(); n > 0; n--) {
+      fates.push([r.string(), r.string(), r.uint(), r.uint(), r.uint()])
+    }
+    section.f = [at, bought, fates]
+  }
+  if (has('x')) {
+    const usedAt = time()
+    section.x = [usedAt, time()]
+  }
+  return section
+}
+
+/** True when a player payload (layout bytes, no format byte) is the v2 form. */
+export function isPlayerV2(data: Uint8Array): boolean {
+  try {
+    return new ByteReader(data).uint() === PLAYER_V2
+  } catch {
+    return false
+  }
+}
+
+/** True when a tasks payload (layout bytes, no format byte) is the v2 form. */
+export function isTasksV2(data: Uint8Array): boolean {
+  return data.length > 0 && data[0] === TASKS_V2
+}
+
 const tasksLayout: Layout = {
   variants: [0],
   encode(w, { value, delta }) {
     if (delta) throw new TypeError('Tasks have no deltas')
+    // The first layout while it holds the section (every deployed build reads it).
+    if (
+      value === null ||
+      typeof value !== 'object' ||
+      Object.keys(value).some((key) => !(TASK_PARTS as readonly string[]).includes(key))
+    ) {
+      encodeTasksV2(w, value)
+      return
+    }
     const v = fields(value, TASK_PARTS, TASK_PARTS)
     let flags = 0
     TASK_PARTS.forEach((part, bit) => {
@@ -470,6 +761,7 @@ const tasksLayout: Layout = {
   },
   decode(r) {
     const flags = r.byte()
+    if (flags === TASKS_V2) return decodeTasksV2(r)
     if (flags >= 1 << TASK_PARTS.length) throw new CorruptDataError(`Unknown tasks flags ${flags}`)
     const section: Record<string, unknown> = {}
     if (flags & 1) section.c = [r.uint(), r.uint()]

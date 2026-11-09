@@ -5,7 +5,12 @@
  */
 
 import {
+  BlobDecoder,
   KIND_DELTA,
+  SECTION_KIND_CODES,
+  isPlayerV2,
+  isTasksV2,
+  jsonSectionBlob,
   SectionTexts,
   artifactRows,
   asLeyline,
@@ -65,6 +70,51 @@ export type SectionName = (typeof SECTION_NAMES)[number]
  * still small. Past it the newest are kept (the oldest drop out).
  */
 export const MAX_BUNDLE_SNAPSHOTS = 5000
+
+/** Kind codes of the sections that have a second binary form (2026-11-09). */
+const TASKS_CODE = SECTION_KIND_CODES.tasks
+const PLAYER_CODE = SECTION_KIND_CODES.player
+
+/**
+ * For a build that asks GDT2 (cached from before 2026-11-09): every tasks
+ * or player blob in its second binary form, and every blob compressed
+ * against one, as a standalone JSON-layout blob, which every deployed build
+ * reads (their decoders refuse the new forms). Same ids, no base. Only
+ * blobs of those two kinds are inflated to look; the rest pass as stored.
+ */
+export function oldBuildBlobs(blobs: Map<number, RawBlob>): Map<number, RawBlob> {
+  const kinds = [...blobs.values()].filter(
+    (blob) => (blob.code & ~KIND_DELTA) === TASKS_CODE || (blob.code & ~KIND_DELTA) === PLAYER_CODE,
+  )
+  if (kinds.length === 0) return blobs
+  const decoder = new BlobDecoder((id) => blobs.get(id))
+  const replaced = new Set<number>()
+  const newForm = (blob: RawBlob) => {
+    const payload = decoder.decode(blob.id).payload
+    // Binary layout (0x10), then the layout's own bytes.
+    if ((payload[0]! & 0xf0) !== 0x10) return false
+    const body = payload.subarray(1)
+    return (blob.code & ~KIND_DELTA) === TASKS_CODE ? isTasksV2(body) : isPlayerV2(body)
+  }
+  // Roots first: a blob compressed against a replaced one is replaced too.
+  for (const blob of [...kinds].sort(
+    (a, b) => (a.baseId === null ? 0 : 1) - (b.baseId === null ? 0 : 1),
+  )) {
+    if (newForm(blob) || (blob.baseId !== null && replaced.has(blob.baseId))) replaced.add(blob.id)
+  }
+  if (replaced.size === 0) return blobs
+  const out = new Map(blobs)
+  for (const id of replaced) {
+    const blob = blobs.get(id)!
+    out.set(id, {
+      id,
+      code: blob.code,
+      baseId: null,
+      data: jsonSectionBlob(decoder.decode(id).value),
+    })
+  }
+  return out
+}
 
 /** Slots stored as a delta of a keyframe: the manifest names the keyframe. */
 const DELTA_SLOTS = [
@@ -322,13 +372,15 @@ export async function buildBundle(
     const v2Entries = entries.map((entry, i) =>
       isV2(rows[i]!) ? (entry as BundleSnapshotV2) : v1AsV2(entry as BundleSnapshot),
     )
+    // A build that asks GDT2 cannot read the second tasks/player forms.
+    const sent = format === 2 ? oldBuildBlobs(blobs) : blobs
     return writeBundleV2(
       v2Entries,
       {
         legacy: hashes
           .filter((hash) => legacy.has(hash))
           .map((hash) => ({ hash, data: legacy.get(hash)! })),
-        blobs: [...blobs.values()].sort((a, b) => a.id - b.id),
+        blobs: [...sent.values()].sort((a, b) => a.id - b.id),
       },
       format === 3,
     )

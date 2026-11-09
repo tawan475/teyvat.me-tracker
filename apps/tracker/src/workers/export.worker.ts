@@ -90,10 +90,11 @@ async function loadLive(root: string) {
 
 /** The raw download: stored bytes and the inflate script, nothing decoded. */
 async function runRaw({ root, ids }: ExportStart) {
-  // Always GDT2: the stored blobs as they are, whatever the app's own format.
+  // GDT3: the stored blobs as they are (a GDT2 answer re-sends the second
+  // tasks/player forms as JSON, for builds from before them).
   const query = ids && ids.length <= MAX_IDS_IN_URL ? `&ids=${ids.join(',')}` : ''
   const [bundleResponse, catalogResponse] = await Promise.all([
-    request(`${root}/bundle?format=2${query}`),
+    request(`${root}/bundle?format=3${query}`),
     request(`${root}/catalog?raw=1`),
   ])
   let loaded = 0

@@ -29,6 +29,7 @@ import type { KeyRef } from '../dictionary'
 import { CorruptDataError } from './bytes'
 import { deflate, inflate } from './deflate'
 import { decodeBinary, encodeBinaryVariants, isDeltaBinary } from './section-binary'
+export { isPlayerV2, isTasksV2 } from './section-binary'
 import type { SectionKind } from './sections'
 
 /** `section_blobs.kind`: the section kind, plus KIND_DELTA for a delta. Append-only. */
@@ -203,6 +204,16 @@ function compress(
   data[0] = layout | best[0]
   data.set(best[1], 1)
   return { data, payload, usesBase: best[0] === DEFLATED_WITH_BASE }
+}
+
+/**
+ * `value` as a standalone JSON-layout blob: what every build ever deployed
+ * reads, for a server answering an old build a section whose binary form
+ * that build's decoder refuses (worker/services/export.ts).
+ */
+export function jsonSectionBlob(value: unknown): Uint8Array {
+  return compress(prefixed(LAYOUT_JSON, encoder.encode(JSON.stringify(withoutBase(value)))), null)
+    .data
 }
 
 /** True when a blob's data needs its base's payload as dictionary. */

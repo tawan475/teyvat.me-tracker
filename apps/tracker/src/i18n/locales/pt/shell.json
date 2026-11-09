@@ -192,5 +192,31 @@
     "leyline": "O formato Leyline, que o Teyvat.me Capture exporta: GOOD mais tudo o que sua conta de Genshin Impact tem, e a API de envio do Teyvat.me.",
     "endgame": "Abismo do Espiral, Teatro das Realidades Imaginárias e Confronto Abissal: os inimigos de cada temporada e seus próprios recordes."
   },
-  "support": "Apoie o Teyvat.me no Ko-fi"
+  "support": "Apoie o Teyvat.me no Ko-fi",
+  "timeTravel": {
+    "past": "Passado",
+    "older": "Snapshot anterior",
+    "olderTitle": "Snapshot anterior (Alt ←)",
+    "newer": "Snapshot seguinte",
+    "newerTitle": "Snapshot seguinte (Alt →)",
+    "pickTitle": "Vendo {time}. Escolha outro snapshot",
+    "counter": "Snapshot {index} / {total}",
+    "readOnly": "Somente leitura",
+    "now": "Agora",
+    "backToNow": "Voltar para agora",
+    "phoneLine": "Passado · somente leitura · Snapshot {index} / {total}",
+    "pick": "Viajar no tempo para…",
+    "previousMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "dayCaptures": "{n} snapshot | {n} snapshots",
+    "dayHeading": "{day}: {n} snapshot | {day}: {n} snapshots",
+    "captureLine": "#{id} · {characters} personagens",
+    "open": "Viagem no tempo",
+    "openTitle": "Ver a conta como estava em um snapshot anterior",
+    "row": "Viajar para o snapshot {id}",
+    "rowTitle": "Viagem no tempo: ver a conta como estava neste snapshot",
+    "lostTitle": "Esse snapshot não existe mais",
+    "lostBody": "O endereço aponta para um snapshot que esta conta não tem mais.",
+    "loading": "Viajando…"
+  }
 }

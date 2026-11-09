@@ -13,6 +13,7 @@
  */
 
 import type { ApiError } from '@gdt/shared'
+import { blockedInThePast } from '@/data/time-travel'
 import { isGuestPath } from '@/local/guest-id'
 import { bookmarkHeaders, noteBookmarks } from './d1-bookmark'
 import { ApiRequestError } from './error'
@@ -132,6 +133,14 @@ async function toError(response: Response): Promise<ApiRequestError> {
 
 /** Sends a request, refreshing the session once on an expired token. */
 export async function request(path: string, options: RequestOptions = {}): Promise<Response> {
+  // Time travel is read-only: a write from the past would land on now.
+  if (blockedInThePast(path, options.method)) {
+    throw new ApiRequestError(
+      409,
+      'read_only_past',
+      'Viewing the past: nothing can be changed here',
+    )
+  }
   let response: Response
   try {
     response = await send(path, options)

@@ -192,5 +192,31 @@
     "leyline": "Teyvat.me Capture が書き出す Leyline 形式：GOOD に原神アカウントのその他すべてを加えたもの。Teyvat.me のアップロード API も。",
     "endgame": "深境螺旋、幻想シアター、幽境の激戦：各シーズンの敵とあなたの記録。"
   },
-  "support": "Ko-fi で Teyvat.me を支援する"
+  "support": "Ko-fi で Teyvat.me を支援する",
+  "timeTravel": {
+    "past": "過去",
+    "older": "前のスナップショット",
+    "olderTitle": "前のスナップショット (Alt ←)",
+    "newer": "次のスナップショット",
+    "newerTitle": "次のスナップショット (Alt →)",
+    "pickTitle": "{time} を表示中。別のスナップショットを選ぶ",
+    "counter": "スナップショット {index} / {total}",
+    "readOnly": "閲覧のみ",
+    "now": "現在",
+    "backToNow": "現在に戻る",
+    "phoneLine": "過去 · 閲覧のみ · スナップショット {index} / {total}",
+    "pick": "タイムトラベル先…",
+    "previousMonth": "前の月",
+    "nextMonth": "次の月",
+    "dayCaptures": "{n} 件のスナップショット",
+    "dayHeading": "{day}: {n} 件",
+    "captureLine": "#{id} · キャラクター {characters} 人",
+    "open": "タイムトラベル",
+    "openTitle": "以前のスナップショット時点のアカウントを見る",
+    "row": "スナップショット {id} へタイムトラベル",
+    "rowTitle": "タイムトラベル: このスナップショット時点のアカウントを見る",
+    "lostTitle": "そのスナップショットはありません",
+    "lostBody": "このアドレスは、このアカウントにもう無いスナップショットを指しています。",
+    "loading": "移動中…"
+  }
 }

@@ -31,7 +31,7 @@ import { locale } from '@/i18n/locale'
 import { loadGameIcons } from '@/lib/assets'
 import { formatMonthDay } from '@/lib/format'
 import { t } from '@/i18n'
-import { useAccount, useAccountRoute } from './context'
+import { pageNow, useAccount, useAccountRoute, useTravel } from './context'
 
 /**
  * Endgame: the Spiral Abyss, Imaginarium Theater and Stygian Onslaught.
@@ -76,8 +76,10 @@ const captured = useResource(
 const yours = computed(() => captured.data.value ?? NO_CAPTURED_ENDGAME)
 
 // The clock the statuses read: once a minute, so "days left" moves on while the page is open.
-const now = ref(Date.now())
-const timer = setInterval(() => (now.value = Date.now()), 60_000)
+// Time travel: the seasons as they stood at the capture (later ones hidden).
+const travel = useTravel()
+const now = ref(pageNow(travel.value))
+const timer = setInterval(() => (now.value = pageNow(travel.value)), 60_000)
 onBeforeUnmount(() => clearInterval(timer))
 const server = computed(() => account.value.server)
 

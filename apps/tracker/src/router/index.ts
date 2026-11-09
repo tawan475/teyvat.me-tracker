@@ -4,9 +4,11 @@ import {
   createRouter,
   createWebHistory,
   type RouteLocationNormalized,
+  type RouteLocationRaw,
   type RouteMeta,
 } from 'vue-router'
 import { loadSignInOptions } from '@/components/oauth/oauth'
+import { keepPast, takeLeaving } from '@/data/time-travel'
 import type { PageKey } from '@/components/shell/nav'
 import { setPublicPage } from '@/lib/theme'
 import { useAccounts } from '@/stores/accounts'
@@ -682,6 +684,15 @@ router.beforeEach(async (to) => {
   }
   if (to.meta.auth) await useAccounts().ensureLoaded()
 })
+
+/**
+ * Time travel (data/time-travel.ts): moving between one account's pages stays
+ * in the past. A link to another page of the same account (its own, the demo's
+ * or the guest's) keeps `?at` unless "Back to now" asked to leave.
+ */
+router.beforeEach(
+  (to, from) => (keepPast(to, from, takeLeaving()) as RouteLocationRaw | null) ?? undefined,
+)
 
 /**
  * Moving between pages crossfades the old page into the new one (View

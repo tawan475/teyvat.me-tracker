@@ -192,5 +192,31 @@
     "leyline": "Format Leyline, yang diekspor Teyvat.me Capture: GOOD plus semua isi lain akun Genshin Impact-mu, serta API unggah Teyvat.me.",
     "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri."
   },
-  "support": "Dukung Teyvat.me di Ko-fi"
+  "support": "Dukung Teyvat.me di Ko-fi",
+  "timeTravel": {
+    "past": "Masa lalu",
+    "older": "Snapshot lebih lama",
+    "olderTitle": "Snapshot lebih lama (Alt ←)",
+    "newer": "Snapshot lebih baru",
+    "newerTitle": "Snapshot lebih baru (Alt →)",
+    "pickTitle": "Melihat {time}. Pilih snapshot lain",
+    "counter": "Snapshot {index} / {total}",
+    "readOnly": "Hanya baca",
+    "now": "Sekarang",
+    "backToNow": "Kembali ke sekarang",
+    "phoneLine": "Masa lalu · hanya baca · Snapshot {index} / {total}",
+    "pick": "Lompat waktu ke…",
+    "previousMonth": "Bulan sebelumnya",
+    "nextMonth": "Bulan berikutnya",
+    "dayCaptures": "{n} snapshot | {n} snapshot",
+    "dayHeading": "{day}: {n} snapshot | {day}: {n} snapshot",
+    "captureLine": "#{id} · {characters} karakter",
+    "open": "Lompat waktu",
+    "openTitle": "Lihat akun seperti pada snapshot sebelumnya",
+    "row": "Lompat waktu ke snapshot {id}",
+    "rowTitle": "Lompat waktu: lihat akun seperti pada snapshot ini",
+    "lostTitle": "Snapshot itu sudah tidak ada",
+    "lostBody": "Alamat ini menunjuk snapshot yang tidak lagi dimiliki akun ini.",
+    "loading": "Sedang berpindah…"
+  }
 }

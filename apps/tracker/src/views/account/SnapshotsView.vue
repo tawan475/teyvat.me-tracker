@@ -61,6 +61,10 @@ const readOnly = mode.readOnly
 // Deleting is the owner's (an account shared with them as editor can't).
 const owner = useAccess().value === 'owner'
 const canDelete = (!readOnly && owner) || mode.purge !== undefined
+// The row actions (time travel, Download GOOD; Delete only when writable):
+// read-only on the account's own pages too (the past, view-only sharing),
+// not in staff Inspect, whose layout keeps neither.
+const rowActions = !readOnly || !mode.route
 const feedback = useFeedback()
 
 const {
@@ -219,7 +223,7 @@ const tableLabels = computed<TableLabel[]>(() => [
     : [{ key: 'weapons', title: t('overview.figure.weapons'), slot: true }]),
   { key: 'mora', title: t('overview.figure.mora'), slot: true },
   { key: 'primogem', title: t('overview.figure.primogem'), slot: true },
-  ...(readOnly ? [] : [{ key: 'actions', title: t('snapshots.column.actions'), slot: true }]),
+  ...(!rowActions ? [] : [{ key: 'actions', title: t('snapshots.column.actions'), slot: true }]),
 ])
 
 const formatKb = (bytes: number) => (bytes ? (bytes / 1024).toFixed(1) + ' KB' : '0 KB')
@@ -610,7 +614,7 @@ function selectionClearance(): number {
             :deleting="deleting"
             :format-kb="formatKb"
             :selectable="canDelete"
-            :actions="!readOnly"
+            :actions="rowActions"
             @toggle="onToggle"
             @toggle-all="onToggleAll"
             @download="downloadSnapshot"

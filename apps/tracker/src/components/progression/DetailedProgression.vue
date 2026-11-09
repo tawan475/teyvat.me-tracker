@@ -17,7 +17,7 @@ import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { clock24, formatDateTime, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
-import { useAccount } from '@/views/account/context'
+import { pageNow, useAccount, useTravel } from '@/views/account/context'
 import type { ChangeBar } from './ChangeBarChart.vue'
 import { bagLimit, yBounds, type Graph } from './graphs'
 import ProgressionGraphsDialog from './ProgressionGraphsDialog.vue'
@@ -194,8 +194,10 @@ onMounted(revealGroup)
 watch(groupBy, revealGroup, { flush: 'post' })
 
 // The right edge is now: a minute clock moves it (and an hour range) on while the page is open.
-const now = ref(Date.now())
-const clock = setInterval(() => (now.value = Date.now()), 60_000)
+// In the past (time travel) the edge is the capture's time and stays there.
+const travel = useTravel()
+const now = ref(pageNow(travel.value))
+const clock = setInterval(() => (now.value = pageNow(travel.value)), 60_000)
 onBeforeUnmount(() => clearInterval(clock))
 
 const periodic = computed(() => {

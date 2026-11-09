@@ -192,5 +192,31 @@
     "leyline": "Teyvat.me Capture'ın dışa aktardığı Leyline biçimi: GOOD ve Genshin Impact hesabındaki diğer her şey, ayrıca Teyvat.me yükleme API'si.",
     "endgame": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz: her sezonun düşmanları ve kendi rekorların."
   },
-  "support": "Teyvat.me'yi Ko-fi'de destekle"
+  "support": "Teyvat.me'yi Ko-fi'de destekle",
+  "timeTravel": {
+    "past": "Geçmiş",
+    "older": "Daha eski anlık görüntü",
+    "olderTitle": "Daha eski anlık görüntü (Alt ←)",
+    "newer": "Daha yeni anlık görüntü",
+    "newerTitle": "Daha yeni anlık görüntü (Alt →)",
+    "pickTitle": "{time} görüntüleniyor. Başka bir anlık görüntü seç",
+    "counter": "Anlık görüntü {index} / {total}",
+    "readOnly": "Salt okunur",
+    "now": "Şimdi",
+    "backToNow": "Şimdiye dön",
+    "phoneLine": "Geçmiş · salt okunur · Anlık görüntü {index} / {total}",
+    "pick": "Zamanda yolculuk…",
+    "previousMonth": "Önceki ay",
+    "nextMonth": "Sonraki ay",
+    "dayCaptures": "{n} anlık görüntü",
+    "dayHeading": "{day}: {n} anlık görüntü",
+    "captureLine": "#{id} · {characters} karakter",
+    "open": "Zamanda yolculuk",
+    "openTitle": "Hesabı daha eski bir anlık görüntüdeki haliyle gör",
+    "row": "{id} numaralı anlık görüntüye git",
+    "rowTitle": "Zamanda yolculuk: hesabı bu anlık görüntüdeki haliyle gör",
+    "lostTitle": "O anlık görüntü artık yok",
+    "lostBody": "Adres, bu hesapta artık olmayan bir anlık görüntüyü gösteriyor.",
+    "loading": "Yolculuk…"
+  }
 }

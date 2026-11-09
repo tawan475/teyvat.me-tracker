@@ -1,6 +1,7 @@
 import type { AccountAccess, AccountResponse } from '@gdt/shared'
 import { computed, inject, provide, type ComputedRef, type InjectionKey } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
+import type { Travel } from '@/data/time-travel'
 
 const ACCOUNT: InjectionKey<ComputedRef<AccountResponse>> = Symbol('account')
 const MODE: InjectionKey<AccountMode> = Symbol('account-mode')
@@ -103,4 +104,20 @@ export function useAccount(): ComputedRef<AccountResponse> {
   const account = inject(ACCOUNT)
   if (!account) throw new Error('useAccount() outside an account route')
   return account
+}
+
+/**
+ * Time travel (data/time-travel.ts): where the account's pages are shown in
+ * the past, or null for now. Pages that count from "now" (seasons, the farm
+ * day, a chart's right edge) count from the capture's time instead, and
+ * now-only parts (Capture presence, the resin tracker, tasks) hide.
+ */
+export function useTravel(): ComputedRef<Travel | null> {
+  const account = inject(ACCOUNT, null)
+  return computed(() => (account?.value as { travel?: Travel } | undefined)?.travel ?? null)
+}
+
+/** The clock a page reads: the capture's time in the past, else Date.now(). */
+export function pageNow(travel: Travel | null): number {
+  return travel ? travel.takenAt : Date.now()
 }

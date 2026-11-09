@@ -192,5 +192,31 @@
     "leyline": "Le format Leyline, ce qu'exporte Teyvat.me Capture : GOOD plus tout ce que contient votre compte Genshin Impact, et l'API d'envoi de Teyvat.me.",
     "endgame": "Profondeurs spiralées, Théâtre de l'imaginarium et Carnage chtonien : les ennemis de chaque saison et vos propres records."
   },
-  "support": "Soutenir Teyvat.me sur Ko-fi"
+  "support": "Soutenir Teyvat.me sur Ko-fi",
+  "timeTravel": {
+    "past": "Passé",
+    "older": "Instantané précédent",
+    "olderTitle": "Instantané précédent (Alt ←)",
+    "newer": "Instantané suivant",
+    "newerTitle": "Instantané suivant (Alt →)",
+    "pickTitle": "Vue du {time}. Choisir un autre instantané",
+    "counter": "Instantané {index} / {total}",
+    "readOnly": "Lecture seule",
+    "now": "Maintenant",
+    "backToNow": "Revenir à maintenant",
+    "phoneLine": "Passé · lecture seule · Instantané {index} / {total}",
+    "pick": "Voyager dans le temps vers…",
+    "previousMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "dayCaptures": "{n} instantané | {n} instantanés",
+    "dayHeading": "{day} : {n} instantané | {day} : {n} instantanés",
+    "captureLine": "#{id} · {characters} personnages",
+    "open": "Voyage dans le temps",
+    "openTitle": "Voir le compte tel qu’il était lors d’un instantané plus ancien",
+    "row": "Voyager vers l’instantané {id}",
+    "rowTitle": "Voyage dans le temps : voir le compte tel qu’il était lors de cet instantané",
+    "lostTitle": "Cet instantané n’existe plus",
+    "lostBody": "L’adresse désigne un instantané que ce compte n’a plus.",
+    "loading": "Voyage…"
+  }
 }

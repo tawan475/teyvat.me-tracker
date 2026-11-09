@@ -13,7 +13,7 @@ import {
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { loadGameIcons } from '@/lib/assets'
-import { useAccount, useAccountRoute } from '@/views/account/context'
+import { pageNow, useAccount, useAccountRoute, useTravel } from '@/views/account/context'
 
 /**
  * Overview's "Endgame now": the Endgame page's mode cards (the Abyss, the
@@ -29,8 +29,10 @@ const resource = useResource(
     return data
   },
 )
-const now = ref(Date.now())
-const timer = setInterval(() => (now.value = Date.now()), 60_000)
+// Time travel: the seasons as they stood at the capture.
+const travel = useTravel()
+const now = ref(pageNow(travel.value))
+const timer = setInterval(() => (now.value = pageNow(travel.value)), 60_000)
 onBeforeUnmount(() => clearInterval(timer))
 
 const server = computed(() => account.value.server)

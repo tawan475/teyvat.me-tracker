@@ -19,7 +19,7 @@ import { useWishStats } from '@/components/wishes/use-wish-stats'
 import { WISH_BANNERS, bannerBySlug } from '@/components/wishes/wish-labels'
 import { HARD_PITY, PRIMOS_PER_PULL, SOFT_PITY } from '@/data/wish-history'
 import { formatNumber } from '@/lib/format'
-import { useAccount, useAccountRoute } from './context'
+import { useAccount, useAccountRoute, useTravel } from './context'
 
 /**
  * One banner's wish history: three tiles (lifetime pulls; the 5★ pity with
@@ -31,7 +31,12 @@ import { useAccount, useAccountRoute } from './context'
 const account = useAccount()
 const route = useRoute()
 const router = useRouter()
-const wishes = useWishHistory(() => account.value.id)
+// Time travel: only the pulls made by the capture's time.
+const travel = useTravel()
+const wishes = useWishHistory(
+  () => account.value.id,
+  () => travel.value?.takenAt ?? null,
+)
 const history = computed(() => wishes.history.value)
 const { stats: all, error: statsError, reload: reloadStats } = useWishStats(history)
 

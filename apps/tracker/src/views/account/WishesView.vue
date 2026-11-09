@@ -23,7 +23,7 @@ import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { loadLatestInventory } from '@/data/account-data'
 import { useResource } from '@/data/use-resource'
-import { useAccount, useAccountRoute, useDemo, useReadOnly } from './context'
+import { useAccount, useAccountRoute, useDemo, useReadOnly, useTravel } from './context'
 
 /**
  * Wish history overview: a card per banner (lifetime pulls, 5★ pity with
@@ -49,7 +49,12 @@ const bargains = computed(() => capture.data.value?.good.gi_tasks?.bargains)
 const bag = computed(() => capture.data.value?.good.materials)
 const readOnly = useReadOnly()
 const demo = useDemo()
-const wishes = useWishHistory(() => account.value.id)
+// Time travel: only the pulls made by the capture's time.
+const travel = useTravel()
+const wishes = useWishHistory(
+  () => account.value.id,
+  () => travel.value?.takenAt ?? null,
+)
 const history = computed(() => wishes.history.value)
 const { stats, error: statsError, reload: reloadStats } = useWishStats(history)
 
@@ -163,7 +168,7 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
         :bargains="bargains"
         :materials="bag"
         :server="account.server"
-        :now="Date.now()"
+        :now="travel?.takenAt ?? Date.now()"
       />
 
       <div v-if="history.total > 0" class="flex flex-col gap-4">
@@ -219,7 +224,7 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
           :bargains="bargains"
           :materials="bag"
           :server="account.server"
-          :now="Date.now()"
+          :now="travel?.takenAt ?? Date.now()"
         />
 
         <!-- Per-banner summaries, off since 2026-11-05 (a user found them

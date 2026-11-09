@@ -4,6 +4,7 @@ import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
 import {
   ArrowLeft,
+  History,
   LayoutGrid,
   LogOut,
   Menu,
@@ -42,6 +43,12 @@ import { USER_SETTINGS_DEFAULTS } from '@gdt/shared/settings'
 import { NAV_COLLAPSED_KEY, useNavCollapse } from './nav-collapse'
 import SectionLabel from './SectionLabel.vue'
 import SiteSearch from './SiteSearch.vue'
+import TimeTravelBar from '@/components/time-travel/TimeTravelBar.vue'
+import TimeTravelPicker from '@/components/time-travel/TimeTravelPicker.vue'
+import { loadSnapshots } from '@/data/account-data'
+import { travelling } from '@/data/time-travel'
+import { useResource } from '@/data/use-resource'
+import type { SnapshotResponse } from '@gdt/shared'
 
 /**
  * The signed-in frame, in the original dashboard layout: a sidebar with
@@ -136,6 +143,34 @@ const current = computed(() =>
       : currentId.value
         ? accounts.byId.get(currentId.value)
         : undefined,
+)
+
+/**
+ * Time travel (data/time-travel.ts): the bar under the app bar while an
+ * account page shows the past, and the clock in the top bar that opens the
+ * capture picker. Both read the account's snapshot list (now's).
+ */
+const travelHere = computed(() => {
+  const state = travelling.value
+  return state && current.value && state.accountId === current.value.id ? state.travel : null
+})
+const canTravel = computed(
+  () =>
+    !staffMode.value &&
+    !demoMode.value &&
+    !guestMode.value &&
+    !!current.value &&
+    (current.value.snapshotCount ?? 0) > 1,
+)
+const travelPicking = ref(false)
+const travelAnchor = ref<HTMLElement | null>(null)
+function openTravelPicker(event: MouseEvent) {
+  travelAnchor.value = event.currentTarget as HTMLElement
+  travelPicking.value = true
+}
+const travelSnapshots = useResource(
+  () => (canTravel.value && current.value ? current.value : null),
+  (a) => (a ? loadSnapshots(a) : Promise.resolve([] as SnapshotResponse[])),
 )
 
 /** Site-wide search: the top bar's button, Ctrl+K (⌘K) anywhere, "/" outside a text field. */
@@ -600,6 +635,15 @@ const footButton =
                 <Search class="size-5" aria-hidden="true" />
               </UiIconButton>
             </template>
+            <UiIconButton
+              v-if="canTravel"
+              class="max-sm:hidden"
+              :label="$t('shell.timeTravel.open')"
+              :title="$t('shell.timeTravel.openTitle')"
+              @click="openTravelPicker($event)"
+            >
+              <History class="size-5" aria-hidden="true" />
+            </UiIconButton>
             <DiscordButton />
             <KofiButton />
             <CaptureButton v-if="!framed" :account="staffMode ? undefined : current" />
@@ -618,6 +662,11 @@ const footButton =
             </RouterLink>
           </div>
         </header>
+        <TimeTravelBar
+          v-if="travelHere && travelSnapshots.data.value"
+          :travel="travelHere"
+          :snapshots="travelSnapshots.data.value"
+        />
       </div>
 
       <!-- overflow-x-clip: page art reaching past the content (PageBackdrop) never scrolls sideways -->
@@ -659,6 +708,14 @@ const footButton =
       </button>
     </nav>
     <SiteSearch v-model:open="searching" :account-id="currentId" :demo="demo" :guest="guest" />
+    <TimeTravelPicker
+      v-if="canTravel && travelSnapshots.data.value"
+      :open="travelPicking"
+      :anchor="travelAnchor"
+      :snapshots="travelSnapshots.data.value"
+      :at="travelHere?.at ?? null"
+      @close="travelPicking = false"
+    />
   </div>
 </template>
 

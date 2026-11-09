@@ -192,5 +192,31 @@
     "leyline": "Teyvat.me Capture가 내보내는 Leyline 형식: GOOD에 원신 계정의 나머지 모든 정보를 더한 것, 그리고 Teyvat.me 업로드 API.",
     "endgame": "나선 비경, 현실 속 환상극, 지맥 제압전: 시즌별 적과 나의 기록."
   },
-  "support": "Ko-fi에서 Teyvat.me 후원하기"
+  "support": "Ko-fi에서 Teyvat.me 후원하기",
+  "timeTravel": {
+    "past": "과거",
+    "older": "이전 스냅샷",
+    "olderTitle": "이전 스냅샷 (Alt ←)",
+    "newer": "다음 스냅샷",
+    "newerTitle": "다음 스냅샷 (Alt →)",
+    "pickTitle": "{time} 보는 중. 다른 스냅샷 선택",
+    "counter": "스냅샷 {index} / {total}",
+    "readOnly": "읽기 전용",
+    "now": "지금",
+    "backToNow": "지금으로 돌아가기",
+    "phoneLine": "과거 · 읽기 전용 · 스냅샷 {index} / {total}",
+    "pick": "시간 여행 대상…",
+    "previousMonth": "이전 달",
+    "nextMonth": "다음 달",
+    "dayCaptures": "스냅샷 {n}개",
+    "dayHeading": "{day}: {n}개",
+    "captureLine": "#{id} · 캐릭터 {characters}명",
+    "open": "시간 여행",
+    "openTitle": "이전 스냅샷 시점의 계정 보기",
+    "row": "스냅샷 {id}(으)로 시간 여행",
+    "rowTitle": "시간 여행: 이 스냅샷 시점의 계정 보기",
+    "lostTitle": "그 스냅샷은 없어졌습니다",
+    "lostBody": "이 주소는 이 계정에 더 이상 없는 스냅샷을 가리킵니다.",
+    "loading": "이동 중…"
+  }
 }

@@ -57,6 +57,7 @@ import {
   useDemo,
   useGuest,
   useReadOnly,
+  useTravel,
 } from './context'
 
 /**
@@ -68,6 +69,8 @@ const accounts = useAccounts()
 const access = useAccess()
 // Relative times ("3 hours ago") move on once a minute.
 const nowMs = shallowRef(Date.now())
+/** Time travel: the capture travelled to, whose own clock the Abyss check reads. */
+const travel = useTravel()
 useIntervalFn(() => (nowMs.value = Date.now()), 60_000)
 
 // Pick up captures uploaded since the account list was loaded (not when it
@@ -215,7 +218,8 @@ const cardStats = computed(() => {
         : null,
     maxFriendship: parts?.maxFriendship ?? null,
     // Only while the captured period is still running.
-    abyssStars: abyss && abyss.end * 1000 > nowMs.value ? abyss.stars : null,
+    abyssStars:
+      abyss && abyss.end * 1000 > (travel.value?.takenAt ?? nowMs.value) ? abyss.stars : null,
   }
 })
 
@@ -334,7 +338,7 @@ const importRoute = computed(() => accountLink('account-import'))
   </PageHeader>
 
   <CapturePresence
-    v-if="!demo && !guest"
+    v-if="!demo && !guest && !travel"
     class="mb-3"
     :account-id="account.id"
     :now="nowMs"

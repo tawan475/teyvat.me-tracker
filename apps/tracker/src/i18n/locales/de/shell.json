@@ -192,5 +192,31 @@
     "leyline": "Das Leyline-Format, das Teyvat.me Capture exportiert: GOOD plus alles andere, was dein Account in Genshin Impact enthält, und die Upload-API von Teyvat.me.",
     "endgame": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: die Gegner jeder Saison und deine eigenen Rekorde."
   },
-  "support": "Teyvat.me auf Ko-fi unterstützen"
+  "support": "Teyvat.me auf Ko-fi unterstützen",
+  "timeTravel": {
+    "past": "Vergangenheit",
+    "older": "Älterer Snapshot",
+    "olderTitle": "Älterer Snapshot (Alt ←)",
+    "newer": "Neuerer Snapshot",
+    "newerTitle": "Neuerer Snapshot (Alt →)",
+    "pickTitle": "Ansicht von {time}. Anderen Snapshot wählen",
+    "counter": "Snapshot {index} / {total}",
+    "readOnly": "Nur lesen",
+    "now": "Jetzt",
+    "backToNow": "Zurück zu jetzt",
+    "phoneLine": "Vergangenheit · nur lesen · Snapshot {index} / {total}",
+    "pick": "Zeitreise zu …",
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "dayCaptures": "{n} Snapshot | {n} Snapshots",
+    "dayHeading": "{day}: {n} Snapshot | {day}: {n} Snapshots",
+    "captureLine": "#{id} · {characters} Figuren",
+    "open": "Zeitreise",
+    "openTitle": "Den Account so sehen, wie ihn ein früherer Snapshot hatte",
+    "row": "Zeitreise zu Snapshot {id}",
+    "rowTitle": "Zeitreise: den Account so sehen, wie ihn dieser Snapshot hatte",
+    "lostTitle": "Dieser Snapshot ist weg",
+    "lostBody": "Die Adresse nennt einen Snapshot, den dieser Account nicht mehr hat.",
+    "loading": "Reise …"
+  }
 }

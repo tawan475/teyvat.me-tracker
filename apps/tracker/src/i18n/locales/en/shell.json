@@ -192,5 +192,31 @@
     "leyline": "The Leyline format, what Teyvat.me Capture exports: GOOD plus everything else your Genshin Impact account holds, and the Teyvat.me upload API.",
     "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records."
   },
-  "support": "Support Teyvat.me on Ko-fi"
+  "support": "Support Teyvat.me on Ko-fi",
+  "timeTravel": {
+    "past": "Past",
+    "older": "Older capture",
+    "olderTitle": "Older capture (Alt ←)",
+    "newer": "Newer capture",
+    "newerTitle": "Newer capture (Alt →)",
+    "pickTitle": "Viewing {time}. Pick another capture",
+    "counter": "Snapshot {index} / {total}",
+    "readOnly": "Read-only",
+    "now": "Now",
+    "backToNow": "Back to now",
+    "phoneLine": "Past · read-only · Snapshot {index} / {total}",
+    "pick": "Time travel to…",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "dayCaptures": "{n} capture | {n} captures",
+    "dayHeading": "{day}: {n} capture | {day}: {n} captures",
+    "captureLine": "#{id} · {characters} characters",
+    "open": "Time travel",
+    "openTitle": "See the account as an earlier capture had it",
+    "row": "Time travel to snapshot {id}",
+    "rowTitle": "Time travel: see the account as this capture had it",
+    "lostTitle": "That snapshot is gone",
+    "lostBody": "The address names a snapshot this account no longer has.",
+    "loading": "Travelling…"
+  }
 }

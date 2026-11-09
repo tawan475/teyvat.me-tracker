@@ -34,6 +34,7 @@ import { yieldToMain } from '@/lib/yield'
 import { decodeBundleOffThread } from './decode'
 import { bundlePacks, mergeDecoded } from './bundle-packs'
 import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
+import { historyAt, type Travel } from './time-travel'
 
 export interface AccountRef {
   id: number
@@ -48,6 +49,12 @@ export interface AccountRef {
   source?: 'staff' | 'demo' | 'local'
   /** Live sync is on for the account: "now" is its newest snapshot with the journal applied. */
   liveSync?: boolean
+  /**
+   * Time travel (data/time-travel.ts): the account as that snapshot had it.
+   * Its history stops there, it has no live journal, and every cache key
+   * names it, so the past and now never share a cached answer.
+   */
+  travel?: Travel
 }
 
 export type SectionName =
@@ -79,7 +86,8 @@ const MAX_ENTRIES = 40
 
 function cached<T>(account: AccountRef, kind: string, load: () => Promise<T>): Promise<T> {
   // The bundle layout is part of the key: a decoded bundle never outlives a layout change.
-  const key = `${account.source ?? 'own'}:${account.id}:${account.dataVersion}:${BUNDLE_FORMAT}:${kind}`
+  const travel = account.travel ? `@${account.travel.at}` : ''
+  const key = `${account.source ?? 'own'}:${account.id}:${account.dataVersion}${travel}:${BUNDLE_FORMAT}:${kind}`
   let entry = cache.get(key) as Promise<T> | undefined
   if (!entry) {
     entry = load()
@@ -119,8 +127,14 @@ async function stored<T extends ArrayBuffer | string>(
 const text = (response: Response) => response.text()
 const bytes = (response: Response) => response.arrayBuffer()
 
-/** Snapshot metadata and summaries, newest first. */
+/** Snapshot metadata and summaries, newest first (time travel: those up to its snapshot). */
 export function loadSnapshots(account: AccountRef): Promise<SnapshotResponse[]> {
+  const travel = account.travel
+  if (travel) {
+    return cached(account, 'snapshots', async () =>
+      historyAt(await loadSnapshots({ ...account, travel: undefined }), travel),
+    )
+  }
   return cached(account, 'snapshots', async () =>
     account.source === 'staff'
       ? api.staff.snapshots(account.id)
@@ -151,6 +165,19 @@ export function loadBundle(
   options: { ids?: number[]; sections?: SectionName[] } = {},
 ): Promise<DecodedBundle> {
   const variant = `bundle:${options.sections?.join('+') ?? 'all'}:${options.ids?.join(',') ?? 'all'}`
+  const travel = account.travel
+  if (travel) {
+    // The past: the same bundle as now (same cache, packs included), less
+    // the snapshots taken after the one travelled to.
+    return cached(account, variant, async () => {
+      const [bundle, kept] = await Promise.all([
+        loadBundle({ ...account, travel: undefined }, options),
+        loadSnapshots(account),
+      ])
+      const ids = new Set(kept.map((s) => s.id))
+      return { snapshots: bundle.snapshots.filter((s) => ids.has(s.id)), texts: bundle.texts }
+    })
+  }
   return cached(account, variant, async () => {
     if (account.source === 'staff') {
       return decodeBundleOffThread(await api.staff.bundle(account.id, options))
@@ -280,7 +307,8 @@ function liveVersion(account: AccountRef): number {
  * makes an unchanged one a 304.
  */
 export function loadLive(account: AccountRef): Promise<LiveJournalResponse | null> {
-  if (!account.liveSync) return Promise.resolve(null)
+  // The past has no live journal: it is the snapshot as captured.
+  if (!account.liveSync || account.travel) return Promise.resolve(null)
   return cached(account, `live:${liveVersion(account)}`, async () => {
     if (account.source === 'staff') return api.staff.live(account.id)
     // Kept current from the socket's batches (live-known): no request.
@@ -300,6 +328,13 @@ export function loadLive(account: AccountRef): Promise<LiveJournalResponse | nul
 export function loadPoints(
   account: AccountRef,
 ): Promise<{ at: number; figures: SnapshotSummary }[]> {
+  const travel = account.travel
+  if (travel) {
+    // Now's points, up to the capture travelled to.
+    return cached(account, 'points', async () =>
+      (await loadPoints({ ...account, travel: undefined })).filter((p) => p.at <= travel.takenAt),
+    )
+  }
   if (!account.liveSync) return Promise.resolve([])
   return cached(account, `points:${liveVersion(account)}`, async () => {
     try {

@@ -100,3 +100,39 @@ phases 0–3: about 4 days of work.
    marker at the capture?
 3. Shareable `?at=` links for shared accounts' viewers too?
 4. Phase 4 ("Changes since then") now, or after phases 0–3 land?
+
+## 7. As built (2026-11-09)
+
+The user's answers: the past is strictly read-only; charts and pages use the
+data as it was at that capture (nothing about "changes since"); no sharing
+of a travelled view, but viewers of a shared account can travel too. Design
+A3 of https://claude.ai/artifact/GawYKqjB9XhzKb8Ghhs81L with "Snapshot x / N"
+in place of "N newer captures".
+
+- Address: `?at=<snapshot id>` on any account page. No server change.
+- `src/data/time-travel.ts`: pure rules (`travelParam`, `travelTo`,
+  `historyAt`, `stepFrom`, `keepPast`, `sameAccount`), the write guard
+  `blockedInThePast` (api/http.ts answers 409 `read_only_past` before
+  sending a non-GET to the travelled account), `travelling` for the shell.
+- `AccountLayout.vue`: reads now's snapshot list, gives the pages a travelled
+  account (`latest` = that snapshot, `liveSync: false`, `travel`), read-only,
+  pages keyed by `access@at`; an unknown id shows "That snapshot is gone".
+- `account-data.ts`: cache keys carry `@<at>`; `loadSnapshots`/`loadBundle`
+  are now's (same cache, packs) cut at the snapshot; no live journal; chart
+  points up to its time.
+- Clocks: `useTravel()` / `pageNow()` in `views/account/context.ts`; Overview's
+  Abyss check, Endgame seasons, the Progression card's right edge, the
+  Planner's farm day read the capture's time. Wishes cut to pulls made by
+  then (`wishHistoryAt`). Hidden in the past: Capture presence, the resin
+  tracker, tasks. The Planner's dev clock pin moved to `?clock=`.
+- Router: a link to another page of the same account keeps `?at`; "Back to
+  now" (`leavePastOnNextNavigation`) and links to other accounts leave it.
+- UI: `components/time-travel/TimeTravelBar.vue` (amber bar under the app
+  bar: Past, Older | date ▾ | Newer, Snapshot x / N, lock + Read-only, Back to
+  now; phones: one row + a line below; Alt+←/→), `TimeTravelPicker.vue`
+  (month calendar with capture days underlined + bold, that day's captures),
+  the top bar's clock (from `sm`, accounts with 2+ snapshots), a clock on
+  each Snapshots row (the row actions now show on read-only own pages too).
+- Not in demo, guest mode or staff Inspect (their layouts keep no past).
+- Tests: `src/data/__tests__/time-travel.test.ts`. QA: headless Chrome at
+  390 / 1366 / 1920 px on a 12-capture account, no writes sent in the past.

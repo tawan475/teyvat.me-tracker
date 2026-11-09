@@ -167,6 +167,8 @@ import {
   useDemo,
   useGuest,
   useReadOnly,
+  useTravel,
+  pageNow,
 } from './context'
 
 /**
@@ -229,20 +231,23 @@ const {
 const settingsOpen = ref(false)
 
 // A clock for today's domains, the reset countdown and the resin estimate.
-const now = ref(Date.now())
+// Time travel: the capture's time, standing still.
+const travel = useTravel()
+const now = ref(pageNow(travel.value))
 const presenceAccess = useAccess()
 const presenceReadOnly = useReadOnly()
 const demo = useDemo()
 const guest = useGuest()
-const clock = setInterval(() => (now.value = Date.now()), 30_000)
+const clock = setInterval(() => (now.value = pageNow(travel.value)), 30_000)
 onBeforeUnmount(() => clearInterval(clock))
 /**
- * Dev only: `?at=2026-10-04T12:00:00Z` (or ms) pins the farm clock, to see
+ * Dev only: `?clock=2026-10-04T12:00:00Z` (or ms) pins the farm clock, to see
  * another server day (Sunday, a reset) without waiting for it.
  */
 const pinned = computed(() => {
   if (!import.meta.env.DEV) return null
-  const raw = route.query.at
+  // `?at` is time travel's snapshot (data/time-travel.ts).
+  const raw = route.query.clock
   if (typeof raw !== 'string' || raw === '') return null
   const at = /^\d+$/.test(raw) ? Number(raw) : Date.parse(raw)
   return Number.isFinite(at) ? at : null
@@ -1774,7 +1779,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
     "
   >
     <div
-      v-if="tasks?.tasks.value && (!hasGoals || tab === 'farm')"
+      v-if="!travel && tasks?.tasks.value && (!hasGoals || tab === 'farm')"
       class="mb-3 flex flex-col gap-3"
     >
       <CapturePresence

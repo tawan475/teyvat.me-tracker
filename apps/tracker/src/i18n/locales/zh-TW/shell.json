@@ -192,5 +192,31 @@
     "leyline": "Leyline 格式是 Teyvat.me Capture 的匯出格式：GOOD 加上你原神帳號中的其餘一切，另附 Teyvat.me 上傳 API。",
     "endgame": "深境螺旋、幻想真境劇詩和幽境危戰：每期的敵人和你自己的紀錄。"
   },
-  "support": "在 Ko-fi 上支持 Teyvat.me"
+  "support": "在 Ko-fi 上支持 Teyvat.me",
+  "timeTravel": {
+    "past": "過去",
+    "older": "更早的快照",
+    "olderTitle": "更早的快照 (Alt ←)",
+    "newer": "更新的快照",
+    "newerTitle": "更新的快照 (Alt →)",
+    "pickTitle": "正在檢視 {time}。選擇其他快照",
+    "counter": "快照 {index} / {total}",
+    "readOnly": "唯讀",
+    "now": "現在",
+    "backToNow": "回到現在",
+    "phoneLine": "過去 · 唯讀 · 快照 {index} / {total}",
+    "pick": "時間旅行到…",
+    "previousMonth": "上個月",
+    "nextMonth": "下個月",
+    "dayCaptures": "{n} 個快照",
+    "dayHeading": "{day}：{n} 個",
+    "captureLine": "#{id} · {characters} 名角色",
+    "open": "時間旅行",
+    "openTitle": "檢視帳號在更早快照時的樣子",
+    "row": "時間旅行到快照 {id}",
+    "rowTitle": "時間旅行：檢視帳號在此快照時的樣子",
+    "lostTitle": "該快照已不存在",
+    "lostBody": "此網址指向的快照已不在此帳號中。",
+    "loading": "正在旅行…"
+  }
 }

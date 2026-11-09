@@ -1,6 +1,6 @@
 import { computed, onScopeDispose, shallowRef, watch } from 'vue'
 import { api } from '@/api'
-import { decodeWishHistory, type WishHistory } from '@/data/wish-history'
+import { decodeWishHistory, wishHistoryAt, type WishHistory } from '@/data/wish-history'
 import { useResource } from '@/data/use-resource'
 import { updatesHeld } from '@/live/holds'
 import { onWishChange } from '@/live/wish-changes'
@@ -31,7 +31,7 @@ function loadWishHistory(accountId: number): Promise<{ id: number; history: Wish
  * live socket says it changed elsewhere (irminsul's sync): once the page is
  * visible and no popover or tip holds updates.
  */
-export function useWishHistory(accountId: () => number) {
+export function useWishHistory(accountId: () => number, cutAt: () => number | null = () => null) {
   const generation = shallowRef(0)
   const resource = useResource(
     () => [accountId(), generation.value] as const,
@@ -65,7 +65,9 @@ export function useWishHistory(accountId: () => number) {
 
   const history = computed(() => {
     const value = resource.data.value
-    return value && value.id === accountId() ? value.history : undefined
+    if (!value || value.id !== accountId()) return undefined
+    const at = cutAt()
+    return at === null ? value.history : wishHistoryAt(value.history, at)
   })
   return { history, error: resource.error, refresh, reload: resource.reload }
 }

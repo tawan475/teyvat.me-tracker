@@ -192,5 +192,31 @@
     "leyline": "El formato Leyline, lo que exporta Teyvat.me Capture: GOOD más todo lo demás que guarda tu cuenta de Genshin Impact, y la API de subida de Teyvat.me.",
     "endgame": "Espiral del Abismo, Teatro Fantasía y Conflagración estigia: los enemigos de cada temporada y tus propios récords."
   },
-  "support": "Apoya a Teyvat.me en Ko-fi"
+  "support": "Apoya a Teyvat.me en Ko-fi",
+  "timeTravel": {
+    "past": "Pasado",
+    "older": "Instantánea anterior",
+    "olderTitle": "Instantánea anterior (Alt ←)",
+    "newer": "Instantánea siguiente",
+    "newerTitle": "Instantánea siguiente (Alt →)",
+    "pickTitle": "Viendo {time}. Elige otra instantánea",
+    "counter": "Instantánea {index} / {total}",
+    "readOnly": "Solo lectura",
+    "now": "Ahora",
+    "backToNow": "Volver a ahora",
+    "phoneLine": "Pasado · solo lectura · Instantánea {index} / {total}",
+    "pick": "Viajar en el tiempo a…",
+    "previousMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "dayCaptures": "{n} instantánea | {n} instantáneas",
+    "dayHeading": "{day}: {n} instantánea | {day}: {n} instantáneas",
+    "captureLine": "#{id} · {characters} personajes",
+    "open": "Viaje en el tiempo",
+    "openTitle": "Ver la cuenta como estaba en una instantánea anterior",
+    "row": "Viajar a la instantánea {id}",
+    "rowTitle": "Viaje en el tiempo: ver la cuenta como estaba en esta instantánea",
+    "lostTitle": "Esa instantánea ya no existe",
+    "lostBody": "La dirección indica una instantánea que esta cuenta ya no tiene.",
+    "loading": "Viajando…"
+  }
 }

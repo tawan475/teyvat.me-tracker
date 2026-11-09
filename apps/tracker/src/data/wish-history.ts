@@ -65,6 +65,26 @@ export function decodeWishHistory(response: WishHistoryResponse): WishHistory {
   }
 }
 
+/**
+ * Time travel: the history as it stood at `at` (Unix ms), the pulls made by
+ * then. Pull times are wall-clock seconds on the account's server clock.
+ * Pure; the same object when nothing is cut.
+ */
+export function wishHistoryAt(history: WishHistory, at: number): WishHistory {
+  const last = Math.floor(at / 1000) + history.timezone * 3600
+  let cut = false
+  let total = 0
+  const banners = new Map<UigfGachaType, readonly WishPull[]>()
+  for (const [banner, pulls] of history.banners) {
+    let end = pulls.length
+    while (end > 0 && pulls[end - 1]!.time > last) end--
+    if (end < pulls.length) cut = true
+    if (end) banners.set(banner, end < pulls.length ? pulls.slice(0, end) : pulls)
+    total += end
+  }
+  return cut ? { ...history, banners, total } : history
+}
+
 // ------------------------------------------------------------------ banners
 
 export type EventKind = 'character' | 'weapon' | 'chronicled'

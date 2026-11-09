@@ -142,16 +142,17 @@ export const demo = new Hono<AppEnv>()
     ),
   )
 
-  /** GDT2 only (`?format=2`, what the app asks for). */
+  /** GDT2, or GDT3 when asked (`?format=3`, what the app asks for from 2026-11-09). */
   .get('/bundle', (c) => {
     const ids = parseIds(c.req.query('ids'))
     const sections = parseSections(c.req.query('sections'))
-    const variant = `bundle.${[...sections].sort().join('+')}.${ids ? ids.join('-') : 'all'}`
+    const format = c.req.query('format') === '3' ? 3 : 2
+    const variant = `bundle.${format}.${[...sections].sort().join('+')}.${ids ? ids.join('-') : 'all'}`
     return cachedAnswer(
       c,
       variant,
       async (a) =>
-        new Response(await buildBundle(c.env.DB, a.id, ids, sections, 2), {
+        new Response(await buildBundle(c.env.DB, a.id, ids, sections, format), {
           headers: { 'Content-Type': 'application/octet-stream' },
         }),
     )

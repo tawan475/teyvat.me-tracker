@@ -80,7 +80,7 @@ function accountState<T>(id: number, rest: string): Promise<T> {
   return isDemoAccount(id) ? demoRead<T>(rest) : requestJson<T>(accountRead(id, rest))
 }
 
-/** Where an account's bundle of `options` is read (GDT2). */
+/** Where an account's bundle of `options` is read (GDT3: GDT2 with its manifest deflated). */
 export function bundlePath(id: number, options: BundleOptions = {}): string {
   const query = new URLSearchParams()
   if (options.ids) query.set('ids', options.ids.join(','))

@@ -21,6 +21,8 @@ interface Entry {
   version: number
   value: ArrayBuffer | string
   at: number
+  /** A history pack (data/bundle-packs.ts): kept by its content key, whatever the version. */
+  pack?: true
 }
 
 let opening: Promise<IDBDatabase | null> | null = null
@@ -99,9 +101,11 @@ export async function writeCached(
     cursors.onsuccess = () => {
       const cursor = cursors.result
       if (cursor) {
-        const kept = (cursor.value as Entry).version
-        if (kept < version) cursor.delete()
-        else if (kept > version) newer = true
+        const entry = cursor.value as Entry
+        if (!entry.pack) {
+          if (entry.version < version) cursor.delete()
+          else if (entry.version > version) newer = true
+        }
         cursor.continue()
       } else if (!newer) {
         store.put({ key, account, version, value, at: Date.now() } satisfies Entry)
@@ -110,6 +114,65 @@ export async function writeCached(
     await done(transaction)
   } catch {
     // Not kept; the next visit downloads it again.
+  }
+}
+
+/** A history pack kept under `key` (data/bundle-packs.ts), if any. */
+export async function readPack(key: string): Promise<ArrayBuffer | undefined> {
+  try {
+    const db = await open()
+    if (!db) return undefined
+    const entry = await new Promise<Entry | undefined>((resolve, reject) => {
+      const request = db.transaction(STORE, 'readonly').objectStore(STORE).get(key)
+      request.onsuccess = () => resolve(request.result as Entry | undefined)
+      request.onerror = () => reject(request.error)
+    })
+    return entry?.pack && entry.value instanceof ArrayBuffer ? entry.value : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/** Keeps a history pack; its key names its content, so it never goes stale. */
+export async function writePack(key: string, account: number, value: ArrayBuffer): Promise<void> {
+  try {
+    const db = await open()
+    if (!db) return
+    writeStorage(FLAG, '1')
+    const transaction = db.transaction(STORE, 'readwrite')
+    transaction
+      .objectStore(STORE)
+      .put({ key, account, version: 0, value, at: Date.now(), pack: true } satisfies Entry)
+    await done(transaction)
+  } catch {
+    // Not kept; the next read downloads it again.
+  }
+}
+
+/** Drops the account's packs under `prefix` that `keep` no longer names. */
+export async function prunePacks(
+  account: number,
+  prefix: string,
+  keep: ReadonlySet<string>,
+): Promise<void> {
+  try {
+    const db = await open()
+    if (!db) return
+    const transaction = db.transaction(STORE, 'readwrite')
+    const cursors = transaction
+      .objectStore(STORE)
+      .index('account')
+      .openCursor(IDBKeyRange.only(account))
+    cursors.onsuccess = () => {
+      const cursor = cursors.result
+      if (!cursor) return
+      const entry = cursor.value as Entry
+      if (entry.pack && entry.key.startsWith(prefix) && !keep.has(entry.key)) cursor.delete()
+      cursor.continue()
+    }
+    await done(transaction)
+  } catch {
+    // Left for the next prune.
   }
 }
 

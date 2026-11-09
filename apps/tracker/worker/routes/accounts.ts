@@ -77,7 +77,7 @@ const SNAPSHOT_LIST_FORMAT = 2
  * never revalidated into a GDT2 one, and the other way round. v2 storage
  * changed how GDT1 names v2 sections (`#<id>` keys), hence "1b".
  */
-const BUNDLE_FORMAT_ETAG = { 1: 'g1b', 2: 'g2' } as const
+const BUNDLE_FORMAT_ETAG = { 1: 'g1b', 2: 'g2', 3: 'g3' } as const
 
 export const accounts = new Hono<AppEnv>()
   .use(requireUser)
@@ -378,7 +378,8 @@ export const accounts = new Hono<AppEnv>()
     const account = await loadAccount(getDb(c.env.DB), c.get('userId'), idParam(c, 'id'), 'view')
     const ids = parseIds(c.req.query('ids'))
     const sections = parseSections(c.req.query('sections'))
-    const format = c.req.query('format') === '2' ? 2 : 1
+    const asked = c.req.query('format')
+    const format = asked === '3' ? 3 : asked === '2' ? 2 : 1
     const variant = `bundle.${[...sections].sort().join('+')}.${ids ? ids.join('-') : 'all'}`
     const cached = checkEtag(
       c,

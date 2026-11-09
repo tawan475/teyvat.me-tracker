@@ -73,8 +73,11 @@ const DELTA_SLOTS = [
   'achievementTimes',
 ] as const satisfies readonly Slot[]
 
-/** Bundle layout: 1 for apps from before v2 storage (asked for nothing), 2 when asked. */
-export type BundleFormat = 1 | 2
+/**
+ * Bundle layout: 1 for apps from before v2 storage (asked for nothing), 2
+ * when asked, 3 = GDT2 with its manifest deflated (the app from 2026-11-09).
+ */
+export type BundleFormat = 1 | 2 | 3
 
 // ------------------------------------------------------------------ v1 rows
 
@@ -315,16 +318,20 @@ export async function buildBundle(
     isV2(row) ? toBundleSnapshotV2(row, meta) : toBundleSnapshotV1(row as V1StoredRow),
   )
 
-  if (format === 2) {
+  if (format === 2 || format === 3) {
     const v2Entries = entries.map((entry, i) =>
       isV2(rows[i]!) ? (entry as BundleSnapshotV2) : v1AsV2(entry as BundleSnapshot),
     )
-    return writeBundleV2(v2Entries, {
-      legacy: hashes
-        .filter((hash) => legacy.has(hash))
-        .map((hash) => ({ hash, data: legacy.get(hash)! })),
-      blobs: [...blobs.values()].sort((a, b) => a.id - b.id),
-    })
+    return writeBundleV2(
+      v2Entries,
+      {
+        legacy: hashes
+          .filter((hash) => legacy.has(hash))
+          .map((hash) => ({ hash, data: legacy.get(hash)! })),
+        blobs: [...blobs.values()].sort((a, b) => a.id - b.id),
+      },
+      format === 3,
+    )
   }
 
   // An app from before v2 storage: every v2 section as the deflated JSON it

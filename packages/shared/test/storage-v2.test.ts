@@ -44,6 +44,7 @@ import {
   type RawBlob,
   type SectionKind,
   type SnapshotMeta,
+  readBundleV2Raw,
 } from '../src'
 import { SLOT_KEYS, STAT_KEYS, SUBSTAT_KEYS } from '../src/dictionary/artifacts'
 import { MATERIALS } from '../src/dictionary/materials'
@@ -1051,6 +1052,40 @@ describe('bundles', () => {
       writeBundleV2([{ ...entry(5, 1), characters: 99, weapons: 98 }], { blobs }),
     )
     expect([...partial.texts.keys()].sort()).toEqual([partial.snapshots[0]!.player].sort())
+  })
+
+  it('reads GDT3 (the manifest deflated) exactly as GDT2, at a fraction of the manifest', async () => {
+    const player = encodeSectionBlob('player', { uid: 812345678, ar: 60 }, false, null)
+    const blobs: RawBlob[] = [
+      { id: 7, code: kindCode('player', false), baseId: null, data: player.data },
+    ]
+    const entries: BundleSnapshotV2[] = Array.from({ length: 200 }, (_, i) => ({
+      id: 1000 + i,
+      takenAt: 1_790_000_000_000 + i * 600_000,
+      lastSeenAt: 1_790_000_000_000 + i * 600_000,
+      format: 'GOOD',
+      version: 3,
+      source: 'Teyvat.me',
+      characters: 7,
+      weapons: 7,
+      artifacts: 7,
+      artifactsBase: null,
+      materials: 7,
+      materialsKeyframe: 7,
+      achievements: null,
+      player: 7,
+      achievementTimes: null,
+      achievementTimesBase: null,
+      characterExtras: null,
+      playerVars: { resin: i % 200 },
+    }))
+    const gdt2 = writeBundleV2(entries, { blobs })
+    const gdt3 = writeBundleV2(entries, { blobs }, true)
+    expect(new TextDecoder().decode(gdt3.subarray(0, 4))).toBe('GDT3')
+    expect(await decodeBundle(gdt3)).toEqual(await decodeBundle(gdt2))
+    expect(readBundleV2Raw(gdt3)).toEqual(readBundleV2Raw(gdt2))
+    // The manifest is most of a history bundle; deflated it is a fraction.
+    expect(gdt3.length * 5).toBeLessThan(gdt2.length)
   })
 })
 

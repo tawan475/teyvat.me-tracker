@@ -835,13 +835,14 @@ export const staff = new Hono<AppEnv>()
     return c.body(await catalogJson(c.env.DB, account.id))
   })
 
-  /** The same GDT2 bundle the owner's app reads (`?format=2` is the only layout here). */
+  /** The same bundle the owner's app reads: GDT2, or GDT3 when asked (`?format=3`). */
   .get('/accounts/:id/bundle', need('data.inspect'), async (c) => {
     const { account } = await inspectGate(c, 'bundle')
     const ids = parseIds(c.req.query('ids'))
     const sections = parseSections(c.req.query('sections'))
+    const format = c.req.query('format') === '3' ? 3 : 2
     c.header('Content-Type', 'application/octet-stream')
-    return c.body(await buildBundle(c.env.DB, account.id, ids, sections, 2))
+    return c.body(await buildBundle(c.env.DB, account.id, ids, sections, format))
   })
 
   /** The account's open live sync journal, merged (read-only, logged like the other data looks). */

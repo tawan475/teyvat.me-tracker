@@ -28,7 +28,7 @@
 
 import { inflateRaw } from './compress'
 import { CorruptDataError } from './bytes'
-import { inflate } from './deflate'
+import { deflate, inflate } from './deflate'
 import { LEGACY_FORMAT } from './section-blob'
 import { mergePlayer, type PlayerVars } from './snapshot-meta'
 import type { GiPlayer } from '../good'
@@ -125,13 +125,21 @@ export interface BundleManifestV2 {
 
 const MAGIC_V1 = [0x47, 0x44, 0x54, 0x31] // "GDT1"
 const MAGIC_V2 = [0x47, 0x44, 0x54, 0x32] // "GDT2"
+/**
+ * "GDT3": GDT2 with its manifest raw-deflated. The JSON manifest repeats
+ * every snapshot's keys and section ids (~400 B a snapshot, most of a
+ * history bundle's bytes) and travels as octet-stream, which Cloudflare
+ * does not compress (docs/plans/storage-efficiency.md, phase 3).
+ */
+const MAGIC_V3 = [0x47, 0x44, 0x54, 0x33] // "GDT3"
 
 function write(
   magic: readonly number[],
   manifest: unknown,
   parts: readonly Uint8Array[],
 ): Uint8Array<ArrayBuffer> {
-  const header = new TextEncoder().encode(JSON.stringify(manifest))
+  const json = new TextEncoder().encode(JSON.stringify(manifest))
+  const header = magic === MAGIC_V3 ? deflate(json) : json
   const size = 8 + header.length + parts.reduce((sum, p) => sum + 4 + p.length, 0)
   const out = new Uint8Array(size)
   const view = new DataView(out.buffer)
@@ -149,16 +157,21 @@ function write(
 
 function read(bytes: Uint8Array): { magic: 1 | 2; manifest: unknown; parts: Uint8Array[] } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  const magic = MAGIC_V1.every((b, i) => bytes[i] === b)
+  const found = MAGIC_V1.every((b, i) => bytes[i] === b)
     ? 1
     : MAGIC_V2.every((b, i) => bytes[i] === b)
       ? 2
-      : null
-  if (magic === null) throw new Error('Not a GDT bundle')
+      : MAGIC_V3.every((b, i) => bytes[i] === b)
+        ? 3
+        : null
+  if (found === null) throw new Error('Not a GDT bundle')
   const headerLength = view.getUint32(4, true)
-  const manifest = JSON.parse(new TextDecoder().decode(bytes.subarray(8, 8 + headerLength))) as {
+  const header = bytes.subarray(8, 8 + headerLength)
+  const manifest = JSON.parse(new TextDecoder().decode(found === 3 ? inflate(header) : header)) as {
     blobs: unknown[]
   }
+  // GDT3 is GDT2 with its manifest deflated: read alike from here on.
+  const magic = found === 3 ? 2 : found
   const parts: Uint8Array[] = []
   let offset = 8 + headerLength
   for (let i = 0; i < manifest.blobs.length; i++) {
@@ -182,7 +195,7 @@ export function readBundleV2Raw(buffer: ArrayBuffer | Uint8Array): {
   legacy: Map<string, Uint8Array>
 } {
   const { magic, manifest, parts } = read(asBytes(buffer))
-  if (magic !== 2) throw new Error('Not a GDT2 bundle')
+  if (magic !== 2) throw new Error('Not a GDT2 or GDT3 bundle')
   const v2 = manifest as BundleManifestV2
   const blobs: RawBlob[] = []
   const legacy = new Map<string, Uint8Array>()
@@ -230,6 +243,8 @@ export function writeBundleV2(
     /** v2 section blobs, bases included. */
     blobs?: readonly RawBlob[]
   },
+  /** Write GDT3 (the manifest deflated) instead of GDT2. */
+  compact = false,
 ): Uint8Array<ArrayBuffer> {
   const entries: BundleBlobV2[] = []
   const parts: Uint8Array[] = []
@@ -245,7 +260,7 @@ export function writeBundleV2(
     parts.push(blob.data)
   }
   return write(
-    MAGIC_V2,
+    compact ? MAGIC_V3 : MAGIC_V2,
     { snapshots: [...snapshots], blobs: entries } satisfies BundleManifestV2,
     parts,
   )

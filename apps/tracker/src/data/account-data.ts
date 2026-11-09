@@ -32,7 +32,8 @@ import { api, bundlePath, BUNDLE_FORMAT, request } from '@/api'
 import { accountPath } from '@/api/inspect'
 import { yieldToMain } from '@/lib/yield'
 import { decodeBundleOffThread } from './decode'
-import { readCached, writeCached } from './idb-cache'
+import { bundlePacks, mergeDecoded } from './bundle-packs'
+import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
 
 export interface AccountRef {
   id: number
@@ -150,13 +151,50 @@ export function loadBundle(
   options: { ids?: number[]; sections?: SectionName[] } = {},
 ): Promise<DecodedBundle> {
   const variant = `bundle:${options.sections?.join('+') ?? 'all'}:${options.ids?.join(',') ?? 'all'}`
-  return cached(account, variant, async () =>
-    decodeBundleOffThread(
-      account.source === 'staff'
-        ? await api.staff.bundle(account.id, options)
-        : await stored(account, variant, bundlePath(account.id, options), bytes),
-    ),
-  )
+  return cached(account, variant, async () => {
+    if (account.source === 'staff') {
+      return decodeBundleOffThread(await api.staff.bundle(account.id, options))
+    }
+    // The owner's whole history: in packs kept across captures (bundle-packs.ts).
+    if (!options.ids && account.source === undefined) return loadPacked(account, options.sections)
+    return decodeBundleOffThread(
+      await stored(account, variant, bundlePath(account.id, options), bytes),
+    )
+  })
+}
+
+/** Packs downloaded at once (each its own request and decode). */
+const PACK_PARALLEL = 4
+
+/**
+ * The whole history as packs of PACK_SIZE snapshots: each read from this
+ * device when it holds that pack's exact content, else downloaded and kept.
+ * After a capture only the last pack is new.
+ */
+async function loadPacked(account: AccountRef, sections: SectionName[] | undefined) {
+  const list = await loadSnapshots(account)
+  const packs = bundlePacks(list)
+  const prefix = `pack:${account.id}:${BUNDLE_FORMAT}:${sections?.join('+') ?? 'all'}:`
+  const decoded: DecodedBundle[] = new Array(packs.length)
+  let next = 0
+  const worker = async () => {
+    for (let i = next++; i < packs.length; i = next++) {
+      const pack = packs[i]!
+      const key = prefix + pack.key
+      let body = await readPack(key)
+      if (!body) {
+        body = await (
+          await request(bundlePath(account.id, { ids: pack.ids, sections }))
+        ).arrayBuffer()
+        void writePack(key, account.id, body)
+      }
+      decoded[i] = await decodeBundleOffThread(body)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(PACK_PARALLEL, packs.length) }, worker))
+  void prunePacks(account.id, prefix, new Set(packs.map((pack) => prefix + pack.key)))
+  if (decoded.length === 0) return { snapshots: [], texts: new Map<string, string>() }
+  return mergeDecoded(decoded)
 }
 
 let materialsDictionary: Promise<KeyDictionary> | null = null

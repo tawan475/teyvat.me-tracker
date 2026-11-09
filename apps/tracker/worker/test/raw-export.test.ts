@@ -1,5 +1,6 @@
 import { env, SELF } from 'cloudflare:test'
 import {
+  decodeBundle,
   decodeCatalogChunk,
   decodeSectionBlob,
   type AccountResponse,
@@ -204,6 +205,22 @@ describe('raw download', () => {
     )
     // And the script still inflates the smaller set on its own.
     expect(() => run(one)).not.toThrow()
+  })
+
+  it('serves GDT3 to the app: the same sections, the manifest deflated', async () => {
+    const { client, base, bundle } = await account()
+    const gdt3 = new Uint8Array(await (await client.fetch(`${base}/bundle?format=3`)).arrayBuffer())
+    expect(new TextDecoder().decode(gdt3.subarray(0, 4))).toBe('GDT3')
+    expect(await decodeBundle(gdt3)).toEqual(await decodeBundle(bundle))
+    expect(gdt3.length).toBeLessThan(bundle.length)
+    // A pack of chosen ids is a bundle of its own.
+    const ids = (await decodeBundle(bundle)).snapshots.map((s) => s.id)
+    const pack = await decodeBundle(
+      await (
+        await client.fetch(`${base}/bundle?format=3&ids=${ids.slice(1).join(',')}`)
+      ).arrayBuffer(),
+    )
+    expect(pack.snapshots.map((s) => s.id)).toEqual(ids.slice(1))
   })
 
   it('zips stored files as they are', async () => {

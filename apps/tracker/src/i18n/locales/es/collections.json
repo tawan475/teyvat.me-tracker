@@ -383,5 +383,8 @@
     },
     "needsCapture": "Completada y en curso vienen de Teyvat.me Capture 1.16 o posterior; hasta entonces, márcalas a mano.",
     "notSaved": "No se guardaron las marcas de misiones"
-  }
+  },
+  "hideDone": "Ocultar completados",
+  "hideDoneHint": "Ocultar lo completado (se recuerda en este dispositivo)",
+  "allDone": "Todo completado"
 }

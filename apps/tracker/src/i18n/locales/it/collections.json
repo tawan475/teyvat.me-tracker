@@ -383,5 +383,8 @@
     },
     "needsCapture": "Completata e in corso arrivano da Teyvat.me Capture 1.16 o successivo; fino ad allora segna le missioni a mano.",
     "notSaved": "Segni delle missioni non salvati"
-  }
+  },
+  "hideDone": "Nascondi completati",
+  "hideDoneHint": "Nascondi ciò che è completato (ricordato su questo dispositivo)",
+  "allDone": "Tutto completato"
 }

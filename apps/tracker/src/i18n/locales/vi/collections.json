@@ -383,5 +383,8 @@
     },
     "needsCapture": "Trạng thái hoàn thành và đang tiến hành lấy từ Teyvat.me Capture 1.16 trở lên; trước đó hãy tự đánh dấu.",
     "notSaved": "Chưa lưu được đánh dấu nhiệm vụ"
-  }
+  },
+  "hideDone": "Ẩn mục đã xong",
+  "hideDoneHint": "Ẩn những mục đã hoàn thành (ghi nhớ trên thiết bị này)",
+  "allDone": "Đã hoàn thành tất cả"
 }

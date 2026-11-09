@@ -383,5 +383,8 @@
     },
     "needsCapture": "Erledigt und im Gange kommen aus Teyvat.me Capture 1.16 oder neuer; bis dahin markiere Aufträge von Hand.",
     "notSaved": "Auftragsmarkierungen nicht gespeichert"
-  }
+  },
+  "hideDone": "Erledigte ausblenden",
+  "hideDoneHint": "Erledigtes ausblenden (auf diesem Gerät gemerkt)",
+  "allDone": "Alles erledigt"
 }

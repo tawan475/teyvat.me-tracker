@@ -383,5 +383,8 @@
     },
     "needsCapture": "Status selesai dan berlangsung berasal dari Teyvat.me Capture 1.16 atau lebih baru; sebelum itu, tandai quest secara manual.",
     "notSaved": "Tanda quest tidak tersimpan"
-  }
+  },
+  "hideDone": "Sembunyikan yang selesai",
+  "hideDoneHint": "Sembunyikan yang sudah selesai (diingat di perangkat ini)",
+  "allDone": "Semua selesai"
 }

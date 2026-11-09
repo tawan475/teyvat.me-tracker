@@ -4,6 +4,7 @@ import { Check, CheckCheck, Gift, SearchX, UserCheck, Users } from 'lucide-vue-n
 import { characterInfo } from '@gdt/game-data/catalog'
 import EntryGrid, { type GridEntry } from './EntryGrid.vue'
 import HaveFilter, { type HaveFilterValue } from './HaveFilter.vue'
+import HideDoneChip, { useHideDone } from './HideDoneChip.vue'
 import NotCaptured from './NotCaptured.vue'
 import FilterChip from '@/components/ui/FilterChip.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
@@ -125,6 +126,14 @@ const rewardLeft = computed(() =>
 )
 const setsHave = computed(() => setCards.value.filter((s) => s.learned).length)
 const rewardsHave = computed(() => companions.value.reduce((sum, c) => sum + c.claimed, 0))
+/** Hide completed: companions with every reward claimed are left off the list. */
+const hideDone = useHideDone('collections:teapot-companions-hide-done')
+const companionsDone = computed(
+  () => companions.value.filter((c) => c.total > 0 && c.claimed >= c.total).length,
+)
+const companionsShown = computed(() =>
+  hideDone.value ? companions.value.filter((c) => c.claimed < c.total) : companions.value,
+)
 const rewardsTotal = computed(() => companions.value.reduce((sum, c) => sum + c.total, 0))
 
 type SetFilter = 'gift' | 'all' | 'left'
@@ -261,7 +270,7 @@ const view = computed<View>({
           <UiSegmented v-model="view" :options="views" :label="$t('collections.blueprints.view')" />
         </div>
       </template>
-      <template v-if="view === 'sets' || (view === 'companions' && ownedKeys)" #actions>
+      <template v-if="view === 'sets' || view === 'companions'" #actions>
         <div class="scroll-hide scroll-fade-x flex max-w-full gap-2 overflow-x-auto">
           <div
             v-if="view === 'sets'"
@@ -281,6 +290,7 @@ const view = computed<View>({
               {{ chip.label }}
             </FilterChip>
           </div>
+          <HideDoneChip v-if="view === 'companions'" v-model="hideDone" :done="companionsDone" />
           <FilterChip
             v-if="ownedKeys"
             :pressed="ownedOnly"
@@ -434,13 +444,17 @@ const view = computed<View>({
       </div>
 
       <!-- Companions: their gift-set rewards claimed -->
+      <UiEmpty
+        v-else-if="view === 'companions' && companionsShown.length === 0"
+        :title="$t('collections.allDone')"
+      />
       <ul
         v-else-if="view === 'companions'"
         class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))] gap-2 p-3 sm:p-5"
         :aria-label="$t('collections.blueprints.companions')"
       >
         <li
-          v-for="c in companions"
+          v-for="c in companionsShown"
           :key="c.character"
           class="flex min-w-0 items-center gap-2 rounded-md border border-border-default bg-surface-sunken px-2 py-1.5 text-sm"
           :title="$t('collections.blueprints.setClaimed', { n: c.claimed, total: c.total })"

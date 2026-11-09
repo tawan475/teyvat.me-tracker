@@ -383,5 +383,8 @@
     },
     "needsCapture": "完了・進行中は Teyvat.me Capture 1.16 以降から取得します。それまでは手動でマークしてください。",
     "notSaved": "任務のマークを保存できませんでした"
-  }
+  },
+  "hideDone": "完了を非表示",
+  "hideDoneHint": "完了したものを非表示（この端末に保存）",
+  "allDone": "すべて完了"
 }

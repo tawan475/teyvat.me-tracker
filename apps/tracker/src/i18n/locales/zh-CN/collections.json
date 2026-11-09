@@ -383,5 +383,8 @@
     },
     "needsCapture": "“已完成”和“进行中”来自 Teyvat.me Capture 1.16 或更高版本；在此之前可手动标记任务。",
     "notSaved": "任务标记未保存"
-  }
+  },
+  "hideDone": "隐藏已完成",
+  "hideDoneHint": "隐藏已完成的项目（在此设备上记住）",
+  "allDone": "全部完成"
 }

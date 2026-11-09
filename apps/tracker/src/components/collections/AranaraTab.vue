@@ -10,6 +10,8 @@ import {
 } from 'lucide-vue-next'
 import { ARANARA_STATES, type GiAranaraState } from '@gdt/shared'
 import NotCaptured from './NotCaptured.vue'
+import HideDoneChip, { useHideDone } from './HideDoneChip.vue'
+import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
 import UiStat from '@/components/ui/UiStat.vue'
@@ -39,6 +41,11 @@ const counts = computed(() => {
   return out
 })
 const found = computed(() => entries.value.length - counts.value.none)
+/** Hide completed: Aranara whose story is finished are left off the list. */
+const hideDone = useHideDone('collections:aranara-hide-done')
+const shown = computed(() =>
+  hideDone.value ? entries.value.filter((e) => e.state !== 'finished') : entries.value,
+)
 
 const STATE: Record<GiAranaraState, { icon: Component; tile: string; mark: string }> = {
   none: {
@@ -113,6 +120,7 @@ const entryName = (id: number) => t('collections.aranara.entry', { n: formatNumb
         </div>
       </template>
       <template #actions>
+        <HideDoneChip v-model="hideDone" :done="counts.finished" />
         <a
           :href="ARANARA_GUIDE"
           target="_blank"
@@ -124,8 +132,13 @@ const entryName = (id: number) => t('collections.aranara.entry', { n: formatNumb
         </a>
       </template>
 
-      <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-2 p-3 sm:p-5">
-        <li v-for="entry in entries" :key="entry.id" class="flex min-w-0">
+      <UiEmpty v-if="shown.length === 0" :title="$t('collections.allDone')" />
+
+      <ul
+        v-else
+        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-2 p-3 sm:p-5"
+      >
+        <li v-for="entry in shown" :key="entry.id" class="flex min-w-0">
           <a
             :href="ARANARA_GUIDE"
             target="_blank"

@@ -5,6 +5,8 @@ import type { GiEndingState } from '@gdt/shared'
 import NotCaptured from './NotCaptured.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
+import HideDoneChip, { useHideDone } from './HideDoneChip.vue'
+import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
 import UiStat from '@/components/ui/UiStat.vue'
@@ -21,6 +23,14 @@ const props = defineProps<{ captured: CapturedCollections; catalog: CollectionCa
 const hangouts = computed(() => props.captured.hangouts?.value ?? null)
 const chapters = computed(() =>
   hangouts.value ? hangoutChapters(hangouts.value, props.catalog) : [],
+)
+/** Hide completed: chapters with every ending done are left off the list. */
+const hideDone = useHideDone('collections:hangouts-hide-done')
+const isDone = (c: { endingsDone: number; endings: unknown[] }) =>
+  c.endings.length > 0 && c.endingsDone >= c.endings.length
+const chaptersDone = computed(() => chapters.value.filter(isDone).length)
+const shownChapters = computed(() =>
+  hideDone.value ? chapters.value.filter((c) => !isDone(c)) : chapters.value,
 )
 const totals = computed(() =>
   chapters.value.reduce(
@@ -97,9 +107,16 @@ const endingLabel = (state: GiEndingState) => t(`collections.hangouts.endingStat
     </ul>
 
     <UiPanel :title="$t('collections.tabs.hangouts')" flush>
-      <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-3 p-3 sm:p-5">
+      <template #actions>
+        <HideDoneChip v-model="hideDone" :done="chaptersDone" />
+      </template>
+      <UiEmpty v-if="shownChapters.length === 0" :title="$t('collections.allDone')" />
+      <ul
+        v-else
+        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,19rem),1fr))] gap-3 p-3 sm:p-5"
+      >
         <li
-          v-for="chapter in chapters"
+          v-for="chapter in shownChapters"
           :key="chapter.id"
           class="flex min-w-0 flex-col gap-2.5 rounded-xl border border-border-default bg-surface-sunken p-3"
         >

@@ -383,5 +383,8 @@
     },
     "needsCapture": "Done and in progress come from Teyvat.me Capture 1.16 or later; until then, mark quests by hand.",
     "notSaved": "Quest marks not saved"
-  }
+  },
+  "hideDone": "Hide completed",
+  "hideDoneHint": "Leave out what is done (remembered on this device)",
+  "allDone": "All done"
 }

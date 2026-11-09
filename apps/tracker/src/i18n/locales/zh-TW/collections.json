@@ -383,5 +383,8 @@
     },
     "needsCapture": "「已完成」與「進行中」來自 Teyvat.me Capture 1.16 或更新版本；在此之前可手動標記任務。",
     "notSaved": "任務標記未儲存"
-  }
+  },
+  "hideDone": "隱藏已完成",
+  "hideDoneHint": "隱藏已完成的項目（在此裝置上記住）",
+  "allDone": "全部完成"
 }

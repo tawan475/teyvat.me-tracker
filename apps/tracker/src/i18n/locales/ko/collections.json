@@ -383,5 +383,8 @@
     },
     "needsCapture": "완료와 진행 중은 Teyvat.me Capture 1.16 이상에서 가져옵니다. 그 전에는 직접 표시하세요.",
     "notSaved": "임무 표시를 저장하지 못했습니다"
-  }
+  },
+  "hideDone": "완료 항목 숨기기",
+  "hideDoneHint": "완료한 항목을 숨깁니다 (이 기기에 저장)",
+  "allDone": "모두 완료"
 }

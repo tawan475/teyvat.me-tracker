@@ -383,5 +383,8 @@
     },
     "needsCapture": "Tamamlandı ve devam ediyor bilgisi Teyvat.me Capture 1.16 veya sonrasından gelir; o zamana kadar görevleri elle işaretle.",
     "notSaved": "Görev işaretleri kaydedilmedi"
-  }
+  },
+  "hideDone": "Tamamlananları gizle",
+  "hideDoneHint": "Tamamlananları gizle (bu cihazda hatırlanır)",
+  "allDone": "Hepsi tamamlandı"
 }

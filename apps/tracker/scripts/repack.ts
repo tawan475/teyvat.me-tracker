@@ -8,6 +8,8 @@
 //   pnpm --filter @gdt/tracker admin:repack --apply            write those that save >= 5%
 //   pnpm --filter @gdt/tracker admin:repack --account 22 [--account 23] [--apply]
 //   ... --local                                                the dev database instead
+//   pnpm --filter @gdt/tracker admin:repack --reencode [--apply]  only re-encode, in place,
+//        the JSON-layout blobs a binary form now holds (worker/services/reencode.ts)
 //
 // Needs wrangler signed in (`wrangler login`), or on a server
 // CLOUDFLARE_API_TOKEN (Account · D1 · Edit) and CLOUDFLARE_ACCOUNT_ID.
@@ -19,11 +21,13 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPlatformProxy } from 'wrangler'
+import { reencodeAccount } from '../worker/services/reencode.ts'
 import { reorderAccount, type ReorderResult } from '../worker/services/reorder.ts'
 
 const args = process.argv.slice(2)
 const apply = args.includes('--apply')
 const local = args.includes('--local')
+const reencode = args.includes('--reencode')
 const only = args.flatMap((arg, i) => (arg === '--account' ? [Number(args[i + 1])] : []))
 if (only.some((id) => !Number.isInteger(id) || id <= 0)) {
   console.error('Usage: admin:repack [--account <id> ...] [--apply] [--local]')
@@ -71,6 +75,24 @@ try {
     )
     .all<{ id: number; n: number }>()
   const accounts = results.filter((a) => a.n > 0 && (!only.length || only.includes(a.id)))
+  if (reencode) {
+    console.log(
+      `${apply ? 'Re-encoding' : 'Dry run of re-encoding'} JSON blobs of ${accounts.length} account(s)`,
+    )
+    console.log('account	blobs	before	after	result')
+    let before = 0
+    let after = 0
+    for (const { id } of accounts) {
+      const result = await reencodeAccount(d1, id, { dryRun: !apply })
+      if (result.reason === 'nothing to do') continue
+      before += result.before
+      after += result.applied || result.reason === 'dry run' ? result.after : result.before
+      const outcome = result.applied ? 'written' : (result.reason ?? '')
+      console.log([id, result.blobs, kb(result.before), kb(result.after), outcome].join('	'))
+    }
+    console.log(`Total: ${kb(before)} -> ${kb(after)}`)
+    process.exit(0)
+  }
   console.log(
     `${apply ? 'Repacking' : 'Dry run over'} ${accounts.length} account(s) on the ${local ? 'local' : 'remote'} database`,
   )

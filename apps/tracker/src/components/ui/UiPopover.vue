@@ -28,6 +28,8 @@ const emit = defineEmits<{ close: [] }>()
 useUpdateHold(() => props.open)
 
 const panel = ref<HTMLElement>()
+/** The phone sheet's dimmed backdrop. */
+const backdrop = ref<HTMLElement>()
 const wide = shallowRef(true)
 const style = shallowRef<Record<string, string>>({})
 /** Where it renders: the anchor's dialog, else the page. */
@@ -72,6 +74,10 @@ function onKey(event: KeyboardEvent) {
 function onPointerDown(event: Event) {
   const node = event.target as Node | null
   if (!node || panel.value?.contains(node) || props.anchor?.contains(node)) return
+  // The phone sheet's backdrop closes on its own click: closing here would
+  // take it away mid-tap, and the tap would land on (and open) whatever is
+  // under it (the user's report: another goal's cost opened at once).
+  if (backdrop.value?.contains(node)) return
   emit('close')
 }
 
@@ -132,9 +138,10 @@ const sheet = computed(() => !wide.value)
     <template v-if="open">
       <div
         v-if="sheet"
+        ref="backdrop"
         class="fixed inset-0 z-50 bg-slate-900/40"
         aria-hidden="true"
-        @click="emit('close')"
+        @click.stop.prevent="emit('close')"
       />
       <div
         ref="panel"
@@ -144,7 +151,7 @@ const sheet = computed(() => !wide.value)
         class="fixed z-50 flex flex-col overflow-hidden border border-border-default bg-surface-raised text-text-primary shadow-overlay outline-none"
         :class="
           sheet
-            ? 'inset-x-0 bottom-0 max-h-[80dvh] rounded-t-xl pb-[env(safe-area-inset-bottom)]'
+            ? 'inset-x-0 bottom-0 max-h-[80dvh] min-h-[40dvh] rounded-t-xl pb-[env(safe-area-inset-bottom)]'
             : 'w-[25rem] max-w-[calc(100vw-1rem)] rounded-xl'
         "
         :style="style"

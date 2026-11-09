@@ -147,7 +147,9 @@
     "notifyAt": "Notify at",
     "off": "Off",
     "whileOpen": "While the site is open on this device",
-    "alertPush": "Resin alert: by push on this device · Settings → Devices"
+    "alertPush": "Resin alert: by push on this device · Settings → Devices",
+    "live": "Live from Capture",
+    "liveTitle": "Teyvat.me Capture is updating resin live. Close it to set resin by hand."
   },
   "artifacts": {
     "title": "Artifacts",

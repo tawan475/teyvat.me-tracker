@@ -147,7 +147,9 @@
     "notifyAt": "Beri tahu di",
     "off": "Mati",
     "whileOpen": "Selama situs terbuka di perangkat ini",
-    "alertPush": "Peringatan resin: lewat push ke perangkat ini · Pengaturan → Perangkat"
+    "alertPush": "Peringatan resin: lewat push ke perangkat ini · Pengaturan → Perangkat",
+    "live": "Langsung dari Capture",
+    "liveTitle": "Teyvat.me Capture memperbarui resin secara langsung. Tutup untuk mengatur resin secara manual."
   },
   "artifacts": {
     "title": "Artefak",

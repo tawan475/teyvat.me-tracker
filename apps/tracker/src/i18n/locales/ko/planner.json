@@ -147,7 +147,9 @@
     "notifyAt": "알림 시점",
     "off": "끄기",
     "whileOpen": "이 기기에서 사이트가 열려 있는 동안",
-    "alertPush": "레진 알림: 이 기기로 푸시 전송 · 설정 → 기기"
+    "alertPush": "레진 알림: 이 기기로 푸시 전송 · 설정 → 기기",
+    "live": "Capture에서 실시간",
+    "liveTitle": "Teyvat.me Capture가 레진을 실시간으로 갱신하고 있습니다. 직접 설정하려면 닫으세요."
   },
   "artifacts": {
     "title": "성유물",

@@ -147,7 +147,9 @@
     "notifyAt": "Melden bei",
     "off": "Aus",
     "whileOpen": "Solange die Seite auf diesem Gerät offen ist",
-    "alertPush": "Harz-Hinweis: per Push auf dieses Gerät · Einstellungen → Geräte"
+    "alertPush": "Harz-Hinweis: per Push auf dieses Gerät · Einstellungen → Geräte",
+    "live": "Live aus Capture",
+    "liveTitle": "Teyvat.me Capture aktualisiert das Harz live. Schließe es, um das Harz von Hand zu setzen."
   },
   "artifacts": {
     "title": "Artefakte",

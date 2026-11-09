@@ -2,7 +2,7 @@
 import { pushOnHere } from '@/lib/push-flag'
 import type { ManualResin } from '@gdt/shared'
 import { computed, ref, shallowRef, watch } from 'vue'
-import { Bell, BellOff, BellRing, ChevronRight, Pencil } from 'lucide-vue-next'
+import { Bell, BellOff, BellRing, ChevronRight, Pencil, Radio } from 'lucide-vue-next'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -64,6 +64,13 @@ const props = defineProps<{
   accountName: string
   /** The page a notification opens. */
   url: string
+  /**
+   * Teyvat.me Capture is playing the account (live sync): every batch it
+   * sends dates the captured resin anew, so a value set by hand would be
+   * replaced within seconds. The buttons are off then (a Discord report,
+   * 2026-11-09: "not doing anything").
+   */
+  live?: boolean
 }>()
 const emit = defineEmits<{ set: [value: ManualResin | null]; settings: [] }>()
 
@@ -215,8 +222,9 @@ watch(
       <button
         type="button"
         class="group tabular inline-flex items-baseline gap-1 rounded-md px-1 font-mono transition-colors hover:bg-surface-overlay"
-        :title="readingTitle"
+        :title="live ? $t('planner.resin.liveTitle') : readingTitle"
         :aria-label="$t('planner.resin.setLabel', { title: readingTitle })"
+        :disabled="live"
         @click="openEdit"
       >
         <span
@@ -226,6 +234,7 @@ watch(
         >
         <span class="text-sm text-text-muted">/{{ RESIN_MAX }}</span>
         <Pencil
+          v-if="!live"
           class="size-3.5 self-center text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
           aria-hidden="true"
         />
@@ -237,11 +246,13 @@ watch(
           :key="step"
           size="sm"
           class="tabular min-w-12 font-mono"
-          :disabled="!canStep(step)"
+          :disabled="live || !canStep(step)"
           :title="
-            step < 0
-              ? $t('planner.resin.spend', { n: Math.abs(step) })
-              : $t('planner.resin.add', { n: Math.abs(step) })
+            live
+              ? $t('planner.resin.liveTitle')
+              : step < 0
+                ? $t('planner.resin.spend', { n: Math.abs(step) })
+                : $t('planner.resin.add', { n: Math.abs(step) })
           "
           @click="applyStep(step)"
           >{{ formatStep(step) }}</UiButton
@@ -251,6 +262,14 @@ watch(
     <p
       class="tabular flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary"
     >
+      <span
+        v-if="live"
+        class="inline-flex items-center gap-1.5 text-text-secondary"
+        :title="$t('planner.resin.liveTitle')"
+      >
+        <Radio class="size-3.5 text-success-text" aria-hidden="true" />
+        {{ $t('planner.resin.live') }}
+      </span>
       <span
         v-if="full"
         class="inline-flex gap-1.5"

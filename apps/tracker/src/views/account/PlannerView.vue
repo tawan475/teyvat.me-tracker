@@ -158,6 +158,7 @@ import { readStorage, writeStorage } from '@/lib/storage'
 import { useFeedback } from '@/stores/feedback'
 import { materialName } from '@/utils/materials'
 import CapturePresence from '@/components/live/CapturePresence.vue'
+import { loadPresence, presenceOf } from '@/live/presence'
 import { alertFactsOf } from '@/components/planner/alert-facts'
 import { useAlertFacts } from '@/components/planner/alert-facts-send'
 import {
@@ -282,6 +283,15 @@ const resin = computed(() => {
 })
 /** The resin to count from: the capture's, or one set by hand after it. */
 const reading = computed(() => resinReading(resin.value, settings.value.resin))
+/**
+ * Capture is playing the account (live sync): its batches date the captured
+ * resin anew, so hand-set resin can't hold; the tracker's buttons are off.
+ */
+if (!demo && !guest) void loadPresence(account.value.id)
+// Only while it decodes the game: open with the game closed, it sends nothing.
+const resinLive = computed(
+  () => !demo && !guest && presenceOf(account.value.id, now.value)?.presence?.state === 'decoding',
+)
 /** Alerts (docs/plans/capture-link.md): what this page knows, for the server's alarm. */
 const canWrite = computed(() => !presenceReadOnly && presenceAccess.value !== 'viewer')
 useAlertFacts(
@@ -1817,6 +1827,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
         :account-id="account.id"
         :account-name="accountLabel"
         :url="plannerUrl"
+        :live="resinLive"
         @set="(value) => void saveSettings({ resin: value })"
         @settings="settingsOpen = true"
       />

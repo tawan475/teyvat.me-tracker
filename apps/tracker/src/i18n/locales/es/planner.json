@@ -147,7 +147,9 @@
     "notifyAt": "Avisar en",
     "off": "Desactivado",
     "whileOpen": "Mientras el sitio esté abierto en este dispositivo",
-    "alertPush": "Aviso de resina: por push en este dispositivo · Ajustes → Dispositivos"
+    "alertPush": "Aviso de resina: por push en este dispositivo · Ajustes → Dispositivos",
+    "live": "En vivo desde Capture",
+    "liveTitle": "Teyvat.me Capture actualiza la resina en vivo. Ciérralo para fijarla a mano."
   },
   "artifacts": {
     "title": "Artefactos",

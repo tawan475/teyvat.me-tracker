@@ -147,7 +147,9 @@
     "notifyAt": "Avvisa a",
     "off": "Disattivato",
     "whileOpen": "Finché il sito è aperto su questo dispositivo",
-    "alertPush": "Avviso resina: via push su questo dispositivo · Impostazioni → Dispositivi"
+    "alertPush": "Avviso resina: via push su questo dispositivo · Impostazioni → Dispositivi",
+    "live": "In diretta da Capture",
+    "liveTitle": "Teyvat.me Capture aggiorna la resina in diretta. Chiudilo per impostarla a mano."
   },
   "artifacts": {
     "title": "Manufatti",

@@ -147,7 +147,9 @@
     "notifyAt": "提醒数值",
     "off": "关闭",
     "whileOpen": "仅在此设备上开启网站时有效",
-    "alertPush": "树脂提醒：通过推送发送到此设备 · 设置 → 设备"
+    "alertPush": "树脂提醒：通过推送发送到此设备 · 设置 → 设备",
+    "live": "来自 Capture 的实时数据",
+    "liveTitle": "Teyvat.me Capture 正在实时更新树脂。关闭它即可手动设置。"
   },
   "artifacts": {
     "title": "圣遗物",

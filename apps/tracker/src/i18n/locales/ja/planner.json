@@ -147,7 +147,9 @@
     "notifyAt": "通知する値",
     "off": "オフ",
     "whileOpen": "このデバイスでサイトを開いている間",
-    "alertPush": "樹脂の通知：このデバイスにプッシュで届きます · 設定 → デバイス"
+    "alertPush": "樹脂の通知：このデバイスにプッシュで届きます · 設定 → デバイス",
+    "live": "Capture からライブ",
+    "liveTitle": "Teyvat.me Capture が樹脂をライブで更新しています。手動で設定するには閉じてください。"
   },
   "artifacts": {
     "title": "聖遺物",

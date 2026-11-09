@@ -147,7 +147,9 @@
     "notifyAt": "Bildirim eşiği",
     "off": "Kapalı",
     "whileOpen": "Site bu cihazda açıkken",
-    "alertPush": "Reçine uyarısı: bu cihaza push ile · Ayarlar → Cihazlar"
+    "alertPush": "Reçine uyarısı: bu cihaza push ile · Ayarlar → Cihazlar",
+    "live": "Capture'dan canlı",
+    "liveTitle": "Teyvat.me Capture reçineyi canlı güncelliyor. Elle ayarlamak için kapatın."
   },
   "artifacts": {
     "title": "Yadigarlar",

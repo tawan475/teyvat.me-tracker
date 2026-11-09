@@ -147,7 +147,9 @@
     "notifyAt": "Báo khi đạt",
     "off": "Tắt",
     "whileOpen": "Khi trang đang mở trên thiết bị này",
-    "alertPush": "Báo nhựa: gửi qua push đến thiết bị này · Cài đặt → Thiết bị"
+    "alertPush": "Báo nhựa: gửi qua push đến thiết bị này · Cài đặt → Thiết bị",
+    "live": "Trực tiếp từ Capture",
+    "liveTitle": "Teyvat.me Capture đang cập nhật nhựa trực tiếp. Đóng ứng dụng để tự đặt."
   },
   "artifacts": {
     "title": "Thánh Di Vật",

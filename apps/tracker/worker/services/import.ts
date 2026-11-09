@@ -134,14 +134,14 @@ export const NEAREST_SQL = `SELECT id, ${REFS_SQL} FROM (
  * (bases, and their dictionaries), with data: at most three levels. Nothing
  * for a v1 row.
  */
-const LATEST_BLOBS_SQL = `WITH RECURSIVE latest AS (
+export const LATEST_BLOBS_SQL = `WITH RECURSIVE latest AS (
     SELECT ${REFS_SQL} FROM (${NEAREST_SQL})),
   need(id, depth) AS (
     SELECT j.value, 0 FROM latest, json_each(json_array(${REFS_SQL})) AS j
     UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
       WHERE b.base_id IS NOT NULL AND n.depth < 3)
   SELECT b.id, b.kind, hex(b.hash) AS hash, b.base_id, b.data FROM section_blobs AS b
-  WHERE b.account_id = ?1 AND b.id IN (SELECT id FROM need WHERE id IS NOT NULL)`
+  WHERE +b.account_id = ?1 AND b.id IN (SELECT id FROM need WHERE id IS NOT NULL)`
 
 const sameTimeSql = (legacy: boolean) => `SELECT id,
     ${legacy ? 'content_hash' : 'NULL AS content_hash'}, content_key FROM snapshots

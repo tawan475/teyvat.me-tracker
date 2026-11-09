@@ -15,7 +15,8 @@ import {
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { describe, expect, it } from 'vitest'
-import { NEAREST_SQL } from '../services/import'
+import { BUNDLE_IDS_SQL, V2_BLOBS_SQL, V2_META_SQL } from '../services/export'
+import { LATEST_BLOBS_SQL, NEAREST_SQL } from '../services/import'
 import { reorderAccount } from '../services/reorder'
 import { COLLECT_SECTION_BLOBS, runMaintenance, TRASH_DAYS } from '../services/maintenance'
 import type { RepackResult } from '../services/repack'
@@ -411,6 +412,22 @@ describe('snapshot query plans', () => {
     expect(detail).toMatch(new RegExp(`${LIVE}|INTEGER PRIMARY KEY|USING INDEX`))
     expect(detail).not.toMatch(/SCAN snapshots(?! USING)/)
   })
+
+  it.each([
+    ["a bundle's blobs and their bases", V2_BLOBS_SQL, [1, '[1,2,3]']],
+    ["a bundle's delta keyframes", V2_META_SQL, [1, '[1,2,3]']],
+    ["the import's neighbour blobs", LATEST_BLOBS_SQL, [1, 2]],
+    ['a bundle of chosen snapshots', BUNDLE_IDS_SQL('id, meta'), [1, '[1,2]', 10]],
+  ] as const)(
+    '%s are read by primary key, never by scanning the account',
+    async (_, sql, params) => {
+      const detail = await plan(sql, ...params)
+      expect(detail).toMatch(/USING INTEGER PRIMARY KEY/)
+      // The (account_id, hash) index read every blob of the account.
+      expect(detail).not.toMatch(/section_blobs_account_hash_unique/)
+      expect(detail).not.toMatch(/SCAN (section_blobs|snapshots)(?! USING)/)
+    },
+  )
 
   it('reads by primary key where rows are joined by id', async () => {
     expect(

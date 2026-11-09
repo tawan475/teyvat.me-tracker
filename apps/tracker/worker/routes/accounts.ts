@@ -385,8 +385,11 @@ export const accounts = new Hono<AppEnv>()
       accountEtag(account, `${await shortHash(variant)}.${BUNDLE_FORMAT_ETAG[format]}`),
     )
     if (cached) return cached
+    const meter = new D1Meter()
+    const bundle = await buildBundle(meter.wrap(c.env.DB), account.id, ids, sections, format)
+    meter.report(c)
     c.header('Content-Type', 'application/octet-stream')
-    return c.body(await buildBundle(c.env.DB, account.id, ids, sections, format))
+    return c.body(bundle)
   })
 
   .get('/:id/snapshots/:snapshotId/good', async (c) => {

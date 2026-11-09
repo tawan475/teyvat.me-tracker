@@ -19,7 +19,10 @@ import {
 // then without them for the rest of the isolate's life. So that migration
 // can ship on its own, with this code already running.
 
-let legacySchema = true
+// Migration 0017 dropped them (2026-10-07): start without them, so a cold
+// isolate no longer spends a failed round trip finding that out. A database
+// that still had them would only be read without its v1 rows.
+let legacySchema = false
 
 /** True when `error` (or its cause) says a column or table does not exist. */
 export function isMissingSchema(error: unknown): boolean {

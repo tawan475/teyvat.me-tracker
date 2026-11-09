@@ -48,7 +48,7 @@ const NEWEST_EXTRAS_SQL = `WITH RECURSIVE newest AS (
     UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
       WHERE b.base_id IS NOT NULL AND n.depth < 3)
   SELECT b.id, b.kind, b.base_id, b.data FROM section_blobs AS b
-  WHERE b.account_id = ?1 AND b.id IN (SELECT id FROM need)`
+  WHERE +b.account_id = ?1 AND b.id IN (SELECT id FROM need)`
 
 export async function attachEndgame(
   d1: D1Database,

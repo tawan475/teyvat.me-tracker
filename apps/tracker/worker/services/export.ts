@@ -60,8 +60,18 @@ export const SECTION_NAMES = [
 ] as const satisfies readonly Slot[]
 export type SectionName = (typeof SECTION_NAMES)[number]
 
-/** Most snapshots one bundle request may cover; sections dedupe, so this is still small. */
+/**
+ * Most snapshots one bundle request may cover; sections dedupe, so this is
+ * still small. Past it the newest are kept (the oldest drop out).
+ */
 export const MAX_BUNDLE_SNAPSHOTS = 5000
+
+/** Slots stored as a delta of a keyframe: the manifest names the keyframe. */
+const DELTA_SLOTS = [
+  'artifacts',
+  'materials',
+  'achievementTimes',
+] as const satisfies readonly Slot[]
 
 /** Bundle layout: 1 for apps from before v2 storage (asked for nothing), 2 when asked. */
 export type BundleFormat = 1 | 2
@@ -125,7 +135,30 @@ async function loadV1Blobs(d1: D1Database, accountId: number, hashes: string[]) 
 
 // ------------------------------------------------------------------ v2 rows
 
-/** Blob rows (with data) of `ids` and every base they need. */
+/** `?1` account, `?2` JSON ids: those blobs and every base they need, with data. */
+export const V2_BLOBS_SQL = `WITH RECURSIVE need(id, depth) AS (
+    SELECT value, 0 FROM json_each(?2)
+    UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
+      WHERE b.base_id IS NOT NULL AND n.depth < 3)
+  SELECT id, kind, base_id, data FROM section_blobs
+  WHERE +account_id = ?1 AND id IN (SELECT id FROM need)`
+
+/** `?1` account, `?2` JSON ids: those blobs' kind and base. */
+export const V2_META_SQL = `SELECT id, kind, base_id FROM section_blobs WHERE +account_id = ?1
+  AND id IN (SELECT value FROM json_each(?2))`
+
+/** `?1` account, `?2` JSON ids, `?3` cap: those live snapshots by primary key, newest first. */
+export const BUNDLE_IDS_SQL = (columns: string) => `SELECT ${columns} FROM snapshots
+  WHERE id IN (SELECT value FROM json_each(?2)) AND +account_id = ?1
+  AND deleted_at IS NULL ORDER BY taken_at DESC, id DESC LIMIT ?3`
+
+/**
+ * Blob rows (with data) of `ids` and every base they need. Every blob lookup
+ * here names `+account_id`: the unary plus keeps SQLite off the
+ * `(account_id, hash)` unique index, whose use read every blob of the
+ * account (rows read grew with its history); by id it reads only the rows
+ * asked for. The account check stays.
+ */
 async function loadV2Blobs(
   d1: D1Database,
   accountId: number,
@@ -133,14 +166,7 @@ async function loadV2Blobs(
 ): Promise<Map<number, RawBlob>> {
   if (ids.length === 0) return new Map()
   const { results } = await d1
-    .prepare(
-      `WITH RECURSIVE need(id, depth) AS (
-         SELECT value, 0 FROM json_each(?2)
-         UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
-           WHERE b.base_id IS NOT NULL AND n.depth < 3)
-       SELECT id, kind, base_id, data FROM section_blobs
-       WHERE account_id = ?1 AND id IN (SELECT id FROM need)`,
-    )
+    .prepare(V2_BLOBS_SQL)
     .bind(accountId, JSON.stringify(ids))
     .all<Record<string, unknown>>()
   return new Map(
@@ -164,10 +190,7 @@ async function loadV2Meta(
 ): Promise<Map<number, { code: number; baseId: number | null }>> {
   if (ids.length === 0) return new Map()
   const { results } = await d1
-    .prepare(
-      `SELECT id, kind, base_id FROM section_blobs WHERE account_id = ?1
-       AND id IN (SELECT value FROM json_each(?2))`,
-    )
+    .prepare(V2_META_SQL)
     .bind(accountId, JSON.stringify(ids))
     .all<Record<string, unknown>>()
   return new Map(
@@ -239,28 +262,27 @@ export async function buildBundle(
   sections: ReadonlySet<SectionName>,
   format: BundleFormat = 1,
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const { results: rows } = await withLegacySchema((legacy) =>
-    d1
-      .prepare(
-        `SELECT ${rowColumns(legacy)} FROM snapshots
-         WHERE account_id = ?1 AND deleted_at IS NULL
-         AND (?2 IS NULL OR id IN (SELECT value FROM json_each(?2)))
-         ORDER BY taken_at, id LIMIT ?3`,
-      )
-      .bind(accountId, ids ? JSON.stringify(ids) : null, MAX_BUNDLE_SNAPSHOTS)
-      .all<StoredRow>(),
+  // Chosen ids are read by primary key (an `OR` with them read every row);
+  // the whole history newest first, so a cap would leave out the oldest.
+  const { results: newestFirst } = await withLegacySchema((legacy) =>
+    (ids
+      ? d1
+          .prepare(BUNDLE_IDS_SQL(rowColumns(legacy)))
+          .bind(accountId, JSON.stringify(ids), MAX_BUNDLE_SNAPSHOTS)
+      : d1
+          .prepare(
+            `SELECT ${rowColumns(legacy)} FROM snapshots
+             WHERE account_id = ?1 AND deleted_at IS NULL
+             ORDER BY taken_at DESC, id DESC LIMIT ?2`,
+          )
+          .bind(accountId, MAX_BUNDLE_SNAPSHOTS)
+    ).all<StoredRow>(),
   )
+  const rows = newestFirst.reverse()
 
   const v1Rows = rows.filter((row) => !isV2(row)) as V1StoredRow[]
   const v2Rows = rows.filter(isV2)
   const hashes = [...new Set(v1Rows.flatMap((row) => v1Hashes(row, sections)))]
-  const refs = [
-    ...new Set(
-      v2Rows.flatMap((row) =>
-        SECTION_NAMES.map((slot) => refOf(row, slot)).filter((id): id is number => id !== null),
-      ),
-    ),
-  ]
   const wanted = [
     ...new Set(
       v2Rows.flatMap((row) =>
@@ -270,11 +292,25 @@ export async function buildBundle(
       ),
     ),
   ]
-  const [legacy, meta, blobs] = await Promise.all([
+  // The manifest names a delta's keyframe: only the three delta slots need
+  // their blob's kind and base, and only those not fetched with data anyway.
+  const wantedSet = new Set(wanted)
+  const refs = [
+    ...new Set(
+      v2Rows.flatMap((row) =>
+        DELTA_SLOTS.map((slot) => refOf(row, slot)).filter(
+          (id): id is number => id !== null && !wantedSet.has(id),
+        ),
+      ),
+    ),
+  ]
+  const [legacy, metaRest, blobs] = await Promise.all([
     loadV1Blobs(d1, accountId, hashes),
     loadV2Meta(d1, accountId, refs),
     loadV2Blobs(d1, accountId, wanted),
   ])
+  const meta = new Map(metaRest)
+  for (const blob of blobs.values()) meta.set(blob.id, { code: blob.code, baseId: blob.baseId })
   const entries = rows.map((row) =>
     isV2(row) ? toBundleSnapshotV2(row, meta) : toBundleSnapshotV1(row as V1StoredRow),
   )

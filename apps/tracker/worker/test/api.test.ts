@@ -1231,6 +1231,43 @@ describe('D1 cost', () => {
     expect(small.cost['rows-read']).toBeLessThan(150)
   })
 
+  // docs/plans/storage-efficiency.md §2: blob lookups by id used to scan the
+  // account's (account_id, hash) index, so serving one snapshot read rows in
+  // proportion to the whole history (318 at 50 snapshots).
+  it('serves one snapshot reading rows for it, not for the whole history', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    for (let i = 0; i < 18; i++) {
+      const response = await importByKey(
+        importKey,
+        sampleGood({ materials: { Mora: 1_000 + i, Primogem: i } }),
+        1_000 * (i + 1),
+      )
+      expect(response.ok).toBe(true)
+    }
+    const costOf = async (path: string) => {
+      const response = await client.fetch(path, { headers: { 'x-diag-key': DIAG } })
+      expect(response.status, await response.clone().text()).toBe(200)
+      const header = response.headers.get('x-gdt-d1') ?? ''
+      return Object.fromEntries(
+        header.split(';').map((part) => {
+          const [k, v] = part.trim().split('=')
+          return [k, Number(v)]
+        }),
+      )
+    }
+    const base = `/api/accounts/${account.id}`
+    const list = await client.json<SnapshotResponse[]>(`${base}/snapshots`)
+    expect(list).toHaveLength(18)
+    const last = list[0]!.id
+    const one = await costOf(`${base}/bundle?format=2&ids=${last}`)
+    expect(one['rows-read']).toBeLessThanOrEqual(60)
+    const history = await costOf(`${base}/bundle?format=2&sections=materials`)
+    // A history read is linear in snapshots (each reads its row, its blobs
+    // and its keyframe's): 133 at 18 when measured.
+    expect(history['rows-read']).toBeLessThanOrEqual(8 * 18 + 10)
+  })
+
   it('answers an unchanged re-upload in one round trip', async () => {
     const { client } = await signUp()
     const { importKey } = await createAccount(client)

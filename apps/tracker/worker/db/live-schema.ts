@@ -46,11 +46,29 @@ export const liveJournals = sqliteTable(
     /** UTC day of `day_batches`, the daily batch cap's counter (kept across snapshots). */
     day: text('day').notNull().default(''),
     dayBatches: integer('day_batches').notNull().default(0),
+    // The open tail and today's points (docs/plans/live-batch-writes.md): a
+    // batch writes only this row; they move to `live_batches` / `live_points`
+    // when the tail passes SPILL_BYTES, the UTC day turns or the row goes.
+    /** First seq of the open tail; 0 = no tail. */
+    tailFrom: integer('tail_from').notNull().default(0),
+    /** Unix ms (server clock) of the tail's first batch. */
+    tailAt: integer('tail_at').notNull().default(0),
+    /** Distinct paths in `tail`. */
+    tailChanges: integer('tail_changes').notNull().default(0),
+    /** The newest batches merged (encodeChanges, as `live_batches.data`). */
+    tail: bytes('tail'),
+    /** UTC day `points` holds ('' = none). */
+    pointsDay: text('points_day').notNull().default(''),
+    /** Every chart point of `points_day` (encodePoints, as `live_points.data`). */
+    points: bytes('points'),
   },
   (t) => [index('live_journals_user').on(t.userId)],
 )
 
-/** The open journal's changes, merged per 10 minutes (encodeChanges). */
+/**
+ * The open journal's older changes (encodeChanges): tails that passed
+ * SPILL_BYTES, and rows written before the tail existed (merged per 10 minutes).
+ */
 export const liveBatches = sqliteTable(
   'live_batches',
   {

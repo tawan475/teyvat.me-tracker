@@ -832,6 +832,12 @@ The server checks `base` = the journal's base, `session` = the journal's session
 snapshot's `gi_capture.session`; a snapshot without one opens a journal any session may
 continue) and `seq` = last + 1 (`seq` ≤ last → duplicate).
 
+Storage (server side only, 2026-11-09, `docs/plans/live-batch-writes.md`): a batch
+writes only the journal row, which holds the open tail of merged changes and the
+current UTC day's chart points; the tail moves to a `live_batches` row past 16 KB
+(`SPILL_BYTES`, replacing the 10-minute merge window) and the points to `live_points`
+when the day turns or the row is deleted. Nothing above changes for irminsul.
+
 **Item guids in the browser**: stored snapshots keep no guids. At each snapshot the
 tracker stores the file's guid → fingerprint index (`itemIndexOf`, ~10 B per item) on
 the journal row; `GET /live` returns `[kind, guid, fingerprint]` for the base items the

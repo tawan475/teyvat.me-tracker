@@ -1,6 +1,12 @@
 import {
+  POINT_SPACING_MS,
+  addPoint,
   applyLiveBatch,
   applyLivePoint,
+  decodePoints,
+  encodeChanges,
+  encodePoints,
+  mergeChanges,
   type AccountCreatedResponse,
   type AccountResponse,
   type SnapshotResponse,
@@ -15,13 +21,17 @@ import { describe, expect, it } from 'vitest'
 import {
   COLLAPSE_CHANGES,
   DAILY_BATCHES,
-  MERGE_WINDOW_MS,
   PUSH_MAX_BYTES,
+  SPILL_BYTES,
+  deleteJournalStatements,
+  flushJournals,
+  liveUsage,
   openJournal,
   readJournal,
   readPoints,
   storeBatch,
 } from '../services/live-sync'
+import { toBytes } from '../services/storage'
 import { utcDay } from '../services/upload-limits'
 import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
 
@@ -177,8 +187,9 @@ describe('live sync on', () => {
       headers: { 'if-none-match': etag },
     })
     expect(cached.status).toBe(304)
-    // Both batches went into one row (under 10 minutes apart).
-    expect(await batchRows(account.id)).toHaveLength(1)
+    // Both batches are the journal row's tail: no batch row.
+    expect(await batchRows(account.id)).toHaveLength(0)
+    expect(await journalRow(account.id)).toMatchObject({ tail_from: 1, last_seq: 2 })
 
     // Points: one for the day so far.
     const { points } = await client.json<LivePointsResponse>(`/api/accounts/${account.id}/points`)
@@ -213,8 +224,8 @@ describe('live sync on', () => {
     })
     let journal = (await readJournal(env.LIVE_DB, account.id)).response
     let points = await readPoints(env.LIVE_DB, account.id, from, to)
-    // Past both the merge window and a chart point's spacing from the last one.
-    const later = 2 * MERGE_WINDOW_MS + 60_000
+    // Past a chart point's spacing from the last one.
+    const later = 2 * POINT_SPACING_MS + 60_000
     const steps: [number, GoodDelta['changes']][] = [
       [
         0,
@@ -223,7 +234,7 @@ describe('live sync on', () => {
           ['set', ['artifacts', guid(100), 'lock'], false],
         ],
       ],
-      // Inside the merge window: the same stored row.
+      // Within a point's spacing: the same chart point.
       [
         60_000,
         [
@@ -239,7 +250,7 @@ describe('live sync on', () => {
           ['set', ['artifacts', guid(100), 'lock'], true],
         ],
       ],
-      // Past it: a new row and a new chart point; a base item deleted after a change to it.
+      // Past it: a new chart point; a base item deleted after a change to it.
       [
         later,
         [
@@ -261,7 +272,7 @@ describe('live sync on', () => {
       journal = read
       points = readNow
     }
-    expect(await batchRows(account.id)).toHaveLength(2)
+    expect(await batchRows(account.id)).toHaveLength(0)
     expect(points.length).toBeGreaterThanOrEqual(2)
 
     // A batch that does not follow the journal held is refused.
@@ -363,7 +374,7 @@ describe('live sync on', () => {
     expect((await send('gdt_import_nope', delta('x', 1, []))).status).toBe(401)
   })
 
-  it('merges rows within 10 minutes, asks for a collapse, caps batches per day', async () => {
+  it('asks for a collapse, caps batches per day', async () => {
     const { account, userId } = await setup()
     const now = Date.now()
     const opened = now - 4 * 3_600_000
@@ -395,10 +406,8 @@ describe('live sync on', () => {
     expect(await storeBatch(env.LIVE_DB, owner, delta(base, 1, many), now)).toMatchObject({
       collapse: false,
     })
-    // Within the window: merged into the same row.
     await storeBatch(env.LIVE_DB, owner, delta(base, 2, many.slice(0, 5)), now + 60_000)
-    expect(await batchRows(account.id)).toHaveLength(1)
-    // Past it: a new row; and past 500 paths in a journal over 3 h old: collapse.
+    // Past 500 paths in a journal over 3 h old: collapse.
     const later = await storeBatch(
       env.LIVE_DB,
       owner,
@@ -407,10 +416,9 @@ describe('live sync on', () => {
         ['set', ['materials', 'Other2'], 1],
         ...Array.from({ length: 20 }, (_, i) => ['set', ['materials', `New${i}`], 1] as const),
       ]),
-      now + MERGE_WINDOW_MS + 1,
+      now + 120_000,
     )
     expect(later.collapse).toBe(true)
-    expect(await batchRows(account.id)).toHaveLength(2)
 
     // The daily cap.
     await env.LIVE_DB.prepare(
@@ -419,7 +427,7 @@ describe('live sync on', () => {
       .bind(account.id, utcDay(now), DAILY_BATCHES)
       .run()
     await expect(
-      storeBatch(env.LIVE_DB, owner, delta(base, 4, []), now + MERGE_WINDOW_MS + 2),
+      storeBatch(env.LIVE_DB, owner, delta(base, 4, []), now + 180_000),
     ).rejects.toMatchObject({ status: 429, code: 'daily_live_limit' })
   })
 
@@ -434,6 +442,10 @@ describe('live sync on', () => {
     expect(await client.json<LiveJournalResponse>(`/api/accounts/${account.id}/live`)).toEqual({
       open: false,
     })
+    // The day's points the journal row held outlive it.
+    expect(
+      (await client.json<LivePointsResponse>(`/api/accounts/${account.id}/points`)).points,
+    ).toHaveLength(1)
     const day = utcDay(Date.now())
     expect(
       (await client.fetch(`/api/accounts/${account.id}/points?day=${day}`, { method: 'DELETE' }))
@@ -518,5 +530,324 @@ describe('live sync on', () => {
     expect(
       (await other.fetch(`/api/accounts/${account.id}/points`, { method: 'DELETE' })).status,
     ).toBe(404)
+  })
+})
+
+/** docs/plans/live-batch-writes.md: a batch writes the journal row only. */
+describe('the journal row holds the tail and the day', () => {
+  const SUMMARY = {
+    characters: 1,
+    weapons: 1,
+    artifacts: 1,
+    materials: 1,
+    mora: 1,
+    primogem: 1,
+    artifact3: 0,
+    artifact4: 0,
+  }
+  const pointRows = (accountId: number) =>
+    env.LIVE_DB.prepare('SELECT day FROM live_points WHERE account_id = ?1 ORDER BY day')
+      .bind(accountId)
+      .all<{ day: string }>()
+      .then((r) => r.results.map((row) => row.day))
+
+  async function opened(takenAt = Date.now(), contentKey = 4242) {
+    const { account, userId } = await setup()
+    const base = await openJournal(env.LIVE_DB, {
+      accountId: account.id,
+      userId,
+      contentKey,
+      snapshotId: 1,
+      takenAt,
+      session: SESSION,
+      summary: SUMMARY,
+      items: null,
+    })
+    return { account, userId, base, owner: { id: account.id, userId } }
+  }
+
+  /** Changes deflate cannot shrink much: random hex keys and values. */
+  function noisy(count: number, seed: number): GoodDelta['changes'] {
+    let x = seed
+    const next = () => {
+      x = (Math.imul(x, 1_103_515_245) + 12_345) >>> 0
+      return x
+    }
+    return Array.from(
+      { length: count },
+      () =>
+        [
+          'set',
+          ['materials', `Noise${next().toString(16)}${next().toString(16)}`],
+          next() % 1_000_000_000,
+        ] as const,
+    ) as GoodDelta['changes']
+  }
+
+  it('batches on one day leave live_batches and live_points untouched', async () => {
+    const { account, base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    for (let seq = 1; seq <= 5; seq++) {
+      await storeBatch(
+        env.LIVE_DB,
+        owner,
+        delta(base, seq, [['set', ['materials', 'Mora'], seq * 100]]),
+        now + seq * 1_000,
+      )
+    }
+    expect(await batchRows(account.id)).toHaveLength(0)
+    expect(await pointRows(account.id)).toEqual([])
+    const row = await journalRow(account.id)
+    expect(row).toMatchObject({ tail_from: 1, last_seq: 5, points_day: utcDay(now + 5_000) })
+    const read = (await readJournal(env.LIVE_DB, account.id)).response
+    expect(read.changes).toEqual([['set', ['materials', 'Mora'], 500]])
+    const points = await readPoints(env.LIVE_DB, account.id, '2000-01-01', '2999-12-31')
+    expect(points.map((p) => p.figures.mora)).toEqual([500])
+  })
+
+  it('a batch writes one row (D1 rows written)', async () => {
+    const { base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    let written = 0
+    const counting = {
+      prepare: (sql: string) => env.LIVE_DB.prepare(sql),
+      batch: async (statements: D1PreparedStatement[]) => {
+        const results = await env.LIVE_DB.batch(statements)
+        for (const result of results) written += result.meta.rows_written ?? 0
+        return results
+      },
+    } as unknown as D1Database
+    for (let seq = 1; seq <= 6; seq++) {
+      written = 0
+      await storeBatch(
+        counting,
+        owner,
+        delta(base, seq, [
+          ['set', ['materials', 'Mora'], seq],
+          ['set', ['materials', `Thing${seq}`], seq],
+        ]),
+        now + seq * 4 * 60_000,
+      )
+      expect(written, `batch ${seq}`).toBe(1)
+    }
+  })
+
+  it('the tail moves to a batch row past SPILL_BYTES', async () => {
+    const { account, base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    const big = noisy(2_000, 7)
+    expect(encodeChanges(big).length).toBeGreaterThan(SPILL_BYTES)
+    const steps: GoodDelta['changes'][] = [
+      big,
+      [['set', ['materials', 'Mora'], 1]],
+      [['set', ['materials', 'Mora'], 2]],
+    ]
+    for (const [i, changes] of steps.entries()) {
+      await storeBatch(env.LIVE_DB, owner, delta(base, i + 1, changes), now + i * 1_000)
+    }
+    // Batch 1 alone was the tail; batch 2 would have grown it past the limit.
+    const rows = await batchRows(account.id)
+    expect(rows).toMatchObject([{ seq_from: 1, seq_to: 1 }])
+    expect(await journalRow(account.id)).toMatchObject({ tail_from: 2, last_seq: 3 })
+    const read = (await readJournal(env.LIVE_DB, account.id)).response
+    expect(read.changes).toEqual(
+      steps.reduce<GoodDelta['changes']>((all, c) => mergeChanges(all, c), []),
+    )
+    expect(read.seq).toBe(3)
+  })
+
+  it('points cross a UTC day: yesterday to live_points, today in the row', async () => {
+    const midnight = Date.parse('2026-11-01T00:00:00Z')
+    const { account, base, owner } = await opened(midnight - 3_600_000)
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, 1, [['set', ['materials', 'Mora'], 10]]),
+      midnight - 60_000,
+    )
+    expect(await pointRows(account.id)).toEqual([])
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, 2, [['set', ['materials', 'Mora'], 20]]),
+      midnight + 60_000,
+    )
+    expect(await pointRows(account.id)).toEqual(['2026-10-31'])
+    expect(await journalRow(account.id)).toMatchObject({ points_day: '2026-11-01' })
+    const points = await readPoints(env.LIVE_DB, account.id, '2026-10-31', '2026-11-01')
+    expect(points.map((p) => [p.at, p.figures.mora])).toEqual([
+      [midnight - 60_000, 10],
+      [midnight + 60_000, 20],
+    ])
+  })
+
+  it("a snapshot keeps the day's points; deleting the journal moves them out", async () => {
+    const { account, userId, base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    await storeBatch(env.LIVE_DB, owner, delta(base, 1, [['set', ['materials', 'Mora'], 10]]), now)
+    const next = await openJournal(env.LIVE_DB, {
+      accountId: account.id,
+      userId,
+      contentKey: 999,
+      snapshotId: 2,
+      takenAt: now,
+      session: SESSION,
+      summary: { ...SUMMARY, mora: 10 },
+      items: null,
+    })
+    expect(await journalRow(account.id)).toMatchObject({ tail_from: 0, tail: null, last_seq: 0 })
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(next, 1, [['set', ['materials', 'Mora'], 20]]),
+      now + POINT_SPACING_MS + 1_000,
+    )
+    const day = utcDay(now)
+    const both = await readPoints(env.LIVE_DB, account.id, day, utcDay(now + 86_400_000))
+    expect(both.map((p) => p.figures.mora)).toEqual([10, 20])
+    // The journal goes; its points stay.
+    await env.LIVE_DB.batch(deleteJournalStatements(env.LIVE_DB, account.id))
+    expect(await journalRow(account.id)).toBeNull()
+    expect(await readPoints(env.LIVE_DB, account.id, day, utcDay(now + 86_400_000))).toEqual(both)
+    // A later journal the same day continues from them, and they count once.
+    const third = await openJournal(env.LIVE_DB, {
+      accountId: account.id,
+      userId,
+      contentKey: 1000,
+      snapshotId: 3,
+      takenAt: now,
+      session: SESSION,
+      summary: { ...SUMMARY, mora: 20 },
+      items: null,
+    })
+    const late = now + 2 * POINT_SPACING_MS + 2_000
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(third, 1, [['set', ['materials', 'Mora'], 30]]),
+      late,
+    )
+    const all = await readPoints(env.LIVE_DB, account.id, day, utcDay(late + 86_400_000))
+    expect(all.map((p) => p.figures.mora)).toEqual([10, 20, 30])
+    // The day counts once: the row's copy, not the deleted journal's.
+    const journal = await journalRow(account.id)
+    expect(await liveUsage(env.LIVE_DB, userId)).toBe(
+      Number(journal!.bytes) + toBytes(journal!.points).length,
+    )
+  })
+
+  it("deleting a day's points clears the journal row's copy", async () => {
+    // Over HTTP, so on the real clock.
+    const { client, account, importKey } = await setup()
+    const answer = await snapshot(importKey, liveGood(), 1_000)
+    await sendOk(importKey, delta(answer.live!.base, 1, [['set', ['materials', 'Mora'], 7]]))
+    const day = utcDay(Date.now())
+    expect(
+      (await client.fetch(`/api/accounts/${account.id}/points?day=${day}`, { method: 'DELETE' }))
+        .status,
+    ).toBe(204)
+    expect(await journalRow(account.id)).toMatchObject({ points: null, points_day: '' })
+    await sendOk(importKey, delta(answer.live!.base, 2, [['set', ['materials', 'Mora'], 9]]))
+    const { points } = await client.json<LivePointsResponse>(`/api/accounts/${account.id}/points`)
+    expect(points.map((p) => p.figures.mora)).toEqual([9])
+  })
+
+  it('a journal from before the tail continues: its rows, then the tail', async () => {
+    const { account, userId, base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    const day = utcDay(now)
+    // As the code before wrote it: a batch row, today's points row, no tail.
+    const old: GoodDelta['changes'] = [
+      ['set', ['materials', 'Mora'], 5],
+      ['set', ['materials', 'Primogem'], 50],
+    ]
+    const oldPoints = [{ at: now - 60_000, figures: { ...SUMMARY, mora: 5, primogem: 50 } }]
+    await env.LIVE_DB.batch([
+      env.LIVE_DB.prepare(
+        `INSERT INTO live_batches (account_id, seq_from, seq_to, at, changes, data)
+         VALUES (?1, 1, 1, ?2, 2, ?3)`,
+      ).bind(account.id, now - 60_000, encodeChanges(old)),
+      env.LIVE_DB.prepare(
+        `INSERT INTO live_points (account_id, day, user_id, data, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5)`,
+      ).bind(account.id, day, userId, encodePoints(day, oldPoints), now - 60_000),
+      env.LIVE_DB.prepare(
+        `UPDATE live_journals SET last_seq = 1, changes = 2, bytes = 20, day = ?2, day_batches = 1
+         WHERE account_id = ?1`,
+      ).bind(account.id, day),
+    ])
+    const stored = await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, 2, [['set', ['materials', 'Mora'], 6]]),
+      now,
+    )
+    expect(stored.seq).toBe(2)
+    const read = (await readJournal(env.LIVE_DB, account.id)).response
+    expect(read.changes).toEqual(mergeChanges(old, [['set', ['materials', 'Mora'], 6]]))
+    expect(await batchRows(account.id)).toHaveLength(1)
+    const points = await readPoints(env.LIVE_DB, account.id, day, day)
+    expect(points).toEqual(
+      addPoint(oldPoints, { at: now, figures: stored.batch!.figures }).map((p) => ({
+        at: p.at,
+        figures: p.figures,
+      })),
+    )
+    // The old row is the day's prefix: the journal's copy replaces it.
+    const row = await env.LIVE_DB.prepare(
+      'SELECT data FROM live_points WHERE account_id = ?1 AND day = ?2',
+    )
+      .bind(account.id, day)
+      .first<{ data: ArrayBuffer }>()
+    expect(decodePoints(day, new Uint8Array(row!.data))).toEqual(oldPoints)
+  })
+
+  it('the rollback flush leaves what the code before the tail reads, and reads agree', async () => {
+    const { account, base, owner } = await opened()
+    const now = Date.parse('2026-11-03T12:00:00Z')
+    await storeBatch(env.LIVE_DB, owner, delta(base, 1, [['set', ['materials', 'Mora'], 1]]), now)
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, 2, [['set', ['materials', 'Primogem'], 2]]),
+      now + 1_000,
+    )
+    const range = [utcDay(now - 86_400_000), utcDay(now + 86_400_000)] as const
+    const journalBefore = (await readJournal(env.LIVE_DB, account.id)).response
+    const pointsBefore = await readPoints(env.LIVE_DB, account.id, ...range)
+    // Every journal in the database (the file's other tests' too).
+    const moved = await flushJournals(env.LIVE_DB)
+    expect(moved.tails).toBeGreaterThanOrEqual(1)
+    expect(moved.points).toBeGreaterThanOrEqual(1)
+    expect(await batchRows(account.id)).toMatchObject([{ seq_from: 1, seq_to: 2 }])
+    expect(await pointRows(account.id)).toEqual([utcDay(now + 1_000)])
+    expect(await journalRow(account.id)).toMatchObject({ tail: null, points: null, tail_from: 0 })
+    expect((await readJournal(env.LIVE_DB, account.id)).response).toEqual(journalBefore)
+    expect(await readPoints(env.LIVE_DB, account.id, ...range)).toEqual(pointsBefore)
+    // And the next batch carries on from there.
+    await storeBatch(
+      env.LIVE_DB,
+      owner,
+      delta(base, 3, [['set', ['materials', 'Mora'], 3]]),
+      now + 2_000,
+    )
+    expect((await readJournal(env.LIVE_DB, account.id)).response.changes).toEqual(
+      mergeChanges(journalBefore.changes!, [['set', ['materials', 'Mora'], 3]]),
+    )
+  })
+
+  it('a concurrent batch of the same seq stores once, spill and day turn included', async () => {
+    const midnight = Date.parse('2026-11-02T00:00:00Z')
+    const { account, base, owner } = await opened(midnight - 3_600_000)
+    await storeBatch(env.LIVE_DB, owner, delta(base, 1, noisy(2_000, 11)), midnight - 60_000)
+    const results = await Promise.allSettled([
+      storeBatch(env.LIVE_DB, owner, delta(base, 2, noisy(10, 12)), midnight + 60_000),
+      storeBatch(env.LIVE_DB, owner, delta(base, 2, noisy(10, 13)), midnight + 61_000),
+    ])
+    const ok = results.filter((r) => r.status === 'fulfilled')
+    expect(ok.length).toBeGreaterThanOrEqual(1)
+    expect(await batchRows(account.id)).toHaveLength(1)
+    expect(await pointRows(account.id)).toEqual(['2026-11-01'])
+    expect(await journalRow(account.id)).toMatchObject({ last_seq: 2 })
   })
 })

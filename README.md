@@ -643,9 +643,14 @@ session's newest snapshot (§13.5, Capture 1.17.21).
 - **Storage**: the separate D1 database `gdt-live` (binding `LIVE_DB`,
   `worker/db/live-schema.ts`, migrations in `migrations-live/`, applied by
   `deploy.yml` after the main ones). One journal row per account (the base
-  snapshot, seq, running chart figures, the base's guid → fingerprint index),
-  batch rows merged per 10 minutes (deleted at the next snapshot), and chart
-  points packed one row per account per UTC day. No foreign keys into `gdt`:
+  snapshot, seq, running chart figures, the base's guid → fingerprint index,
+  the open tail of merged changes and the current UTC day's chart points), so
+  **a batch writes one row** (`docs/plans/live-batch-writes.md`). The tail
+  moves to a `live_batches` row past 16 KB; the day's points move to
+  `live_points` (one row per account per UTC day) when the day turns or the
+  journal row is deleted. Batch rows go at the next snapshot; points stay.
+  `pnpm --filter @gdt/tracker admin:live-flush [--apply]` moves every tail and
+  day out (only before rolling the Worker back past 2026-11-09). No foreign keys into `gdt`:
   deleting a base snapshot, an account or a user deletes their rows here
   (`services/live-sync.ts`).
 - **Limits**: `LIVE_LIMITER` 20 batches/60 s per key or session, 2,000 per

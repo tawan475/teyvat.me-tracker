@@ -45,6 +45,7 @@ import { deltaFacts } from '../services/alerts'
 import { attachEndgame } from '../services/attach'
 import {
   deleteJournalStatements,
+  deletePointsStatements,
   liveDb,
   readJournal,
   readPoints,
@@ -250,15 +251,7 @@ export const liveAccounts = new Hono<AppEnv>()
       throw new ApiError(400, 'invalid_day', 'day is YYYY-MM-DD')
     }
     const live = liveDb(c.env)
-    if (live) {
-      await (
-        day
-          ? live
-              .prepare('DELETE FROM live_points WHERE account_id = ?1 AND day = ?2')
-              .bind(account.id, day)
-          : live.prepare('DELETE FROM live_points WHERE account_id = ?1').bind(account.id)
-      ).run()
-    }
+    if (live) await live.batch(deletePointsStatements(live, account.id, day))
     notifyAccountLater(c, account.id, { type: 'live', accountId: account.id, seq: 0 })
     return c.body(null, 204)
   })

@@ -22,6 +22,7 @@
     "admin:reset-link": "node scripts/admin-reset-link.mjs",
     "admin:grant": "node scripts/admin-grant.mjs",
     "admin:repack": "tsx scripts/repack.ts",
+    "admin:live-flush": "tsx scripts/live-flush.ts",
     "demo:build": "tsx scripts/demo-good.ts"
   },
   "dependencies": {

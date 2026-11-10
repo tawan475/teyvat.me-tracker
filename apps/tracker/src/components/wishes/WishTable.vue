@@ -113,198 +113,213 @@ useStickyToolbar(filters, () => !props.embedded, { always: true })
 </script>
 
 <template>
-  <section
-    :aria-label="$t('wishes.table.label')"
-    class="min-w-0 rounded-xl border border-border-default bg-surface-raised"
-    :class="embedded ? '' : 'shadow-sm'"
-  >
+  <!-- Like the Artifacts table view: the table's card, then the shared pager
+       pinned to the screen's foot as its own piece under it (UiPager
+       `sticky`), never a bordered pager inside the card. In a dialog
+       (`embedded`) the pager stays in the card, unpinned. -->
+  <section :aria-label="$t('wishes.table.label')" class="flex min-w-0 flex-col gap-4">
     <div
-      ref="filters"
-      class="flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
-      :class="
-        embedded
-          ? ''
-          : 'sticky top-[var(--app-bar-bottom,4rem)] z-10 data-[stuck]:rounded-none data-[stuck]:shadow-md'
-      "
+      class="min-w-0 rounded-xl border border-border-default bg-surface-raised"
+      :class="embedded ? '' : 'shadow-sm'"
     >
-      <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
-        <FilterChip
-          v-for="rank in [5, 4, 3] as const"
-          :key="rank"
-          :pressed="ranks[rank]"
-          :count="counts[rank]"
-          @toggle="ranks[rank] = !ranks[rank]"
-        >
-          <span :class="RARITY_TEXT[rank]">{{ rank }}★</span>
-        </FilterChip>
-      </div>
-      <label class="relative min-w-0 basis-full sm:ml-auto sm:w-60 sm:basis-auto">
-        <span class="sr-only">{{ $t('wishes.table.search') }}</span>
-        <Search
-          class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted"
-          aria-hidden="true"
-        />
-        <UiInput
-          v-model="query"
-          type="search"
-          class="pl-9"
-          :placeholder="$t('wishes.search')"
-          :title="$t('wishes.table.searchTitle')"
-          autocomplete="off"
-        />
-      </label>
-    </div>
-
-    <p v-if="filtered.length === 0" class="px-5 py-6 text-center text-sm text-text-muted">
-      {{ $t('wishes.table.noMatch') }}
-    </p>
-    <div v-else class="overflow-x-auto">
-      <table class="tabular w-full font-mono text-sm">
-        <thead v-sticky-head="embedded ? false : undefined">
-          <tr class="text-left text-xs text-text-muted">
-            <th
-              v-if="runs && !embedded"
-              scope="col"
-              class="hidden w-52 py-2.5 pr-2 pl-4 font-medium lg:table-cell"
-            >
-              {{ $t('wishes.banner') }}
-            </th>
-            <th
-              scope="col"
-              class="hidden w-16 py-2.5 pr-2 pl-4 text-right font-medium sm:table-cell"
-              :title="runs ? $t('wishes.table.rollRun') : $t('wishes.table.roll')"
-            >
-              #
-            </th>
-            <th scope="col" class="py-2.5 pr-2 pl-3 font-medium sm:pl-3">
-              {{ $t('wishes.table.item') }}
-            </th>
-            <th
-              scope="col"
-              class="px-2 py-2.5 font-medium sm:w-56"
-              :class="rated ? '' : 'pr-3 sm:pr-2'"
-            >
-              {{ $t('wishes.table.pity') }}
-            </th>
-            <th v-if="rated" scope="col" class="py-2.5 pr-3 pl-2 font-medium sm:pr-2">
-              {{ $t('wishes.table.result') }}
-            </th>
-            <th scope="col" class="hidden py-2.5 pr-4 pl-2 text-right font-medium sm:table-cell">
-              <button
-                type="button"
-                class="inline-flex items-center gap-1 hover:text-text-primary"
-                :title="
-                  newestFirst ? $t('wishes.table.newestFirst') : $t('wishes.table.oldestFirst')
-                "
-                @click="newestFirst = !newestFirst"
-              >
-                {{ $t('wishes.table.time') }}
-                <component
-                  :is="newestFirst ? ArrowDown : ArrowUp"
-                  class="size-3.5"
-                  aria-hidden="true"
-                />
-                <span class="sr-only">{{
-                  newestFirst ? $t('wishes.table.newestFirstSr') : $t('wishes.table.oldestFirstSr')
-                }}</span>
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in shown"
-            :key="row.pull.id.toString()"
-            class="border-t border-border-default"
-            :class="TINT[row.pull.item.rank] ?? ''"
+      <div
+        ref="filters"
+        class="flex flex-wrap items-center gap-2 rounded-t-xl border-b border-border-default bg-surface-raised px-3 py-3 sm:px-4"
+        :class="
+          embedded
+            ? ''
+            : 'sticky top-[var(--app-bar-bottom,4rem)] z-10 data-[stuck]:rounded-none data-[stuck]:shadow-md'
+        "
+      >
+        <div role="group" :aria-label="$t('wishes.rarity')" class="flex gap-2">
+          <FilterChip
+            v-for="rank in [5, 4, 3] as const"
+            :key="rank"
+            :pressed="ranks[rank]"
+            :count="counts[rank]"
+            @toggle="ranks[rank] = !ranks[rank]"
           >
-            <td
-              v-if="runs && !embedded"
-              class="hidden max-w-52 py-2 pr-2 pl-4 text-text-secondary lg:table-cell"
-            >
-              <RouterLink
-                v-if="row.on"
-                :to="runLink(row.on)"
-                class="block truncate font-sans hover:text-accent-text hover:underline"
-                :title="`${runName(row)} · ${row.on.version}`"
-                >{{ runName(row) }}</RouterLink
+            <span :class="RARITY_TEXT[rank]">{{ rank }}★</span>
+          </FilterChip>
+        </div>
+        <label class="relative min-w-0 basis-full sm:ml-auto sm:w-60 sm:basis-auto">
+          <span class="sr-only">{{ $t('wishes.table.search') }}</span>
+          <Search
+            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted"
+            aria-hidden="true"
+          />
+          <UiInput
+            v-model="query"
+            type="search"
+            class="pl-9"
+            :placeholder="$t('wishes.search')"
+            :title="$t('wishes.table.searchTitle')"
+            autocomplete="off"
+          />
+        </label>
+      </div>
+
+      <p v-if="filtered.length === 0" class="px-5 py-6 text-center text-sm text-text-muted">
+        {{ $t('wishes.table.noMatch') }}
+      </p>
+      <div v-else class="overflow-x-auto">
+        <table class="tabular w-full font-mono text-sm">
+          <thead v-sticky-head="embedded ? false : undefined">
+            <tr class="text-left text-xs text-text-muted">
+              <th
+                v-if="runs && !embedded"
+                scope="col"
+                class="hidden w-52 py-2.5 pr-2 pl-4 font-medium lg:table-cell"
               >
-            </td>
-            <td class="hidden py-2 pr-2 pl-4 text-right text-text-muted sm:table-cell">
-              {{ formatNumber(rolls.get(row) ?? row.number) }}
-            </td>
-            <td class="py-2 pr-2 pl-3">
-              <div class="flex min-w-0 items-center gap-2.5">
-                <GameIcon
-                  :src="wishIcon(row.pull.item)"
-                  :name="wishItemName(row.pull.item)"
-                  :rarity="row.pull.item.rank || undefined"
-                  size="xs"
-                />
-                <span class="flex min-w-0 flex-col">
-                  <span class="flex min-w-0 items-baseline gap-2.5">
-                    <span
-                      class="max-w-32 truncate font-sans font-medium sm:max-w-56"
-                      :class="RARITY_TEXT[row.pull.item.rank] ?? ''"
-                      :title="wishItemName(row.pull.item)"
-                      >{{ wishItemName(row.pull.item) }}</span
+                {{ $t('wishes.banner') }}
+              </th>
+              <th
+                scope="col"
+                class="hidden w-16 py-2.5 pr-2 pl-4 text-right font-medium sm:table-cell"
+                :title="runs ? $t('wishes.table.rollRun') : $t('wishes.table.roll')"
+              >
+                #
+              </th>
+              <th scope="col" class="py-2.5 pr-2 pl-3 font-medium sm:pl-3">
+                {{ $t('wishes.table.item') }}
+              </th>
+              <th
+                scope="col"
+                class="px-2 py-2.5 font-medium sm:w-56"
+                :class="rated ? '' : 'pr-3 sm:pr-2'"
+              >
+                {{ $t('wishes.table.pity') }}
+              </th>
+              <th v-if="rated" scope="col" class="py-2.5 pr-3 pl-2 font-medium sm:pr-2">
+                {{ $t('wishes.table.result') }}
+              </th>
+              <th scope="col" class="hidden py-2.5 pr-4 pl-2 text-right font-medium sm:table-cell">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 hover:text-text-primary"
+                  :title="
+                    newestFirst ? $t('wishes.table.newestFirst') : $t('wishes.table.oldestFirst')
+                  "
+                  @click="newestFirst = !newestFirst"
+                >
+                  {{ $t('wishes.table.time') }}
+                  <component
+                    :is="newestFirst ? ArrowDown : ArrowUp"
+                    class="size-3.5"
+                    aria-hidden="true"
+                  />
+                  <span class="sr-only">{{
+                    newestFirst
+                      ? $t('wishes.table.newestFirstSr')
+                      : $t('wishes.table.oldestFirstSr')
+                  }}</span>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in shown"
+              :key="row.pull.id.toString()"
+              class="border-t border-border-default"
+              :class="TINT[row.pull.item.rank] ?? ''"
+            >
+              <td
+                v-if="runs && !embedded"
+                class="hidden max-w-52 py-2 pr-2 pl-4 text-text-secondary lg:table-cell"
+              >
+                <RouterLink
+                  v-if="row.on"
+                  :to="runLink(row.on)"
+                  class="block truncate font-sans hover:text-accent-text hover:underline"
+                  :title="`${runName(row)} · ${row.on.version}`"
+                  >{{ runName(row) }}</RouterLink
+                >
+              </td>
+              <td class="hidden py-2 pr-2 pl-4 text-right text-text-muted sm:table-cell">
+                {{ formatNumber(rolls.get(row) ?? row.number) }}
+              </td>
+              <td class="py-2 pr-2 pl-3">
+                <div class="flex min-w-0 items-center gap-2.5">
+                  <GameIcon
+                    :src="wishIcon(row.pull.item)"
+                    :name="wishItemName(row.pull.item)"
+                    :rarity="row.pull.item.rank || undefined"
+                    size="xs"
+                  />
+                  <span class="flex min-w-0 flex-col">
+                    <span class="flex min-w-0 items-baseline gap-2.5">
+                      <span
+                        class="max-w-32 truncate font-sans font-medium sm:max-w-56"
+                        :class="RARITY_TEXT[row.pull.item.rank] ?? ''"
+                        :title="wishItemName(row.pull.item)"
+                        >{{ wishItemName(row.pull.item) }}</span
+                      >
+                    </span>
+                    <time
+                      class="text-xs whitespace-nowrap text-text-muted sm:hidden"
+                      :title="wishMinute(row.pull.time)"
+                      >{{ wishShortTime(row.pull.time) }}</time
                     >
                   </span>
-                  <time
-                    class="text-xs whitespace-nowrap text-text-muted sm:hidden"
-                    :title="wishMinute(row.pull.time)"
-                    >{{ wishShortTime(row.pull.time) }}</time
-                  >
-                </span>
-              </div>
-            </td>
-            <td class="px-2 py-2" :class="rated ? '' : 'pr-3 sm:pr-2'">
-              <span v-if="pity(row)" class="flex items-center gap-2.5">
-                <span
-                  class="w-7 shrink-0 text-right font-semibold"
-                  :style="{ color: pity(row)!.color }"
-                  >{{ row.pity }}</span
-                >
-                <span
-                  class="hidden h-2.5 min-w-16 flex-1 rounded-full bg-surface-sunken sm:block"
-                  aria-hidden="true"
-                >
+                </div>
+              </td>
+              <td class="px-2 py-2" :class="rated ? '' : 'pr-3 sm:pr-2'">
+                <span v-if="pity(row)" class="flex items-center gap-2.5">
                   <span
-                    class="block h-full rounded-full"
-                    :style="{ width: pity(row)!.width, background: pity(row)!.color }"
-                  />
+                    class="w-7 shrink-0 text-right font-semibold"
+                    :style="{ color: pity(row)!.color }"
+                    >{{ row.pity }}</span
+                  >
+                  <span
+                    class="hidden h-2.5 min-w-16 flex-1 rounded-full bg-surface-sunken sm:block"
+                    aria-hidden="true"
+                  >
+                    <span
+                      class="block h-full rounded-full"
+                      :style="{ width: pity(row)!.width, background: pity(row)!.color }"
+                    />
+                  </span>
                 </span>
-              </span>
-            </td>
-            <td v-if="rated" class="py-2 pr-3 pl-2 sm:pr-2">
-              <UiBadge
-                v-if="row.outcome"
-                :tone="OUTCOME_STYLE[row.outcome].tone"
-                :title="outcomeTitle(row.outcome, banner, row.pull.item.rank)"
-                ><span aria-hidden="true">{{ OUTCOME_STYLE[row.outcome].mark }}</span>
-                <span class="max-sm:sr-only">{{ outcomeLabel(row.outcome) }}</span></UiBadge
+              </td>
+              <td v-if="rated" class="py-2 pr-3 pl-2 sm:pr-2">
+                <UiBadge
+                  v-if="row.outcome"
+                  :tone="OUTCOME_STYLE[row.outcome].tone"
+                  :title="outcomeTitle(row.outcome, banner, row.pull.item.rank)"
+                  ><span aria-hidden="true">{{ OUTCOME_STYLE[row.outcome].mark }}</span>
+                  <span class="max-sm:sr-only">{{ outcomeLabel(row.outcome) }}</span></UiBadge
+                >
+                <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
+              </td>
+              <td
+                class="hidden py-2 pr-4 pl-2 text-right whitespace-nowrap text-text-muted sm:table-cell"
+                :title="wishMinute(row.pull.time)"
               >
-              <span v-else-if="row.pull.item.rank >= 4" class="text-text-muted">—</span>
-            </td>
-            <td
-              class="hidden py-2 pr-4 pl-2 text-right whitespace-nowrap text-text-muted sm:table-cell"
-              :title="wishMinute(row.pull.time)"
-            >
-              {{ wishShortTime(row.pull.time) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                {{ wishShortTime(row.pull.time) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <UiPager
+        v-if="embedded && pageCount > 1"
+        v-model="page"
+        :page-count="pageCount"
+        :total="filtered.length"
+        :page-size="PAGE_SIZE"
+        :label="$t('wishes.table.pages')"
+        class="border-t border-border-default px-4 py-3"
+      />
     </div>
     <UiPager
-      v-if="pageCount > 1"
+      v-if="!embedded && pageCount > 1"
       v-model="page"
+      sticky
       :page-count="pageCount"
       :total="filtered.length"
       :page-size="PAGE_SIZE"
       :label="$t('wishes.table.pages')"
-      :sticky="!embedded"
-      :class="embedded ? 'border-t border-border-default px-4 py-3' : 'rounded-b-xl'"
     />
   </section>
 </template>

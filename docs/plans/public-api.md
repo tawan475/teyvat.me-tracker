@@ -95,7 +95,7 @@ Authorization: Bearer gdt_pat_8Kd2mQ7xR4tA_q3XvN0…(43 chars)
 
 ### Scopes
 
-Resources × read/write, picked as presets in Settings: **Read only** (the default), **Read and write**, or **Custom**.
+Resources × read/write. In the picked Settings design (B), every token reads all areas of its accounts, and the user ticks the areas it may also **write**: none ticked = read only, the default. The stored model stays a bitmask of read and write per area, so a token without read on an area can be added later without a migration.
 
 | Scope       | Read                                                          | Write                                          |
 | ----------- | ------------------------------------------------------------- | ---------------------------------------------- |
@@ -170,7 +170,7 @@ The response is `Content-Type: application/problem+json`:
 ### Headers on every answer
 
 - `X-Request-Id` (the same as `instance`): one id to quote in a bug report.
-- `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` (IETF RateLimit fields), plus `Retry-After` on 429.
+- `RateLimit-Policy` (IETF RateLimit fields) and `X-RateLimit-Tier`, plus `Retry-After` on 429 (§8: the bindings can't tell how many are left).
 - `ETag` on every GET, with `If-None-Match` → `304`. It is built from the account's `dataVersion` (`accountEtag`), so polling an unchanged account costs no D1 rows beyond the auth.
 - `Cache-Control: private, no-cache`; an immutable past snapshot's GOOD keeps `private, max-age=31536000, immutable` as today.
 - `API-Version: 1`.
@@ -270,19 +270,43 @@ Game art stays off 475.dev and off teyvat.me (the user's rule): the files hold l
 
 **Later, optionally**: a public `teyvatme/game-data` repo or npm package holding only those generated files, written by the data repo's `release.yml`.
 
-## 8. Rate limits (low, the user's call) and cost (the 100k baseline)
+## 8. Rate limits: free and supporter, and cost (the 100k baseline)
 
-The user (2026-11-14): "quite low". Limits are **per user**, all their tokens together, so making more tokens doesn't raise them. They use Workers rate-limit bindings (free; the period must be 10 or 60 s):
+The user (2026-11-14): limits stay low, but the first numbers (10 / 2 / 5) were too tight, heavy reads above all. There are two tiers. **Supporter** only raises the limits, nothing else.
 
-| Binding             | Limit                            | Covers                                                                 |
-| ------------------- | -------------------------------- | ---------------------------------------------------------------------- |
-| `API_LIMITER`       | **10 requests / 60 s per user**  | every `/api/v1` request, 304s included                                 |
-| `API_HEAVY_LIMITER` | **2 / 60 s per user**            | GOOD of a snapshot or the latest, wish summary, UIGF export, farm plan |
-| `API_WRITE_LIMITER` | **5 / 60 s per user**            | every POST / PATCH / DELETE                                            |
-| `API_AUTH_LIMITER`  | 10 failed sign-ins / 60 s per IP | bad or revoked tokens                                                  |
+Limits are **per user**: all of a user's tokens share them, so making more tokens doesn't help. Heavy reads and writes also count as requests.
 
-- Uploads also keep their own limits and quotas: the daily snapshots and bytes, and the storage quota.
-- A refused request is 429 `rate_limited`, with `Retry-After` and the `RateLimit-*` fields.
+| Bucket   | Free            | Supporter    | Covers                                                                 |
+| -------- | --------------- | ------------ | ---------------------------------------------------------------------- |
+| Requests | **20 / min**    | **60 / min** | every `/api/v1` request, 304s included                                 |
+| Heavy    | **6 / min**     | **20 / min** | GOOD of a snapshot or the newest, wish summary, UIGF export, farm plan |
+| Writes   | **10 / min**    | **30 / min** | every POST / PATCH / DELETE                                            |
+| Auth     | 10 / min per IP | same         | failed token checks (bad, expired, revoked)                            |
+
+Game data files (§7) are not counted. Uploads also keep their own limits and quotas: the daily snapshots and bytes, and the storage quota.
+
+### Becoming a supporter (the user's process)
+
+1. Help with server costs on Ko-fi (https://ko-fi.com/tawan475).
+2. Message the user on Discord (https://discord.gg/W6GUY3UtAx) with the Teyvat.me username.
+3. Staff switch the supporter limits on from the staff user page.
+
+The docs' Rate limits page and the Settings token panel say this in those three steps.
+
+**How the tier is stored.** It reuses the `Supporter` role that the Ko-fi plan (`open-site.md` §6) already gives by hand, from the staff user page, audited. The role carries a perk, `perk.api_supporter`, kept in its own list (`PERK_NODES`, beside `PERMISSION_NODES`) so that it never opens `/staff`: `requireStaff` looks at staff nodes only. If the Ko-fi webhook and supporter codes are built later, they give the same role automatically.
+
+The token lookup reads the perk in the same statement (`EXISTS` over `user_roles` → `roles`), and caches it with the token for 60 s. A grant or removal therefore takes effect within a minute, at no extra D1 read. `GET /v1/me` answers `limits: {tier, requests, heavy, writes}`.
+
+### How limits are counted
+
+- **Bindings.** Workers rate-limit bindings, which are free. Each binding has a fixed limit, so there are six: `API_LIMITER` 20 and `API_SUPPORTER_LIMITER` 60, `API_HEAVY_LIMITER` 6 and `API_SUPPORTER_HEAVY_LIMITER` 20, `API_WRITE_LIMITER` 10 and `API_SUPPORTER_WRITE_LIMITER` 30, plus `API_AUTH_LIMITER`. They are keyed by user id, and the request picks the pair for the user's tier. The period is 60 s (a binding allows only 10 or 60).
+- **Counts are approximate.** A binding answers only "allowed or not", and its counters are per Cloudflare location and eventually consistent. Answers therefore carry the policy, not a remaining count:
+  - `RateLimit-Policy: "requests";q=20;w=60, "heavy";q=6;w=60`;
+  - `X-RateLimit-Tier: free|supporter`.
+
+  This replaces §4's `RateLimit-Remaining`/`-Reset`, which can't be known.
+
+- **A refused request** is 429 `rate_limited`, problem+json with `bucket` and `limit`, plus `Retry-After: 60`.
 - The docs ask clients to poll **no more often than every 5 minutes**, with `If-None-Match`.
 - Session-cookie calls (the docs page's Try it) share the same per-user limits.
 
@@ -290,20 +314,21 @@ The user (2026-11-14): "quite low". Limits are **per user**, all their tokens to
 
 - 1 Worker request;
 - ~1–2 ms CPU for auth + ETag;
-- D1: the token row (0 while held in an isolate's memory, 60 s) + the account row on a 304;
+- D1: the token row with the tier (0 while held in an isolate's memory, 60 s) + the account row on a 304;
 - plus the section reads + ~5–20 ms CPU on a changed account.
 
 Cloudflare's paid prices: $0.30 per million requests, $0.02 per million CPU-ms, $0.001 per million D1 rows read.
 
-| 100,000 users, all month                 | Requests / month | Cost / month                                     |
-| ---------------------------------------- | ---------------- | ------------------------------------------------ |
-| Nobody uses the API                      | 0                | **$0** (nothing runs while idle)                 |
-| Each polls every **5 min** (mostly 304)  | 864 M            | ≈ $260 requests + ≈ $35 CPU + ≈ $2 D1 ≈ **$300** |
-| Each at the **limit** all month (10/min) | 43 B             | ≈ $13,000 + CPU: the ceiling the limit sets      |
-| Webhooks instead of polling (phase 4)    | ≈ one per upload | ≈ a live batch's cost: **near zero extra**       |
-| Game data files (§7)                     | any              | **$0** (static assets)                           |
+| 100,000 users, all month                            | Requests / month | Cost / month                                     |
+| --------------------------------------------------- | ---------------- | ------------------------------------------------ |
+| Nobody uses the API                                 | 0                | **$0** (nothing runs while idle)                 |
+| Each polls every **5 min** (mostly 304)             | 864 M            | ≈ $260 requests + ≈ $35 CPU + ≈ $2 D1 ≈ **$300** |
+| Every free user at the **limit** all month (20/min) | 86 B             | ≈ $26,000 + CPU: the ceiling the free limit sets |
+| 1,000 supporters at their limit (60/min)            | 2.6 B            | ≈ $780: what supporters can cost at most         |
+| Webhooks instead of polling (phase 4)               | ≈ one per upload | ≈ a live batch's cost: **near zero extra**       |
+| Game data files (§7)                                | any              | **$0** (static assets)                           |
 
-If the bill ever shows API polling, the per-user limit drops further, e.g. to 4/min. Webhooks are what lets clients stop polling.
+The ceilings are theoretical: they need every user scripting the API flat out, all month. If the bill ever shows API polling, the free limit drops (e.g. to 10/min), and webhooks let clients stop polling.
 
 ## 9. Documentation, from one source
 
@@ -336,15 +361,16 @@ From that one registry:
 
 **Language.** The docs body is English only, like most API docs (open question 3). Only the page title and description go through the 15 locales, which the SEO test requires.
 
-**Design.** The docs page and the Settings tokens panel are designed in Claude Design as A/B/C/D options for approval before building (the user's rule). Options to pick from: https://claude.ai/artifact/NgzAy1kLRomVryvFp1w96F (docs page A–D, tokens panel A–D). Like the rest of the site, they must not carry meaning by colour alone: method badges show the word, scopes show read/write as text.
+**Design.** The docs page and the Settings tokens panel are designed in Claude Design as A/B/C/D options for approval before building (the user's rule). Options: https://claude.ai/artifact/NgzAy1kLRomVryvFp1w96F. **Picked (2026-11-14): docs page A** (three columns: contents, the endpoint, a dark code rail; plus its Rate limits page with Free and Supporter cards and the Ko-fi → Discord steps) **and tokens panel B** (rows like Devices, the create form opening in the panel, read always on with write picked per area, the new token shown once at the top, a limits row with the tier and a Supporter limits link). Like the rest of the site, they must not carry meaning by colour alone: method badges show the word, scopes show read/write as text.
 
 ## 10. Settings: API tokens
 
-Settings → App → **API tokens** (`requireActiveSession` on every route; owner of the tokens only):
+Settings → App → **API tokens**, design B (`requireActiveSession` on every route; owner of the tokens only):
 
 - **List**: name, scopes (preset name or "Custom"), accounts, last used (time + country), expires.
 - **Create**: name, expiry, preset or custom scopes, all accounts or picked ones. It shows the token once, with Copy and a warning.
 - **Revoke**, and **Revoke all**.
+- **Limits row** at the foot: the tier (Free / Supporter) and its three numbers, with a Supporter limits link to the docs' steps.
 - Created and revoked events go to the user's own audit (and `admin_audit` for staff views, as for import keys).
 
 ## 11. Storage
@@ -365,7 +391,8 @@ Settings → App → **API tokens** (`requireActiveSession` on every route; owne
 ## 12. Phases
 
 1. **Foundation + read** (about a week):
-   - the v1 router, token table and auth middleware, scopes, problem+json, request ids, RateLimit headers, ETag;
+   - the v1 router, token table and auth middleware, scopes, problem+json, request ids, ETag;
+   - the free and supporter limits: the six bindings, the `perk.api_supporter` perk on the Supporter role, the staff user page's switch;
    - registry → OpenAPI + `api.md`;
    - the Settings tokens panel;
    - endpoints: `me`, accounts (read), snapshots list, GOOD (latest / at) and its sections, wishes list + UIGF export, live journal (read), achievement / anecdote / quest data (read), game events;
@@ -386,7 +413,8 @@ Answered on 2026-11-14:
 - limits low (§8);
 - raw data, computing only the wish summary and the farm plan (§6);
 - game data as public files, not a public repo (§7, recommendation awaiting a yes);
-- designs first.
+- designs first: picked docs page A and tokens panel B (§9);
+- two tiers of limits, free and supporter, supporter given by hand after Ko-fi + Discord (§8).
 
 Still open:
 

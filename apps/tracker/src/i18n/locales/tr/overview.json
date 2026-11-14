@@ -8,8 +8,11 @@
     "characters": "Karakterler",
     "weapons": "Silahlar",
     "artifacts": "Yadigarlar",
+    "artifact5": "5★ Yadigar",
     "artifact4": "4★ Yadigar",
     "artifact3": "3★ Yadigar",
+    "artifact2": "2★ Yadigar",
+    "artifact1": "1★ Yadigar",
     "characterExp": "Karakter TP"
   },
   "server": {

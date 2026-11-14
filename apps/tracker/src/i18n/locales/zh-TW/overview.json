@@ -8,8 +8,11 @@
     "characters": "角色",
     "weapons": "武器",
     "artifacts": "聖遺物",
+    "artifact5": "5★聖遺物",
     "artifact4": "4★聖遺物",
     "artifact3": "3★聖遺物",
+    "artifact2": "2★聖遺物",
+    "artifact1": "1★聖遺物",
     "characterExp": "角色經驗"
   },
   "server": {

@@ -8,8 +8,11 @@
     "characters": "Nhân Vật",
     "weapons": "Vũ Khí",
     "artifacts": "Thánh Di Vật",
+    "artifact5": "Thánh Di Vật 5★",
     "artifact4": "Thánh Di Vật 4★",
     "artifact3": "Thánh Di Vật 3★",
+    "artifact2": "Thánh Di Vật 2★",
+    "artifact1": "Thánh Di Vật 1★",
     "characterExp": "EXP Nhân Vật"
   },
   "server": {

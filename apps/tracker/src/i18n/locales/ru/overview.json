@@ -8,8 +8,11 @@
     "characters": "Персонажи",
     "weapons": "Оружие",
     "artifacts": "Артефакты",
+    "artifact5": "Артефакт 5★",
     "artifact4": "Артефакт 4★",
     "artifact3": "Артефакт 3★",
+    "artifact2": "Артефакт 2★",
+    "artifact1": "Артефакт 1★",
     "characterExp": "Опыт персонажа"
   },
   "server": {

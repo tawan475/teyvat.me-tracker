@@ -8,8 +8,11 @@
     "characters": "Personaggi",
     "weapons": "Armi",
     "artifacts": "Manufatti",
+    "artifact5": "Manufatto 5★",
     "artifact4": "Manufatto 4★",
     "artifact3": "Manufatto 3★",
+    "artifact2": "Manufatto 2★",
+    "artifact1": "Manufatto 1★",
     "characterExp": "ESP personaggio"
   },
   "server": {

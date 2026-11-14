@@ -8,8 +8,11 @@
     "characters": "Figuren",
     "weapons": "Waffen",
     "artifacts": "Artefakte",
+    "artifact5": "5★-Artefakt",
     "artifact4": "4★-Artefakt",
     "artifact3": "3★-Artefakt",
+    "artifact2": "2★-Artefakt",
+    "artifact1": "1★-Artefakt",
     "characterExp": "Figuren-EP"
   },
   "server": {

@@ -10,6 +10,7 @@ import UiSegmented, { type SegmentedOption } from '@/components/ui/UiSegmented.v
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import type { TimelineSeries } from '@/components/charts/TimelineChart.vue'
 import { axisFormat, fitGroupBy, formatWindow, groupFits } from '@/data/chart-range'
+import { loadArtifactRarityHistory } from '@/data/artifact-rarity'
 import { loadMaterialsHistory } from '@/data/materials'
 import type { Capture, Point } from '@/data/overview'
 import { GROUP_BY_OPTIONS, nextPeriod } from '@/data/progression'
@@ -33,6 +34,8 @@ import {
   SNAPSHOT_BAR_WIDTH,
   snapshotTotals,
   withMaterialFigures,
+  withArtifactFigures,
+  ARTIFACT_RARITY_FIGURES,
   LINE_SHAPES,
   MATERIAL_FIGURES,
   type FigureKey,
@@ -44,7 +47,7 @@ import { useProgressionGraphs } from './use-progression-graphs'
 
 /**
  * A report card of graphs (mora, primogems, wishes, character EXP,
- * artifacts, 4★ / 3★ artifacts, characters, weapons): each figure's value as
+ * artifacts, 5★ … 1★ artifacts, characters, weapons): each figure's value as
  * a line, stepped or straight from capture to capture (the button left of the
  * grouping), and its delta graph under it (gains and losses as columns, per
  * snapshot, each under its step on the same time axis, or per period).
@@ -81,8 +84,12 @@ const COLORS: Record<FigureKey, TimelineSeries['color']> = {
   wishes: 6,
   characterExp: 1,
   artifacts: 5,
+  // Rarities in the list's order, each a step lighter or darker than the next.
+  artifact5: 2,
   artifact4: 6,
   artifact3: 3,
+  artifact2: 1,
+  artifact1: 4,
   characters: 1,
   weapons: 3,
 }
@@ -130,16 +137,35 @@ const books = useResource(
   () => (wantsMaterials.value && account.value.latest ? account.value : null),
   (a) => (a ? loadMaterialsHistory(a) : Promise.resolve(null)),
 )
-/** The captures the series read: with the materials' figures once loaded, undefined while they load. */
+// 5★ / 2★ / 1★ artifacts: counted from each snapshot's artifact rows, loaded while a graph shows one.
+const wantsRarities = computed(() =>
+  graphs.value.some((graph) => ARTIFACT_RARITY_FIGURES.includes(graph.figure)),
+)
+const rarities = useResource(
+  () => (wantsRarities.value && account.value.latest ? account.value : null),
+  (a) => (a ? loadArtifactRarityHistory(a) : Promise.resolve(null)),
+)
+/**
+ * The captures the series read: with the materials' and the artifact
+ * rarities' figures once loaded, undefined while they load.
+ */
 const seriesCaptures = computed(() => {
-  const all = props.captures
-  if (!all || !wantsMaterials.value || books.error.value) return all
+  let all: readonly Capture[] | undefined = props.captures
+  if (!all) return all
+  if (wantsRarities.value && !rarities.error.value) {
+    if (rarities.loading.value) return undefined
+    const history = rarities.data.value
+    if (history) all = withArtifactFigures(all, history)
+  }
+  if (!wantsMaterials.value || books.error.value) return all
   if (books.loading.value) return undefined
   const history = books.data.value
   return history ? withMaterialFigures(all, history) : all
 })
 /** Without the materials (none captured, or they failed to load) their figures have no graph. */
 const hasMaterials = computed(() => !books.error.value && !!books.data.value)
+/** Likewise the counted artifact rarities. */
+const hasRarities = computed(() => !rarities.error.value && !!rarities.data.value)
 
 const GROUPS: SegmentedOption<ProgressionGroup>[] = [
   {
@@ -285,8 +311,14 @@ function barsOf(key: FigureKey): { bars: ChangeBar[]; totals: PeriodTotals } | n
 }
 
 /** How a computed figure is counted, for its title's tooltip. */
+const spareHint = () => t('overview.lowRarity.hint')
 const FIGURE_HINTS: Partial<Record<FigureKey, () => string>> = {
   wishes: () => t('progression.graphs.wishesHint'),
+  artifact5: spareHint,
+  artifact4: spareHint,
+  artifact3: spareHint,
+  artifact2: spareHint,
+  artifact1: spareHint,
 }
 
 /** A graph as the card draws it (null while its figure has no data). */
@@ -294,6 +326,7 @@ function viewOf(graph: Graph, id: string): GraphView | null {
   const lines = shown.value?.lines
   if (!lines) return null
   if (MATERIAL_FIGURES.includes(graph.figure) && !hasMaterials.value) return null
+  if (ARTIFACT_RARITY_FIGURES.includes(graph.figure) && !hasRarities.value) return null
   const figure = barsOf(graph.figure)
   if (!figure) return null
   const { bars, totals } = figure

@@ -8,8 +8,11 @@
     "characters": "Karakter",
     "weapons": "Senjata",
     "artifacts": "Artefak",
+    "artifact5": "Artefak 5★",
     "artifact4": "Artefak 4★",
     "artifact3": "Artefak 3★",
+    "artifact2": "Artefak 2★",
+    "artifact1": "Artefak 1★",
     "characterExp": "Character EXP"
   },
   "server": {

@@ -35,6 +35,7 @@ import {
   valueAt,
   type MaterialsHistory,
 } from '@/data/materials-history'
+import type { ArtifactRarityHistory } from '@/data/artifact-rarity-history'
 import { currencyMissing, type Capture, type Point } from '@/data/overview'
 import { nextPeriod } from '@/data/progression'
 import { dateLocale } from '@/lib/format'
@@ -50,8 +51,11 @@ export type FigureKey =
   | 'wishes'
   | 'characterExp'
   | 'artifacts'
+  | 'artifact5'
   | 'artifact4'
   | 'artifact3'
+  | 'artifact2'
+  | 'artifact1'
   | 'characters'
   | 'weapons'
 export const FIGURE_KEYS: readonly FigureKey[] = [
@@ -60,8 +64,11 @@ export const FIGURE_KEYS: readonly FigureKey[] = [
   'wishes',
   'characterExp',
   'artifacts',
+  'artifact5',
   'artifact4',
   'artifact3',
+  'artifact2',
+  'artifact1',
   'characters',
   'weapons',
 ]
@@ -75,6 +82,12 @@ export const CHARACTER_EXP_BOOKS = {
 
 /** Figures read from the materials history rather than the snapshot summary. */
 export const MATERIAL_FIGURES: readonly FigureKey[] = ['wishes', 'characterExp']
+
+/**
+ * Figures counted from each snapshot's artifact rows (unlocked, unequipped
+ * 5★ / 2★ / 1★; the summary carries only 4★ and 3★): see withArtifactFigures.
+ */
+export const ARTIFACT_RARITY_FIGURES: readonly FigureKey[] = ['artifact5', 'artifact2', 'artifact1']
 
 /** Primogems (or Genesis Crystals) a wish costs. */
 export const WISH_PRICE = 160
@@ -91,7 +104,13 @@ export function wishesHeld(primogem: number, genesis: number, fates: number): nu
 /** What the series read from a capture: its summary, plus the materials' figures once known. */
 export interface ProgressionCapture {
   at: number
-  summary: SnapshotSummary & { characterExp?: number; wishes?: number }
+  summary: SnapshotSummary & {
+    characterExp?: number
+    wishes?: number
+    artifact5?: number
+    artifact2?: number
+    artifact1?: number
+  }
 }
 
 /** A figure of a capture; the materials' figures are 0 until withMaterialFigures adds them. */
@@ -126,6 +145,25 @@ export function withMaterialFigures(
       )
     }
     return { at: capture.at, summary: { ...capture.summary, ...carried } }
+  })
+}
+
+/**
+ * `captures` with the unlocked, unequipped 5★ / 2★ / 1★ artifacts at each
+ * one, counted from the snapshot it shows (loadArtifactRarityHistory); a
+ * live sync point carries the capture before it, as a snapshot whose rows
+ * could not be counted does. Call it before withMaterialFigures, which keeps
+ * these figures but drops `snapshot`.
+ */
+export function withArtifactFigures(
+  captures: readonly Capture[],
+  history: ArtifactRarityHistory,
+): (Capture & ProgressionCapture)[] {
+  let carried = { artifact5: 0, artifact2: 0, artifact1: 0 }
+  return captures.map((capture) => {
+    const counts = capture.snapshot === undefined ? undefined : history.counts.get(capture.snapshot)
+    if (counts) carried = { artifact5: counts[4], artifact2: counts[1], artifact1: counts[0] }
+    return { ...capture, summary: { ...capture.summary, ...carried } }
   })
 }
 

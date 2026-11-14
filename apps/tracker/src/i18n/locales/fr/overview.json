@@ -8,8 +8,11 @@
     "characters": "Personnages",
     "weapons": "Armes",
     "artifacts": "Artéfacts",
+    "artifact5": "Artéfact 5★",
     "artifact4": "Artéfact 4★",
     "artifact3": "Artéfact 3★",
+    "artifact2": "Artéfact 2★",
+    "artifact1": "Artéfact 1★",
     "characterExp": "EXP Personnage"
   },
   "server": {

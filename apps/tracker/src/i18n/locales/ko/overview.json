@@ -8,8 +8,11 @@
     "characters": "캐릭터",
     "weapons": "무기",
     "artifacts": "성유물",
+    "artifact5": "5★ 성유물",
     "artifact4": "4★ 성유물",
     "artifact3": "3★ 성유물",
+    "artifact2": "2★ 성유물",
+    "artifact1": "1★ 성유물",
     "characterExp": "캐릭터 경험치"
   },
   "server": {

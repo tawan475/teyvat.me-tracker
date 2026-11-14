@@ -86,7 +86,8 @@
     "inspect": "Periksa · {page}",
     "developers": "Pengembang",
     "leyline": "Leyline",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",
@@ -190,7 +191,8 @@
     "inspect": "Staf: tampilan baca-saja akun milik orang lain.",
     "developers": "Untuk pengembang: format ekspor Leyline dan API unggah Teyvat.me.",
     "leyline": "Format Leyline, yang diekspor Teyvat.me Capture: GOOD plus semua isi lain akun Genshin Impact-mu, serta API unggah Teyvat.me.",
-    "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri."
+    "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri.",
+    "developersApi": "API Teyvat.me: baca dan ubah akun Genshin, snapshot, permohonan, dan rencanamu dengan token pribadi."
   },
   "support": "Dukung Teyvat.me di Ko-fi",
   "timeTravel": {

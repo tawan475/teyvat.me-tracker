@@ -78,7 +78,7 @@ const STORAGE_COLUMNS = `coalesce(t.stored, 0) AS sections, coalesce(ca.bytes, 0
 /** The columns a StaffUserRow is built from (`u` the user, `t` / `ca` / `wi` the totals). */
 const USER_COLUMNS = `u.id, u.username, u.created_at, ${lastActiveSql('u')} AS last_active_at,
   u.suspended_at, u.suspended_reason, u.uploads_blocked_at, u.password_hash <> '' AS has_password,
-  u.import_key_hash IS NOT NULL AS has_import_key, u.email, u.email_verified,
+  u.import_key_hash IS NOT NULL AS has_import_key, u.email, u.email_verified, u.api_tier, u.api_limits,
   ${signupIpSql('u')} AS signup_ip, ${signupCountrySql('u')} AS signup_country,
   coalesce(t.accounts, 0) AS accounts, coalesce(t.snapshots, 0) AS snapshots, ${STORAGE_COLUMNS},
   (SELECT group_concat(provider) FROM user_identities AS i WHERE i.user_id = u.id) AS providers,

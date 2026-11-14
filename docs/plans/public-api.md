@@ -1,6 +1,21 @@
 # Public API (2026-11-14)
 
-Status: **plan, nothing built.** The user's asks:
+Status: **phases 1–3 built 2026-11-14** (the user: "Build it"); phase 4 (webhooks, OAuth apps, an MCP server) not built. README "Public API (/api/v1)" says where each piece lives.
+
+Where the build differs from the text below:
+
+- **The supporter tier** is a column, `users.api_tier`, plus the override `users.api_limits`, set on the staff user page under `data.manage` (like the storage quota). The Supporter role with a perk node was not built: the role system has no perks.
+- **Game data files** keep stable names (`/data/v1/en/characters.json`…), with each file's hash in the manifest. They are cached for an hour.
+- **The farm plan** is every active goal together, by `@gdt/game-data`'s own Planner math. The Farm view's priority order, filters and gem switch are not applied, and custom characters and weapons are listed as `skipped`.
+- **Capture data on marks:** the achievement, anecdote and quest routes answer the hand marks only. What the capture says is done is in the GOOD file.
+- **Open questions** were taken as recommended (the user: "Everything sounds good"):
+  - the security floor as listed;
+  - tokens survive a password change;
+  - the docs body is in English only;
+  - the game data repo stays private;
+  - the app keeps its own internal routes.
+
+The user's asks:
 
 - the API can do anything the app can;
 - it signs in with an API token (or something like it);

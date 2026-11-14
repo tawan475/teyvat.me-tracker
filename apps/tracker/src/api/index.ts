@@ -4,6 +4,9 @@
  */
 
 import type {
+  ApiTokenCreate,
+  ApiTokenCreatedResponse,
+  ApiTokensResponse,
   CaptureCommandKind,
   DeviceAlerts,
   DeviceAlertsPatch,
@@ -208,6 +211,14 @@ export const api = {
       noRefresh: true,
     }),
   identities: () => requestJson<IdentitiesResponse>('/api/auth/identities'),
+
+  // ----------------------------------------------------- API tokens
+  apiTokens: () => requestJson<ApiTokensResponse>('/api/auth/api-tokens', { cache: 'no-store' }),
+  createApiToken: (body: ApiTokenCreate) =>
+    requestJson<ApiTokenCreatedResponse>('/api/auth/api-tokens', { method: 'POST', json: body }),
+  revokeApiToken: (id: string) =>
+    requestJson<void>(`/api/auth/api-tokens/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  revokeApiTokens: () => requestJson<void>('/api/auth/api-tokens/revoke-all', { method: 'POST' }),
 
   // ----------------------------------------------------- passkeys
   passkeys: () => requestJson<PasskeyResponse[]>('/api/auth/passkeys', { cache: 'no-store' }),

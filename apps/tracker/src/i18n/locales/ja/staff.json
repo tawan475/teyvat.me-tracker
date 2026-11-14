@@ -74,7 +74,8 @@
     "resetKey": "{account}のキーをリセットしました",
     "revokeUserKey": "ユーザーキーを無効にしました",
     "deleteData": "{account}のスナップショット{n}件を削除しました",
-    "deleteAccount": "アカウント{account}を削除しました"
+    "deleteAccount": "アカウント{account}を削除しました",
+    "apiLimits": "API 制限を設定しました（{tier}）"
   },
   "methods": {
     "password": "パスワード",
@@ -506,5 +507,16 @@
     "live": "ライブ同期",
     "pulls": "{n} 回",
     "of": "{name} のストレージ"
+  },
+  "apiLimits": {
+    "title": "API 制限",
+    "free": "無料",
+    "supporter": "サポーター",
+    "tier": "ティア",
+    "global": "毎分のリクエスト数",
+    "globalHint": "空欄：ティアの {n}",
+    "perMinute": "毎分 {n} 回",
+    "change": "変更",
+    "saved": "API 制限を保存しました"
   }
 }

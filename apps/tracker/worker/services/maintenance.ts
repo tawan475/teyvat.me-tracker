@@ -99,6 +99,7 @@ export async function runMaintenance(
     signupIps,
     invites,
     challenges,
+    apiTokens,
     legacy,
   ] = await withLegacySchema((withV1) =>
     d1.batch([
@@ -121,6 +122,12 @@ export async function runMaintenance(
         .bind(now - SIGNUP_IP_DAYS * 86_400_000),
       expiredInvitesStatement(d1, now),
       d1.prepare('DELETE FROM passkey_challenges WHERE expires_at < ?1').bind(now),
+      // API tokens 30 days after they were revoked or expired (Settings lists only live ones).
+      d1
+        .prepare(
+          'DELETE FROM api_tokens WHERE revoked_at < ?1 OR (expires_at IS NOT NULL AND expires_at < ?1)',
+        )
+        .bind(now - 30 * 86_400_000),
       ...(withV1 ? [d1.prepare(COLLECT_LEGACY_BLOBS)] : []),
     ]),
   )
@@ -128,7 +135,11 @@ export async function runMaintenance(
     snapshots: snapshots!.meta.changes,
     // Rows returned: meta.changes would also count the counter trigger's updates.
     blobs: sections!.results.length + (legacy?.results.length ?? 0),
-    tokens: tokens!.meta.changes + codes!.meta.changes + challenges!.meta.changes,
+    tokens:
+      tokens!.meta.changes +
+      codes!.meta.changes +
+      challenges!.meta.changes +
+      apiTokens!.meta.changes,
     uploadDays: uploadDays!.meta.changes,
     sessions: sessions!.meta.changes,
     signupIps: signupIps!.meta.changes,

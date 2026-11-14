@@ -74,7 +74,8 @@
     "resetKey": "Schlüssel von {account} zurückgesetzt",
     "revokeUserKey": "Benutzerschlüssel widerrufen",
     "deleteData": "{n} Snapshots von {account} gelöscht",
-    "deleteAccount": "Konto {account} gelöscht"
+    "deleteAccount": "Konto {account} gelöscht",
+    "apiLimits": "API-Limits gesetzt ({tier})"
   },
   "methods": {
     "password": "Passwort",
@@ -506,5 +507,16 @@
     "live": "Live-Sync",
     "pulls": "{n} Gebete",
     "of": "Speicher von {name}"
+  },
+  "apiLimits": {
+    "title": "API-Limits",
+    "free": "Kostenlos",
+    "supporter": "Unterstützer",
+    "tier": "Stufe",
+    "global": "Anfragen pro Minute",
+    "globalHint": "Leer: {n} der Stufe",
+    "perMinute": "{n} pro Minute",
+    "change": "Ändern",
+    "saved": "API-Limits gespeichert"
   }
 }

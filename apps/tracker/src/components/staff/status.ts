@@ -50,6 +50,8 @@ export function auditPhrase(action: string, detail: Record<string, unknown>): st
       return t('staff.history.blockUploads')
     case 'data.unblock_uploads':
       return t('staff.history.unblockUploads')
+    case 'data.api_limits':
+      return t('staff.history.apiLimits', { tier: text('tier') })
     case 'data.quota':
       return detail.bytes === null ? t('staff.history.quotaReset') : t('staff.history.quotaSet')
     case 'data.reset_key':

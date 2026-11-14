@@ -152,6 +152,13 @@ const router = createRouter({
       component: () => import('@/views/DevelopersView.vue'),
       meta: { public: true, title: 'leyline' },
     },
+    // The public API's reference (docs/plans/public-api.md §9; public, dark).
+    {
+      path: '/developers/api',
+      name: 'developers-api',
+      component: () => import('@/views/DevelopersApiView.vue'),
+      meta: { public: true, title: 'developersApi' },
+    },
     {
       path: '/login',
       name: 'login',

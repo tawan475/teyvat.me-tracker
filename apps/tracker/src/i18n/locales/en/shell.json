@@ -86,7 +86,8 @@
     "inspect": "Inspect · {page}",
     "developers": "Developers",
     "leyline": "Leyline",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Page not found",
@@ -190,7 +191,8 @@
     "inspect": "Staff: a read-only look at someone's account.",
     "developers": "For developers: the Leyline export format and the Teyvat.me upload API.",
     "leyline": "The Leyline format, what Teyvat.me Capture exports: GOOD plus everything else your Genshin Impact account holds, and the Teyvat.me upload API.",
-    "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records."
+    "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records.",
+    "developersApi": "The Teyvat.me API: read and change your Genshin accounts, snapshots, wishes and plans with a personal token."
   },
   "support": "Support Teyvat.me on Ko-fi",
   "timeTravel": {

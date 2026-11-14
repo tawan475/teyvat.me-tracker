@@ -86,7 +86,8 @@
     "inspect": "檢視 · {page}",
     "developers": "開發者",
     "leyline": "Leyline",
-    "endgame": "終局挑戰"
+    "endgame": "終局挑戰",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "找不到頁面",
@@ -190,7 +191,8 @@
     "inspect": "管理後台：以唯讀方式檢視他人的帳號。",
     "developers": "開發者專區：Leyline 匯出格式與 Teyvat.me 上傳 API。",
     "leyline": "Leyline 格式是 Teyvat.me Capture 的匯出格式：GOOD 加上你原神帳號中的其餘一切，另附 Teyvat.me 上傳 API。",
-    "endgame": "深境螺旋、幻想真境劇詩和幽境危戰：每期的敵人和你自己的紀錄。"
+    "endgame": "深境螺旋、幻想真境劇詩和幽境危戰：每期的敵人和你自己的紀錄。",
+    "developersApi": "Teyvat.me API：使用個人權杖讀取和修改你的原神帳號、快照、祈願和規劃。"
   },
   "support": "在 Ko-fi 上支持 Teyvat.me",
   "timeTravel": {

@@ -13,6 +13,7 @@ import { usernameSchema } from './api'
 import { domainEventList, type DomainEventWindow } from './domain-events'
 import type { EventsSyncStatus } from './notices'
 import { PERMISSION_NODES, SIGNUP_MODES, STAFF_BULK_MAX, type SignupMode } from './permissions'
+import type { ApiLimitsOverride, ApiTier } from './public-api'
 import type {
   AccountResponse,
   GenshinServer,
@@ -309,6 +310,8 @@ export interface StaffUserDetailResponse {
     hasImportKey: boolean
     suspendedReason: string | null
     emailVerified?: boolean
+    /** The public API's limit tier and staff's override (docs/plans/public-api.md §8). */
+    api?: { tier: ApiTier; override: ApiLimitsOverride | null }
   }
   accounts: StaffAccountRow[]
   /** `users.view_private` only. */

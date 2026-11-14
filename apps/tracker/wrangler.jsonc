@@ -72,6 +72,16 @@
     { "name": "WISH_PROXY_LIMITER", "namespace_id": "1005", "simple": { "limit": 120, "period": 60 } },
     // Live sync batches from irminsul (POST /api/irminsul/changes), per key or session.
     { "name": "LIVE_LIMITER", "namespace_id": "1006", "simple": { "limit": 20, "period": 60 } },
+    // The public API (/api/v1, docs/plans/public-api.md §8): one binding per limit value,
+    // the key says what is counted (g:<user> global, b:<bucket>:<user>:<account>).
+    { "name": "RL_2", "namespace_id": "1007", "simple": { "limit": 2, "period": 60 } },
+    { "name": "RL_6", "namespace_id": "1008", "simple": { "limit": 6, "period": 60 } },
+    { "name": "RL_10", "namespace_id": "1009", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_20", "namespace_id": "1010", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RL_30", "namespace_id": "1011", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_60", "namespace_id": "1012", "simple": { "limit": 60, "period": 60 } },
+    // Rejected API tokens per IP; past it the IP waits 10 minutes.
+    { "name": "RL_INVALID", "namespace_id": "1013", "simple": { "limit": 6, "period": 60 } },
   ],
 
   // Secrets (wrangler secret put): JWT_SECRET, PASSWORD_PEPPER — each at least

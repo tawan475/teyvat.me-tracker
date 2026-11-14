@@ -86,7 +86,8 @@
     "inspect": "İncele · {page}",
     "developers": "Geliştiriciler",
     "leyline": "Leyline",
-    "endgame": "Oyun sonu"
+    "endgame": "Oyun sonu",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -190,7 +191,8 @@
     "inspect": "Yetkili: birinin hesabına salt okunur bakış.",
     "developers": "Geliştiriciler için: Leyline dışa aktarma biçimi ve Teyvat.me yükleme API'si.",
     "leyline": "Teyvat.me Capture'ın dışa aktardığı Leyline biçimi: GOOD ve Genshin Impact hesabındaki diğer her şey, ayrıca Teyvat.me yükleme API'si.",
-    "endgame": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz: her sezonun düşmanları ve kendi rekorların."
+    "endgame": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz: her sezonun düşmanları ve kendi rekorların.",
+    "developersApi": "Teyvat.me API'si: Genshin hesaplarını, anlık görüntülerini, dileklerini ve planlarını kişisel bir token ile oku ve değiştir."
   },
   "support": "Teyvat.me'yi Ko-fi'de destekle",
   "timeTravel": {

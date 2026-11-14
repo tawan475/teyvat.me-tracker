@@ -1,5 +1,6 @@
 import type {
   AccountSettingsPatch,
+  ApiLimitsOverride,
   CharacterCurrent,
   CharacterTarget,
   CompactSubstat,
@@ -83,6 +84,14 @@ export const users = sqliteTable(
      * one user; NULL: the site's default. Added in 0018.
      */
     storageQuota: integer('storage_quota'),
+    /**
+     * The public API's rate-limit tier ('free' | 'supporter', set by staff
+     * after a Ko-fi supporter asks on Discord) and staff's per-user override
+     * of its numbers (JSON `ApiLimitsOverride`; NULL: the tier's). Added in
+     * 0039 (docs/plans/public-api.md §8).
+     */
+    apiTier: text('api_tier').notNull().default('free'),
+    apiLimits: text('api_limits', { mode: 'json' }).$type<ApiLimitsOverride>(),
     /**
      * Where the account was made from (`cf-connecting-ip`, `request.cf`
      * country), so a wave of sign-ups from one address shows. Maintenance
@@ -737,6 +746,34 @@ export const passkeys = sqliteTable(
     uniqueIndex('passkeys_credential_id_unique').on(t.credentialId),
     index('passkeys_user_idx').on(t.userId),
   ],
+)
+
+/**
+ * Personal API tokens for `/api/v1` (migration 0039, docs/plans/public-api.md
+ * §3). The token is `gdt_pat_<id>_<secret>`; only SHA-256 of the secret is
+ * kept. `scopes`: two bits per area (`@gdt/shared` API_AREAS); `account_ids`:
+ * JSON list of the accounts it covers, NULL = all. `last_used_at` is written
+ * at most once an hour. Maintenance deletes rows 30 days after they end.
+ */
+export const apiTokens = sqliteTable(
+  'api_tokens',
+  {
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    secretHash: text('secret_hash').notNull(),
+    scopes: integer('scopes').notNull(),
+    accountIds: text('account_ids', { mode: 'json' }).$type<number[]>(),
+    createdAt: integer('created_at').notNull(),
+    expiresAt: integer('expires_at'),
+    lastUsedAt: integer('last_used_at'),
+    lastIp: text('last_ip'),
+    lastCountry: text('last_country'),
+    revokedAt: integer('revoked_at'),
+  },
+  (t) => [index('api_tokens_user_idx').on(t.userId)],
 )
 
 /**

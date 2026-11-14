@@ -86,7 +86,8 @@
     "inspect": "Inspecionar · {page}",
     "developers": "Desenvolvedores",
     "leyline": "Leyline",
-    "endgame": "Conteúdo final"
+    "endgame": "Conteúdo final",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -190,7 +191,8 @@
     "inspect": "Equipe: uma visualização somente leitura da conta de alguém.",
     "developers": "Para desenvolvedores: o formato de exportação Leyline e a API de envio do Teyvat.me.",
     "leyline": "O formato Leyline, que o Teyvat.me Capture exporta: GOOD mais tudo o que sua conta de Genshin Impact tem, e a API de envio do Teyvat.me.",
-    "endgame": "Abismo do Espiral, Teatro das Realidades Imaginárias e Confronto Abissal: os inimigos de cada temporada e seus próprios recordes."
+    "endgame": "Abismo do Espiral, Teatro das Realidades Imaginárias e Confronto Abissal: os inimigos de cada temporada e seus próprios recordes.",
+    "developersApi": "A API do Teyvat.me: leia e altere suas contas de Genshin, capturas, orações e planos com um token pessoal."
   },
   "support": "Apoie o Teyvat.me no Ko-fi",
   "timeTravel": {

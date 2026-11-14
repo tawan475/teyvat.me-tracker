@@ -504,6 +504,48 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
 </details>
 
 <details>
+<summary><b>Public API (/api/v1)</b></summary>
+
+The plan, with every decision and its reasons, is in `docs/plans/public-api.md`. The docs for people are at
+`/developers/api` and for AI helpers at `/developers/api.md`; `/api/v1/openapi.json` is the OpenAPI 3.1 file.
+
+**Tokens** (migration 0039 `api_tokens`, `worker/lib/api-token.ts`, `worker/routes/api-tokens.ts`):
+- A token is `gdt_pat_<id>_<secret>` and is found by its id. Only SHA-256 of the secret is kept.
+- Its row is held in the isolate for 60 s, together with the user's tier.
+- Settings → API tokens (`ApiTokensPanel.vue`) lists, makes and revokes tokens. Every route needs `requireActiveSession`.
+- Scopes are two bits per area (`@gdt/shared` `API_AREAS`). Every token reads every area of its accounts and writes only the areas it lists.
+- Maintenance deletes a token's row 30 days after it was revoked or expired.
+
+**Requests run the app's own routes.** `worker/api/v1/` checks the token, the scope, the account and the limits. It then calls the website's route as the token's user (`lib/internal.ts`):
+- The Request object itself is the marker, held in a WeakMap, so nothing from outside can claim it.
+- `authenticate` in `lib/session.ts` reads that marker before any cookie.
+- Internal calls have no session row, so `requireActiveSession` routes refuse them. That is why a token can never touch the password, sessions, tokens, import keys or staff routes.
+- Permissions, quotas and live notifications therefore stay in one place.
+
+A new v1 route goes in `worker/api/v1/routes.ts`: the registry, with its scope, bucket and schemas. Then run `pnpm --filter @gdt/tracker api:docs`; `worker/test/api-docs.test.ts` fails while the generated docs are stale.
+
+**Answers:**
+- A success is `{data, meta?}`, parsed through the route's zod schema, which drops unknown keys.
+- An error is RFC 9457 problem+json (`core.ts` `problem`).
+- Times are ISO 8601. Wish ids are strings.
+- Raw data first: only the wish summary (`src/data/wish-history.ts`, the page's own logic) and the farm plan (`farm.ts`, `@gdt/game-data` Planner math over every active goal) are computed.
+
+**Limits**, after Discord's design (`@gdt/shared` `API_LIMITS`):
+- Every request passes a global limit per user, then its route's bucket, counted per user and account.
+- There is one Workers rate-limit binding per limit value (`RL_2` … `RL_60` in `wrangler.jsonc`); the key holds the rest.
+- Headers: `X-RateLimit-Bucket`, `-Limit`, `-Global-Limit` and `-Tier`; on a 429 also `-Scope`, `-Global` and `Retry-After`.
+- There is no Remaining / Reset header: a binding doesn't expose its count.
+- `RL_INVALID` blocks an IP for 10 minutes after too many rejected tokens.
+- The tier (`users.api_tier`: free or supporter) and an override (`users.api_limits`) are set by staff on the user page, under `data.manage`. Supporters help on Ko-fi and then ask on Discord.
+
+**Game data files** (`scripts/game-data-files.ts`, run by `build-only` after `vite build`):
+- The build writes `/data/v1/manifest.json` and, per language, characters, weapons, materials, artifact sets and achievements, plus banners.
+- They are static assets: no Worker runs and nothing is counted.
+- Icons are full URLs (nanoka, else gi-cdn); no game art is copied.
+
+</details>
+
+<details>
 <summary><b>Wish history</b></summary>
 
 The wish history is a log beside the snapshots (it never moves an account's

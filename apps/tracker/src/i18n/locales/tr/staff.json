@@ -74,7 +74,8 @@
     "resetKey": "{account} anahtarını sıfırladı",
     "revokeUserKey": "kullanıcı anahtarını iptal etti",
     "deleteData": "{account} hesabının {n} anlık görüntüsünü sildi",
-    "deleteAccount": "{account} hesabını sildi"
+    "deleteAccount": "{account} hesabını sildi",
+    "apiLimits": "API sınırlarını ayarladı ({tier})"
   },
   "methods": {
     "password": "Şifre",
@@ -506,5 +507,16 @@
     "live": "Canlı senkronizasyon",
     "pulls": "{n} dilek",
     "of": "{name} depolaması"
+  },
+  "apiLimits": {
+    "title": "API sınırları",
+    "free": "Ücretsiz",
+    "supporter": "Destekçi",
+    "tier": "Seviye",
+    "global": "Dakikadaki istek",
+    "globalHint": "Boş: seviyenin {n} değeri",
+    "perMinute": "dakikada {n}",
+    "change": "Değiştir",
+    "saved": "API sınırları kaydedildi"
   }
 }

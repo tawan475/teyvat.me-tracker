@@ -74,7 +74,8 @@
     "resetKey": "{account}의 키를 초기화함",
     "revokeUserKey": "사용자 키를 폐기함",
     "deleteData": "{account}의 스냅샷 {n}개를 삭제함",
-    "deleteAccount": "계정 {account}을(를) 삭제함"
+    "deleteAccount": "계정 {account}을(를) 삭제함",
+    "apiLimits": "API 한도를 설정함 ({tier})"
   },
   "methods": {
     "password": "비밀번호",
@@ -506,5 +507,16 @@
     "live": "실시간 동기화",
     "pulls": "{n}회",
     "of": "{name}의 저장 공간"
+  },
+  "apiLimits": {
+    "title": "API 한도",
+    "free": "무료",
+    "supporter": "후원자",
+    "tier": "등급",
+    "global": "분당 요청 수",
+    "globalHint": "비우면: 등급 기본값 {n}",
+    "perMinute": "분당 {n}회",
+    "change": "변경",
+    "saved": "API 한도 저장됨"
   }
 }

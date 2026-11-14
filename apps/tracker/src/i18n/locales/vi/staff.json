@@ -74,7 +74,8 @@
     "resetKey": "đã đặt lại khóa của {account}",
     "revokeUserKey": "đã thu hồi khóa người dùng",
     "deleteData": "đã xóa {n} bản chụp của {account}",
-    "deleteAccount": "đã xóa tài khoản {account}"
+    "deleteAccount": "đã xóa tài khoản {account}",
+    "apiLimits": "đã đặt giới hạn API ({tier})"
   },
   "methods": {
     "password": "Mật khẩu",
@@ -506,5 +507,16 @@
     "live": "Đồng bộ trực tiếp",
     "pulls": "{n} lượt",
     "of": "Lưu trữ của {name}"
+  },
+  "apiLimits": {
+    "title": "Giới hạn API",
+    "free": "Miễn phí",
+    "supporter": "Người ủng hộ",
+    "tier": "Cấp",
+    "global": "Yêu cầu mỗi phút",
+    "globalHint": "Để trống: {n} của cấp",
+    "perMinute": "{n} lượt mỗi phút",
+    "change": "Đổi",
+    "saved": "Đã lưu giới hạn API"
   }
 }

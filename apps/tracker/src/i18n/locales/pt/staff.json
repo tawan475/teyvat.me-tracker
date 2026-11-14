@@ -74,7 +74,8 @@
     "resetKey": "redefiniu a chave de {account}",
     "revokeUserKey": "revogou a chave de usuário",
     "deleteData": "excluiu {n} capturas de {account}",
-    "deleteAccount": "excluiu a conta {account}"
+    "deleteAccount": "excluiu a conta {account}",
+    "apiLimits": "definiu os limites de API ({tier})"
   },
   "methods": {
     "password": "Senha",
@@ -506,5 +507,16 @@
     "live": "Sincronização ao vivo",
     "pulls": "{n} orações",
     "of": "Armazenamento de {name}"
+  },
+  "apiLimits": {
+    "title": "Limites de API",
+    "free": "Grátis",
+    "supporter": "Apoiador",
+    "tier": "Nível",
+    "global": "Requisições por minuto",
+    "globalHint": "Vazio: {n} do nível",
+    "perMinute": "{n} por minuto",
+    "change": "Alterar",
+    "saved": "Limites de API salvos"
   }
 }

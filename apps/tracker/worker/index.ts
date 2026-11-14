@@ -4,6 +4,9 @@ import type { AppEnv } from './env'
 import { d1Sessions } from './lib/d1-session'
 import { withRange } from './lib/byte-range'
 import { ApiError, errorBody } from './lib/http'
+import { setInternalApp } from './lib/internal'
+import { v1 } from './api/v1'
+import { apiTokens } from './routes/api-tokens'
 import { accounts } from './routes/accounts'
 import { admin } from './routes/admin'
 import { auth } from './routes/auth'
@@ -63,6 +66,9 @@ app.route('/auth', auth)
 app.route('/auth', recovery)
 app.route('/auth/oauth', oauth)
 app.route('/auth/passkeys', passkeys)
+// Settings → API tokens, and the public API itself (docs/plans/public-api.md).
+app.route('/auth/api-tokens', apiTokens)
+app.route('/v1', v1)
 app.route('/me', me)
 app.route('/accounts', accounts)
 app.route('/accounts', progress)
@@ -95,6 +101,9 @@ app.onError((error, c) => {
   console.error(error)
   return c.json(errorBody(new ApiError(500, 'internal', 'Something went wrong')), 500)
 })
+
+// The public API runs the app's own routes as its token's user (lib/internal).
+setInternalApp((request, env, ctx) => app.fetch(request, env, ctx))
 
 export { LiveHub } from './services/live'
 

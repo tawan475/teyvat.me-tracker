@@ -74,7 +74,8 @@
     "resetKey": "mengatur ulang kunci {account}",
     "revokeUserKey": "mencabut kunci pengguna",
     "deleteData": "menghapus {n} snapshot dari {account}",
-    "deleteAccount": "menghapus akun {account}"
+    "deleteAccount": "menghapus akun {account}",
+    "apiLimits": "mengatur batas API ({tier})"
   },
   "methods": {
     "password": "Kata sandi",
@@ -506,5 +507,16 @@
     "live": "Sinkronisasi live",
     "pulls": "{n} pull",
     "of": "Penyimpanan {name}"
+  },
+  "apiLimits": {
+    "title": "Batas API",
+    "free": "Gratis",
+    "supporter": "Pendukung",
+    "tier": "Tingkat",
+    "global": "Permintaan per menit",
+    "globalHint": "Kosong: {n} dari tingkat",
+    "perMinute": "{n} per menit",
+    "change": "Ubah",
+    "saved": "Batas API disimpan"
   }
 }

@@ -86,7 +86,8 @@
     "inspect": "Ansehen · {page}",
     "developers": "Entwickler",
     "leyline": "Leyline",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -190,7 +191,8 @@
     "inspect": "Verwaltung: ein schreibgeschützter Blick auf den Account einer anderen Person.",
     "developers": "Für Entwickler: das Leyline-Exportformat und die Upload-API von Teyvat.me.",
     "leyline": "Das Leyline-Format, das Teyvat.me Capture exportiert: GOOD plus alles andere, was dein Account in Genshin Impact enthält, und die Upload-API von Teyvat.me.",
-    "endgame": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: die Gegner jeder Saison und deine eigenen Rekorde."
+    "endgame": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: die Gegner jeder Saison und deine eigenen Rekorde.",
+    "developersApi": "Die Teyvat.me-API: Lies und ändere deine Genshin-Konten, Snapshots, Gebete und Pläne mit einem persönlichen Token."
   },
   "support": "Teyvat.me auf Ko-fi unterstützen",
   "timeTravel": {

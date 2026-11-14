@@ -74,7 +74,8 @@
     "resetKey": "сброс ключа {account}",
     "revokeUserKey": "отзыв ключа пользователя",
     "deleteData": "удаление снимков {account} ({n} шт.)",
-    "deleteAccount": "удаление аккаунта {account}"
+    "deleteAccount": "удаление аккаунта {account}",
+    "apiLimits": "изменение лимитов API ({tier})"
   },
   "methods": {
     "password": "Пароль",
@@ -506,5 +507,16 @@
     "live": "Live-синхронизация",
     "pulls": "Молитв: {n}",
     "of": "Хранилище {name}"
+  },
+  "apiLimits": {
+    "title": "Лимиты API",
+    "free": "Бесплатный",
+    "supporter": "Спонсор",
+    "tier": "Уровень",
+    "global": "Запросов в минуту",
+    "globalHint": "Пусто: {n} уровня",
+    "perMinute": "{n} в минуту",
+    "change": "Изменить",
+    "saved": "Лимиты API сохранены"
   }
 }

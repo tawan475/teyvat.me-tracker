@@ -74,7 +74,8 @@
     "resetKey": "a réinitialisé la clé de {account}",
     "revokeUserKey": "a révoqué la clé utilisateur",
     "deleteData": "a supprimé {n} instantanés de {account}",
-    "deleteAccount": "a supprimé le compte {account}"
+    "deleteAccount": "a supprimé le compte {account}",
+    "apiLimits": "a défini les limites d'API ({tier})"
   },
   "methods": {
     "password": "Mot de passe",
@@ -506,5 +507,16 @@
     "live": "Synchro en direct",
     "pulls": "{n} vœux",
     "of": "Stockage de {name}"
+  },
+  "apiLimits": {
+    "title": "Limites d'API",
+    "free": "Gratuit",
+    "supporter": "Soutien",
+    "tier": "Niveau",
+    "global": "Requêtes par minute",
+    "globalHint": "Vide : {n} du niveau",
+    "perMinute": "{n} par minute",
+    "change": "Modifier",
+    "saved": "Limites d'API enregistrées"
   }
 }

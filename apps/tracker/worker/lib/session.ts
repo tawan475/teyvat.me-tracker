@@ -36,6 +36,7 @@ import { userSessions, users } from '../db/schema'
 import type { AppEnv } from '../env'
 import { revokeLive, revokeLiveSession } from '../services/live'
 import { ApiError } from './http'
+import { internalCaller } from './internal'
 
 const ACCESS_COOKIE = 'gdt_at'
 const REFRESH_COOKIE = 'gdt_rt'
@@ -507,6 +508,16 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
 /** The CSRF check and the access token: sets userId, tokenVersion and sessionId. */
 async function authenticate(c: Context<AppEnv>): Promise<void> {
+  // The public API running a route as its token's user (lib/internal): no
+  // cookie, no CSRF (the request never left the Worker), and no session row,
+  // so requireActiveSession refuses it.
+  const inner = internalCaller(c.req.raw)
+  if (inner) {
+    c.set('userId', inner.userId)
+    c.set('tokenVersion', null)
+    c.set('sessionId', null)
+    return
+  }
   if (!SAFE_METHODS.has(c.req.method) && c.req.header(CSRF_HEADER) !== '1') {
     throw new ApiError(403, 'csrf', `Missing ${CSRF_HEADER} header`)
   }

@@ -14,9 +14,9 @@
  *   featured one. Which of the two (Epitomized Path) is not tracked: the
  *   history doesn't say which weapon was charted.
  * - Chronicled, Standard, Beginners': pity only.
- * - Capturing Radiance (5.0+) is not modelled: the history can't tell a
- *   radiance win from a plain one. What is counted is how many 50/50s were
- *   lost in a row.
+ * - Capturing Radiance (5.0+, character event): worked out from the
+ *   50/50 chain since 5.0's first day (see `RADIANCE_FROM`); the history
+ *   itself never says, so only certain ones are marked.
  * Featured items come from banner data adapted from paimon.moe (MIT,
  * wish-banners.json, apps/tracker/scripts/wish-data.mjs). A pull outside
  * every known banner (one newer than the data) gets no outcome, and the
@@ -263,6 +263,12 @@ export interface BannerStats {
   months: MonthCount[]
   /** Event banner runs pulled on, oldest first (event banner types only). */
   runs: BannerRun[]
+  /**
+   * Capturing Radiance's counter now (0-3; at 3 the next 50/50 is the
+   * featured 5★): character event only, null before 5.0's first 5★ or once
+   * a pull outside the banner data broke the chain.
+   */
+  radiance: number | null
 }
 
 /** Hard pity per banner type (5★, 4★). */
@@ -454,6 +460,7 @@ export function bannerStats(
     fours: fours.reverse(),
     months: [...months.values()],
     runs: [...runs.values()],
+    radiance: banner === 301 && radiance !== null && radiance >= 0 ? radiance : null,
   }
 }
 

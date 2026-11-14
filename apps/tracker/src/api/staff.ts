@@ -4,6 +4,8 @@
  */
 
 import type {
+  ApiLimitsOverride,
+  ApiTier,
   LiveJournalResponse,
   LivePointsResponse,
   DomainEventWindow,
@@ -96,6 +98,12 @@ export const staffApi = {
     requestJson<void>(user(id), { method: 'DELETE', json: { username } }),
   setUploads: (id: number, blocked: boolean, reason = '') =>
     requestJson<void>(`${user(id)}/uploads`, { method: 'POST', json: { blocked, reason } }),
+  /** The user's public API limits: tier, and an override for someone who asked for more. */
+  setApiLimits: (id: number, tier: ApiTier, override: ApiLimitsOverride | null) =>
+    requestJson<void>(`/api/staff/users/${id}/api-limits`, {
+      method: 'PUT',
+      json: { tier, override },
+    }),
   setQuota: (id: number, bytes: number | null) =>
     requestJson<void>(`${user(id)}/quota`, { method: 'PUT', json: { bytes } }),
   revokeUserKey: (id: number) => requestJson<void>(`${user(id)}/import-key`, { method: 'DELETE' }),

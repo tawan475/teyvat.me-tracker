@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { OAUTH_PROVIDERS, type StaffAccountRow, type StaffUserDetailResponse } from '@gdt/shared'
+import {
+  OAUTH_PROVIDERS,
+  type ApiLimitsOverride,
+  type ApiTier,
+  type StaffAccountRow,
+  type StaffUserDetailResponse,
+} from '@gdt/shared'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -21,6 +27,7 @@ import { providerLabel } from '@/components/oauth/oauth'
 import ActionMenu, { type MenuItem } from '@/components/staff/ActionMenu.vue'
 import DeleteDataDialog from '@/components/staff/DeleteDataDialog.vue'
 import DeleteUserDialog from '@/components/staff/DeleteUserDialog.vue'
+import ApiLimitsDialog from '@/components/staff/ApiLimitsDialog.vue'
 import QuotaDialog from '@/components/staff/QuotaDialog.vue'
 import ReasonDialog from '@/components/staff/ReasonDialog.vue'
 import RenameDialog from '@/components/staff/RenameDialog.vue'
@@ -105,6 +112,7 @@ const renameOpen = ref(false)
 const renameError = ref('')
 const deleteOpen = ref(false)
 const quotaOpen = ref(false)
+const apiLimitsOpen = ref(false)
 const dataAccount = ref<StaffAccountRow | null>(null)
 
 async function suspend(reason: string) {
@@ -195,6 +203,18 @@ async function setQuota(bytes: number | null) {
     )
   ) {
     quotaOpen.value = false
+  }
+}
+
+async function setApiLimits(tier: ApiTier, override: ApiLimitsOverride | null) {
+  if (
+    await act(
+      () => api.staff.setApiLimits(userId.value, tier, override),
+      t('staff.apiLimits.saved'),
+      t('staff.common.notSaved'),
+    )
+  ) {
+    apiLimitsOpen.value = false
   }
 }
 
@@ -879,6 +899,24 @@ const identities = computed(() =>
                 </UiButton>
               </div>
             </template>
+            <div v-if="user.api" class="flex items-center gap-3 py-2.5">
+              <dt class="w-24 shrink-0 text-text-secondary">{{ $t('staff.apiLimits.title') }}</dt>
+              <dd class="flex-1">
+                {{ $t(`staff.apiLimits.${user.api.tier}`) }}
+                <span v-if="user.api.override?.global" class="text-text-muted tabular-nums">
+                  · {{ $t('staff.apiLimits.perMinute', { n: user.api.override.global }) }}</span
+                >
+              </dd>
+              <UiButton
+                v-if="may('data.manage') && detail.outranked"
+                variant="ghost"
+                size="sm"
+                :disabled="busy"
+                @click="apiLimitsOpen = true"
+              >
+                {{ $t('staff.apiLimits.change') }}
+              </UiButton>
+            </div>
             <div class="flex items-center gap-3 py-2.5">
               <dt class="w-24 shrink-0 text-text-secondary" :title="$t('staff.user.userKeyTitle')">
                 {{ $t('staff.user.userKey') }}
@@ -988,6 +1026,15 @@ const identities = computed(() =>
     :busy="busy"
     @close="deleteOpen = false"
     @confirm="remove"
+  />
+  <ApiLimitsDialog
+    v-if="user?.api"
+    :open="apiLimitsOpen"
+    :tier="user.api.tier"
+    :override="user.api.override"
+    :busy="busy"
+    @close="apiLimitsOpen = false"
+    @confirm="setApiLimits"
   />
   <QuotaDialog
     :open="quotaOpen"

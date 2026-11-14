@@ -74,7 +74,8 @@
     "resetKey": "重設了 {account} 的金鑰",
     "revokeUserKey": "撤銷了使用者金鑰",
     "deleteData": "刪除了 {account} 的 {n} 份快照",
-    "deleteAccount": "刪除了帳號 {account}"
+    "deleteAccount": "刪除了帳號 {account}",
+    "apiLimits": "設定了 API 限額（{tier}）"
   },
   "methods": {
     "password": "密碼",
@@ -506,5 +507,16 @@
     "live": "即時同步",
     "pulls": "{n} 抽",
     "of": "{name} 的儲存空間"
+  },
+  "apiLimits": {
+    "title": "API 限額",
+    "free": "免費",
+    "supporter": "支持者",
+    "tier": "等級",
+    "global": "每分鐘請求數",
+    "globalHint": "留空：使用該等級的 {n}",
+    "perMinute": "每分鐘 {n} 次",
+    "change": "變更",
+    "saved": "API 限額已儲存"
   }
 }

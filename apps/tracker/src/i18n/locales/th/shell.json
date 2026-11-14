@@ -86,7 +86,8 @@
     "inspect": "ตรวจดู · {page}",
     "developers": "นักพัฒนา",
     "leyline": "Leyline",
-    "endgame": "เอนด์เกม"
+    "endgame": "เอนด์เกม",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "ไม่พบหน้านี้",
@@ -190,7 +191,8 @@
     "inspect": "ทีมงาน: ดูบัญชีของผู้อื่นแบบอ่านอย่างเดียว",
     "developers": "สำหรับนักพัฒนา: รูปแบบการส่งออก Leyline และ API อัปโหลดของ Teyvat.me",
     "leyline": "รูปแบบ Leyline ที่ Teyvat.me Capture ส่งออก: GOOD รวมกับทุกอย่างในบัญชี Genshin Impact ของคุณ และ API อัปโหลดของ Teyvat.me",
-    "endgame": "Spiral Abyss, โรงละครในจินตนาการ และศึกเดือดแดนเร้นลับ: ศัตรูของแต่ละซีซันและสถิติของคุณเอง"
+    "endgame": "Spiral Abyss, โรงละครในจินตนาการ และศึกเดือดแดนเร้นลับ: ศัตรูของแต่ละซีซันและสถิติของคุณเอง",
+    "developersApi": "Teyvat.me API: อ่านและแก้ไขบัญชี Genshin สแนปช็อต การอธิษฐาน และแผนของคุณด้วยโทเค็นส่วนตัว"
   },
   "support": "สนับสนุน Teyvat.me บน Ko-fi",
   "timeTravel": {

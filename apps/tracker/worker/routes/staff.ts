@@ -32,6 +32,8 @@ import {
   purgeRequest,
   type LiveJournalResponse,
   quotaRequest,
+  apiLimitsRequest,
+  type ApiLimitsOverride,
   renameRequest,
   roleInput,
   roleOrderRequest,
@@ -471,6 +473,13 @@ export const staff = new Hono<AppEnv>()
         hasImportKey: user.row.has_import_key === 1,
         suspendedReason: (user.row.suspended_reason as string | null) ?? null,
         ...(privateOk ? { emailVerified: user.row.email_verified === 1 } : {}),
+        api: {
+          tier: user.row.api_tier === 'supporter' ? 'supporter' : 'free',
+          override:
+            typeof user.row.api_limits === 'string'
+              ? (JSON.parse(user.row.api_limits) as ApiLimitsOverride)
+              : null,
+        },
       },
       accounts: user.accounts,
       ...(identities ? { identities } : {}),
@@ -633,6 +642,30 @@ export const staff = new Hono<AppEnv>()
         action: 'data.quota',
         target: targetRef(target),
         detail: { bytes },
+      }),
+    ])
+    return c.body(null, 204)
+  })
+
+  /**
+   * The user's public API limits (docs/plans/public-api.md §8): the tier
+   * (free, or supporter after Ko-fi + Discord) and an optional override of
+   * the numbers for someone who asked for more. Takes effect within a
+   * minute (the API holds a token's row that long).
+   */
+  .put('/users/:id/api-limits', need('data.manage'), async (c) => {
+    const target = await actOn(c, idParam(c, 'id'))
+    const { tier, override } = await parseJson(c, apiLimitsRequest)
+    await c.env.DB.batch([
+      c.env.DB.prepare('UPDATE users SET api_tier = ?2, api_limits = ?3 WHERE id = ?1').bind(
+        target.userId,
+        tier,
+        override ? JSON.stringify(override) : null,
+      ),
+      auditStatement(c.env.DB, actorOf(c), {
+        action: 'data.api_limits',
+        target: targetRef(target),
+        detail: { tier, ...(override ? { override } : {}) },
       }),
     ])
     return c.body(null, 204)

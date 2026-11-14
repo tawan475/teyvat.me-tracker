@@ -86,7 +86,8 @@
     "inspect": "Ispeziona · {page}",
     "developers": "Sviluppatori",
     "leyline": "Leyline",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -190,7 +191,8 @@
     "inspect": "Staff: uno sguardo in sola lettura all'account di qualcuno.",
     "developers": "Per sviluppatori: il formato di esportazione Leyline e le API di caricamento di Teyvat.me.",
     "leyline": "Il formato Leyline, ciò che esporta Teyvat.me Capture: GOOD più tutto il resto del tuo account di Genshin Impact, e le API di caricamento di Teyvat.me.",
-    "endgame": "Abisso a spirale, Teatro immaginario e Battaglia nel regno oscuro: i nemici di ogni stagione e i tuoi record."
+    "endgame": "Abisso a spirale, Teatro immaginario e Battaglia nel regno oscuro: i nemici di ogni stagione e i tuoi record.",
+    "developersApi": "L'API di Teyvat.me: leggi e modifica i tuoi account di Genshin, istantanee, desideri e piani con un token personale."
   },
   "support": "Sostieni Teyvat.me su Ko-fi",
   "timeTravel": {

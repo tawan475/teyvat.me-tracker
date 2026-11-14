@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ApiTokensPanel from '@/components/settings/ApiTokensPanel.vue'
 import AppPanel from '@/components/settings/AppPanel.vue'
 import AppearancePanel from '@/components/settings/AppearancePanel.vue'
 import ConnectedAccountsPanel from '@/components/settings/ConnectedAccountsPanel.vue'
@@ -32,6 +33,7 @@ import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
       <PasskeysPanel class="col-span-full hidden min-w-0 min-[900px]:block" />
       <DevicesSummary class="min-w-0" />
       <UserImportKeyPanel class="min-w-0" />
+      <ApiTokensPanel class="col-span-full min-w-0" />
     </SettingsSection>
     <SettingsSection
       :label="$t('settings.appearance.title')"

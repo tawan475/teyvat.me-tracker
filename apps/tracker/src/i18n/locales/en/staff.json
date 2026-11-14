@@ -74,7 +74,8 @@
     "resetKey": "reset the key of {account}",
     "revokeUserKey": "revoked the user key",
     "deleteData": "deleted {n} snapshots of {account}",
-    "deleteAccount": "deleted the account {account}"
+    "deleteAccount": "deleted the account {account}",
+    "apiLimits": "set the API limits ({tier})"
   },
   "methods": {
     "password": "Password",
@@ -506,5 +507,16 @@
     "live": "Live sync",
     "pulls": "{n} pulls",
     "of": "{name}’s storage"
+  },
+  "apiLimits": {
+    "title": "API limits",
+    "free": "Free",
+    "supporter": "Supporter",
+    "tier": "Tier",
+    "global": "Requests a minute",
+    "globalHint": "Empty: the tier's {n}",
+    "perMinute": "{n} a minute",
+    "change": "Change",
+    "saved": "API limits saved"
   }
 }

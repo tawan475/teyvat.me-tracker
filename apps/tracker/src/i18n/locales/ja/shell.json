@@ -86,7 +86,8 @@
     "inspect": "閲覧 · {page}",
     "developers": "開発者向け",
     "leyline": "Leyline",
-    "endgame": "エンドコンテンツ"
+    "endgame": "エンドコンテンツ",
+    "developersApi": "API"
   },
   "notFound": {
     "title": "ページが見つかりません",
@@ -190,7 +191,8 @@
     "inspect": "スタッフ：他のユーザーのアカウントを読み取り専用で閲覧。",
     "developers": "開発者向け：Leyline エクスポート形式と Teyvat.me のアップロード API。",
     "leyline": "Teyvat.me Capture が書き出す Leyline 形式：GOOD に原神アカウントのその他すべてを加えたもの。Teyvat.me のアップロード API も。",
-    "endgame": "深境螺旋、幻想シアター、幽境の激戦：各シーズンの敵とあなたの記録。"
+    "endgame": "深境螺旋、幻想シアター、幽境の激戦：各シーズンの敵とあなたの記録。",
+    "developersApi": "Teyvat.me API：個人トークンで原神のアカウント、スナップショット、祈願、プランを読み取り・変更できます。"
   },
   "support": "Ko-fi で Teyvat.me を支援する",
   "timeTravel": {

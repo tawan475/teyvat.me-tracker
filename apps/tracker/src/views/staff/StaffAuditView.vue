@@ -117,6 +117,9 @@ function describe(row: AuditRow): string {
       )
       break
     }
+    case 'data.api_limits':
+      parts.push(str(d.tier))
+      break
     case 'data.quota':
       parts.push(typeof d.bytes === 'number' ? formatBytes(d.bytes) : t('staff.audit.default'))
       break

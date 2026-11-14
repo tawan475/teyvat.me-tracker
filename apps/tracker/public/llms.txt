@@ -30,6 +30,9 @@ Teyvat.me is an unofficial fan project, not affiliated with or endorsed by HoYov
 - [Home](https://teyvat.me/): what the tracker does, feature by feature; how the Capture app keeps it up to date; privacy; questions and answers.
 - [Developers: the Leyline format](https://teyvat.me/developers): the export format (GOOD plus every other key Teyvat.me Capture writes), the upload rules and limits, and the upload and live sync API.
 - [Leyline TypeScript types](https://teyvat.me/developers/leyline.d.ts): the format as TypeScript declarations.
+- [Teyvat.me API](https://teyvat.me/developers/api): the public API (/api/v1) for your own data with a personal token: accounts, snapshots (GOOD), wish history and summary, marks, the Planner, sharing; rate limits and supporter limits.
+- [Teyvat.me API in Markdown](https://teyvat.me/developers/api.md): the whole API reference in one file, for AI helpers.
+- [OpenAPI](https://teyvat.me/api/v1/openapi.json): the API as OpenAPI 3.1.
 - [Create an account](https://teyvat.me/register)
 - [Sign in](https://teyvat.me/login)
 - [Download Teyvat.me Capture](https://github.com/tawan475/teyvat.me-capture/releases/latest)

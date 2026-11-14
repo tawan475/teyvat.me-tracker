@@ -74,7 +74,8 @@
     "resetKey": "รีเซ็ตคีย์ของ {account}",
     "revokeUserKey": "เพิกถอนคีย์ผู้ใช้",
     "deleteData": "ลบสแนปช็อต {n} รายการของ {account}",
-    "deleteAccount": "ลบบัญชี {account}"
+    "deleteAccount": "ลบบัญชี {account}",
+    "apiLimits": "ตั้งขีดจำกัด API ({tier})"
   },
   "methods": {
     "password": "รหัสผ่าน",
@@ -506,5 +507,16 @@
     "live": "ซิงก์สด",
     "pulls": "{n} ครั้ง",
     "of": "พื้นที่จัดเก็บของ {name}"
+  },
+  "apiLimits": {
+    "title": "ขีดจำกัด API",
+    "free": "ฟรี",
+    "supporter": "ผู้สนับสนุน",
+    "tier": "ระดับ",
+    "global": "คำขอต่อนาที",
+    "globalHint": "เว้นว่าง: ใช้ {n} ของระดับ",
+    "perMinute": "{n} ครั้งต่อนาที",
+    "change": "เปลี่ยน",
+    "saved": "บันทึกขีดจำกัด API แล้ว"
   }
 }

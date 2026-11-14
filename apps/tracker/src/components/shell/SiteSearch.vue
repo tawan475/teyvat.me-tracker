@@ -330,7 +330,7 @@ const optionId = (i: number) => `site-search-${i}`
         id="site-search-list"
         ref="list"
         role="listbox"
-        class="min-h-[min(30rem,55dvh)] px-3 py-2"
+        class="min-h-[min(30rem,calc(70dvh-10rem))] px-3 py-2"
         :aria-label="$t('shell.search.title')"
       >
         <p
@@ -427,7 +427,7 @@ const optionId = (i: number) => `site-search-${i}`
       </div>
 
       <div
-        class="hidden items-center gap-4 border-t border-border-default px-4 py-2.5 text-xs text-text-muted sm:flex"
+        class="sticky bottom-0 z-10 hidden items-center gap-4 border-t border-border-default bg-surface-raised px-4 py-2.5 text-xs text-text-muted sm:flex"
         aria-hidden="true"
       >
         <span><kbd class="kbd">↑</kbd> <kbd class="kbd">↓</kbd> {{ $t('shell.search.move') }}</span>

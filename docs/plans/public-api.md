@@ -170,7 +170,7 @@ The response is `Content-Type: application/problem+json`:
 ### Headers on every answer
 
 - `X-Request-Id` (the same as `instance`): one id to quote in a bug report.
-- `RateLimit-Policy` (IETF RateLimit fields) and `X-RateLimit-Tier`, plus `Retry-After` on 429 (§8: the bindings can't tell how many are left).
+- `X-RateLimit-Bucket`, `X-RateLimit-Limit`, `X-RateLimit-Global-Limit`, `X-RateLimit-Tier`; on a 429 also `X-RateLimit-Scope`, `X-RateLimit-Global` and `Retry-After` (§8, Discord's names; no Remaining / Reset).
 - `ETag` on every GET, with `If-None-Match` → `304`. It is built from the account's `dataVersion` (`accountEtag`), so polling an unchanged account costs no D1 rows beyond the auth.
 - `Cache-Control: private, no-cache`; an immutable past snapshot's GOOD keeps `private, max-age=31536000, immutable` as today.
 - `API-Version: 1`.
@@ -270,65 +270,117 @@ Game art stays off 475.dev and off teyvat.me (the user's rule): the files hold l
 
 **Later, optionally**: a public `teyvatme/game-data` repo or npm package holding only those generated files, written by the data repo's `release.yml`.
 
-## 8. Rate limits: free and supporter, and cost (the 100k baseline)
+## 8. Rate limits: a global limit plus per-endpoint buckets, free and supporter (the 100k baseline)
 
-The user (2026-11-14): limits stay low, but the first numbers (10 / 2 / 5) were too tight, heavy reads above all. There are two tiers. **Supporter** only raises the limits, nothing else.
+The user (2026-11-14):
 
-Limits are **per user**: all of a user's tokens share them, so making more tokens doesn't help. Heavy reads and writes also count as requests.
+- limits stay low;
+- a global limit plus per-endpoint limits;
+- learn from Discord's design;
+- two tiers, where **Supporter** only raises limits;
+- above that, people contact the user on Discord.
 
-| Bucket   | Free            | Supporter    | Covers                                                                 |
-| -------- | --------------- | ------------ | ---------------------------------------------------------------------- |
-| Requests | **20 / min**    | **60 / min** | every `/api/v1` request, 304s included                                 |
-| Heavy    | **6 / min**     | **20 / min** | GOOD of a snapshot or the newest, wish summary, UIGF export, farm plan |
-| Writes   | **10 / min**    | **30 / min** | every POST / PATCH / DELETE                                            |
-| Auth     | 10 / min per IP | same         | failed token checks (bad, expired, revoked)                            |
+The numbers below are the starting point; the user may tweak them later.
 
-Game data files (§7) are not counted. Uploads also keep their own limits and quotas: the daily snapshots and bytes, and the storage quota.
+### What we take from Discord's design
 
-### Becoming a supporter (the user's process)
+Read on 2026-11-14 at discord.com/developers/docs/topics/rate-limits.
+
+- **Two layers on every request: a global limit and a per-route bucket.** Both are per bot or user, from the request's token.
+  - Per-route limits may include the method.
+  - Similar routes can share one bucket, named by `X-RateLimit-Bucket`.
+- **Top-level resources split buckets.** `/channels/1234` and `/channels/9876` are limited separately. Ours is the Genshin account: `/accounts/{id}/…` buckets are counted per account.
+- **Headers say the limit; clients must not hard-code it.**
+  - Every answer: `X-RateLimit-Limit`, `-Remaining`, `-Reset`, `-Reset-After`, `-Bucket`.
+  - On a 429: `X-RateLimit-Scope` (`user` / `global` / `shared`) and `X-RateLimit-Global`.
+  - 429 body: `{message, retry_after, global, code?}`.
+- **An invalid-request limit**: 10,000 answers of 401, 403 or 429 in 10 minutes, and that IP is restricted for a while. 429s with scope `shared` don't count.
+- A way to ask for more when normal use needs it (their request form; ours is Discord).
+
+### The buckets
+
+- **Global, per user**: all of the user's tokens together.
+- **Buckets, per user + bucket + account**: per user + bucket where the route has no account.
+- A request must pass both. Every route declares its bucket in the registry (§9), so the docs list them automatically.
+
+| Bucket               | Routes                                                                                                                        | Free                                            | Supporter       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------- |
+| **global**           | every `/api/v1` request, 304s included                                                                                        | **20 / min**                                    | **60 / min**    |
+| `read`               | everything not below: me, accounts, settings, snapshot list, live journal, wish pulls, marks, Planner data, members, presence | only the global                                 | only the global |
+| `good`               | GOOD of the newest or a snapshot, GOOD sections                                                                               | **6 / min** per account                         | **20 / min**    |
+| `wish-summary`       | wish summary (computed)                                                                                                       | **6 / min** per account                         | **20 / min**    |
+| `farm`               | farm plan (computed)                                                                                                          | **6 / min** per account                         | **20 / min**    |
+| `wish-export`        | UIGF export                                                                                                                   | **2 / min** per account                         | **6 / min**     |
+| `upload`             | POST snapshots                                                                                                                | **6 / min** per account                         | **20 / min**    |
+| `wish-import`        | wish import                                                                                                                   | **2 / min** per account                         | **6 / min**     |
+| `write`              | every other POST / PATCH / DELETE                                                                                             | **10 / min**                                    | **30 / min**    |
+| `destructive`        | delete all wishes, compact history, delete an account                                                                         | **2 / min**                                     | **2 / min**     |
+| **invalid** (per IP) | answers 401 / 403                                                                                                             | **60 / 10 min**, then 429 scope `ip` for 10 min | same            |
+
+- Uploads also keep the daily snapshot / byte quotas and the storage quota every account has.
+- Game data files (§7) are static and never counted.
+- As in Discord, a 429 doesn't count toward the invalid limit.
+
+### Tiers
+
+- **Free** is every user.
+- **Supporter** = ×3 on every bucket except `destructive`.
+
+How to become one (the docs' Rate limits page and the Settings token panel say it in these steps):
 
 1. Help with server costs on Ko-fi (https://ko-fi.com/tawan475).
-2. Message the user on Discord (https://discord.gg/W6GUY3UtAx) with the Teyvat.me username.
-3. Staff switch the supporter limits on from the staff user page.
+2. Message on Discord (https://discord.gg/W6GUY3UtAx) with the Teyvat.me username.
+3. Staff switch it on.
 
-The docs' Rate limits page and the Settings token panel say this in those three steps.
+**Need more than supporter limits?** "Contact us on Discord to discuss": the user sets a per-user override by hand (`users.api_limits` JSON, staff user page, audited), the way `users.storage_quota` overrides storage.
 
-**How the tier is stored.** It reuses the `Supporter` role that the Ko-fi plan (`open-site.md` §6) already gives by hand, from the staff user page, audited. The role carries a perk, `perk.api_supporter`, kept in its own list (`PERK_NODES`, beside `PERMISSION_NODES`) so that it never opens `/staff`: `requireStaff` looks at staff nodes only. If the Ko-fi webhook and supporter codes are built later, they give the same role automatically.
+**How the tier is stored.** It reuses the `Supporter` role that the Ko-fi plan (`open-site.md` §6) gives by hand, from the staff user page, audited.
 
-The token lookup reads the perk in the same statement (`EXISTS` over `user_roles` → `roles`), and caches it with the token for 60 s. A grant or removal therefore takes effect within a minute, at no extra D1 read. `GET /v1/me` answers `limits: {tier, requests, heavy, writes}`.
+- The role carries a perk, `perk.api_supporter`, kept in its own list (`PERK_NODES`, beside `PERMISSION_NODES`), so it never opens `/staff`: `requireStaff` looks at staff nodes only.
+- If the Ko-fi webhook and supporter codes are built later, they give the same role automatically.
+- The token lookup reads the perk and the override in the same statement, and caches them with the token for 60 s. A change therefore takes effect within a minute, at no extra D1 read.
+- `GET /v1/me` answers `limits: {tier, global, buckets: {good: 6, …}}`.
 
-### How limits are counted
+### How it is counted
 
-- **Bindings.** Workers rate-limit bindings, which are free. Each binding has a fixed limit, so there are six: `API_LIMITER` 20 and `API_SUPPORTER_LIMITER` 60, `API_HEAVY_LIMITER` 6 and `API_SUPPORTER_HEAVY_LIMITER` 20, `API_WRITE_LIMITER` 10 and `API_SUPPORTER_WRITE_LIMITER` 30, plus `API_AUTH_LIMITER`. They are keyed by user id, and the request picks the pair for the user's tier. The period is 60 s (a binding allows only 10 or 60).
-- **Counts are approximate.** A binding answers only "allowed or not", and its counters are per Cloudflare location and eventually consistent. Answers therefore carry the policy, not a remaining count:
-  - `RateLimit-Policy: "requests";q=20;w=60, "heavy";q=6;w=60`;
-  - `X-RateLimit-Tier: free|supporter`.
+**Workers rate-limit bindings** (free), one binding per limit value: `RL_2`, `RL_6`, `RL_10`, `RL_20`, `RL_30`, `RL_60` (60 s), plus `RL_INVALID` (60 per 600 s is not a binding period, so 6 / 60 s per IP).
 
-  This replaces §4's `RateLimit-Remaining`/`-Reset`, which can't be known.
+- The key carries the rest: `g:<user>` for the global limit, `b:<bucket>:<user>:<account>` for a bucket. Many buckets share a binding without sharing a count.
+- A request costs two `limit()` calls: global, then its bucket. A refused global stops before the bucket is counted.
+- A 401 / 403 answer calls `RL_INVALID` with the IP. An IP it refuses is remembered in the isolate for 10 minutes and answered 429 scope `ip` before any auth work. Best effort per isolate, like Discord's "temporarily restricted".
 
-- **A refused request** is 429 `rate_limited`, problem+json with `bucket` and `limit`, plus `Retry-After: 60`.
-- The docs ask clients to poll **no more often than every 5 minutes**, with `If-None-Match`.
-- Session-cookie calls (the docs page's Try it) share the same per-user limits.
+**Headers, Discord's names:**
 
-**Cost per request:**
+- every answer: `X-RateLimit-Bucket` (the bucket's name), `X-RateLimit-Limit` (the bucket's limit for this tier), `X-RateLimit-Global-Limit`, `X-RateLimit-Tier`;
+- on a 429: `X-RateLimit-Scope` (`user` = a bucket, `global`, `ip`), `X-RateLimit-Global: true` when it was the global limit, and `Retry-After`;
+- the problem+json body adds `retryAfter`, `global`, `scope`, `bucket` and `limit` to §4's fields.
+
+**What we can't send, and the option that could.** A binding answers only "allowed or not". Its counters are per Cloudflare location and eventually consistent, and its window isn't exposed. So `X-RateLimit-Remaining`, `-Reset` and `-Reset-After` are left out, and `Retry-After` on a 429 is the window, 60 s.
+
+Exact counts would need a per-user counter on one machine: a Durable Object, the user's `LiveHub` or a `RateHub` beside it, holding a sliding window per bucket. That costs one DO request per API request: about **+$130 / month** at the polling baseline below, and about **+$13,000** at the free ceiling. Left out unless the user wants Discord's Remaining / Reset headers enough to pay that.
+
+### Cost per request
 
 - 1 Worker request;
-- ~1–2 ms CPU for auth + ETag;
+- ~1–2 ms CPU for auth, two limiter calls and the ETag;
 - D1: the token row with the tier (0 while held in an isolate's memory, 60 s) + the account row on a 304;
 - plus the section reads + ~5–20 ms CPU on a changed account.
 
 Cloudflare's paid prices: $0.30 per million requests, $0.02 per million CPU-ms, $0.001 per million D1 rows read.
 
-| 100,000 users, all month                            | Requests / month | Cost / month                                     |
-| --------------------------------------------------- | ---------------- | ------------------------------------------------ |
-| Nobody uses the API                                 | 0                | **$0** (nothing runs while idle)                 |
-| Each polls every **5 min** (mostly 304)             | 864 M            | ≈ $260 requests + ≈ $35 CPU + ≈ $2 D1 ≈ **$300** |
-| Every free user at the **limit** all month (20/min) | 86 B             | ≈ $26,000 + CPU: the ceiling the free limit sets |
-| 1,000 supporters at their limit (60/min)            | 2.6 B            | ≈ $780: what supporters can cost at most         |
-| Webhooks instead of polling (phase 4)               | ≈ one per upload | ≈ a live batch's cost: **near zero extra**       |
-| Game data files (§7)                                | any              | **$0** (static assets)                           |
+| 100,000 users, all month                                   | Requests / month | Cost / month                                     |
+| ---------------------------------------------------------- | ---------------- | ------------------------------------------------ |
+| Nobody uses the API                                        | 0                | **$0** (nothing runs while idle)                 |
+| Each polls every **5 min** (mostly 304)                    | 864 M            | ≈ $260 requests + ≈ $35 CPU + ≈ $2 D1 ≈ **$300** |
+| Every free user at the **global limit** all month (20/min) | 86 B             | ≈ $26,000 + CPU: the ceiling the free limit sets |
+| 1,000 supporters at their global limit (60/min)            | 2.6 B            | ≈ $780: what supporters can cost at most         |
+| Webhooks instead of polling (phase 4)                      | ≈ one per upload | ≈ a live batch's cost: **near zero extra**       |
+| Game data files (§7)                                       | any              | **$0** (static assets)                           |
 
-The ceilings are theoretical: they need every user scripting the API flat out, all month. If the bill ever shows API polling, the free limit drops (e.g. to 10/min), and webhooks let clients stop polling.
+- The ceilings are theoretical: they need every user scripting the API flat out, all month.
+- If the bill ever shows API polling, the free global limit drops (e.g. to 10/min), and webhooks let clients stop polling.
+- The docs ask clients to poll **no more often than every 5 minutes**, with `If-None-Match`.
+- Session-cookie calls (the docs page's Try it) share the same limits.
 
 ## 9. Documentation, from one source
 
@@ -392,7 +444,7 @@ Settings → App → **API tokens**, design B (`requireActiveSession` on every r
 
 1. **Foundation + read** (about a week):
    - the v1 router, token table and auth middleware, scopes, problem+json, request ids, ETag;
-   - the free and supporter limits: the six bindings, the `perk.api_supporter` perk on the Supporter role, the staff user page's switch;
+   - the limits (§8): global + per-endpoint buckets per account, the invalid-request limit per IP, one binding per limit value, the `perk.api_supporter` perk on the Supporter role, the per-user override, and the staff user page's switch;
    - registry → OpenAPI + `api.md`;
    - the Settings tokens panel;
    - endpoints: `me`, accounts (read), snapshots list, GOOD (latest / at) and its sections, wishes list + UIGF export, live journal (read), achievement / anecdote / quest data (read), game events;
@@ -414,7 +466,7 @@ Answered on 2026-11-14:
 - raw data, computing only the wish summary and the farm plan (§6);
 - game data as public files, not a public repo (§7, recommendation awaiting a yes);
 - designs first: picked docs page A and tokens panel B (§9);
-- two tiers of limits, free and supporter, supporter given by hand after Ko-fi + Discord (§8).
+- two tiers of limits, free and supporter, supporter given by hand after Ko-fi + Discord; a global limit plus per-endpoint buckets after Discord's design; above supporter, talk on Discord (§8).
 
 Still open:
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { ChevronDown, FileCode, Link2 } from 'lucide-vue-next'
+import { ArrowRight, ChevronDown, FileCode, Link2 } from 'lucide-vue-next'
 import { FORMAT_NAME } from '@/components/developers/format-name'
 import {
   DELTA_ANSWERS,
@@ -77,12 +77,23 @@ const languageOpen = ref(false)
   <div>
     <div class="lp dev" data-theme="dark">
       <LandingNav
-        :links="SECTIONS.map((s) => ({ href: `#${s.id}`, label: s.label }))"
+        :links="[
+          ...SECTIONS.map((s) => ({ href: `#${s.id}`, label: s.label })),
+          { href: '/developers/api', label: 'API' },
+        ]"
         @language="languageOpen = true"
       />
       <main>
         <section class="sky sec dv-hero" aria-labelledby="dv-title">
           <div class="wrap">
+            <a class="dv-api" href="/developers/api" lang="en">
+              <span class="dv-api-tag">New</span>
+              <span class="dv-api-txt"
+                ><b>Teyvat.me API</b> Read and change your accounts, snapshots, wishes and plans
+                with a personal token.</span
+              >
+              <span class="dv-api-go">API docs<ArrowRight class="ic" aria-hidden="true" /></span>
+            </a>
             <div class="sec-h">
               <div class="ov">{{ $t('shell.page.developers') }}</div>
               <h1 id="dv-title" class="h1 dv-name">{{ FORMAT_NAME }}</h1>

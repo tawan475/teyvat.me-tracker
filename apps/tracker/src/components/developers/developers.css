@@ -7,6 +7,59 @@
 .lp.dev .dv-hero {
   padding: 72px 0 56px;
 }
+/* The banner over the hero: the public API's docs (/developers/api). */
+.lp.dev .dv-api {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 36px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(165, 180, 252, 0.45);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--tx);
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+.lp.dev .dv-api:hover {
+  border-color: var(--acTx);
+  background: rgba(30, 41, 59, 0.85);
+}
+.lp.dev .dv-api-tag {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ac);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lp.dev .dv-api-txt {
+  flex: 999 1 320px;
+  min-width: 0;
+  color: var(--tx2);
+}
+.lp.dev .dv-api-txt b {
+  color: var(--tx);
+  margin-right: 6px;
+}
+.lp.dev .dv-api-go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--acTx);
+  font-weight: 600;
+}
+.lp.dev .dv-api-go .ic {
+  width: 18px;
+  height: 18px;
+}
 .lp.dev .dv-hero .sec-h {
   margin-bottom: 0;
 }

@@ -320,6 +320,19 @@ const hidden = (id: string) => {
   const task = stored.value.get(`builtin:${id}`)
   return task?.kind === 'builtin' && !!task.hidden
 }
+/**
+ * The events the list has now or would have (hidden ones too), for their
+ * switches: a hidden event is that run only, the next run comes back.
+ */
+const eventSwitches = computed(() =>
+  taskRows(
+    props.tasks.map((x) => (x.kind === 'builtin' && x.hidden ? { ...x, hidden: false } : x)),
+    props.now,
+    props.server,
+    props.events ?? [],
+    props.notices ?? [],
+  ).filter((r) => r.kind === 'event'),
+)
 function setShown(id: string, on: boolean) {
   const task = stored.value.get(`builtin:${id}`)
   const next =
@@ -633,10 +646,13 @@ const summary = computed(() => {
     <UiPopover
       :open="listOpen"
       :anchor="listAnchor"
-      :label="$t('planner.tasks.permanentTasks')"
+      :label="$t('planner.tasks.permanentShown')"
       @close="listOpen = false"
     >
       <div class="flex flex-col px-4 py-2">
+        <h3 class="pt-1 pb-0.5 text-xs font-semibold text-text-muted">
+          {{ $t('planner.tasks.permanent') }}
+        </h3>
         <UiSwitch
           v-for="b in builtins"
           :key="b.id"
@@ -644,6 +660,21 @@ const summary = computed(() => {
           :label="b.name"
           @update:model-value="setShown(b.id, $event)"
         />
+        <template v-if="eventSwitches.length">
+          <h3
+            class="mt-2 border-t border-border-subtle pt-3 pb-0.5 text-xs font-semibold text-text-muted"
+          >
+            {{ $t('planner.tasks.events') }}
+          </h3>
+          <UiSwitch
+            v-for="e in eventSwitches"
+            :key="e.key"
+            :model-value="!hidden(e.id)"
+            :label="e.name"
+            :title="e.note"
+            @update:model-value="setShown(e.id, $event)"
+          />
+        </template>
       </div>
     </UiPopover>
 

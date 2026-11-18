@@ -76,6 +76,7 @@ import {
 } from './share-card'
 import { cardPieces, ownerParts } from './share-card-model'
 import { constellationIcons, talentIcons } from './talent-icons'
+import { SITE_HOST } from '@/lib/site'
 
 export interface CardDrawing {
   character: CharacterView
@@ -509,7 +510,7 @@ class CardPainter extends CardPaint {
         (i ? 24 + dotW : 0),
       0,
     )
-    const dateParts = [...(date ? [date, '·'] : []), 'teyvat.me']
+    const dateParts = [...(date ? [date, '·'] : []), SITE_HOST]
     const dateW =
       dateParts.reduce((sum, part) => sum + this.textWidth(part, 16, 400), 0) +
       10 * (dateParts.length - 1)

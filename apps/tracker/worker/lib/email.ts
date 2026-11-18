@@ -13,7 +13,7 @@
  * Mails carry one-time tokens: never log a message, only its outcome.
  */
 
-import { configuredOrigin, originOf, SITE_ORIGIN } from './site'
+import { configuredOrigin, originOf, SITE_NAME, SITE_ORIGIN, siteName } from './site'
 
 /** Optional parts of the environment (not in wrangler.jsonc yet, so not in `Env`). */
 interface EmailEnv {
@@ -26,7 +26,8 @@ interface EmailEnv {
   SITE_URL?: string
 }
 
-export const BRAND = 'Teyvat.me'
+/** teyvat.me's name in mails; a self-host's is its SITE_NAME (`siteName`). */
+export const BRAND = SITE_NAME
 export { SITE_ORIGIN }
 
 /**
@@ -101,7 +102,7 @@ export async function sendMail(env: Env, mail: Mail): Promise<SendResult> {
   if (!binding) return 'unavailable'
   try {
     await binding.send({
-      from: { name: BRAND, email: emailEnv(env).EMAIL_FROM || DEFAULT_FROM },
+      from: { name: siteName(env), email: emailEnv(env).EMAIL_FROM || DEFAULT_FROM },
       to: mail.to,
       subject: mail.subject,
       text: mail.text,
@@ -131,8 +132,9 @@ function compose(
   lines: string[],
   link: { href: string; label: string } | null,
   note: string,
+  brand: string,
 ): Mail {
-  const text = [...lines, ...(link ? ['', link.href] : []), '', note, '', `— ${BRAND}`].join('\n')
+  const text = [...lines, ...(link ? ['', link.href] : []), '', note, '', `— ${brand}`].join('\n')
   const paragraphs = lines
     .map((line) => `<p style="margin:0 0 16px">${escapeHtml(line)}</p>`)
     .join('')
@@ -143,7 +145,7 @@ function compose(
   const html =
     `<!doctype html><html><body style="margin:0;padding:24px;background:#f8fafc;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0f172a;font-size:15px;line-height:1.5">` +
     `<div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:28px">` +
-    `<p style="margin:0 0 20px;font-weight:700;font-size:17px"><span style="color:#f59e0b">&#10022;</span> ${BRAND}</p>` +
+    `<p style="margin:0 0 20px;font-weight:700;font-size:17px"><span style="color:#f59e0b">&#10022;</span> ${escapeHtml(brand)}</p>` +
     paragraphs +
     button +
     `<p style="margin:16px 0 0;font-size:13px;color:#64748b">${escapeHtml(note)}</p>` +
@@ -155,13 +157,14 @@ function compose(
  * Goes to an address nobody has confirmed yet, which anyone can type in: so
  * it carries nothing they chose (not even the username), only fixed text.
  */
-export function verifyEmailMail(to: string, origin: string, token: string): Mail {
+export function verifyEmailMail(to: string, origin: string, token: string, brand = BRAND): Mail {
   return compose(
     to,
     'Confirm your email',
-    [`Confirm this email for your ${BRAND} account.`],
+    [`Confirm this email for your ${brand} account.`],
     { href: `${origin}/verify-email?token=${token}`, label: 'Confirm email' },
     "The link works once, for 24 hours. Didn't ask for it? Ignore this email.",
+    brand,
   )
 }
 
@@ -170,13 +173,15 @@ export function resetPasswordMail(
   origin: string,
   token: string,
   username: string,
+  brand = BRAND,
 ): Mail {
   return compose(
     to,
     'Reset your password',
-    [`Set a new password for ${username} on ${BRAND}.`],
+    [`Set a new password for ${username} on ${brand}.`],
     { href: `${origin}/reset-password?token=${token}`, label: 'Reset password' },
     "The link works once, for 30 minutes. Didn't ask for it? Ignore this email; your password stays as it is.",
+    brand,
   )
 }
 
@@ -184,22 +189,35 @@ export function resetPasswordMail(
  * A new way into the account: a linked Discord / Google account, or a first
  * password. Only to a confirmed email.
  */
-export function signInAddedMail(to: string, origin: string, username: string, what: string): Mail {
+export function signInAddedMail(
+  to: string,
+  origin: string,
+  username: string,
+  what: string,
+  brand = BRAND,
+): Mail {
   return compose(
     to,
     `${what} added to your account`,
-    [`${what} can now be used to sign in to ${username} on ${BRAND}.`],
+    [`${what} can now be used to sign in to ${username} on ${brand}.`],
     { href: `${origin}/app/settings`, label: "Wasn't you? Review it" },
     'Sent to the confirmed email of this account.',
+    brand,
   )
 }
 
-export function passwordChangedMail(to: string, origin: string, username: string): Mail {
+export function passwordChangedMail(
+  to: string,
+  origin: string,
+  username: string,
+  brand = BRAND,
+): Mail {
   return compose(
     to,
     'Your password was changed',
-    [`The password for ${username} on ${BRAND} was just changed, and every device was signed out.`],
+    [`The password for ${username} on ${brand} was just changed, and every device was signed out.`],
     { href: `${origin}/forgot-password`, label: "Wasn't you? Reset it" },
     'Sent to the confirmed email of this account.',
+    brand,
   )
 }

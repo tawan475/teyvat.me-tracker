@@ -20,6 +20,7 @@ import { artifactIcon, artifactSetIcon, characterBanner, weaponIcon } from '@/li
 import { CRIT_TIER_TEXT, cvTier, rvTier } from '@/lib/crit-tiers'
 import { formatDate, formatNumber } from '@/lib/format'
 import { levelCap } from '@/lib/level'
+import { SITE_HOST } from '@/lib/site'
 import { ROLL_QUALITY_LABEL, type InferredRoll } from '@/utils/artifact-rolls'
 import { formatRollValue, formatStatShort, formatStatValue } from '@/utils/artifact-stats'
 import { LIGHT_ART, type ArtTone } from './art-tone'
@@ -468,7 +469,7 @@ const tipOf = (subject: TipSubject, side = false) =>
                 }}</span>
                 <span class="opacity-60">·</span>
               </template>
-              <span>teyvat.me</span>
+              <span>{{ SITE_HOST }}</span>
             </p>
           </div>
         </div>

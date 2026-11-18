@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "ภาพรวม",
     "progression": "ความคืบหน้า",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · แทรกเกอร์บัญชี Genshin Impact",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me คือแทรกเกอร์บัญชี Genshin Impact ฟรี: ตัวละครและบิลด์ อาร์ติแฟกต์ วัสดุและแพลนเนอร์ ความสำเร็จ ประวัติการอธิษฐาน และสถิติเอนด์เกมตลอดช่วงเวลา อัปเดตเสมอด้วยแอปฟรี Teyvat.me Capture",
     "signIn": "เข้าสู่ระบบ Teyvat.me แทรกเกอร์บัญชี Genshin Impact",

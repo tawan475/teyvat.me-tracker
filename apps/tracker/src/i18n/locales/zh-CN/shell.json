@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "总览",
     "progression": "成长",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · 原神账号追踪器",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me 是免费的原神账号追踪器：随时间记录角色与配装、圣遗物、材料与规划、成就、祈愿记录和终局挑战记录，由免费的 Teyvat.me Capture 应用保持最新。",
     "signIn": "登录原神账号追踪器 Teyvat.me。",

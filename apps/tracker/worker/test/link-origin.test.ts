@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { linkOrigin, OLD_SITE_ORIGIN, pageOrigin, SITE_ORIGIN } from '../lib/email'
-import { configuredOrigin, ownOrigin } from '../lib/site'
+import {
+  BRAND,
+  linkOrigin,
+  OLD_SITE_ORIGIN,
+  pageOrigin,
+  passwordChangedMail,
+  SITE_ORIGIN,
+  verifyEmailMail,
+} from '../lib/email'
+import { configuredOrigin, ownOrigin, siteName } from '../lib/site'
 
 const env = {} as Env
 
@@ -59,5 +67,23 @@ describe('a self-host (SITE_URL set to another site)', () => {
   it('ignores a SITE_URL that is not http(s)', () => {
     expect(configuredOrigin({ SITE_URL: 'ftp://tracker.example' })).toBeNull()
     expect(configuredOrigin({ SITE_URL: 'not a url' })).toBeNull()
+  })
+})
+
+describe('siteName', () => {
+  it("is Teyvat.me, or a self-host's SITE_NAME in its mails", () => {
+    expect(siteName({})).toBe('Teyvat.me')
+    expect(siteName({ SITE_NAME: '  ' })).toBe('Teyvat.me')
+    expect(siteName({ SITE_NAME: 'Our <Tracker>' })).toBe('Our <Tracker>')
+    expect(BRAND).toBe('Teyvat.me')
+    const ours = verifyEmailMail('a@example.com', 'https://tracker.example', 'tok', 'Our <Tracker>')
+    expect(ours.text).toContain('your Our <Tracker> account')
+    expect(ours.text).not.toContain('Teyvat.me')
+    expect(ours.html).toContain('Our &lt;Tracker&gt;')
+    expect(ours.html).not.toContain('Teyvat.me')
+    // teyvat.me's mails stay as they were.
+    const prod = passwordChangedMail('a@example.com', SITE_ORIGIN, 'player01')
+    expect(prod.text).toContain('player01 on Teyvat.me was just changed')
+    expect(prod.text.endsWith('— Teyvat.me')).toBe(true)
   })
 })

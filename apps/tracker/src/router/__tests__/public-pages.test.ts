@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { injectPrerender } from '../../../build/prerender-html'
-import { buildSiteOrigin, PRODUCTION_ORIGIN, robotsFor } from '../../../build/site-origin'
+import {
+  buildSiteName,
+  buildSiteOrigin,
+  PRODUCTION_NAME,
+  PRODUCTION_ORIGIN,
+  robotsFor,
+} from '../../../build/site-origin'
+import { SITE_HOST, SITE_NAME } from '../../lib/site'
 import shellFile from '../../../index.html?raw'
 import robotsFile from '../../../public/robots.txt?raw'
 import llms from '../../../public/llms.txt?raw'
@@ -167,5 +174,25 @@ describe("a self-host's origin (SITE_URL at build)", () => {
     expect(sitemapXml('2026-11-18')).toBe(
       sitemapXml('2026-11-18', INDEXED_PAGES, PRODUCTION_ORIGIN),
     )
+  })
+})
+
+describe("a self-host's name (SITE_NAME at build)", () => {
+  it('is Teyvat.me without SITE_NAME, else the name given', () => {
+    expect(SITE_NAME).toBe(PRODUCTION_NAME)
+    expect(PRODUCTION_NAME).toBe('Teyvat.me')
+    expect(buildSiteName(undefined)).toBe('Teyvat.me')
+    expect(buildSiteName('  ')).toBe('Teyvat.me')
+    expect(buildSiteName(' Our Tracker ')).toBe('Our Tracker')
+  })
+
+  it('leaves share cards on teyvat.me in production', () => {
+    expect(SITE_HOST).toBe('teyvat.me')
+  })
+
+  it("puts it in every language's tab titles, not in the landing title", () => {
+    expect(shellMessages.documentTitle).toBe('{title} · {site}')
+    expect(shellMessages.accountDocumentTitle).toBe('{title} · {account} · {site}')
+    expect(shellMessages.landingTitle).toContain('Teyvat.me')
   })
 })

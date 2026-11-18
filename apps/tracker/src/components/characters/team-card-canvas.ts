@@ -81,6 +81,7 @@ import {
   teamRowTop,
 } from './team-card'
 import { constellationIcons, talentIcons } from './talent-icons'
+import { SITE_HOST } from '@/lib/site'
 
 /** One row's character, as the build card has it. */
 export interface TeamMember {
@@ -289,7 +290,7 @@ class TeamPainter extends CardPaint {
     const secondary = this.v('--card-secondary')
     const owner = ownerParts(this.input.owner)
     const date = this.input.takenAt ? formatDate(this.input.takenAt) : null
-    const dateText = [date, 'teyvat.me'].filter(Boolean).join('  ·  ')
+    const dateText = [date, SITE_HOST].filter(Boolean).join('  ·  ')
 
     // Right plate: a 32px owner line over a 26px date line (or the date alone).
     const dot = '  ·  '

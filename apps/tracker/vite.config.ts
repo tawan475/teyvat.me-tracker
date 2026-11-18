@@ -12,7 +12,7 @@ import { GI_CDN_HOST, IMAGE_HOST } from '@gdt/game-data/image-url'
 import { prerender, sitemap } from './build/prerender.ts'
 import { scriptBundle } from './build/script-bundle.ts'
 import { noDevVars } from './build/no-dev-vars.ts'
-import { buildSiteOrigin } from './build/site-origin.ts'
+import { buildSiteName, buildSiteOrigin } from './build/site-origin.ts'
 import { oauthMock } from './dev/oauth-mock.ts'
 import pkg from './package.json' with { type: 'json' }
 
@@ -35,6 +35,8 @@ const build = {
 }
 /** teyvat.me, or a self-host's SITE_URL (build/site-origin.ts). */
 const siteOrigin = buildSiteOrigin(process.env.SITE_URL)
+/** Teyvat.me, or a self-host's SITE_NAME (tab titles, the sign-in page). */
+const siteName = buildSiteName(process.env.SITE_NAME)
 const migrations = readdirSync(new URL('./migrations', import.meta.url))
   .filter((name) => name.endsWith('.sql'))
   .sort()
@@ -253,6 +255,7 @@ export default defineConfig(({ command }) => ({
     __BUILD__: JSON.stringify(build),
     __MIGRATIONS__: JSON.stringify(migrations),
     __SITE_ORIGIN__: JSON.stringify(siteOrigin),
+    __SITE_NAME__: JSON.stringify(siteName),
   },
   resolve: {
     alias: {

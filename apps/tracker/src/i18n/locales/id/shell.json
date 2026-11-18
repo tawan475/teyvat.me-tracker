@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "Ringkasan",
     "progression": "Progres",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · Pelacak akun Genshin Impact",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me adalah pelacak akun Genshin Impact gratis: karakter dan build, artefak, material dan perencana, achievement, riwayat permohonan, dan rekor endgame dari waktu ke waktu, diperbarui oleh aplikasi gratis Teyvat.me Capture.",
     "signIn": "Masuk ke Teyvat.me, pelacak akun Genshin Impact.",

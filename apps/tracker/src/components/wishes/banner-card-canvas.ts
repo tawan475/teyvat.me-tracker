@@ -47,6 +47,7 @@ import {
 } from './banner-card'
 import { wishItemName } from './item-name'
 import { OUTCOME_STYLE, runDates, wishIcon } from './wish-labels'
+import { SITE_HOST } from '@/lib/site'
 
 export interface BannerDrawing {
   banner: EventBanner
@@ -247,8 +248,8 @@ class BannerPainter extends CardPaint {
       ...ownerParts({ name: null, uid: owner.uid, ar: owner.ar }),
       formatDate(Date.now()),
     ]
-    const brandW = this.textWidth('teyvat.me', 15, 700)
-    this.line('teyvat.me', x + w - 18, top, 15, 700, secondary, { lineHeight: 22, align: 'right' })
+    const brandW = this.textWidth(SITE_HOST, 15, 700)
+    this.line(SITE_HOST, x + w - 18, top, 15, 700, secondary, { lineHeight: 22, align: 'right' })
     const metaText = `${meta.join(' · ')} · `
     this.line(metaText, x + w - 18 - brandW, top, 15, 400, muted, {
       lineHeight: 22,

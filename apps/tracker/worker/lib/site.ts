@@ -15,10 +15,20 @@
 export interface SiteVars {
   /** The site's origin, e.g. https://tracker.example. */
   SITE_URL?: string
+  /** A self-host's name in mails (self-host/README.md); default Teyvat.me. */
+  SITE_NAME?: string
 }
 
 /** The production origin. */
 export const SITE_ORIGIN = 'https://teyvat.me'
+
+/** The production name. */
+export const SITE_NAME = 'Teyvat.me'
+
+/** The site's name in mails: a self-host's SITE_NAME, else Teyvat.me. */
+export function siteName(vars: object): string {
+  return (vars as SiteVars).SITE_NAME?.trim() || SITE_NAME
+}
 
 /** A URL's origin when it is http(s), else null. */
 export function originOf(url: string | undefined): string | null {

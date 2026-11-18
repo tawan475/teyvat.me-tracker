@@ -29,3 +29,15 @@ export function robotsFor(robots: string, origin: string): string {
     `Sitemap: ${origin}/sitemap.xml`,
   )
 }
+
+/** The production site name, what a build without SITE_NAME shows. */
+export const PRODUCTION_NAME = 'Teyvat.me'
+
+/**
+ * The site name the client build shows in tab titles and on the sign-in page:
+ * SITE_NAME (self-host/.env, passed by Compose like SITE_URL), else Teyvat.me.
+ * The Worker reads the same SITE_NAME at run time (worker/lib/site.ts).
+ */
+export function buildSiteName(value: string | undefined): string {
+  return value?.trim() || PRODUCTION_NAME
+}

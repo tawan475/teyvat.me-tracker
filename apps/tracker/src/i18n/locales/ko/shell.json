@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "개요",
     "progression": "성장",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · 원신 계정 트래커",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me는 무료 원신 계정 트래커입니다. 캐릭터와 빌드, 성유물, 재료와 플래너, 업적, 기원 기록, 엔드 콘텐츠 기록의 변화를 보여 주며, 무료 앱 Teyvat.me Capture가 최신 상태로 유지합니다.",
     "signIn": "원신 계정 트래커 Teyvat.me에 로그인하세요.",

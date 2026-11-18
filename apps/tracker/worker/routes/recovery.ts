@@ -37,6 +37,7 @@ import { getDb } from '../db/client'
 import { users } from '../db/schema'
 import type { AppEnv } from '../env'
 import { emailFeatures, linkOrigin, passwordChangedMail, sendMail } from '../lib/email'
+import { siteName } from '../lib/site'
 import { ApiError, clientIp, parseJson, rateLimit } from '../lib/http'
 import { hashPassword } from '../lib/password'
 import { CSRF_HEADER, createSession, requireUser, revokeAllSessions } from '../lib/session'
@@ -173,7 +174,12 @@ export const recovery = new Hono<AppEnv>()
       c.executionCtx.waitUntil(
         sendMail(
           c.env,
-          passwordChangedMail(user.email, linkOrigin(c.env, c.req.url), user.username),
+          passwordChangedMail(
+            user.email,
+            linkOrigin(c.env, c.req.url),
+            user.username,
+            siteName(c.env),
+          ),
         ),
       )
     }

@@ -26,6 +26,7 @@ import {
   verifyEmailMail,
   type SendResult,
 } from '../lib/email'
+import { siteName } from '../lib/site'
 import { ApiError } from '../lib/http'
 
 export type LinkKind = (typeof authTokens.$inferSelect)['kind']
@@ -193,7 +194,7 @@ export async function mailVerification(
   if (!emailEnabled(env)) return 'unavailable'
   const token = await issueMailedToken(env.DB, user.id, 'verify_email', user.email)
   if (!token) return 'limited'
-  const result = await sendMail(env, verifyEmailMail(user.email, origin, token))
+  const result = await sendMail(env, verifyEmailMail(user.email, origin, token, siteName(env)))
   if (result !== 'sent') await dropToken(env.DB, token)
   return result
 }
@@ -220,7 +221,10 @@ export async function mailResetLink(env: Env, login: string, origin: string): Pr
   if (!user?.email || !user.emailVerified) return 'skipped'
   const token = await issueMailedToken(env.DB, user.id, 'reset_password', user.email)
   if (!token) return 'limited'
-  const result = await sendMail(env, resetPasswordMail(user.email, origin, token, user.username))
+  const result = await sendMail(
+    env,
+    resetPasswordMail(user.email, origin, token, user.username, siteName(env)),
+  )
   if (result !== 'sent') await dropToken(env.DB, token)
   return result
 }

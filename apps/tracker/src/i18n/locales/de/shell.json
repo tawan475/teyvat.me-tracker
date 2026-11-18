@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "Übersicht",
     "progression": "Fortschritt",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · Account-Tracker für Genshin Impact",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me ist ein kostenloser Account-Tracker für Genshin Impact: Figuren und Builds, Artefakte, Materialien und Planer, Errungenschaften, Gebetsverlauf und Endgame-Rekorde, aktuell gehalten von der kostenlosen App Teyvat.me Capture.",
     "signIn": "Melde dich bei Teyvat.me an, dem Account-Tracker für Genshin Impact.",

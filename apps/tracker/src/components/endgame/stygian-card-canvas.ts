@@ -45,6 +45,7 @@ import {
   stygianMedal,
   wrapLines,
 } from './stygian-card'
+import { SITE_HOST } from '@/lib/site'
 
 export interface StygianBossArt {
   /** The boss's full name ("Name: Title"). */
@@ -664,7 +665,7 @@ class StygianPainter extends CardPaint {
       this.c.muted,
       { lineHeight: box.h },
     )
-    this.line('teyvat.me', box.x + box.w, box.y, 17, 700, this.c.sub, {
+    this.line(SITE_HOST, box.x + box.w, box.y, 17, 700, this.c.sub, {
       lineHeight: box.h,
       align: 'right',
     })

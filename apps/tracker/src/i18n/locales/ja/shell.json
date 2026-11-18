@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "概要",
     "progression": "育成推移",
@@ -154,7 +154,7 @@
     }
   },
   "landingTitle": "Teyvat.me · 原神アカウントトラッカー",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me は無料の原神アカウントトラッカー。キャラクターとビルド、聖遺物、素材とプランナー、アチーブメント、祈願履歴、エンドコンテンツの記録を時系列で。無料アプリ Teyvat.me Capture で常に最新に。",
     "signIn": "原神アカウントトラッカー Teyvat.me にログイン。",

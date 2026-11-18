@@ -27,6 +27,8 @@ const props = defineProps<{
   figure?: CollectionFigure | null
   countLabel?: string
   takenAt?: number | null
+  /** No percentage beside a have/total figure (Lunar Arcana: its tall art reaches down there). */
+  noPercent?: boolean
 }>()
 
 /** The art box from `sm` up and below it, px (the spec's base sizes). */
@@ -123,7 +125,9 @@ const percent = computed(() =>
             / {{ formatNumber(figure.total) }}</span
           ></span
         >
-        <span class="text-sm text-text-secondary tabular-nums">{{ percent }}%</span>
+        <span v-if="!noPercent" class="text-sm text-text-secondary tabular-nums"
+          >{{ percent }}%</span
+        >
       </span>
       <UiProgress :value="figure.have" :max="figure.total" :label="title" />
     </span>

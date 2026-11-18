@@ -83,6 +83,7 @@ const cards = computed(() =>
       :figure="card.figure"
       :count-label="$t('collections.defeats.kinds')"
       :taken-at="card.takenAt"
+      :no-percent="card.tab === 'lunar-arcana'"
     />
   </div>
 </template>

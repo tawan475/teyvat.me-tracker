@@ -181,7 +181,7 @@ export const TAB_ART: Readonly<Record<CollectionTab, CardArt>> = {
   'lunar-arcana': {
     name: 'UI_RoleCombat_Tarot_01',
     cdn: true,
-    tall: { ratio: 373 / 958, height: 1.1 },
+    tall: { ratio: 373 / 958, height: 1.2 },
   },
   tcg: {
     name: 'UI_Gcg_CardBack_00',

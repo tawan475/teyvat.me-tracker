@@ -138,7 +138,8 @@
     "export": "İstediğin zaman dışa aktar",
     "exportNote": "Leyline biçimi · Genshin Optimizer ile çalışır",
     "delete": "İstediğin zaman sil",
-    "deleteNote": "Hesabın ve verileri"
+    "deleteNote": "Hesabın ve verileri",
+    "details": "Ayrıntılar: ne, ne kadar süre saklanır"
   },
   "faq": {
     "overline": "SSS",
@@ -151,6 +152,7 @@
     "modifyA": "Hayır. Uygulama yalnızca PC'ndeki veya telefonundaki ağ trafiğini okur. Oyunun dosyalarına ya da belleğine asla dokunmaz ve mod gerektirmez.",
     "readsQ": "Uygulama neleri okur?",
     "readsA": "Oyunun hesabın hakkında gönderdiklerini: karakterler, silahlar, yadigarlar, malzemeler, başarımlar ve dilekler.",
+    "readsMore": "Sitenin sakladıkları",
     "adminQ": "Windows'ta neden yönetici yetkisi?",
     "adminA": "Windows ağ paketlerini yalnızca yöneticilerin yakalamasına izin verir.",
     "needQ": "Uygulama gerekli mi?",
@@ -170,5 +172,98 @@
     "lead": "Teyvat kayıt biçimi: GOOD ve hesabındaki diğer her şey.",
     "english": "Aşağıdaki başvuru, açıkladığı alan adları gibi İngilizcedir.",
     "contents": "İçindekiler"
+  },
+  "privacyPage": {
+    "title": "Teyvat.me'deki verilerin",
+    "lead": "Ne saklanır, ne kadar süre, kim görebilir ve nasıl silinir.",
+    "show": "Göster",
+    "groups": {
+      "all": "Tümü",
+      "data": "Genshin verileri",
+      "signIn": "Giriş",
+      "browser": "Bu tarayıcı"
+    },
+    "columns": {
+      "data": "Veri",
+      "kept": "Saklanma",
+      "who": "Kim görür",
+      "delete": "Silme"
+    },
+    "names": {
+      "planner": "Planlayıcı ve işaretler",
+      "account": "Hesabın",
+      "devices": "Giriş yapılmış cihazlar",
+      "keys": "Anahtarlar ve token'lar",
+      "local": "Yalnızca cihazında"
+    },
+    "what": {
+      "snapshots": "Karakterler, silahlar, yadigarlar, malzemeler, başarımlar, profil (ad, UID, AR, imza, doğum günü, isim kartı, profil resmi), görevler, oyun sonu rekorları",
+      "wishes": "Her dilek: eşya, afiş, zaman",
+      "live": "Son anlık görüntünden beri değişiklikler, günlük grafik noktaları",
+      "planner": "Hedefler, işaretler, elle düzenlemeler, reçine, hesap ayarları",
+      "account": "Kullanıcı adı, e-posta (isteğe bağlı), şifre, bağlı Discord veya Google, geçiş anahtarları",
+      "devices": "Tarayıcı veya uygulama adı, IP adresi, ülke ve şehir, son görülme",
+      "keys": "İçe aktarma anahtarı, API token'ları: hash olarak saklanır",
+      "alerts": "Bu tarayıcının bildirim adresi ve anahtarları",
+      "local": "Misafir modu, eklediğin kart görselleri, önbellekteki sayfalar, tercihler"
+    },
+    "kept": {
+      "forever": "Sen silene kadar",
+      "nextSnapshot": "Bir sonraki anlık görüntüye kadar",
+      "afterSignOut": "Çıkıştan 7 gün sonra",
+      "alertsOff": "Uyarılar kapanana kadar",
+      "local": "Bize hiç gönderilmez"
+    },
+    "who": {
+      "shared": "Sen ve hesabı paylaştığın kişiler",
+      "you": "Yalnızca sen",
+      "youOnce": "Yalnızca sen, bir kez gösterilir",
+      "browser": "Yalnızca bu tarayıcı"
+    },
+    "paths": {
+      "editInPlace": "Yerinde düzenle",
+      "alertsOff": "Uyarıları kapat",
+      "browser": "Tarayıcı",
+      "clearSiteData": "Site verilerini temizle",
+      "orDeleteAccount": "ya da Genshin hesabını sil"
+    },
+    "notes": {
+      "purged": {
+        "label": "Silinenler: 30 gün sonra temizlenir",
+        "title": "Silinen anlık görüntüler",
+        "body": "Silinen anlık görüntüler {days} sonra tamamen temizlenir. {compact} hemen siler.",
+        "days": "30 gün"
+      },
+      "wishLink": {
+        "label": "Dilek bağlantısı: asla saklanmaz",
+        "title": "Dilek bağlantısı",
+        "body": "Dilek geçmişi bağlantısı yalnızca dilek sayfalarını okumak için kullanılır. Asla saklanmaz ya da kaydedilmez."
+      },
+      "points": {
+        "label": "Grafik noktaları: hesapla birlikte",
+        "title": "Grafik noktaları",
+        "body": "Canlı senkronizasyonun günlük grafik noktaları Genshin hesabıyla birlikte saklanır."
+      },
+      "idle": {
+        "label": "Kullanılmayınca çıkış: 30 gün",
+        "body": "30 gün kullanılmayan bir cihazdan çıkış yapılır. IP adresi dahil kaydı, çıkıştan 7 gün sonra silinir."
+      },
+      "revoked": {
+        "label": "İptal edilen token'lar: 30 gün",
+        "body": "İptal edilen ve süresi dolan API token'ları 30 gün sonra silinir."
+      }
+    },
+    "boxes": {
+      "encrypted": "Depoda şifreli",
+      "encryptedBody": "Cloudflare veritabanını kendi disklerinde şifreler. Her bağlantı HTTPS'tir.",
+      "export": "Verilerini dışa aktar",
+      "exportBody": "{download}, Leyline (GOOD) dosyalarından bir zip kaydeder. {wishes}, dileklerini UIGF olarak kaydeder.",
+      "openSnapshots": "Anlık görüntüleri aç",
+      "deleteAll": "Her şeyi sil",
+      "deleteBody": "{path}, tüm Genshin hesaplarını, anlık görüntüleri, dilekleri, planları, cihazları ve anahtarları bir kerede siler.",
+      "openSettings": "Ayarları aç"
+    },
+    "contact": "Verilerinle ilgili soruların mı var?",
+    "contactLink": "Discord'da sor"
   }
 }

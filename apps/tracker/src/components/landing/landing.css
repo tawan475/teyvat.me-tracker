@@ -672,6 +672,25 @@
   color: var(--tx2);
 }
 
+/* "Details" links to /privacy: under the privacy tiles and after an FAQ answer */
+.lp .more-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 16px;
+  color: var(--acTx);
+  font-weight: 600;
+  text-decoration: none;
+}
+.lp .more-l:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lp .q-more {
+  margin: -12px 0 12px;
+}
+
 /* FAQ */
 .lp .faq {
   max-width: 820px;

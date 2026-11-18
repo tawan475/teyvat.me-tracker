@@ -129,7 +129,8 @@
     "iosAdd": "puis {icon} {add}.",
     "iosAddLabel": "Sur l'écran d'accueil",
     "browser": "Utilisez l'option d'installation de votre navigateur",
-    "browserTitle": "Chrome ou Edge : icône d'installation dans la barre d'adresse"
+    "browserTitle": "Chrome ou Edge : icône d'installation dans la barre d'adresse",
+    "privacyOpen": "Ouvrir"
   },
   "build": {
     "title": "Build du serveur",
@@ -250,7 +251,8 @@
     "title": "Supprimer l'utilisateur",
     "body": "Tous les comptes, instantanés et connexions",
     "dialogTitle": "Supprimer mon utilisateur",
-    "deleted": "Votre utilisateur est supprimé"
+    "deleted": "Votre utilisateur est supprimé",
+    "privacy": "Ce qui est gardé et combien de temps"
   },
   "sections": {
     "account": "Qui vous êtes et comment vous vous connectez",

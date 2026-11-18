@@ -129,7 +129,8 @@
     "iosAdd": "then {icon} {add}.",
     "iosAddLabel": "Add to Home Screen",
     "browser": "Use your browser's install option",
-    "browserTitle": "Chrome or Edge: install icon in the address bar"
+    "browserTitle": "Chrome or Edge: install icon in the address bar",
+    "privacyOpen": "Open"
   },
   "build": {
     "title": "Server build",
@@ -250,7 +251,8 @@
     "title": "Delete user",
     "body": "Every account, snapshot and sign-in",
     "dialogTitle": "Delete my user",
-    "deleted": "Your user is deleted"
+    "deleted": "Your user is deleted",
+    "privacy": "What is kept and for how long"
   },
   "sections": {
     "account": "Who you are and how you sign in",

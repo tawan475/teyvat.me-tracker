@@ -129,7 +129,8 @@
     "iosAdd": "{icon}「{add}」を選択します。",
     "iosAddLabel": "ホーム画面に追加",
     "browser": "ブラウザーのインストール機能を使ってください",
-    "browserTitle": "Chrome または Edge：アドレスバーのインストールアイコン"
+    "browserTitle": "Chrome または Edge：アドレスバーのインストールアイコン",
+    "privacyOpen": "開く"
   },
   "build": {
     "title": "サーバービルド",
@@ -250,7 +251,8 @@
     "title": "ユーザーを削除",
     "body": "すべてのアカウント、スナップショット、ログイン情報",
     "dialogTitle": "自分のユーザーを削除",
-    "deleted": "ユーザーを削除しました"
+    "deleted": "ユーザーを削除しました",
+    "privacy": "何をどれだけの期間保存するか"
   },
   "sections": {
     "account": "あなたの情報とログイン方法",

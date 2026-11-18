@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown } from 'lucide-vue-next'
+import { ArrowRight, ChevronDown } from 'lucide-vue-next'
 
 /** Each question's i18n keys: `landing.faq.<key>Q` / `<key>A`. The first starts open. */
 const QUESTIONS = ['what', 'free', 'modify', 'reads', 'admin', 'need', 'servers'] as const
@@ -18,6 +18,9 @@ const QUESTIONS = ['what', 'free', 'modify', 'reads', 'admin', 'need', 'servers'
             {{ $t(`landing.faq.${key}Q`) }}<ChevronDown class="ic" aria-hidden="true" />
           </summary>
           <p>{{ $t(`landing.faq.${key}A`) }}</p>
+          <RouterLink v-if="key === 'reads'" :to="{ name: 'privacy' }" class="more-l q-more"
+            >{{ $t('landing.faq.readsMore') }}<ArrowRight class="ic" aria-hidden="true"
+          /></RouterLink>
         </details>
       </div>
     </div>

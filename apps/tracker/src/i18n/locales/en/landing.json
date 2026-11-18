@@ -138,7 +138,8 @@
     "export": "Export any time",
     "exportNote": "Leyline format · works with Genshin Optimizer",
     "delete": "Delete any time",
-    "deleteNote": "Your account and its data"
+    "deleteNote": "Your account and its data",
+    "details": "Details: what is kept and for how long"
   },
   "faq": {
     "overline": "FAQ",
@@ -151,6 +152,7 @@
     "modifyA": "No. The app only reads network traffic on your PC or phone. It never touches the game's files or memory and needs no mods.",
     "readsQ": "What does the app read?",
     "readsA": "What the game sends about your account: characters, weapons, artifacts, materials, achievements and wishes.",
+    "readsMore": "What the site keeps",
     "adminQ": "Why administrator rights on Windows?",
     "adminA": "Windows lets only administrators capture network packets.",
     "needQ": "Do I need the app?",
@@ -170,5 +172,98 @@
     "lead": "The Teyvat record format: GOOD, plus everything else your account holds.",
     "english": "The reference below is in English, like the field names it describes.",
     "contents": "Contents"
+  },
+  "privacyPage": {
+    "title": "Your data on Teyvat.me",
+    "lead": "What is kept, for how long, who can see it and how to delete it.",
+    "show": "Show",
+    "groups": {
+      "all": "All",
+      "data": "Genshin data",
+      "signIn": "Sign-in",
+      "browser": "This browser"
+    },
+    "columns": {
+      "data": "Data",
+      "kept": "Kept",
+      "who": "Who sees it",
+      "delete": "Delete"
+    },
+    "names": {
+      "planner": "Planner and marks",
+      "account": "Your account",
+      "devices": "Signed-in devices",
+      "keys": "Keys and tokens",
+      "local": "Only on your device"
+    },
+    "what": {
+      "snapshots": "Characters, weapons, artifacts, materials, achievements, profile (name, UID, AR, signature, birthday, namecard, profile picture), tasks, endgame records",
+      "wishes": "Every pull: item, banner, time",
+      "live": "Changes since your last snapshot, daily chart points",
+      "planner": "Goals, ticks, hand edits, resin, account settings",
+      "account": "Username, email (optional), password, linked Discord or Google, passkeys",
+      "devices": "Browser or app name, IP address, country and city, last seen",
+      "keys": "Import key, API tokens: stored as hashes",
+      "alerts": "This browser's push address and keys",
+      "local": "Guest mode, card art you add, cached pages, preferences"
+    },
+    "kept": {
+      "forever": "Until you delete",
+      "nextSnapshot": "Until the next snapshot",
+      "afterSignOut": "7 days after sign-out",
+      "alertsOff": "Until alerts are off",
+      "local": "Never sent to us"
+    },
+    "who": {
+      "shared": "You and people you share the account with",
+      "you": "Only you",
+      "youOnce": "Only you, shown once",
+      "browser": "Only this browser"
+    },
+    "paths": {
+      "editInPlace": "Edit in place",
+      "alertsOff": "Alerts off",
+      "browser": "Browser",
+      "clearSiteData": "Clear site data",
+      "orDeleteAccount": "or delete the Genshin account"
+    },
+    "notes": {
+      "purged": {
+        "label": "Deleted: purged after 30 days",
+        "title": "Deleted snapshots",
+        "body": "Deleted snapshots are purged {days} later. {compact} deletes at once.",
+        "days": "30 days"
+      },
+      "wishLink": {
+        "label": "Wish link: never stored",
+        "title": "Wish link",
+        "body": "The wish history link is only used to read your wish pages. It is never stored or logged."
+      },
+      "points": {
+        "label": "Chart points: with the account",
+        "title": "Chart points",
+        "body": "Live sync's daily chart points are kept with the Genshin account."
+      },
+      "idle": {
+        "label": "Idle sign-out: 30 days",
+        "body": "A device that isn't used for 30 days is signed out. Its row, IP address included, is removed 7 days after sign-out."
+      },
+      "revoked": {
+        "label": "Revoked tokens: 30 days",
+        "body": "Revoked and expired API tokens are removed 30 days later."
+      }
+    },
+    "boxes": {
+      "encrypted": "Encrypted at rest",
+      "encryptedBody": "Cloudflare encrypts the database on its disks. Every connection is HTTPS.",
+      "export": "Export your data",
+      "exportBody": "{download} saves a zip of Leyline (GOOD) files. {wishes} saves your wishes as UIGF.",
+      "openSnapshots": "Open Snapshots",
+      "deleteAll": "Delete everything",
+      "deleteBody": "{path} removes every Genshin account, snapshot, wish, plan, device and key at once.",
+      "openSettings": "Open Settings"
+    },
+    "contact": "Questions about your data?",
+    "contactLink": "Ask on Discord"
   }
 }

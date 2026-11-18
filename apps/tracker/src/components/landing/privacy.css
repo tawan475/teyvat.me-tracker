@@ -1,0 +1,457 @@
+/*
+ * /privacy (views/PrivacyView.vue, design A): the public frame of landing.css,
+ * but following the site's theme instead of always dark. The frame's
+ * dark-only values (the night art, bands, the white hover washes) get light
+ * twins here. Every rule sits under `.lp.pp`.
+ */
+
+.lp.pp {
+  --bg: var(--public-ground);
+  --pp-line: rgba(255, 255, 255, 0.1);
+  --pp-card: rgba(15, 23, 42, 0.72);
+  --pp-head: rgba(255, 255, 255, 0.06);
+  --pp-row: rgba(255, 255, 255, 0.04);
+  --pp-wash: rgba(255, 255, 255, 0.06);
+  /* solid twins of the glass card and its head, for the phone's pinned cells */
+  --pp-card-flat: #0f1627;
+  --pp-head-flat: #1c2333;
+  --keep-forever-bg: rgba(99, 102, 241, 0.22);
+  --keep-auto-bg: rgba(255, 255, 255, 0.08);
+  --row-hover: color-mix(in srgb, var(--surface-overlay) 60%, transparent);
+  position: relative;
+  isolation: isolate;
+}
+html[data-theme='light'] .lp.pp {
+  --bg: var(--surface-base);
+  --band: #f1f5f9;
+  --pp-line: #e2e8f0;
+  --pp-card: #ffffff;
+  --pp-head: #f1f5f9;
+  --pp-row: #f8fafc;
+  --pp-wash: rgba(15, 23, 42, 0.06);
+  --pp-card-flat: #ffffff;
+  --pp-head-flat: #f1f5f9;
+  --keep-forever-bg: #e0e7ff;
+  --keep-auto-bg: #f1f5f9;
+}
+
+/* the art behind the bar and the heading: the night picture on dark, a light wash on light */
+.lp.pp .pp-art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 620px;
+  object-fit: cover;
+  z-index: -2;
+}
+.lp.pp .pp-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 621px;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(15, 19, 31, 0.35), var(--public-ground));
+}
+html[data-theme='light'] .lp.pp .pp-art {
+  display: none;
+}
+html[data-theme='light'] .lp.pp .pp-shade {
+  background: linear-gradient(to bottom, #e0e7ff, var(--surface-base));
+}
+
+/* the shared bar and footer, in both themes */
+.lp.pp .top.sky {
+  background: transparent;
+}
+.lp.pp .top {
+  border-bottom-color: var(--pp-line);
+}
+.lp.pp .navlinks a:hover,
+.lp.pp .lang:hover {
+  background: var(--pp-wash);
+}
+.lp.pp .foot {
+  margin-top: 72px;
+  border-top-color: var(--pp-line);
+}
+.lp.pp .sel select {
+  background: var(--pp-wash);
+  box-shadow: inset 0 0 0 1px var(--pp-line);
+}
+.lp.pp .flinks a[aria-current='page'] {
+  color: var(--tx);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* heading */
+.lp.pp .pp-hero,
+.lp.pp .pp-main {
+  max-width: 1180px;
+}
+.lp.pp .pp-hero {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+.lp.pp .pp-ov {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tx3);
+}
+.lp.pp .pp-h1 {
+  margin: 10px 0 0;
+  font-size: 52px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.lp.pp .pp-lead {
+  margin: 14px 0 0;
+  max-width: 680px;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--tx2);
+}
+.lp.pp .ic.s {
+  width: 15.75px;
+  height: 15.75px;
+}
+
+/* filter chips: they scroll away with the page */
+.lp.pp .pp-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+
+/* the table. Where it fits its box, v-sticky-head clips the boxes and the
+   header is plain position: sticky; on phones the box scrolls sideways and
+   the header is slid with the page instead. */
+.lp.pp .pp-tablebox {
+  border: 1px solid var(--pp-line);
+  border-radius: 13.5px;
+  background: var(--pp-card);
+  overflow: clip;
+}
+.lp.pp .pp-scroll {
+  overflow: clip;
+}
+.lp.pp .pp-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.lp.pp .pp-tbl col.c-data {
+  width: 34%;
+}
+.lp.pp .pp-tbl col.c-kept {
+  width: 22%;
+}
+.lp.pp .pp-tbl col.c-who {
+  width: 18%;
+}
+.lp.pp .pp-tbl col.c-del {
+  width: 26%;
+}
+.lp.pp .pp-tbl thead th {
+  text-align: left;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx2);
+  background: var(--pp-head);
+}
+/* stuck: a solid ground (main.css), so the rows it covers never show through */
+.lp.pp .pp-tbl thead[data-stuck] th {
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--surface-overlay) 50%, transparent),
+      color-mix(in srgb, var(--surface-overlay) 50%, transparent)
+    ),
+    var(--surface-raised);
+}
+.lp.pp .pp-tbl tbody th,
+.lp.pp .pp-tbl td {
+  padding: 15px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-top: 1px solid var(--pp-line);
+  overflow-wrap: anywhere;
+}
+.lp.pp .pp-tbl tr.grp th {
+  padding: 9px 16px;
+  background: var(--pp-row);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tx3);
+}
+.lp.pp .grp-l {
+  display: inline-block;
+}
+/* rows keep BaseTable's hover (surface-overlay at 60%), laid as an image so a
+   pinned cell keeps its solid ground under it */
+.lp.pp .pp-tbl tr.pp-row:hover > * {
+  background-image: linear-gradient(var(--row-hover), var(--row-hover));
+}
+.lp.pp .pp-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--tx);
+}
+.lp.pp .pp-name .ic {
+  margin-top: 3px;
+  color: var(--tx2);
+}
+.lp.pp .pp-what {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--tx3);
+}
+.lp.pp .pp-tbl td {
+  color: var(--tx2);
+}
+
+/* how long: told apart by icon and word, and by lightness */
+.lp.pp .keep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.lp.pp .keep .ic {
+  width: 15.75px;
+  height: 15.75px;
+}
+.lp.pp .keep--forever {
+  background: var(--keep-forever-bg);
+  color: var(--acTx);
+  font-weight: 600;
+}
+.lp.pp .keep--auto {
+  background: var(--keep-auto-bg);
+  color: var(--tx);
+}
+.lp.pp .keep--local {
+  border: 1px dashed var(--line2);
+  color: var(--tx2);
+}
+
+/* a note: a button opening its popover (a bottom sheet on phones) */
+.lp.pp .pp-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  margin: 0 0 -8px -8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--tx3);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.lp.pp .pp-note:hover {
+  color: var(--tx2);
+}
+.lp.pp .pp-note[aria-expanded='true'] {
+  color: var(--tx);
+  background: var(--surface-overlay);
+}
+
+/* where it is deleted */
+.lp.pp .pp-path {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  color: var(--tx);
+  font-weight: 500;
+}
+.lp.pp .pp-path i {
+  font-style: normal;
+  color: var(--tx3);
+}
+
+/* under the table */
+.lp.pp .pp-below {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 13.5px;
+  margin-top: 24px;
+}
+.lp.pp .pp-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--pp-line);
+  border-radius: 13.5px;
+  background: var(--pp-card);
+}
+.lp.pp .pp-h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.lp.pp .pp-box p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--tx2);
+}
+.lp.pp .pp-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+.lp.pp .pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 45px;
+  padding: 0 18px;
+  border: 1px solid var(--pp-line);
+  border-radius: 9px;
+  font-size: 15.75px;
+  font-weight: 600;
+  color: var(--tx);
+  text-decoration: none;
+}
+.lp.pp .pp-btn:hover {
+  background: var(--pp-wash);
+}
+.lp.pp .pp-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 20px 0 0;
+  font-size: 15px;
+  color: var(--tx2);
+}
+.lp.pp .pp-contact a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--acTx);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* phones: the table stays a table and scrolls sideways under a pinned Data
+   column (like Characters), in the order Data, Kept, Who sees it, Delete */
+@media (max-width: 640px) {
+  .lp.pp .wrap.pp-hero,
+  .lp.pp .wrap.pp-main {
+    padding: 0 16px;
+  }
+  .lp.pp .pp-hero {
+    padding-top: 32px;
+    padding-bottom: 24px;
+  }
+  .lp.pp .pp-h1 {
+    font-size: 34px;
+  }
+  .lp.pp .pp-lead {
+    font-size: 17px;
+  }
+  .lp.pp .foot {
+    margin-top: 48px;
+  }
+  /* 4px of room above and 6px below, so a chip's focus ring is never cut by the scroll box */
+  .lp.pp .pp-tools {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: -4px -16px 12px;
+    padding: 4px 16px 6px;
+  }
+  .lp.pp .pp-tablebox {
+    background: var(--pp-card-flat);
+  }
+  .lp.pp .pp-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .lp.pp .pp-tbl {
+    width: 696px;
+    font-size: 14.5px;
+  }
+  .lp.pp .pp-tbl col.c-data {
+    width: 168px;
+  }
+  .lp.pp .pp-tbl col.c-kept {
+    width: 190px;
+  }
+  .lp.pp .pp-tbl col.c-who {
+    width: 150px;
+  }
+  /* the box inside its border less the pinned Data: scrolled to the end, Delete is whole */
+  .lp.pp .pp-tbl col.c-del {
+    width: 188px;
+  }
+  .lp.pp .pp-tbl thead th {
+    padding: 11px 12px;
+    white-space: nowrap;
+  }
+  .lp.pp .pp-tbl tbody th,
+  .lp.pp .pp-tbl td {
+    padding: 13px 12px;
+  }
+  .lp.pp .pp-tbl tr.grp th {
+    padding: 8px 12px;
+  }
+  .lp.pp .pp-tbl .pin {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--pp-card-flat);
+    box-shadow: inset -1px 0 var(--pp-line);
+  }
+  .lp.pp .pp-tbl thead .pin {
+    background: var(--pp-head-flat);
+  }
+  .lp.pp .grp-l {
+    position: sticky;
+    left: 12px;
+  }
+  .lp.pp .pp-name {
+    gap: 0;
+  }
+  .lp.pp .pp-name .ic {
+    display: none;
+  }
+}

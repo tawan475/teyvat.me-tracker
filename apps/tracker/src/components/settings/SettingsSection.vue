@@ -6,7 +6,8 @@ import type { Component } from 'vue'
  * column (icon, name, one line) beside a two-column card grid; under 1100 px
  * the title sits above its cards, under 900 px the cards are one column.
  * A card that needs the whole row takes `class="col-span-full"`. Sections
- * after the first are ruled off above.
+ * after the first are ruled off above. The `link` slot puts a link beside the
+ * section's line (Account's Privacy).
  */
 defineProps<{ label: string; description?: string; icon?: Component }>()
 </script>
@@ -26,6 +27,9 @@ defineProps<{ label: string; description?: string; icon?: Component }>()
       <div class="min-w-0">
         <h2 class="text-base font-semibold">{{ label }}</h2>
         <p v-if="description" class="text-sm text-text-muted">{{ description }}</p>
+      </div>
+      <div v-if="$slots.link" class="ms-auto shrink-0 min-[1100px]:ms-0">
+        <slot name="link" />
       </div>
     </header>
     <div

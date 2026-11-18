@@ -129,7 +129,8 @@
     "iosAdd": "ardından {icon} {add}.",
     "iosAddLabel": "Ana Ekrana Ekle",
     "browser": "Tarayıcının yükleme seçeneğini kullan",
-    "browserTitle": "Chrome veya Edge: adres çubuğundaki yükleme simgesi"
+    "browserTitle": "Chrome veya Edge: adres çubuğundaki yükleme simgesi",
+    "privacyOpen": "Aç"
   },
   "build": {
     "title": "Sunucu sürümü",
@@ -250,7 +251,8 @@
     "title": "Kullanıcıyı sil",
     "body": "Tüm hesaplar, anlık görüntüler ve girişler",
     "dialogTitle": "Kullanıcımı sil",
-    "deleted": "Kullanıcın silindi"
+    "deleted": "Kullanıcın silindi",
+    "privacy": "Ne, ne kadar süre saklanır"
   },
   "sections": {
     "account": "Kim olduğun ve nasıl giriş yaptığın",

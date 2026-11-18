@@ -129,7 +129,8 @@
     "iosAdd": "depois em {icon} {add}.",
     "iosAddLabel": "Adicionar à Tela de Início",
     "browser": "Use a opção de instalar do navegador",
-    "browserTitle": "Chrome ou Edge: ícone de instalar na barra de endereço"
+    "browserTitle": "Chrome ou Edge: ícone de instalar na barra de endereço",
+    "privacyOpen": "Abrir"
   },
   "build": {
     "title": "Build do servidor",
@@ -250,7 +251,8 @@
     "title": "Excluir usuário",
     "body": "Todas as contas, capturas e logins",
     "dialogTitle": "Excluir meu usuário",
-    "deleted": "Seu usuário foi excluído"
+    "deleted": "Seu usuário foi excluído",
+    "privacy": "O que é guardado e por quanto tempo"
   },
   "sections": {
     "account": "Quem você é e como entra",

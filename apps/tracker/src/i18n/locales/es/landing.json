@@ -138,7 +138,8 @@
     "export": "Exporta cuando quieras",
     "exportNote": "Formato Leyline · funciona con Genshin Optimizer",
     "delete": "Borra cuando quieras",
-    "deleteNote": "Tu cuenta y sus datos"
+    "deleteNote": "Tu cuenta y sus datos",
+    "details": "Detalles: qué se guarda y durante cuánto tiempo"
   },
   "faq": {
     "overline": "Preguntas",
@@ -151,6 +152,7 @@
     "modifyA": "No. La app solo lee el tráfico de red de tu PC o móvil. Nunca toca los archivos ni la memoria del juego y no necesita mods.",
     "readsQ": "¿Qué lee la app?",
     "readsA": "Lo que el juego envía sobre tu cuenta: personajes, armas, artefactos, materiales, logros y gachapones.",
+    "readsMore": "Qué guarda el sitio",
     "adminQ": "¿Por qué permisos de administrador en Windows?",
     "adminA": "Windows solo permite a los administradores capturar paquetes de red.",
     "needQ": "¿Necesito la app?",
@@ -170,5 +172,98 @@
     "lead": "El formato de registro de Teyvat: GOOD, más todo lo demás que guarda tu cuenta.",
     "english": "La referencia de abajo está en inglés, como los nombres de campo que describe.",
     "contents": "Contenido"
+  },
+  "privacyPage": {
+    "title": "Tus datos en Teyvat.me",
+    "lead": "Qué se guarda, durante cuánto tiempo, quién puede verlo y cómo borrarlo.",
+    "show": "Mostrar",
+    "groups": {
+      "all": "Todo",
+      "data": "Datos de Genshin",
+      "signIn": "Inicio de sesión",
+      "browser": "Este navegador"
+    },
+    "columns": {
+      "data": "Datos",
+      "kept": "Se guarda",
+      "who": "Quién lo ve",
+      "delete": "Borrar"
+    },
+    "names": {
+      "planner": "Planificador y marcas",
+      "account": "Tu cuenta",
+      "devices": "Dispositivos con sesión",
+      "keys": "Claves y tokens",
+      "local": "Solo en tu dispositivo"
+    },
+    "what": {
+      "snapshots": "Personajes, armas, artefactos, materiales, logros, perfil (nombre, UID, AR, firma, cumpleaños, tarjeta, foto de perfil), tareas, récords de contenido final",
+      "wishes": "Cada deseo: objeto, gachapón, hora",
+      "live": "Cambios desde tu última captura, puntos diarios del gráfico",
+      "planner": "Objetivos, marcas, cambios a mano, resina, ajustes de la cuenta",
+      "account": "Usuario, correo (opcional), contraseña, Discord o Google vinculados, llaves de acceso",
+      "devices": "Nombre del navegador o la app, dirección IP, país y ciudad, último uso",
+      "keys": "Clave de importación, tokens de API: guardados como hashes",
+      "alerts": "La dirección push y las claves de este navegador",
+      "local": "Modo invitado, el arte de tarjeta que añades, páginas en caché, preferencias"
+    },
+    "kept": {
+      "forever": "Hasta que lo borres",
+      "nextSnapshot": "Hasta la próxima captura",
+      "afterSignOut": "7 días tras cerrar sesión",
+      "alertsOff": "Hasta que apagues los avisos",
+      "local": "Nunca nos llega"
+    },
+    "who": {
+      "shared": "Tú y quienes comparten la cuenta contigo",
+      "you": "Solo tú",
+      "youOnce": "Solo tú, se muestra una vez",
+      "browser": "Solo este navegador"
+    },
+    "paths": {
+      "editInPlace": "Editar en el sitio",
+      "alertsOff": "Avisos desactivados",
+      "browser": "Navegador",
+      "clearSiteData": "Borrar datos del sitio",
+      "orDeleteAccount": "o borrar la cuenta de Genshin"
+    },
+    "notes": {
+      "purged": {
+        "label": "Borradas: se eliminan a los 30 días",
+        "title": "Capturas borradas",
+        "body": "Las capturas borradas se eliminan del todo {days} después. {compact} borra al momento.",
+        "days": "30 días"
+      },
+      "wishLink": {
+        "label": "Enlace de deseos: nunca se guarda",
+        "title": "Enlace de deseos",
+        "body": "El enlace del historial de deseos solo se usa para leer tus páginas de deseos. Nunca se guarda ni se registra."
+      },
+      "points": {
+        "label": "Puntos del gráfico: con la cuenta",
+        "title": "Puntos del gráfico",
+        "body": "Los puntos diarios del gráfico de la sincronización en vivo se guardan con la cuenta de Genshin."
+      },
+      "idle": {
+        "label": "Cierre por inactividad: 30 días",
+        "body": "Un dispositivo que no se usa durante 30 días cierra sesión. Su registro, dirección IP incluida, se borra 7 días después."
+      },
+      "revoked": {
+        "label": "Tokens revocados: 30 días",
+        "body": "Los tokens de API revocados y caducados se borran 30 días después."
+      }
+    },
+    "boxes": {
+      "encrypted": "Cifrado en reposo",
+      "encryptedBody": "Cloudflare cifra la base de datos en sus discos. Toda conexión usa HTTPS.",
+      "export": "Exporta tus datos",
+      "exportBody": "{download} guarda un zip de archivos Leyline (GOOD). {wishes} guarda tus deseos como UIGF.",
+      "openSnapshots": "Abrir Capturas",
+      "deleteAll": "Borrar todo",
+      "deleteBody": "{path} borra a la vez todas las cuentas de Genshin, capturas, deseos, planes, dispositivos y claves.",
+      "openSettings": "Abrir Ajustes"
+    },
+    "contact": "¿Dudas sobre tus datos?",
+    "contactLink": "Pregunta en Discord"
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Download, Lock, Trash2 } from 'lucide-vue-next'
+import { ArrowRight, Download, Lock, Trash2 } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -32,6 +32,9 @@ import { Download, Lock, Trash2 } from 'lucide-vue-next'
           </div>
         </div>
       </div>
+      <RouterLink :to="{ name: 'privacy' }" class="more-l"
+        >{{ $t('landing.privacy.details') }}<ArrowRight class="ic" aria-hidden="true"
+      /></RouterLink>
     </div>
   </section>
 </template>

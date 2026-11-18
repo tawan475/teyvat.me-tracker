@@ -129,7 +129,8 @@
     "iosAdd": "{icon} {add}를 탭하세요.",
     "iosAddLabel": "홈 화면에 추가",
     "browser": "브라우저의 설치 옵션을 사용하세요",
-    "browserTitle": "Chrome 또는 Edge: 주소창의 설치 아이콘"
+    "browserTitle": "Chrome 또는 Edge: 주소창의 설치 아이콘",
+    "privacyOpen": "열기"
   },
   "build": {
     "title": "서버 빌드",
@@ -250,7 +251,8 @@
     "title": "사용자 삭제",
     "body": "모든 계정, 스냅샷, 로그인 정보",
     "dialogTitle": "내 사용자 삭제",
-    "deleted": "사용자가 삭제되었습니다"
+    "deleted": "사용자가 삭제되었습니다",
+    "privacy": "무엇을 얼마나 오래 보관하나요"
   },
   "sections": {
     "account": "내 정보와 로그인 방법",

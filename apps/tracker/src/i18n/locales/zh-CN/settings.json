@@ -129,7 +129,8 @@
     "iosAdd": "然后点按 {icon} {add}。",
     "iosAddLabel": "添加到主屏幕",
     "browser": "请使用浏览器的安装选项",
-    "browserTitle": "Chrome 或 Edge：地址栏中的安装图标"
+    "browserTitle": "Chrome 或 Edge：地址栏中的安装图标",
+    "privacyOpen": "打开"
   },
   "build": {
     "title": "服务器版本",
@@ -250,7 +251,8 @@
     "title": "删除用户",
     "body": "所有账号、快照和登录方式",
     "dialogTitle": "删除我的用户",
-    "deleted": "你的用户已删除"
+    "deleted": "你的用户已删除",
+    "privacy": "保存什么、保存多久"
   },
   "sections": {
     "account": "你的身份和登录方式",

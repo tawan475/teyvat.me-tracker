@@ -138,7 +138,8 @@
     "export": "Jederzeit exportieren",
     "exportNote": "Leyline-Format · funktioniert mit Genshin Optimizer",
     "delete": "Jederzeit löschen",
-    "deleteNote": "Dein Konto und seine Daten"
+    "deleteNote": "Dein Konto und seine Daten",
+    "details": "Details: was gespeichert wird und wie lange"
   },
   "faq": {
     "overline": "FAQ",
@@ -151,6 +152,7 @@
     "modifyA": "Nein. Die App liest nur den Netzwerkverkehr auf deinem PC oder Handy. Sie rührt weder Dateien noch Speicher des Spiels an und braucht keine Mods.",
     "readsQ": "Was liest die App?",
     "readsA": "Was das Spiel über deinen Account sendet: Charaktere, Waffen, Artefakte, Materialien, Errungenschaften und Gebete.",
+    "readsMore": "Was die Seite speichert",
     "adminQ": "Warum Administratorrechte unter Windows?",
     "adminA": "Unter Windows dürfen nur Administratoren Netzwerkpakete aufzeichnen.",
     "needQ": "Brauche ich die App?",
@@ -170,5 +172,98 @@
     "lead": "Das Teyvat-Datenformat: GOOD, plus alles andere, was dein Konto enthält.",
     "english": "Die Referenz unten ist auf Englisch, wie die Feldnamen, die sie beschreibt.",
     "contents": "Inhalt"
+  },
+  "privacyPage": {
+    "title": "Deine Daten auf Teyvat.me",
+    "lead": "Was gespeichert wird, wie lange, wer es sehen kann und wie du es löschst.",
+    "show": "Anzeigen",
+    "groups": {
+      "all": "Alle",
+      "data": "Genshin-Daten",
+      "signIn": "Anmeldung",
+      "browser": "Dieser Browser"
+    },
+    "columns": {
+      "data": "Daten",
+      "kept": "Gespeichert",
+      "who": "Wer es sieht",
+      "delete": "Löschen"
+    },
+    "names": {
+      "planner": "Planer und Markierungen",
+      "account": "Dein Konto",
+      "devices": "Angemeldete Geräte",
+      "keys": "Schlüssel und Tokens",
+      "local": "Nur auf deinem Gerät"
+    },
+    "what": {
+      "snapshots": "Figuren, Waffen, Artefakte, Materialien, Errungenschaften, Profil (Name, UID, AR, Signatur, Geburtstag, Namenskärtchen, Profilbild), Aufgaben, Endgame-Rekorde",
+      "wishes": "Jedes Gebet: Objekt, Banner, Zeit",
+      "live": "Änderungen seit deinem letzten Snapshot, tägliche Diagrammpunkte",
+      "planner": "Ziele, Häkchen, Änderungen von Hand, Harz, Kontoeinstellungen",
+      "account": "Benutzername, E-Mail (optional), Passwort, verknüpftes Discord oder Google, Passkeys",
+      "devices": "Name des Browsers oder der App, IP-Adresse, Land und Stadt, zuletzt gesehen",
+      "keys": "Import-Schlüssel, API-Tokens: als Hashes gespeichert",
+      "alerts": "Push-Adresse und Schlüssel dieses Browsers",
+      "local": "Gastmodus, eigene Kartenbilder, zwischengespeicherte Seiten, Einstellungen"
+    },
+    "kept": {
+      "forever": "Bis du löschst",
+      "nextSnapshot": "Bis zum nächsten Snapshot",
+      "afterSignOut": "7 Tage nach dem Abmelden",
+      "alertsOff": "Bis Hinweise aus sind",
+      "local": "Nie an uns gesendet"
+    },
+    "who": {
+      "shared": "Du und Personen, mit denen du das Konto teilst",
+      "you": "Nur du",
+      "youOnce": "Nur du, einmal angezeigt",
+      "browser": "Nur dieser Browser"
+    },
+    "paths": {
+      "editInPlace": "Direkt bearbeiten",
+      "alertsOff": "Hinweise aus",
+      "browser": "Browser",
+      "clearSiteData": "Websitedaten löschen",
+      "orDeleteAccount": "oder das Genshin-Konto löschen"
+    },
+    "notes": {
+      "purged": {
+        "label": "Gelöscht: nach 30 Tagen endgültig entfernt",
+        "title": "Gelöschte Snapshots",
+        "body": "Gelöschte Snapshots werden {days} später endgültig entfernt. {compact} löscht sofort.",
+        "days": "30 Tage"
+      },
+      "wishLink": {
+        "label": "Gebetslink: nie gespeichert",
+        "title": "Gebetslink",
+        "body": "Der Link zum Gebetsverlauf dient nur zum Lesen deiner Gebetsseiten. Er wird nie gespeichert oder protokolliert."
+      },
+      "points": {
+        "label": "Diagrammpunkte: beim Konto",
+        "title": "Diagrammpunkte",
+        "body": "Die täglichen Diagrammpunkte von Live-Sync bleiben beim Genshin-Konto."
+      },
+      "idle": {
+        "label": "Abmeldung bei Inaktivität: 30 Tage",
+        "body": "Ein Gerät, das 30 Tage nicht benutzt wird, wird abgemeldet. Sein Eintrag samt IP-Adresse wird 7 Tage nach dem Abmelden entfernt."
+      },
+      "revoked": {
+        "label": "Widerrufene Tokens: 30 Tage",
+        "body": "Widerrufene und abgelaufene API-Tokens werden 30 Tage später entfernt."
+      }
+    },
+    "boxes": {
+      "encrypted": "Verschlüsselt gespeichert",
+      "encryptedBody": "Cloudflare verschlüsselt die Datenbank auf seinen Festplatten. Jede Verbindung läuft über HTTPS.",
+      "export": "Deine Daten exportieren",
+      "exportBody": "{download} speichert ein Zip mit Leyline-Dateien (GOOD). {wishes} speichert deine Gebete als UIGF.",
+      "openSnapshots": "Snapshots öffnen",
+      "deleteAll": "Alles löschen",
+      "deleteBody": "{path} entfernt alle Genshin-Konten, Snapshots, Gebete, Pläne, Geräte und Schlüssel auf einmal.",
+      "openSettings": "Einstellungen öffnen"
+    },
+    "contact": "Fragen zu deinen Daten?",
+    "contactLink": "Frag auf Discord"
   }
 }

@@ -8,9 +8,10 @@ import { DOWNLOAD_URL } from './links'
 
 /**
  * The landing page's top bar; the language button opens the appearance dialog
- * (LandingView). Another public page passes its own in-page `links`.
+ * (LandingView). Another public page passes its own `links` (English, like
+ * the developers pages' text, unless `translated`).
  */
-defineProps<{ links?: { href: string; label: string }[] }>()
+defineProps<{ links?: { href: string; label: string }[]; translated?: boolean }>()
 defineEmits<{ language: [] }>()
 const session = useSession()
 const languageName = computed(() => LANGUAGE_NAMES[locale.value])
@@ -23,7 +24,7 @@ const short = computed(() => locale.value.split('-')[0]!.toUpperCase())
       <RouterLink :to="{ name: 'landing' }" class="brand">
         <span class="spark" aria-hidden="true">✦</span>Teyvat.me
       </RouterLink>
-      <div v-if="links" class="navlinks" lang="en">
+      <div v-if="links" class="navlinks" :lang="translated ? undefined : 'en'">
         <a v-for="link in links" :key="link.href" :href="link.href">{{ link.label }}</a>
       </div>
       <div v-else class="navlinks">

@@ -46,6 +46,7 @@ async function pickLanguage(event: Event) {
           <RouterLink :to="{ name: 'developers' }">{{
             $t('landing.footer.developers')
           }}</RouterLink>
+          <RouterLink :to="{ name: 'privacy' }">{{ $t('shell.page.privacy') }}</RouterLink>
           <a :href="GITHUB_URL">GitHub</a>
           <a :href="KOFI_URL" target="_blank" rel="noopener noreferrer">{{
             $t('landing.footer.support')

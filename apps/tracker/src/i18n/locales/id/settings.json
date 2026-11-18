@@ -129,7 +129,8 @@
     "iosAdd": "lalu {icon} {add}.",
     "iosAddLabel": "Tambahkan ke Layar Utama",
     "browser": "Pakai opsi pemasangan di browsermu",
-    "browserTitle": "Chrome atau Edge: ikon pasang di bilah alamat"
+    "browserTitle": "Chrome atau Edge: ikon pasang di bilah alamat",
+    "privacyOpen": "Buka"
   },
   "build": {
     "title": "Build server",
@@ -250,7 +251,8 @@
     "title": "Hapus pengguna",
     "body": "Setiap akun, snapshot dan cara masuk",
     "dialogTitle": "Hapus penggunaku",
-    "deleted": "Penggunamu sudah dihapus"
+    "deleted": "Penggunamu sudah dihapus",
+    "privacy": "Apa yang disimpan dan berapa lama"
   },
   "sections": {
     "account": "Siapa kamu dan cara masuk",

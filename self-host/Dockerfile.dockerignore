@@ -1,0 +1,12 @@
+# Read by BuildKit for self-host/Dockerfile (the context is the repository
+# root). A developer's secrets never enter the image: the settings reach the
+# container only through self-host/.env, mounted at run time.
+**/.dev.vars
+**/.dev.vars.*
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/.wrangler
+self-host/built-origin
+self-host/wrangler-version

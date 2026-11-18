@@ -13,6 +13,8 @@
  * Mails carry one-time tokens: never log a message, only its outcome.
  */
 
+import { configuredOrigin, originOf, SITE_ORIGIN } from './site'
+
 /** Optional parts of the environment (not in wrangler.jsonc yet, so not in `Env`). */
 interface EmailEnv {
   EMAIL?: SendEmail
@@ -20,12 +22,13 @@ interface EmailEnv {
   EMAIL_FEATURES?: string
   /** Sender address on the onboarded domain. */
   EMAIL_FROM?: string
-  /** The site's origin, for links in mails. */
+  /** The site's origin, for links in mails (lib/site.ts). */
   SITE_URL?: string
 }
 
 export const BRAND = 'Teyvat.me'
-export const SITE_ORIGIN = 'https://teyvat.me'
+export { SITE_ORIGIN }
+
 /**
  * The address the site had before teyvat.me. It still serves the API
  * (installed irminsul copies post there) and sends pages on to SITE_ORIGIN
@@ -49,16 +52,6 @@ export function emailBinding(env: Env): SendEmail | undefined {
 
 export const emailEnabled = (env: Env): boolean => emailBinding(env) !== undefined
 
-function originOf(url: string | undefined): string | null {
-  if (!url) return null
-  try {
-    const { origin, protocol } = new URL(url)
-    return protocol === 'https:' || protocol === 'http:' ? origin : null
-  } catch {
-    return null
-  }
-}
-
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]'])
 
 /**
@@ -69,6 +62,9 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]'])
  * which is why it is safe to allow.
  */
 export function linkOrigin(env: Env, requestUrl: string): string {
+  // A self-host: its SITE_URL, whatever the request says.
+  const configured = configuredOrigin(env)
+  if (configured) return configured
   const site = originOf(emailEnv(env).SITE_URL) ?? SITE_ORIGIN
   const request = originOf(requestUrl)
   if (request === site || request === SITE_ORIGIN || request === OLD_SITE_ORIGIN) return request
@@ -83,6 +79,8 @@ export function linkOrigin(env: Env, requestUrl: string): string {
  * those stay on the host whose cookie started the flow (`linkOrigin`).
  */
 export function pageOrigin(env: Env, requestUrl: string): string {
+  const configured = configuredOrigin(env)
+  if (configured) return configured
   const request = new URL(requestUrl).origin
   if (request !== OLD_SITE_ORIGIN) return request
   return originOf(emailEnv(env).SITE_URL) ?? SITE_ORIGIN

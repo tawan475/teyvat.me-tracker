@@ -15,6 +15,7 @@ import { Hono } from 'hono'
 import type { AppEnv } from '../env'
 import { ApiError } from '../lib/http'
 import { requireUser } from '../lib/session'
+import { ownOrigin } from '../lib/site'
 import { liveHub } from '../services/live'
 
 export const live = new Hono<AppEnv>().get(
@@ -23,7 +24,7 @@ export const live = new Hono<AppEnv>().get(
     if (c.req.header('upgrade')?.toLowerCase() !== 'websocket') {
       throw new ApiError(426, 'upgrade_required', 'Expected a WebSocket upgrade')
     }
-    if (c.req.header('origin') !== new URL(c.req.url).origin) {
+    if (c.req.header('origin') !== ownOrigin(c.env, c.req.url)) {
       throw new ApiError(403, 'bad_origin', 'Live updates are only for this site')
     }
     await next()

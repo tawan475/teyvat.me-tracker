@@ -58,7 +58,7 @@ const requireCsrf: MiddlewareHandler<AppEnv> = async (c, next) => {
 
 /** This host's relying party; 404 `passkeys_unavailable` where passkeys are off. */
 function rpOf(c: Context<AppEnv>): RelyingParty {
-  const rp = relyingParty(c.req.url)
+  const rp = relyingParty(c.env, c.req.url)
   if (!rp) throw new ApiError(404, 'passkeys_unavailable', 'Passkeys work on teyvat.me only')
   return rp
 }

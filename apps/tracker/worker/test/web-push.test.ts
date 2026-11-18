@@ -111,6 +111,19 @@ describe('Web Push', () => {
     expect(ok).toBe(true)
   })
 
+  it("gives a self-host's https SITE_URL as the contact, else teyvat.me", async () => {
+    const vars = { VAPID_PUBLIC_KEY: KEYS.publicKey, VAPID_PRIVATE_KEY: KEYS.privateKey }
+    const subjectOf = async (SITE_URL: string) => {
+      const keys = vapidKeys({ ...vars, SITE_URL })!
+      const header = await vapidAuthorization('https://push.example.com/send/abc', keys)
+      const claims = header.slice('vapid t='.length).split('.')[1]!
+      return JSON.parse(new TextDecoder().decode(fromBase64Url(claims)!)).sub
+    }
+    expect(await subjectOf('https://tracker.example/')).toBe('https://tracker.example')
+    expect(await subjectOf('http://localhost:8787')).toBe('https://teyvat.me')
+    expect(await subjectOf('https://teyvat.me')).toBe('https://teyvat.me')
+  })
+
   it('posts to the endpoint and reads gone / failed answers', async () => {
     const ua = await browser()
     const target = {

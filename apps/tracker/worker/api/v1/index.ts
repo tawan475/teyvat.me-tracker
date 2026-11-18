@@ -10,6 +10,7 @@ import { apiLimitsFor } from '@gdt/shared'
 import { Hono } from 'hono'
 import type { AppEnv } from '../../env'
 import { ApiError, clientIp } from '../../lib/http'
+import { ownOrigin } from '../../lib/site'
 import {
   authenticate,
   checkLimits,
@@ -244,7 +245,7 @@ v1.use(async (c, next) => {
 
 /** The OpenAPI 3.1 description of every route (no token needed). */
 v1.get('/openapi.json', (c) => {
-  const response = c.json(openApiDocument(new URL(c.req.url).origin))
+  const response = c.json(openApiDocument(ownOrigin(c.env, c.req.url)))
   response.headers.set('Cache-Control', 'public, max-age=3600')
   corsHeaders(response.headers)
   return response

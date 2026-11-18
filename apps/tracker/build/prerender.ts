@@ -7,11 +7,14 @@ import { extname, join, resolve, sep } from 'node:path'
 import type { Plugin } from 'vite'
 import { canonicalUrl, INDEXED_PAGES, sitemapXml } from '../src/router/public-pages.ts'
 import { injectPrerender, type RenderedPage } from './prerender-html.ts'
+import { PRODUCTION_ORIGIN, robotsFor } from './site-origin.ts'
 
 /**
  * Search engines and AI crawlers (docs/plans/open-site.md §1).
  *
- * `sitemap`: /sitemap.xml from src/router/public-pages.ts, dated by the build.
+ * `sitemap`: /sitemap.xml from src/router/public-pages.ts, dated by the build,
+ * on the build's origin (build/site-origin.ts); for another origin than
+ * teyvat.me, robots.txt's Sitemap line too.
  *
  * `prerender`: after the client build is written, each indexed page is opened
  * in headless Chrome against the built files (a small local server; /api
@@ -27,19 +30,29 @@ import { injectPrerender, type RenderedPage } from './prerender-html.ts'
  * have google-chrome). `PRERENDER=0` skips the step (the pages then work as
  * before, rendered by the app alone).
  */
-export function sitemap(): Plugin {
+export function sitemap(origin = PRODUCTION_ORIGIN): Plugin {
   return {
     name: 'sitemap',
     apply: 'build',
     generateBundle() {
       if (this.environment.name !== 'client') return
       const lastmod = new Date().toISOString().slice(0, 10)
-      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemapXml(lastmod) })
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: sitemapXml(lastmod, INDEXED_PAGES, origin),
+      })
+    },
+    writeBundle(options) {
+      // public/robots.txt is copied as is; another origin gets its own Sitemap line.
+      if (this.environment.name !== 'client' || origin === PRODUCTION_ORIGIN) return
+      const file = join(resolve(options.dir ?? this.environment.config.build.outDir), 'robots.txt')
+      writeFileSync(file, robotsFor(readFileSync(file, 'utf8'), origin))
     },
   }
 }
 
-export function prerender(): Plugin {
+export function prerender(origin = PRODUCTION_ORIGIN): Plugin {
   return {
     name: 'prerender',
     apply: 'build',
@@ -50,7 +63,7 @@ export function prerender(): Plugin {
         return
       }
       const dir = options.dir ?? this.environment.config.build.outDir
-      const pages = await renderPages(resolve(dir))
+      const pages = await renderPages(resolve(dir), origin)
       for (const line of pages) this.environment.logger.info(line)
     },
   }
@@ -116,7 +129,7 @@ function serve(dir: string, shell: string): Promise<Server> {
   return new Promise((done) => server.listen(0, '127.0.0.1', () => done(server)))
 }
 
-async function renderPages(dir: string): Promise<string[]> {
+async function renderPages(dir: string, siteOrigin: string): Promise<string[]> {
   const shellFile = join(dir, 'index.html')
   const shell = readFileSync(shellFile, 'utf8')
   const server = await serve(dir, shell)
@@ -181,7 +194,7 @@ async function renderPages(dir: string): Promise<string[]> {
       await page.close()
       const result: RenderedPage = {
         path: target.path,
-        canonical: canonicalUrl(target.path) ?? '',
+        canonical: canonicalUrl(target.path, siteOrigin) ?? '',
         ...rendered,
       }
       if (!result.canonical || !result.title || !result.description) {

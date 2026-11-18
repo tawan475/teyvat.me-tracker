@@ -149,7 +149,7 @@ export const oauth = new Hono<AppEnv>()
       emailFeatures: emailFeatures(c.env),
       turnstileSiteKey: turnstileConfig(c.env)?.siteKey ?? null,
       signups: await signupMode(c.env.DB),
-      passkeys: relyingParty(c.req.url) !== null,
+      passkeys: relyingParty(c.env, c.req.url) !== null,
     } satisfies OAuthProvidersResponse)
   })
 

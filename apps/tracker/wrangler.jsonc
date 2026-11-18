@@ -101,8 +101,9 @@
   // available. Then add:
   //   "send_email": [{ "name": "EMAIL", "allowed_sender_addresses": ["no-reply@475.dev"] }],
   // `vite dev` simulates it (vite.config.ts). Optional vars: EMAIL_FROM
-  // (default no-reply@475.dev) and SITE_URL (the origin links point at,
-  // default https://teyvat.me).
+  // (default no-reply@475.dev) and SITE_URL (the site's origin, default
+  // https://teyvat.me; a self-host's SITE_URL is the one origin for every
+  // address the Worker builds or checks: worker/lib/site.ts, self-host/).
   // The email features are paused unless the var EMAIL_FEATURES is "1": no
   // email field, no "forgot password", no mail even with the binding; admin
   // reset links still work. To turn them on, add with the binding:

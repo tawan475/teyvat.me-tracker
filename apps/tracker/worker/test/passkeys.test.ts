@@ -255,16 +255,37 @@ async function passkeyLogin(
 
 describe('lib/webauthn', () => {
   it('names the relying party on teyvat.me and localhost only', () => {
-    expect(relyingParty('https://teyvat.me/api/x')).toMatchObject({
+    const none = {}
+    expect(relyingParty(none, 'https://teyvat.me/api/x')).toMatchObject({
       id: 'teyvat.me',
       origin: 'https://teyvat.me',
     })
-    expect(relyingParty('http://localhost:5173/api/x')).toMatchObject({
+    expect(relyingParty(none, 'http://localhost:5173/api/x')).toMatchObject({
       id: 'localhost',
       origin: 'http://localhost:5173',
     })
-    expect(relyingParty('https://genshin-tracker.475.dev/api/x')).toBeNull()
-    expect(relyingParty('http://teyvat.me/api/x')).toBeNull()
+    expect(relyingParty(none, 'https://genshin-tracker.475.dev/api/x')).toBeNull()
+    expect(relyingParty(none, 'http://teyvat.me/api/x')).toBeNull()
+    // SITE_URL = teyvat.me changes nothing.
+    const prod = { SITE_URL: 'https://teyvat.me' }
+    expect(relyingParty(prod, 'http://localhost:5173/api/x')?.id).toBe('localhost')
+    expect(relyingParty(prod, 'http://teyvat.me/api/x')).toBeNull()
+  })
+
+  it("names a self-host's SITE_URL whatever the request says", () => {
+    // wrangler's local mode puts the route's host (teyvat.me) in the request URL.
+    const site = { SITE_URL: 'https://tracker.example/' }
+    for (const url of ['http://teyvat.me/api/x', 'https://evil.example/api/x']) {
+      expect(relyingParty(site, url)).toMatchObject({
+        id: 'tracker.example',
+        origin: 'https://tracker.example',
+      })
+    }
+    expect(relyingParty({ SITE_URL: 'http://localhost:8787' }, 'http://teyvat.me/x')).toMatchObject(
+      { id: 'localhost', origin: 'http://localhost:8787' },
+    )
+    // Browsers have no WebAuthn on plain http elsewhere.
+    expect(relyingParty({ SITE_URL: 'http://192.168.1.20:8787' }, 'http://teyvat.me/x')).toBeNull()
   })
 
   it('refuses a challenge past its time, for another purpose or user, or changed', async () => {

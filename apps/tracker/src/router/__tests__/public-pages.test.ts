@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { injectPrerender } from '../../../build/prerender-html'
+import { buildSiteOrigin, PRODUCTION_ORIGIN, robotsFor } from '../../../build/site-origin'
 import shellFile from '../../../index.html?raw'
 import robotsFile from '../../../public/robots.txt?raw'
 import llms from '../../../public/llms.txt?raw'
@@ -138,5 +139,33 @@ describe('injectPrerender', () => {
   it('refuses a shell it cannot place the page in', () => {
     expect(() => injectPrerender(shell.replace('<div id="app"></div>', ''), page)).toThrow(/#app/)
     expect(() => injectPrerender(html, page)).toThrow()
+  })
+})
+
+describe("a self-host's origin (SITE_URL at build)", () => {
+  it('is teyvat.me without SITE_URL, else its origin; a bad one stops the build', () => {
+    expect(SITE_ORIGIN).toBe(PRODUCTION_ORIGIN)
+    expect(buildSiteOrigin(undefined)).toBe('https://teyvat.me')
+    expect(buildSiteOrigin('')).toBe('https://teyvat.me')
+    expect(buildSiteOrigin('https://tracker.example/path/')).toBe('https://tracker.example')
+    expect(buildSiteOrigin('http://localhost:8787')).toBe('http://localhost:8787')
+    expect(() => buildSiteOrigin('tracker.example')).toThrow(/not a URL/)
+    expect(() => buildSiteOrigin('ftp://tracker.example')).toThrow(/http/)
+  })
+
+  it('puts canonical links, the sitemap and robots.txt on it', () => {
+    const origin = 'https://tracker.example'
+    expect(canonicalUrl('/developers', origin)).toBe(`${origin}/developers`)
+    const xml = sitemapXml('2026-11-18', INDEXED_PAGES, origin)
+    expect(xml).not.toContain('teyvat.me')
+    for (const page of INDEXED_PAGES) expect(xml).toContain(`<loc>${origin}${page.path}</loc>`)
+    const own = robotsFor(robots, origin)
+    expect(own).toContain(`Sitemap: ${origin}/sitemap.xml`)
+    expect(own).not.toContain('Sitemap: https://teyvat.me')
+    // teyvat.me's own files are untouched.
+    expect(robotsFor(robots, PRODUCTION_ORIGIN)).toBe(robots)
+    expect(sitemapXml('2026-11-18')).toBe(
+      sitemapXml('2026-11-18', INDEXED_PAGES, PRODUCTION_ORIGIN),
+    )
   })
 })

@@ -10,19 +10,24 @@
  */
 
 import { fromBase64, toBase64Url } from '@gdt/shared'
+import { configuredOrigin, SITE_ORIGIN } from './site'
 
 export interface VapidVars {
   VAPID_PUBLIC_KEY?: string
   VAPID_PRIVATE_KEY?: string
+  /** A self-host's origin (lib/site.ts): its contact address for the push services. */
+  SITE_URL?: string
 }
 
 export interface VapidKeys {
   publicKey: string
   privateKey: string
+  /** Who the push services can reach about this sender (RFC 8292 `sub`); teyvat.me if unset. */
+  subject?: string
 }
 
-/** Who the push services can reach about this sender (RFC 8292 `sub`). */
-const SUBJECT = 'https://teyvat.me'
+/** teyvat.me's contact for the push services. */
+const SUBJECT = SITE_ORIGIN
 
 /** The server's keys, or null while alerts are off. */
 export function vapidKeys(vars: VapidVars): VapidKeys | null {
@@ -32,7 +37,12 @@ export function vapidKeys(vars: VapidVars): VapidKeys | null {
   if (fromBase64Url(publicKey)?.length !== 65 || fromBase64Url(privateKey)?.length !== 32) {
     return null
   }
-  return { publicKey, privateKey }
+  // Push services take an https (or mailto) contact only: a self-host on
+  // http://localhost keeps teyvat.me's.
+  const subject = configuredOrigin(vars)
+  return subject?.startsWith('https:')
+    ? { publicKey, privateKey, subject }
+    : { publicKey, privateKey }
 }
 
 /** A browser's subscription as stored. */
@@ -90,7 +100,7 @@ export async function vapidAuthorization(
   const claims = encodeJson({
     aud: new URL(endpoint).origin,
     exp: Math.floor(now / 1000) + 12 * 3600,
-    sub: SUBJECT,
+    sub: keys.subject ?? SUBJECT,
   })
   const unsigned = `${header}.${claims}`
   const key = await signingKey(keys)

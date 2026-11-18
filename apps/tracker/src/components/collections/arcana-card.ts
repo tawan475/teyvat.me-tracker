@@ -38,7 +38,7 @@ export const ARCANA_CARD: Readonly<Record<ArcanaLayout, Spec>> = {
   wide: {
     width: 1920,
     height: 1080,
-    pad: { top: 56, side: 72, bottom: 40 },
+    pad: { top: 34, side: 72, bottom: 40 },
     header: 130,
     foot: 40,
     card: { w: 127, h: 326 },
@@ -51,7 +51,7 @@ export const ARCANA_CARD: Readonly<Record<ArcanaLayout, Spec>> = {
   tall: {
     width: 1080,
     height: 1920,
-    pad: { top: 64, side: 60, bottom: 44 },
+    pad: { top: 44, side: 60, bottom: 44 },
     header: 150,
     foot: 40,
     card: { w: 124, h: 318 },

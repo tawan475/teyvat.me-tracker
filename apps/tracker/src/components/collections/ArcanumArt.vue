@@ -39,8 +39,13 @@ withDefaults(
         :loading="lazy ? 'lazy' : 'eager'"
         decoding="async"
         data-skeleton="off"
-        class="size-full scale-110 object-contain saturate-50"
-        :class="size === 'lg' ? 'blur-[10px] brightness-[.26]' : 'blur-[3px] brightness-[.26]'"
+        class="size-full scale-105 object-contain saturate-[.7]"
+        :class="size === 'lg' ? 'blur-[5px] brightness-[.6]' : 'blur-[1.5px] brightness-[.6]'"
+      />
+      <!-- A mild darkening that radiates from the middle, where the numeral sits. -->
+      <span
+        class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(4,6,16,.5),rgba(4,6,16,0)_72%)]"
+        aria-hidden="true"
       />
       <span
         class="absolute inset-0 flex items-center justify-center font-bold tracking-wider text-slate-100 [text-shadow:0_2px_8px_rgba(0,0,0,.7)]"

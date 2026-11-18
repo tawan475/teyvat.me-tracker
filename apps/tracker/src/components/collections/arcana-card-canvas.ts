@@ -163,10 +163,11 @@ export async function drawArcanaCard(
       const heldW = width(held, 76, 600)
       line(of, right, top + 48, 34, 400, c.sub, { align: 'right', lineHeight: 44 })
       line(held, right - ofW - 12, top + 22, 76, 600, c.count, { align: 'right', lineHeight: 80 })
-      line(spare, right - ofW - heldW - 32, top + 54, 24, 400, c.sub, {
-        align: 'right',
-        lineHeight: 32,
-      })
+      if (input.spare > 0)
+        line(spare, right - ofW - heldW - 32, top + 54, 24, 400, c.sub, {
+          align: 'right',
+          lineHeight: 32,
+        })
       bar(right - 440, top + 112, 440)
     } else {
       line(t('collections.tabs.lunarArcana'), side, top, 60, 600, c.text, {
@@ -181,9 +182,10 @@ export async function drawArcanaCard(
       const ofW = width(of, 32, 400)
       line(of, right, top + 30, 32, 400, c.sub, { align: 'right', lineHeight: 40 })
       line(held, right - ofW - 10, top + 4, 72, 600, c.count, { align: 'right', lineHeight: 76 })
-      const spareW = width(spare, 22, 400)
-      bar(side, top + 118, spec.width - side * 2 - spareW - 20)
-      line(spare, right, top + 108, 22, 400, c.sub, { align: 'right', lineHeight: 32 })
+      const spareW = input.spare > 0 ? width(spare, 22, 400) + 20 : 0
+      bar(side, top + 118, spec.width - side * 2 - spareW)
+      if (input.spare > 0)
+        line(spare, right, top + 108, 22, 400, c.sub, { align: 'right', lineHeight: 32 })
     }
 
     /**
@@ -212,12 +214,24 @@ export async function drawArcanaCard(
       const dy = (layer.height - dh) / 2
       lctx.fillStyle = '#0b1020'
       lctx.fillRect(0, 0, layer.width, layer.height)
-      lctx.filter = `blur(${7 * k}px) saturate(0.5)`
-      const grow = 6 * k
+      lctx.filter = `blur(${3.5 * k}px) saturate(0.7)`
+      const grow = 3 * k
       lctx.drawImage(image, dx - grow, dy - grow, dw + grow * 2, dh + grow * 2)
       lctx.filter = 'none'
-      lctx.fillStyle = 'rgba(8,12,28,0.72)'
+      // A light veil, then a mild darkening that radiates from the middle (where the numeral sits).
+      lctx.fillStyle = 'rgba(8,12,28,0.4)'
       lctx.fillRect(0, 0, layer.width, layer.height)
+      const cx = layer.width / 2
+      const cy = layer.height / 2
+      lctx.save()
+      lctx.translate(cx, cy)
+      lctx.scale(1, layer.height / layer.width)
+      const glow = lctx.createRadialGradient(0, 0, 0, 0, 0, layer.width * 0.62)
+      glow.addColorStop(0, 'rgba(4,6,16,0.5)')
+      glow.addColorStop(1, 'rgba(4,6,16,0)')
+      lctx.fillStyle = glow
+      lctx.fillRect(-cx, -cx, layer.width, layer.width)
+      lctx.restore()
       lctx.globalCompositeOperation = 'destination-in'
       lctx.drawImage(image, dx, dy, dw, dh)
       p.ctx.drawImage(layer, box.x, box.y, box.w, box.h)

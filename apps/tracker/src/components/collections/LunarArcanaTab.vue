@@ -89,11 +89,12 @@ const text = (id: string, part: 'name' | 'title' | 'verse') =>
   game.data.value?.text.get(`arcanum.${id}.${part}`) ?? ''
 
 const filter = ref<ArcanaFilter>('all')
-watch(known, (k) => {
-  if (!k) filter.value = 'all'
+watch([known, () => summary.value.spare], ([k, spare]) => {
+  if (!k || (filter.value === 'spare' && !spare)) filter.value = 'all'
 })
+// Spare only while some card has copies to spare.
 const filterOptions = computed(() =>
-  ARCANA_FILTERS.map((value) => ({
+  ARCANA_FILTERS.filter((value) => value !== 'spare' || summary.value.spare > 0).map((value) => ({
     value,
     label: t(`collections.arcana.filters.${value}`),
     count:

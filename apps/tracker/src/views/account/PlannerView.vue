@@ -37,6 +37,7 @@ import {
   Eye,
   EyeOff,
   FileInput,
+  GripVertical,
   History,
   Info,
   Plus,
@@ -152,6 +153,8 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import UiDragGhost from '@/components/ui/UiDragGhost.vue'
+import { goalIcon } from '@/components/planner/goal-icon'
 import { t } from '@/i18n'
 import { formatDate, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
@@ -855,6 +858,20 @@ const drag = useDragOrder({
     const target = shown[Math.max(0, Math.min(shown.length - 1, to))]
     if (target && target !== id) applyOrder(moveTo(pendingOrder.value, id, target))
   },
+})
+/** The lifted copy of the card being dragged (UiDragGhost, the tab bar's look). */
+const dragGhost = computed(() => {
+  const id = drag.dragging.value
+  const entry = id ? pendingEntries.value.find((e) => e.id === id) : null
+  if (!id || !entry) return null
+  const to = drag.over.value
+  const target = to && to !== id ? ranks.value.get(to) : undefined
+  return {
+    entry,
+    icon: goalIcon(entry),
+    rank: ranks.value.get(id) ?? 0,
+    badge: target ? `→ #${target}` : null,
+  }
 })
 const sorting = computed(() => sort.value === 'priority' && !selecting.value)
 /** Each card's last place object: the same one while it doesn't change (no re-render). */
@@ -2024,6 +2041,29 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
             />
           </li>
         </ul>
+        <UiDragGhost
+          v-if="drag.lift.value && dragGhost"
+          :lift="drag.lift.value"
+          :badge="dragGhost.badge"
+        >
+          <template #handle>
+            <span
+              class="inline-flex w-[44px] shrink-0 flex-col items-center justify-center gap-px text-text-primary sm:w-8"
+            >
+              <span class="tabular text-[0.6875rem] leading-none font-bold">{{
+                dragGhost.rank
+              }}</span>
+              <GripVertical class="size-3.5" aria-hidden="true" />
+            </span>
+          </template>
+          <img
+            v-if="dragGhost.icon"
+            :src="dragGhost.icon"
+            alt=""
+            class="size-[30px] shrink-0 rounded-md bg-surface-overlay object-cover"
+          />
+          <span class="min-w-0 flex-1 truncate font-semibold">{{ dragGhost.entry.name }}</span>
+        </UiDragGhost>
 
         <ExtraItems
           v-if="shownItems.length"

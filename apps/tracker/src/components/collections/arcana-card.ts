@@ -139,3 +139,9 @@ export function lockedOvalCss(): string {
 
 /** The game's Lunar Arcana sky (gi-cdn), behind the cards on the page and the PNG. */
 export const ARCANA_SKY = 'UI_Bg_RoleCombat_Tarot_01'
+/**
+ * How much the sky is brightened (the game's picture is very dark: its
+ * brightest pixel is 132 of 255), and the light card's veil over it (the
+ * user, 2026-11-18: the sky was too dim, and gone on the light card).
+ */
+export const SKY_LOOK = { brightness: 1.5, lightVeil: 0.62 } as const

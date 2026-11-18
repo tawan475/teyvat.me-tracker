@@ -33,11 +33,15 @@ import { locale } from '@/i18n/locale'
 import { giCdnArt } from '@/lib/assets'
 import { formatDate, formatNumber } from '@/lib/format'
 import { useAccount } from '@/views/account/context'
-import { ARCANA_SKY } from './arcana-card'
+import { ARCANA_SKY, SKY_LOOK } from './arcana-card'
 import type { ArcanaDrawing } from './arcana-card-canvas'
 
 const ArcanaShareModal = defineAsyncComponent(() => import('./ArcanaShareModal.vue'))
-const SKY = giCdnArt(ARCANA_SKY)
+/** The game's sky, brightened (SKY_LOOK). */
+const SKY_STYLE = {
+  backgroundImage: `url(${giCdnArt(ARCANA_SKY)})`,
+  filter: `brightness(${SKY_LOOK.brightness})`,
+}
 
 /**
  * Lunar Arcana (Imaginarium Theater's Lunar Mode): the 22 cards, which the
@@ -322,9 +326,13 @@ const TILE =
         <!-- On the game's Lunar Arcana sky, in the dark theme's colours whatever the page's. -->
         <div
           data-theme="dark"
-          class="min-w-0 flex-[999_1_32rem] rounded-xl border border-border-default bg-[#070a1f] bg-cover bg-center p-3 shadow-sm sm:p-4"
-          :style="{ backgroundImage: `url(${SKY})` }"
+          class="relative isolate min-w-0 flex-[999_1_32rem] overflow-hidden rounded-xl border border-border-default bg-[#070a1f] p-3 shadow-sm sm:p-4"
         >
+          <div
+            class="absolute inset-0 -z-10 bg-cover bg-center"
+            :style="SKY_STYLE"
+            aria-hidden="true"
+          />
           <UiEmpty v-if="!shown.length" :title="$t('collections.arcana.noneShown')" />
           <ul v-else class="flex flex-wrap justify-center gap-x-3 gap-y-4">
             <li v-for="v in shown" :key="v.card.id" class="min-w-0 grow-0" :class="TILE">

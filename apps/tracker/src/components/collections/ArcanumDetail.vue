@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { Check } from 'lucide-vue-next'
 import ArcanumArt from './ArcanumArt.vue'
-import { ARCANA_SKY } from './arcana-card'
+import { ARCANA_SKY, SKY_LOOK } from './arcana-card'
 import { giCdnArt } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import type { ArcanumView } from '@/data/lunar-arcana'
@@ -20,6 +20,10 @@ const props = defineProps<{
   verse: string
 }>()
 
+const SKY_STYLE = {
+  backgroundImage: `url(${giCdnArt(ARCANA_SKY)})`,
+  filter: `brightness(${SKY_LOOK.brightness})`,
+}
 const missing = computed(() => props.view.count === 0)
 const held = computed(() => (props.view.count ?? 0) > 0)
 /** "Lunar Arcanum VI": the name without its title (the game writes both in one line). */
@@ -33,10 +37,12 @@ const numberLine = computed(() => {
 <template>
   <div class="flex min-w-0 flex-col">
     <!-- The card on the game's Lunar Arcana sky. -->
-    <div
-      class="flex justify-center bg-[#070a1f] bg-cover bg-center px-6 py-5"
-      :style="{ backgroundImage: `url(${giCdnArt(ARCANA_SKY)})` }"
-    >
+    <div class="relative isolate flex justify-center bg-[#070a1f] px-6 py-5">
+      <div
+        class="absolute inset-0 -z-10 bg-cover bg-center"
+        :style="SKY_STYLE"
+        aria-hidden="true"
+      />
       <div class="w-full" :class="held ? 'max-w-[18rem]' : 'max-w-[10.5rem]'">
         <ArcanumArt
           :src="giCdnArt(held ? view.card.framed : view.card.icon)"

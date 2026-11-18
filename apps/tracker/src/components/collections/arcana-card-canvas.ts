@@ -19,7 +19,14 @@ import {
 } from '@/lib/card-canvas'
 import { formatDate, formatNumber } from '@/lib/format'
 import type { CardTheme } from '../characters/share-card'
-import { ARCANA_CARD, ARCANA_SKY, LOCKED_LOOK, arcanaGrid, type ArcanaLayout } from './arcana-card'
+import {
+  ARCANA_CARD,
+  ARCANA_SKY,
+  LOCKED_LOOK,
+  SKY_LOOK,
+  arcanaGrid,
+  type ArcanaLayout,
+} from './arcana-card'
 
 export interface ArcanaCardEntry {
   /** The card art's name (`UI_RoleCombat_Tarot_06`). */
@@ -72,16 +79,17 @@ const PALETTE: Record<CardTheme, Palette> = {
     missingTitle: '#94a3b8',
     brand: '#f59e0b',
   },
+  // Over the sky under a half veil: a step darker than the page's light colours.
   light: {
     stops: ['#ede9fe', '#e0e7ff', '#f8fafc'],
-    text: '#0f172a',
-    sub: '#475569',
-    numeral: '#4f46e5',
-    count: '#b45309',
-    track: 'rgba(15,23,42,0.12)',
+    text: '#0b1020',
+    sub: '#1e293b',
+    numeral: '#1e1b4b',
+    count: '#7c2d12',
+    track: 'rgba(15,23,42,0.22)',
     lock: '#f8fafc',
-    missingTitle: '#64748b',
-    brand: '#b45309',
+    missingTitle: '#1e293b',
+    brand: '#7c2d12',
   },
 }
 
@@ -139,8 +147,14 @@ export async function drawArcanaCard(
           ctx.restore()
         }
       }
+      // Brighter: the sky added onto itself at (brightness − 1), which works where filters don't.
+      ctx.save()
+      ctx.globalCompositeOperation = 'lighter'
+      ctx.globalAlpha = SKY_LOOK.brightness - 1
+      ctx.drawImage(p.snapshot(), 0, 0, spec.width, spec.height)
+      ctx.restore()
       if (input.theme === 'light') {
-        ctx.fillStyle = 'rgba(244,243,255,0.84)'
+        ctx.fillStyle = `rgba(244,243,255,${SKY_LOOK.lightVeil})`
         ctx.fillRect(0, 0, spec.width, spec.height)
       }
     } else {

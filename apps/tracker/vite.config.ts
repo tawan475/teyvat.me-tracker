@@ -11,6 +11,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import { GI_CDN_HOST, IMAGE_HOST } from '@gdt/game-data/image-url'
 import { prerender, sitemap } from './build/prerender.ts'
 import { scriptBundle } from './build/script-bundle.ts'
+import { noDevVars } from './build/no-dev-vars.ts'
+import { buildSiteOrigin } from './build/site-origin.ts'
 import { oauthMock } from './dev/oauth-mock.ts'
 import pkg from './package.json' with { type: 'json' }
 
@@ -31,6 +33,8 @@ const build = {
   dirty: git('status --porcelain') !== '',
   builtAt: new Date().toISOString(),
 }
+/** teyvat.me, or a self-host's SITE_URL (build/site-origin.ts). */
+const siteOrigin = buildSiteOrigin(process.env.SITE_URL)
 const migrations = readdirSync(new URL('./migrations', import.meta.url))
   .filter((name) => name.endsWith('.sql'))
   .sort()
@@ -172,12 +176,14 @@ export default defineConfig(({ command }) => ({
     // `vite dev` only: the fake Discord / Google at /__oauth-mock.
     oauthMock(),
     cloudflare(command === 'serve' ? devWorker : {}),
+    // No .dev.vars (local secrets) next to the built Worker.
+    noDevVars(),
     imageHostPreconnect(),
     serviceWorker(),
     startupGraph(),
     // Crawlers: /sitemap.xml and the public pages as static HTML (build/prerender.ts).
-    sitemap(),
-    prerender(),
+    sitemap(siteOrigin),
+    prerender(siteOrigin),
   ],
   // Web Workers are bundled with their own plugins: the export worker builds
   // the raw download, whose inflate.mjs is a `?script` import.
@@ -246,6 +252,7 @@ export default defineConfig(({ command }) => ({
     __INTLIFY_PROD_DEVTOOLS__: false,
     __BUILD__: JSON.stringify(build),
     __MIGRATIONS__: JSON.stringify(migrations),
+    __SITE_ORIGIN__: JSON.stringify(siteOrigin),
   },
   resolve: {
     alias: {

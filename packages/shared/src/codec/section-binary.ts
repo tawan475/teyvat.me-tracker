@@ -1324,10 +1324,11 @@ const comfortPart: TaggedPart = {
 // Capture 1.17.21) the Abyss record book as count, then per period season,
 // floor, chamber, stars, a byte of figure flags (bit i = the i-th of the
 // five figures) and each present figure's value + its character as a KeyRef
-// cell (0: none), then the picks as count + [KeyRef cell, times]. The keys
-// keep the encoder's order (t, r, x, s, a): blobs written before `r` hold
-// `t`/`s` only.
-const ENDGAME_KEYS = ['t', 'r', 'x', 's', 'a'] as const
+// cell (0: none), then the picks as count + [KeyRef cell, times]; `c` (bit 6,
+// Capture 1.17.31) the Lunar Arcana held as count + [card number, copies]
+// (count 0: none held). The keys keep the encoder's order (t, r, x, s, a, c):
+// blobs written before `r` hold `t`/`s` only.
+const ENDGAME_KEYS = ['t', 'r', 'x', 's', 'a', 'c'] as const
 
 const endgamePart: TaggedPart = {
   write(w, value) {
@@ -1340,7 +1341,8 @@ const endgamePart: TaggedPart = {
         (v.r !== undefined ? 4 : 0) |
         (v.x !== undefined ? 8 : 0) |
         (withPlayers ? 16 : 0) |
-        (v.a !== undefined ? 32 : 0),
+        (v.a !== undefined ? 32 : 0) |
+        (v.c !== undefined ? 64 : 0),
     )
     if (v.t !== undefined) for (const n of row(v.t, 4)) w.uint(uint(n))
     if (v.r !== undefined) for (const n of row(v.r, 2)) w.uint(uint(n))
@@ -1431,10 +1433,18 @@ const endgamePart: TaggedPart = {
         }
       }
     }
+    if (v.c !== undefined) {
+      const cards = array(v.c)
+      w.uint(cards.length)
+      for (const card of cards) {
+        const [n, copies] = row(card, 2)
+        w.uint(uint(n)).uint(uint(copies))
+      }
+    }
   },
   read(r) {
     const flags = r.byte()
-    if (flags >= 64) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
+    if (flags >= 128) throw new CorruptDataError(`Unknown endgame flags ${flags}`)
     const section: Record<string, unknown> = {}
     if (flags & 1) section.t = [r.uint(), r.uint(), r.uint(), r.uint()]
     if (flags & 4) section.r = [r.uint(), r.uint()]
@@ -1497,6 +1507,7 @@ const endgamePart: TaggedPart = {
         return [...head, figures, picked]
       })
     }
+    if (flags & 64) section.c = Array.from({ length: checkedCount(r) }, () => [r.uint(), r.uint()])
     return section
   },
 }

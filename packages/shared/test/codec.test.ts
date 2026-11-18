@@ -2430,6 +2430,53 @@ describe("Teyvat.me Capture 1.17.12's gi_endgame", () => {
     expect(decoded.gi_teapot).toBeUndefined()
   })
 
+  it('keeps the Lunar Arcana held with the Theater run (Capture 1.17.31)', async () => {
+    const catalog = new Catalog()
+    const without = await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } }, catalog)
+    const held = { ...endgame.theater, arcana: { '18': 1, '2': 1, '7': 2 } }
+    const { encoded, decoded } = await roundTrip(
+      { ...base, gi_endgame: { theater: held } },
+      catalog,
+    )
+    expect(decoded.gi_endgame).toEqual({
+      theater: { ...endgame.theater, arcana: { '2': 1, '7': 2, '18': 1 } },
+    })
+    expect(encoded.contentHash).not.toBe(without.encoded.contentHash)
+    const e = JSON.parse(encoded.extras!.json).e
+    expect(e.c).toEqual([
+      [2, 1],
+      [7, 2],
+      [18, 1],
+    ])
+    // None held is a value ({}), not an absence.
+    const none = await roundTrip({
+      ...base,
+      gi_endgame: { theater: { ...endgame.theater, arcana: {} } },
+    })
+    expect(none.decoded.gi_endgame).toEqual({ theater: { ...endgame.theater, arcana: {} } })
+    // The binary layout: bit 6, after the other parts; an old blob reads as before.
+    for (const value of [{ e }, { e: { ...e, c: [] } }]) {
+      const blob = encodeSectionBlob('extras', value, false, null)
+      const back = decodeSectionBlob(kindCode('extras', false), blob.data, null, null)
+      expect(JSON.stringify(back.value)).toBe(JSON.stringify(value))
+    }
+    // A bad list is left out; the run stays.
+    const read = (arcana: unknown) =>
+      normalizeGood({ ...base, gi_endgame: { theater: { season: 31, acts: 1, arcana } } }).endgame
+    for (const bad of [
+      { '0': 1 },
+      { '23': 1 },
+      { '01': 1 },
+      { '5': 0 },
+      { '5': 100 },
+      { '5': 1.5 },
+      [1],
+    ]) {
+      expect(read(bad)).toEqual({ theater: { season: 31, acts: 1 } })
+    }
+    expect(read({ '22': 99 })).toEqual({ theater: { season: 31, acts: 1, arcana: { '22': 99 } } })
+  })
+
   it('keeps the star count when the capture has it (appended after v1)', async () => {
     const catalog = new Catalog()
     const without = await roundTrip({ ...base, gi_endgame: { theater: endgame.theater } }, catalog)

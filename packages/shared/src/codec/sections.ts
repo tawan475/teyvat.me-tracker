@@ -1329,6 +1329,8 @@ export interface EndgameSection {
   r?: [stars: number, maxStars: number]
   x?: number[]
   a?: AbyssRecordRow[]
+  /** Capture 1.17.31's Lunar Arcana held: [card number, copies] ascending; [] = none held. */
+  c?: [card: number, copies: number][]
 }
 export type AbyssRecordRow = [
   season: number,
@@ -1430,6 +1432,11 @@ export function encodeEndgame(endgame: GiEndgame): EndgameSection | null {
       ],
     )
   }
+  if (theater?.arcana) {
+    section.c = Object.entries(theater.arcana)
+      .map(([card, copies]): [number, number] => [Number(card), copies])
+      .sort((a, b) => a[0] - b[0])
+  }
   return Object.keys(section).length > 0 ? section : null
 }
 
@@ -1490,6 +1497,9 @@ export function decodeEndgame(section: EndgameSection): GiEndgame {
       ...(section.r ? { stars: section.r[0] } : {}),
       ...(section.r?.[1] ? { maxStars: section.r[1] } : {}),
       ...(section.x ? { starredActs: section.x } : {}),
+      ...(section.c
+        ? { arcana: Object.fromEntries(section.c.map(([card, copies]) => [String(card), copies])) }
+        : {}),
     }
   }
   if (section.s) {

@@ -1486,7 +1486,26 @@ function toTheaterRun(raw: unknown): GiTheaterRun | null {
     ...(raw.stars !== undefined ? { stars: raw.stars } : {}),
     ...(raw.maxStars !== undefined ? { maxStars: raw.maxStars } : {}),
     ...(raw.starredActs !== undefined ? { starredActs: raw.starredActs as number[] } : {}),
+    ...(isArcana(raw.arcana) ? { arcana: { ...raw.arcana } } : {}),
   }
+}
+
+/** The Lunar Arcana: 22 cards, a count each; a bad list is left out (the run stays). */
+const ARCANA_CARDS = 22
+const ARCANA_COPIES = 99
+
+function isArcana(raw: unknown): raw is Record<string, number> {
+  if (!isObject(raw)) return false
+  const entries = Object.entries(raw)
+  return (
+    entries.length <= ARCANA_CARDS &&
+    entries.every(
+      ([card, copies]) =>
+        /^[1-9]\d?$/.test(card) &&
+        Number(card) <= ARCANA_CARDS &&
+        isIntIn(copies, 1, ARCANA_COPIES),
+    )
+  )
 }
 
 /** Acts in order, each one cleared (1..acts), none twice. */

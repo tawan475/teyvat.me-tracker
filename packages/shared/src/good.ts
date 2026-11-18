@@ -465,6 +465,12 @@ export interface GiTheaterRun {
   maxStars?: number
   /** The acts whose star was earned, ascending (Capture 1.17.19+, with `stars`; the extra bouts' stars count in `stars` only). */
   starredActs?: number[]
+  /**
+   * The Lunar Arcana held (Capture 1.17.31+): card number ("1" … "22", the
+   * game's order = game data `arcana` `number`) → copies (1-99). Only held
+   * cards are listed; `{}` = none held; absent = not sent.
+   */
+  arcana?: Record<string, number>
 }
 
 /** One Stygian Onslaught record: a season and a run kind (solo or co-op). */

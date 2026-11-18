@@ -32,6 +32,16 @@ export interface GuestModules {
   }>
   guestFiles(store: GuestStore): Promise<{ lastModified: number }[]>
   guestSummary(store: GuestStore): Promise<{ snapshots: number; pulls: number }>
+  /** local-import.ts: a GOOD file into the store, `folder` for the watched folder's rule. */
+  importLocal(
+    store: GuestStore,
+    upload: { text: string; rawSize: number; timestamp?: unknown; folder?: boolean },
+  ): Promise<{ status: string; snapshotId: number; warnings?: { code: string }[] }>
+  /** local-wishes.ts: wish records into the store, `folder` for the watched folder's rule. */
+  importWishesLocal(
+    store: GuestStore,
+    input: { uid?: string; records: readonly unknown[]; folder?: boolean },
+  ): Promise<{ added: number; known: number }>
 }
 
 const load = (name: string): Promise<Record<string, unknown>> =>
@@ -39,11 +49,20 @@ const load = (name: string): Promise<Record<string, unknown>> =>
 
 /** `convert`: also the conversion (it reaches the app's stores: mock them first). */
 export async function loadGuestModules(convert = false): Promise<GuestModules> {
-  const [backend, store, server, conversion] = await Promise.all([
+  const [backend, store, server, imports, wishes, conversion] = await Promise.all([
     load('backend'),
     load('local-store'),
     load('server'),
+    load('local-import'),
+    load('local-wishes'),
     convert ? load('convert') : Promise.resolve({}),
   ])
-  return { ...backend, ...store, ...server, ...conversion } as unknown as GuestModules
+  return {
+    ...backend,
+    ...store,
+    ...server,
+    ...imports,
+    ...wishes,
+    ...conversion,
+  } as unknown as GuestModules
 }

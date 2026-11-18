@@ -1,6 +1,6 @@
 {
   "section": "Condivisione",
-  "sync": "Cattura",
+  "sync": "Sincronizzazione",
   "title": "Condivisione account",
   "sharedWithMe": "Condivisi con me",
   "sharedBy": "Condiviso da {owner} · {role}",

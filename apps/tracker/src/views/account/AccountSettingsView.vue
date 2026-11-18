@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Link2, Radio, Trash2, TriangleAlert, Users } from 'lucide-vue-next'
 import AccountFields from '@/components/import/AccountFields.vue'
@@ -40,6 +40,8 @@ const accounts = useAccounts()
 const feedback = useFeedback()
 /** Guest mode: the account kept in this browser (sharing and Capture need an account). */
 const guest = useGuest()
+/** Guest mode's watched folder (its code loads only on the guest's page). */
+const FolderCard = defineAsyncComponent(() => import('@/components/guest/FolderCard.vue'))
 
 const travelerOptions = computed(() => [
   {
@@ -148,8 +150,17 @@ async function confirmDelete() {
   deleting.value = true
   try {
     if (guest) {
-      // Everything this browser kept as the guest goes, and nothing else.
-      await api.deleteAccount(id)
+      // Everything this browser kept as the guest goes, and nothing else. The
+      // watched folder goes with the data (it is kept beside it): its reading
+      // stops first, so nothing is written back after the store is cleared.
+      const release = await (await import('@/local/folder-watch')).holdForDelete()
+      try {
+        await api.deleteAccount(id)
+      } catch (error) {
+        release(false)
+        throw error
+      }
+      release(true)
       discardImportQueue(id)
       deleteOpen.value = false
       feedback.toast({ tone: 'success', title: t('guest.deleted'), detail: lost })
@@ -235,6 +246,8 @@ async function confirmDelete() {
       :icon="Radio"
     >
       <template v-if="guest">
+        <!-- The watched folder first, full width, above the locks (design D). -->
+        <FolderCard class="col-span-full" />
         <GuestLock kind="capture" class="min-w-0" />
         <GuestLock kind="devices" class="min-w-0" />
       </template>

@@ -1,6 +1,6 @@
 {
   "section": "공유",
-  "sync": "캡처",
+  "sync": "동기화",
   "title": "계정 공유",
   "sharedWithMe": "나와 공유됨",
   "sharedBy": "{owner} 님이 공유 · {role}",

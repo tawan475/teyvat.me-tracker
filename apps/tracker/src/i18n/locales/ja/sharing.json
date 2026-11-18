@@ -1,6 +1,6 @@
 {
   "section": "共有",
-  "sync": "キャプチャ",
+  "sync": "同期",
   "title": "アカウント共有",
   "sharedWithMe": "共有されたアカウント",
   "sharedBy": "{owner} が共有 · {role}",

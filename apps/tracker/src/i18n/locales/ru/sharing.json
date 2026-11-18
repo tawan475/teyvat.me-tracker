@@ -1,6 +1,6 @@
 {
   "section": "Доступ",
-  "sync": "Захват",
+  "sync": "Синхронизация",
   "title": "Общий доступ",
   "sharedWithMe": "Доступные мне",
   "sharedBy": "Открыл {owner} · {role}",

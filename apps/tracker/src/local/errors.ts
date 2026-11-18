@@ -17,3 +17,14 @@ export class LocalApiError extends Error {
 /** What a guest can't do without an account (a route the server alone answers). */
 export const needsAccount = () =>
   new LocalApiError(403, 'guest_needs_account', 'This needs an account')
+
+/** A watched folder's file of another player (guest mode keeps one Genshin account). */
+export class OtherUidError extends LocalApiError {
+  constructor(
+    readonly uid: string,
+    readonly own: string,
+  ) {
+    super(409, 'guest_other_uid', `This file is UID ${uid}; guest mode keeps UID ${own}`)
+    this.name = 'OtherUidError'
+  }
+}

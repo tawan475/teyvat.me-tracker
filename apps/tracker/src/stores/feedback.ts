@@ -4,12 +4,17 @@ import { errorText } from '@/i18n/api-errors'
 
 export interface Toast {
   id: number
-  tone: 'info' | 'success' | 'danger'
+  /** `pause`: something waits on the user (a watched folder after a reload). */
+  tone: 'info' | 'success' | 'danger' | 'pause'
   title: string
   detail?: string
-  /** Tooltip with the specifics (e.g. which capture, when). */
+  /** Tooltip with the specifics (e.g. which capture, when); a visible line on phones. */
   hint?: string
+  /** The specifics as lines for phones (no hover); the tooltip too when there is no `hint`. */
+  lines?: { text: string; code?: boolean }[]
   action?: { label: string; run: () => void }
+  /** What ✕ means here, when not just Dismiss (e.g. "Not now"). */
+  closeLabel?: string
 }
 
 export interface ConfirmRequest {
@@ -27,6 +32,7 @@ export const useFeedback = defineStore('feedback', () => {
   const confirmation = ref<ConfirmRequest | null>(null)
   let nextId = 1
 
+  /** Shows a toast for `ms` (danger 8 s, else 4.5 s; 0 = until answered); returns its id. */
   function toast(input: Omit<Toast, 'id'>, ms = input.tone === 'danger' ? 8000 : 4500) {
     const id = nextId++
     toasts.value.push({ ...input, id })

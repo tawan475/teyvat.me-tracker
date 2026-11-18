@@ -13,6 +13,7 @@ import { warmDecoder } from '@/data/decode'
 import { loadTraveler } from '@/data/traveler'
 import { preload } from '@/data/use-resource'
 import { loadGameIcons } from '@/lib/assets'
+import { startFolderWatch, stopFolderWatch } from '@/local/folder-watch'
 import { guestAccount, loadGuestAccount } from '@/local/guest-account'
 import { GUEST_ACCOUNT_ID } from '@/local/guest-id'
 import { prefetchRoute, savingData, whenIdle } from '@/router/prefetch'
@@ -34,6 +35,8 @@ async function open() {
   try {
     await loadGuestAccount()
     void loadTraveler(GUEST_ACCOUNT_ID)
+    // The watched folder (Settings › Sync): reads Capture's exports by itself.
+    void startFolderWatch().catch(() => undefined)
   } catch (cause) {
     error.value = cause
   }
@@ -68,7 +71,11 @@ watch(
   },
   { immediate: true },
 )
-onBeforeUnmount(() => cancelIdle?.())
+onBeforeUnmount(() => {
+  cancelIdle?.()
+  // The watched folder is read only while a guest page is open.
+  stopFolderWatch()
+})
 
 /** Time travel: `?at=<snapshot>`, read-only like on an owner's account (use-time-travel.ts). */
 const past = useTimeTravel(() => guestAccount.value)

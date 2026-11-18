@@ -341,6 +341,31 @@ The answer is remembered; it is never asked again.
 `AppShell.vue`, the import dialog, the router, `worker/routes/wish-proxy.ts`,
 locale files.
 
+### Watched folder (issue 12 item 8, design D, 2026-11-18)
+
+Settings › Sync (the section was "Capture") has a **Watch a folder** card
+where the browser has `showDirectoryPicker` (Chrome, Edge; Firefox, Safari
+and phone browsers get a note naming them and keep Import). The handle is
+kept in `gdt-guest` (table `meta`, key `folder`, beside the guest data so a
+folder alone is not data to keep and conversion never sees it). The first
+pick reads every GOOD export and UIGF wish file in the folder, oldest
+first; then page focus and every 60 s while visible read what is new or
+rewritten (name + size + modified time). Files of another UID are refused
+from the folder only (a hand import keeps the `uid_mismatch` warning).
+After a reload the folder is paused until Allow again on the paused toast
+(the only place that asks; Not now asks again next visit). One toast per
+batch, the success one muted by a per-browser switch; Stop keeps the
+folder (Watch again). Snapshots shows a Source strip and a folder glyph on
+rows read from it. Code: `src/local/folder-{plan,state,watch}.ts`,
+`components/guest/Folder*.vue`.
+
+**Later (not built, the user's answer 8 of 2026-11-18): a watched folder
+for a signed-in account.** A watched folder whose new files upload to a
+signed-in account instead of the guest store. Nothing is decided yet: it
+needs its own design (A/B/C/D) first. Points to settle then: where it lives
+in Settings, which account a file goes to, how the upload quotas and rate
+limits show, and how it sits beside Teyvat.me Capture's own uploads.
+
 ---
 
 ## 5. Passkeys (about a week) — BUILT 2026-11-08

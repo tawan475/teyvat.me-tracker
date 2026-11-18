@@ -1,6 +1,6 @@
 {
   "section": "Compartilhamento",
-  "sync": "Captura",
+  "sync": "Sincronização",
   "title": "Compartilhar conta",
   "sharedWithMe": "Compartilhadas comigo",
   "sharedBy": "Compartilhada por {owner} · {role}",

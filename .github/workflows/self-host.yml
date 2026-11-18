@@ -1,22 +1,39 @@
 name: Self-host smoke test
 # Builds the self-host image (self-host/compose.yml) the way a host does, starts
 # it and drives it: settings checks, sign-up, the Owner command, an upload read
-# back, a forged Host, live updates, live sync, every cron, a restart. Only on
-# pushes to main that touch what a self-host runs on. It is not part of
-# deploy.yml: a failure opens (or comments on) one issue labelled `self-host`
-# and never holds up the Cloudflare deploy.
+# back, a forged Host, live updates, live sync, every cron, a restart. It is
+# not part of deploy.yml: a failure opens (or comments on) one issue labelled
+# `self-host` and never holds up the Cloudflare deploy.
 #
 # The image builds from the public game data (tawan475/teyvat.me-game-data at
 # the tag apps/tracker pins), so this needs no secret.
+#
+# HELD BACK: by hand only (Actions > Self-host smoke test > Run workflow)
+# until tawan475/teyvat.me-game-data exists with the tag apps/tracker pins;
+# before that the image cannot build and every run would open the issue.
+# Once it does:
+#   1. switch the push trigger below on (remove the leading `# ` of its lines):
+#      pushes to main that touch what a self-host runs on;
+#   2. set the repository variable SELF_HOST_SMOKE to 1 (Settings > Secrets and
+#      variables > Actions > Variables): game-data-bump.yml then calls this
+#      after a bump it merged (its merge starts no push workflow).
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/tracker/wrangler.jsonc
-      - apps/tracker/migrations/**
-      - apps/tracker/migrations-live/**
-      - self-host/**
-      - pnpm-lock.yaml
+  workflow_dispatch:
+  # game-data-bump.yml, only while the variable SELF_HOST_SMOKE is 1.
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Commit to test (game-data-bump.yml passes its merge commit)'
+        type: string
+        default: ''
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - apps/tracker/wrangler.jsonc
+  #     - apps/tracker/migrations/**
+  #     - apps/tracker/migrations-live/**
+  #     - self-host/**
+  #     - pnpm-lock.yaml
 
 permissions:
   contents: read
@@ -42,6 +59,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # What was pushed or picked, or the commit game-data-bump.yml passes.
+          ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
       - uses: actions/setup-node@v4
@@ -156,7 +175,8 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           step=$(cat "$RUNNER_TEMP/step" 2>/dev/null || echo "setup")
-          body="The self-host smoke test failed at **${step}** on ${GITHUB_SHA::8}: ${RUN_URL}
+          commit=$(git rev-parse --short=8 HEAD 2>/dev/null || echo "${GITHUB_SHA::8}")
+          body="The self-host smoke test failed at **${step}** on ${commit}: ${RUN_URL}
 
           The Cloudflare deploy is not affected (this workflow is separate from deploy.yml)."
           gh label create self-host --repo "$GITHUB_REPOSITORY" --color 5319e7 \

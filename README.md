@@ -80,6 +80,7 @@ To run your own copy (on your PC, for friends or as a community copy), see
 ```bash
 pnpm install                              # needs read access to tawan475/genshin-game-data (see Game data)
 pnpm dev                                  # Vue app + Worker (workerd) on one Vite server
+pnpm --filter @gdt/tracker preview        # the built app (after a build) on workerd; local secrets below
 pnpm test                                 # shared tests (Node) + worker and app helper tests (workerd + local D1)
 pnpm --filter @gdt/tracker db:generate    # after editing worker/db/schema.ts
 pnpm --filter @gdt/tracker db:migrate:local
@@ -90,6 +91,14 @@ pnpm --filter @gdt/tracker cf-typegen     # after editing wrangler.jsonc
 
 Set `GDT_GOOD_SAMPLES_DIR` to a folder of real GOOD exports to also run the
 codec round-trip over them (they are personal data and never committed).
+
+Local secrets live in `apps/tracker/.dev.vars` (copy `.dev.vars.example`;
+git-ignored). `pnpm dev` reads it, and so does `preview`, by itself
+(`build/preview-dev-vars.ts`): a build never copies it into `dist/`
+(`build/no-dev-vars.ts`), because whatever runs `dist/` (wrangler, a
+self-host's container) would read a developer's secrets from there. The
+preview hands the pairs to wrangler through its environment, so its Worker
+also sees the variables of the shell it was started from.
 
 </details>
 
@@ -1172,6 +1181,23 @@ Repository secrets (Settings → Secrets and variables → Actions):
 Settings → Actions → General: "Allow GitHub Actions to create and approve
 pull requests" (the bump workflow opens and merges one). `main` must accept
 those merges (no required reviews).
+
+**Self-host smoke test** (`.github/workflows/self-host.yml`): builds the
+self-host image the way a host does ([self-host/README.md](self-host/README.md))
+and drives it. It is no part of the deploy: a failure opens (or comments on)
+one issue labelled `self-host` and holds nothing up. **Held back for now:** it
+runs by hand only (Actions → Self-host smoke test → Run workflow), because the
+image builds from the public game data, `tawan475/teyvat.me-game-data`, at the
+tag `apps/tracker` pins, and that copy has no tags yet. Once it has:
+
+1. In `self-host.yml`, switch the `push` trigger on (its lines are there,
+   commented out): pushes to `main` that touch `wrangler.jsonc`, the
+   migrations, `self-host/` or the lockfile.
+2. Set the repository variable `SELF_HOST_SMOKE` to `1` (Settings → Secrets and
+   variables → Actions → Variables). `game-data-bump.yml` calls the smoke test
+   after a bump it merged only while that variable is `1` (its merge is made
+   with the workflow's token, which starts no push workflow), beside the
+   deploy, never before it.
 
 By hand, from a checkout:
 

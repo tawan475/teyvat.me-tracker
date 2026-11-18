@@ -6,6 +6,11 @@ name: Game data bump
 # branch, runs the tests, type check and build, opens a pull request and
 # merges it when they pass; then deploy.yml deploys the merge. A failing
 # check leaves the pull request open (label `needs-human`) for a human.
+#
+# The merge is made with the workflow's token, which starts no push workflow,
+# so this calls deploy.yml itself, and the self-host smoke test (self-host.yml)
+# beside it while the repository variable SELF_HOST_SMOKE is 1 (held back until
+# the public game data exists; self-host.yml says when to set it).
 on:
   repository_dispatch:
     types: [game-data-release]
@@ -153,3 +158,16 @@ jobs:
     with:
       ref: ${{ needs.bump.outputs.sha }}
     secrets: inherit
+
+  # A self-host's image builds from this bump's lockfile. Beside the deploy,
+  # never before it: a failure opens the `self-host` issue and holds nothing up
+  # (the run shows red). Off unless the repository variable SELF_HOST_SMOKE is 1.
+  self-host:
+    needs: bump
+    if: needs.bump.outputs.merged == 'true' && vars.SELF_HOST_SMOKE == '1'
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/self-host.yml
+    with:
+      ref: ${{ needs.bump.outputs.sha }}

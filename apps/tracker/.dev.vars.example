@@ -1,4 +1,4 @@
-# Local secrets for `pnpm dev` (copy to .dev.vars; any 32+ random characters).
+# Local secrets for `pnpm dev` and `preview` (copy to .dev.vars; any 32+ random characters).
 JWT_SECRET=
 PASSWORD_PEPPER=
 DIAG_KEY=

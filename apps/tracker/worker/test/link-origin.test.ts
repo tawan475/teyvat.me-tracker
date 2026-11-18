@@ -9,6 +9,7 @@ import {
   verifyEmailMail,
 } from '../lib/email'
 import { configuredOrigin, ownOrigin, siteName } from '../lib/site'
+import { relyingParty } from '../lib/webauthn'
 
 const env = {} as Env
 
@@ -85,5 +86,15 @@ describe('siteName', () => {
     const prod = passwordChangedMail('a@example.com', SITE_ORIGIN, 'player01')
     expect(prod.text).toContain('player01 on Teyvat.me was just changed')
     expect(prod.text.endsWith('— Teyvat.me')).toBe(true)
+  })
+
+  it("is not the passkey's name: a self-host's passkeys still say Teyvat.me", () => {
+    const ours = { SITE_URL: 'https://tracker.example', SITE_NAME: 'Our Tracker' }
+    expect(relyingParty(ours, 'https://tracker.example/api/x')).toEqual({
+      id: 'tracker.example',
+      origin: 'https://tracker.example',
+      name: 'Teyvat.me',
+    })
+    expect(relyingParty({}, 'https://teyvat.me/api/x')?.name).toBe('Teyvat.me')
   })
 })

@@ -33,8 +33,9 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    # https://, or http://localhost on your own PC (plain http anywhere else
    # can't keep anyone signed in).
    SITE_URL=https://tracker.example
-   # The site's name in browser tab titles and on the sign-in page.
-   # Empty: Teyvat.me.
+   # The site's name in browser tab titles and in "Sign in to <name>".
+   # Empty: Teyvat.me. (Everything else keeps saying Teyvat.me: see
+   # "Your name and address" below.)
    SITE_NAME=
    # Two different random values of 32 characters or more, e.g. from
    #   openssl rand -hex 32
@@ -140,6 +141,15 @@ from `SITE_URL`.
   ```
 
   (`docker volume ls` shows the volume's name; it starts with the folder's name.)
+- **Your name and address:** `SITE_NAME` shows in browser tab titles
+  ("Planner · Our Tracker") and in "Sign in to Our Tracker" on the sign-in
+  page (and in mails, if email is ever on), nowhere else. The landing page,
+  the footer, the wordmark at the top left, the sign-up line, the name
+  passkeys are saved under and the installed app's name keep Teyvat.me. The
+  pictures people export (build, team, roster, banner, Abyss, Theater,
+  Stygian and Lunar Arcana cards) carry `SITE_URL`'s host, for example
+  `tracker.example`, where teyvat.me's carry `teyvat.me`. Both are fixed
+  when the image is built: change `.env`, then `docker compose up -d --build`.
 - **Capture against your copy:** in Teyvat.me Capture, under Advanced, set
   the tracker address to `SITE_URL` followed by `/api` (for example
   `https://tracker.example/api`), then sign in as usual. Supported for

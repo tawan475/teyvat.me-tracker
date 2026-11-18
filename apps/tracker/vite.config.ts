@@ -12,6 +12,7 @@ import { GI_CDN_HOST, IMAGE_HOST } from '@gdt/game-data/image-url'
 import { prerender, sitemap } from './build/prerender.ts'
 import { scriptBundle } from './build/script-bundle.ts'
 import { noDevVars } from './build/no-dev-vars.ts'
+import { previewDevVars } from './build/preview-dev-vars.ts'
 import { buildSiteName, buildSiteOrigin } from './build/site-origin.ts'
 import { oauthMock } from './dev/oauth-mock.ts'
 import pkg from './package.json' with { type: 'json' }
@@ -178,8 +179,10 @@ export default defineConfig(({ command }) => ({
     // `vite dev` only: the fake Discord / Google at /__oauth-mock.
     oauthMock(),
     cloudflare(command === 'serve' ? devWorker : {}),
-    // No .dev.vars (local secrets) next to the built Worker.
+    // No .dev.vars (local secrets) next to the built Worker; `vite preview`
+    // reads apps/tracker/.dev.vars itself.
     noDevVars(),
+    previewDevVars(fileURLToPath(new URL('./.dev.vars', import.meta.url))),
     imageHostPreconnect(),
     serviceWorker(),
     startupGraph(),

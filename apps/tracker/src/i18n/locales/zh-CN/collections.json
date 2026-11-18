@@ -43,6 +43,7 @@
     "handbook": "冒险之证",
     "livingBeings": "生物志",
     "localLegends": "地方传奇",
+    "lunarArcana": "月谕圣牌",
     "tcg": "七圣召唤",
     "recipes": "食谱",
     "wardrobe": "衣橱",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "名称或称号",
     "member": "对战的敌人",
     "memberN": "敌人{n}"
+  },
+  "arcana": {
+    "held": "持有",
+    "heldHint": "最新记录中持有的不同月谕圣牌",
+    "spare": "多余",
+    "spareHint": "每张牌第一张之外的数量",
+    "spareN": "多余 {n}",
+    "spareNote": "多余 {n} 张：第一张之外的数量",
+    "obtainOne": "获得一张",
+    "holdN": "持有 {n} 张",
+    "show": "显示",
+    "filters": {
+      "all": "全部",
+      "held": "持有",
+      "missing": "未拥有",
+      "spare": "多余"
+    },
+    "stateHeld": "持有",
+    "stateHeldN": "持有 ×{n}",
+    "stateMissing": "未拥有",
+    "needsCapture": "持有的牌来自 Teyvat.me Capture 1.17.31 或更新版本",
+    "noData": "游戏数据中还没有月谕圣牌",
+    "noneShown": "这里没有内容",
+    "layout": "卡片形状",
+    "layoutWide": "横版",
+    "layoutTall": "竖版"
   },
   "archive": {
     "pick": "图鉴分类",

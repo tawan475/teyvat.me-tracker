@@ -43,6 +43,7 @@
     "handbook": "Manuale dell'avventuriere",
     "livingBeings": "Esseri viventi",
     "localLegends": "Leggende locali",
+    "lunarArcana": "Arcani lunari",
     "tcg": "GCC Invokazione del genio",
     "recipes": "Ricette",
     "wardrobe": "Guardaroba",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Nome o titolo",
     "member": "Nemico affrontato",
     "memberN": "Nemico {n}"
+  },
+  "arcana": {
+    "held": "Posseduti",
+    "heldHint": "Arcani lunari diversi posseduti, nella cattura più recente",
+    "spare": "Doppioni",
+    "spareHint": "Copie oltre la prima di ogni carta",
+    "spareN": "Doppioni: {n}",
+    "spareNote": "{n} doppione/i: copie oltre la prima",
+    "obtainOne": "Ottenerne uno",
+    "holdN": "Possederne {n}",
+    "show": "Mostra",
+    "filters": {
+      "all": "Tutti",
+      "held": "Posseduti",
+      "missing": "Mancanti",
+      "spare": "Doppioni"
+    },
+    "stateHeld": "Posseduto",
+    "stateHeldN": "Posseduto ×{n}",
+    "stateMissing": "Mancante",
+    "needsCapture": "Le carte possedute arrivano da Teyvat.me Capture 1.17.31 o successivo",
+    "noData": "Ancora nessun Arcano lunare nei dati di gioco",
+    "noneShown": "Niente qui",
+    "layout": "Formato della scheda",
+    "layoutWide": "Orizzontale",
+    "layoutTall": "Verticale"
   },
   "archive": {
     "pick": "Scheda dell'Archivio",

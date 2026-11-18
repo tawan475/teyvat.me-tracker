@@ -43,6 +43,7 @@
     "handbook": "Bằng Chứng Mạo Hiểm",
     "livingBeings": "Sách Sinh Vật",
     "localLegends": "Huyền Thoại Địa Phương",
+    "lunarArcana": "Thánh Bài Ánh Trăng",
     "tcg": "Thất Thánh Triệu Hồi",
     "recipes": "Công Thức",
     "wardrobe": "Tủ Đồ",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Tên hoặc danh hiệu",
     "member": "Kẻ địch",
     "memberN": "Kẻ địch {n}"
+  },
+  "arcana": {
+    "held": "Đang có",
+    "heldHint": "Số Thánh Bài Ánh Trăng khác nhau đang có, theo lần ghi mới nhất",
+    "spare": "Dư",
+    "spareHint": "Số bản thừa ngoài bản đầu tiên của mỗi lá",
+    "spareN": "Dư {n}",
+    "spareNote": "Dư {n}: các bản ngoài bản đầu tiên",
+    "obtainOne": "Nhận một lá",
+    "holdN": "Có {n} lá",
+    "show": "Hiển thị",
+    "filters": {
+      "all": "Tất cả",
+      "held": "Đang có",
+      "missing": "Chưa có",
+      "spare": "Dư"
+    },
+    "stateHeld": "Đang có",
+    "stateHeldN": "Đang có ×{n}",
+    "stateMissing": "Chưa có",
+    "needsCapture": "Các lá đang có lấy từ Teyvat.me Capture 1.17.31 trở lên",
+    "noData": "Dữ liệu game chưa có Thánh Bài Ánh Trăng",
+    "noneShown": "Không có gì",
+    "layout": "Kiểu thẻ",
+    "layoutWide": "Ngang",
+    "layoutTall": "Dọc"
   },
   "archive": {
     "pick": "Mục Thư Viện",

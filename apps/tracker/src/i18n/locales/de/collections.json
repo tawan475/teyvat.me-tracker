@@ -43,6 +43,7 @@
     "handbook": "Abenteurerlizenz",
     "livingBeings": "Lebewesen",
     "localLegends": "Lokallegenden",
+    "lunarArcana": "Mondorakelkarten",
     "tcg": "Geniale Beschwörung",
     "recipes": "Rezepte",
     "wardrobe": "Garderobe",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Name oder Titel",
     "member": "Gegner",
     "memberN": "Gegner {n}"
+  },
+  "arcana": {
+    "held": "Im Besitz",
+    "heldHint": "Verschiedene Mondorakelkarten im Besitz, laut der neuesten Aufnahme",
+    "spare": "Übrig",
+    "spareHint": "Exemplare über das erste jeder Karte hinaus",
+    "spareN": "Übrig: {n}",
+    "spareNote": "{n} übrig: über das erste Exemplar hinaus",
+    "obtainOne": "Eine erhalten",
+    "holdN": "{n} besitzen",
+    "show": "Anzeigen",
+    "filters": {
+      "all": "Alle",
+      "held": "Im Besitz",
+      "missing": "Fehlend",
+      "spare": "Übrig"
+    },
+    "stateHeld": "Im Besitz",
+    "stateHeldN": "Im Besitz ×{n}",
+    "stateMissing": "Fehlend",
+    "needsCapture": "Karten im Besitz kommen von Teyvat.me Capture 1.17.31 oder neuer",
+    "noData": "Noch keine Mondorakelkarten in den Spieldaten",
+    "noneShown": "Nichts hier",
+    "layout": "Kartenformat",
+    "layoutWide": "Quer",
+    "layoutTall": "Hoch"
   },
   "archive": {
     "pick": "Handbuch-Reiter",

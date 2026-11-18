@@ -48,6 +48,11 @@ export interface CapturedEndgame {
   theater: ReadonlyMap<number, CapturedTheater>
   /** By LeyLineChallenge schedule id. */
   stygian: ReadonlyMap<number, CapturedStygian>
+  /**
+   * The Lunar Arcana held (card number → copies) at the newest capture that
+   * sent them (Capture 1.17.31); null before one did.
+   */
+  arcana: { held: Readonly<Record<string, number>>; takenAt: number } | null
   /** When the newest capture with any endgame data was taken; null without one. */
   takenAt: number | null
 }
@@ -57,6 +62,7 @@ export const NO_CAPTURED_ENDGAME: CapturedEndgame = {
   abyssBook: new Map(),
   theater: new Map(),
   stygian: new Map(),
+  arcana: null,
   takenAt: null,
 }
 
@@ -73,6 +79,7 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
   const abyssBook = new Map<number, CapturedAbyssRecord>()
   const theater = new Map<number, CapturedTheater>()
   const stygian = new Map<number, CapturedStygian>()
+  let arcana: CapturedEndgame['arcana'] = null
   let takenAt: number | null = null
   // Oldest first, so a later capture replaces an earlier one's season.
   for (const s of [...snapshots].sort((a, b) => a.takenAt - b.takenAt)) {
@@ -84,6 +91,7 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
     if (!e) continue
     takenAt = s.takenAt
     if (e.theater) theater.set(e.theater.season, { run: e.theater, takenAt: s.takenAt })
+    if (e.theater?.arcana) arcana = { held: e.theater.arcana, takenAt: s.takenAt }
     if (e.abyss) {
       for (const record of e.abyss.periods) {
         abyssBook.set(record.season, { record, takenAt: s.takenAt })
@@ -101,7 +109,9 @@ export function capturedEndgame(snapshots: readonly EndgameSnapshot[]): Captured
       }
     }
   }
-  return takenAt === null ? NO_CAPTURED_ENDGAME : { abyss, abyssBook, theater, stygian, takenAt }
+  return takenAt === null
+    ? NO_CAPTURED_ENDGAME
+    : { abyss, abyssBook, theater, stygian, arcana, takenAt }
 }
 
 /** A fight's seconds as the game's record shows them: bare seconds with the unit, "51s" (the language's unit elsewhere). */

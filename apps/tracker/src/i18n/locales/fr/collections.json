@@ -43,6 +43,7 @@
     "handbook": "Guide de l'aventurier",
     "livingBeings": "Bestiaire",
     "localLegends": "Légendes locales",
+    "lunarArcana": "Arcanums lunaires",
     "tcg": "Invocation des Sept : JCC",
     "recipes": "Recettes",
     "wardrobe": "Armoire",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Nom ou titre",
     "member": "Ennemi affronté",
     "memberN": "Ennemi {n}"
+  },
+  "arcana": {
+    "held": "Possédés",
+    "heldHint": "Arcanums lunaires différents possédés, dans la capture la plus récente",
+    "spare": "En double",
+    "spareHint": "Exemplaires au-delà du premier de chaque carte",
+    "spareN": "En double : {n}",
+    "spareNote": "{n} en double : au-delà du premier exemplaire",
+    "obtainOne": "En obtenir un",
+    "holdN": "En posséder {n}",
+    "show": "Afficher",
+    "filters": {
+      "all": "Tous",
+      "held": "Possédés",
+      "missing": "Manquants",
+      "spare": "En double"
+    },
+    "stateHeld": "Possédé",
+    "stateHeldN": "Possédé ×{n}",
+    "stateMissing": "Manquant",
+    "needsCapture": "Les cartes possédées viennent de Teyvat.me Capture 1.17.31 ou plus récent",
+    "noData": "Pas encore d'arcanums lunaires dans les données du jeu",
+    "noneShown": "Rien ici",
+    "layout": "Format de la carte",
+    "layoutWide": "Paysage",
+    "layoutTall": "Portrait"
   },
   "archive": {
     "pick": "Onglet des Archives",

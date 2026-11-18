@@ -43,6 +43,7 @@
     "handbook": "Licença de Aventura",
     "livingBeings": "Seres Vivos",
     "localLegends": "Lendas Locais",
+    "lunarArcana": "Arcanos Lunares",
     "tcg": "Chamado Sagrado dos Sete",
     "recipes": "Receitas",
     "wardrobe": "Guarda-roupa",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Nome ou título",
     "member": "Inimigo enfrentado",
     "memberN": "Inimigo {n}"
+  },
+  "arcana": {
+    "held": "Possuídos",
+    "heldHint": "Arcanos Lunares diferentes possuídos, na captura mais recente",
+    "spare": "Repetidos",
+    "spareHint": "Cópias além da primeira de cada carta",
+    "spareN": "Repetidos: {n}",
+    "spareNote": "{n} repetido(s): cópias além da primeira",
+    "obtainOne": "Obter um",
+    "holdN": "Possuir {n}",
+    "show": "Mostrar",
+    "filters": {
+      "all": "Todos",
+      "held": "Possuídos",
+      "missing": "Não possuídos",
+      "spare": "Repetidos"
+    },
+    "stateHeld": "Possuído",
+    "stateHeldN": "Possuído ×{n}",
+    "stateMissing": "Não possuído",
+    "needsCapture": "As cartas possuídas vêm do Teyvat.me Capture 1.17.31 ou mais recente",
+    "noData": "Ainda não há Arcanos Lunares nos dados do jogo",
+    "noneShown": "Nada aqui",
+    "layout": "Formato do cartão",
+    "layoutWide": "Horizontal",
+    "layoutTall": "Vertical"
   },
   "archive": {
     "pick": "Aba do Arquivo",

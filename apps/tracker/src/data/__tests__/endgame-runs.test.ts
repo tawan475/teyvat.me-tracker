@@ -48,6 +48,19 @@ describe('capturedEndgame', () => {
     expect(got.stygian.size).toBe(0)
   })
 
+  it('keeps the Lunar Arcana from the newest capture that sent them', () => {
+    const got = capturedEndgame([
+      { takenAt: 30, endgame: { theater: { season: 31, acts: 0 } } },
+      { takenAt: 10, endgame: { theater: { season: 30, acts: 0, arcana: { '1': 1 } } } },
+      { takenAt: 20, endgame: { theater: { season: 30, acts: 2, arcana: { '1': 1, '7': 2 } } } },
+    ])
+    // The newest capture (30) came from a build without arcana: the last list stands.
+    expect(got.arcana).toEqual({ held: { '1': 1, '7': 2 }, takenAt: 20 })
+    expect(
+      capturedEndgame([{ takenAt: 1, endgame: { theater: { season: 1, acts: 0 } } }]).arcana,
+    ).toBe(null)
+  })
+
   it('groups the Stygian records by season from the newest capture that lists the season', () => {
     const got = capturedEndgame([
       {

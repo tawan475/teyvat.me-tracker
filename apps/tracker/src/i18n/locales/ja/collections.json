@@ -43,6 +43,7 @@
     "handbook": "冒険の証",
     "livingBeings": "生物誌",
     "localLegends": "地方伝説",
+    "lunarArcana": "月諭のアルカナ",
     "tcg": "七聖召喚",
     "recipes": "レシピ",
     "wardrobe": "クローゼット",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "名前または称号",
     "member": "戦う敵",
     "memberN": "敵{n}"
+  },
+  "arcana": {
+    "held": "所持",
+    "heldHint": "最新の記録で所持している月諭のアルカナの種類数",
+    "spare": "余り",
+    "spareHint": "各カードの2枚目以降の枚数",
+    "spareN": "余り {n}",
+    "spareNote": "余り {n} 枚：2枚目以降",
+    "obtainOne": "1枚入手",
+    "holdN": "{n}種類所持",
+    "show": "表示",
+    "filters": {
+      "all": "すべて",
+      "held": "所持",
+      "missing": "未所持",
+      "spare": "余り"
+    },
+    "stateHeld": "所持",
+    "stateHeldN": "所持 ×{n}",
+    "stateMissing": "未所持",
+    "needsCapture": "所持カードは Teyvat.me Capture 1.17.31 以降で記録されます",
+    "noData": "ゲームデータにまだ月諭のアルカナがありません",
+    "noneShown": "該当なし",
+    "layout": "カードの形",
+    "layoutWide": "横長",
+    "layoutTall": "縦長"
   },
   "archive": {
     "pick": "図鑑のタブ",

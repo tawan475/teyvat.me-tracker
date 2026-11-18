@@ -43,6 +43,7 @@
     "handbook": "Adventurer Handbook",
     "livingBeings": "Living Beings",
     "localLegends": "Local Legends",
+    "lunarArcana": "Lunar Arcana",
     "tcg": "Genius Invokation TCG",
     "recipes": "Recipes",
     "wardrobe": "Wardrobe",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Name or title",
     "member": "Enemy fought",
     "memberN": "Enemy {n}"
+  },
+  "arcana": {
+    "held": "Held",
+    "heldHint": "Different Lunar Arcana held, in the newest capture",
+    "spare": "Spare",
+    "spareHint": "Copies beyond the first of each card",
+    "spareN": "Spare {n}",
+    "spareNote": "{n} spare: a copy beyond the first",
+    "obtainOne": "Obtain one",
+    "holdN": "Hold {n}",
+    "show": "Show",
+    "filters": {
+      "all": "All",
+      "held": "Held",
+      "missing": "Missing",
+      "spare": "Spare"
+    },
+    "stateHeld": "Held",
+    "stateHeldN": "Held ×{n}",
+    "stateMissing": "Missing",
+    "needsCapture": "Held cards come from Teyvat.me Capture 1.17.31 or newer",
+    "noData": "No Lunar Arcana in the game data yet",
+    "noneShown": "None here",
+    "layout": "Card shape",
+    "layoutWide": "Wide",
+    "layoutTall": "Tall"
   },
   "archive": {
     "pick": "Archive tab",

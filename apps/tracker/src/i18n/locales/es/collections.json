@@ -43,6 +43,7 @@
     "handbook": "Manual del aventurero",
     "livingBeings": "Seres vivos",
     "localLegends": "Leyendas locales",
+    "lunarArcana": "Arcanos lunares",
     "tcg": "Invocación de los Sabios",
     "recipes": "Recetas",
     "wardrobe": "Armario",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Nombre o título",
     "member": "Enemigo",
     "memberN": "Enemigo {n}"
+  },
+  "arcana": {
+    "held": "En posesión",
+    "heldHint": "Arcanos lunares distintos en posesión, en la captura más reciente",
+    "spare": "Repetidos",
+    "spareHint": "Copias además de la primera de cada carta",
+    "spareN": "Repetidos: {n}",
+    "spareNote": "{n} repetido(s): copias además de la primera",
+    "obtainOne": "Obtener uno",
+    "holdN": "Tener {n}",
+    "show": "Mostrar",
+    "filters": {
+      "all": "Todos",
+      "held": "En posesión",
+      "missing": "Sin obtener",
+      "spare": "Repetidos"
+    },
+    "stateHeld": "En posesión",
+    "stateHeldN": "En posesión ×{n}",
+    "stateMissing": "Sin obtener",
+    "needsCapture": "Las cartas en posesión llegan con Teyvat.me Capture 1.17.31 o posterior",
+    "noData": "Aún no hay Arcanos lunares en los datos del juego",
+    "noneShown": "Nada por aquí",
+    "layout": "Formato de la tarjeta",
+    "layoutWide": "Horizontal",
+    "layoutTall": "Vertical"
   },
   "archive": {
     "pick": "Pestaña del Archivo",

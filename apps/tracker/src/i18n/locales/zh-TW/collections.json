@@ -43,6 +43,7 @@
     "handbook": "冒險之證",
     "livingBeings": "生物誌",
     "localLegends": "地方傳奇",
+    "lunarArcana": "月諭聖牌",
     "tcg": "七聖召喚",
     "recipes": "食譜",
     "wardrobe": "衣櫥",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "名稱或稱號",
     "member": "對戰的敵人",
     "memberN": "敵人{n}"
+  },
+  "arcana": {
+    "held": "持有",
+    "heldHint": "最新記錄中持有的不同月諭聖牌",
+    "spare": "多餘",
+    "spareHint": "每張牌第一張之外的數量",
+    "spareN": "多餘 {n}",
+    "spareNote": "多餘 {n} 張：第一張之外的數量",
+    "obtainOne": "獲得一張",
+    "holdN": "持有 {n} 張",
+    "show": "顯示",
+    "filters": {
+      "all": "全部",
+      "held": "持有",
+      "missing": "未擁有",
+      "spare": "多餘"
+    },
+    "stateHeld": "持有",
+    "stateHeldN": "持有 ×{n}",
+    "stateMissing": "未擁有",
+    "needsCapture": "持有的牌來自 Teyvat.me Capture 1.17.31 或更新版本",
+    "noData": "遊戲資料中還沒有月諭聖牌",
+    "noneShown": "這裡沒有內容",
+    "layout": "卡片形狀",
+    "layoutWide": "橫版",
+    "layoutTall": "直版"
   },
   "archive": {
     "pick": "圖鑑分類",

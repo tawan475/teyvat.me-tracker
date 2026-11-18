@@ -43,6 +43,7 @@
     "handbook": "모험 핸드북",
     "livingBeings": "생물지",
     "localLegends": "지방 전설",
+    "lunarArcana": "달 계시 카드",
     "tcg": "일곱 성인의 소환",
     "recipes": "레시피",
     "wardrobe": "옷장",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "이름 또는 칭호",
     "member": "상대하는 적",
     "memberN": "적 {n}"
+  },
+  "arcana": {
+    "held": "보유",
+    "heldHint": "최신 기록에서 보유한 달 계시 카드 종류 수",
+    "spare": "여분",
+    "spareHint": "각 카드의 첫 장 이후 수량",
+    "spareN": "여분 {n}",
+    "spareNote": "여분 {n}장: 첫 장 이후 수량",
+    "obtainOne": "1장 획득",
+    "holdN": "{n}종 보유",
+    "show": "표시",
+    "filters": {
+      "all": "전체",
+      "held": "보유",
+      "missing": "미보유",
+      "spare": "여분"
+    },
+    "stateHeld": "보유",
+    "stateHeldN": "보유 ×{n}",
+    "stateMissing": "미보유",
+    "needsCapture": "보유 카드는 Teyvat.me Capture 1.17.31 이상에서 기록됩니다",
+    "noData": "게임 데이터에 아직 달 계시 카드가 없습니다",
+    "noneShown": "해당 없음",
+    "layout": "카드 모양",
+    "layoutWide": "가로",
+    "layoutTall": "세로"
   },
   "archive": {
     "pick": "도감 탭",

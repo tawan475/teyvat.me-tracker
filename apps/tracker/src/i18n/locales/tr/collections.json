@@ -43,6 +43,7 @@
     "handbook": "Maceracının El Kitabı",
     "livingBeings": "Canlılar",
     "localLegends": "Yerel Efsaneler",
+    "lunarArcana": "Ay Arkanaları",
     "tcg": "Dehanın Yakarışı Kart Oyunu",
     "recipes": "Tarifler",
     "wardrobe": "Giysi Dolabı",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Ad veya unvan",
     "member": "Karşılaşılan düşman",
     "memberN": "Düşman {n}"
+  },
+  "arcana": {
+    "held": "Sahip olunan",
+    "heldHint": "En yeni kayıtta sahip olunan farklı Ay Arkanaları",
+    "spare": "Fazla",
+    "spareHint": "Her kartın ilkinden sonraki kopyaları",
+    "spareN": "Fazla {n}",
+    "spareNote": "{n} fazla: ilkinden sonraki kopyalar",
+    "obtainOne": "Bir tane edin",
+    "holdN": "{n} tanesine sahip ol",
+    "show": "Göster",
+    "filters": {
+      "all": "Tümü",
+      "held": "Sahip olunan",
+      "missing": "Eksik",
+      "spare": "Fazla"
+    },
+    "stateHeld": "Sahip olunan",
+    "stateHeldN": "Sahip olunan ×{n}",
+    "stateMissing": "Eksik",
+    "needsCapture": "Sahip olunan kartlar Teyvat.me Capture 1.17.31 veya daha yenisinden gelir",
+    "noData": "Oyun verilerinde henüz Ay Arkanası yok",
+    "noneShown": "Burada bir şey yok",
+    "layout": "Kart biçimi",
+    "layoutWide": "Yatay",
+    "layoutTall": "Dikey"
   },
   "archive": {
     "pick": "Arşiv sekmesi",

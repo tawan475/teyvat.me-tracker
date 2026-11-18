@@ -9,6 +9,7 @@ import {
   HeartHandshake,
   Layers,
   Map as MapIcon,
+  Moon,
   Music,
   PawPrint,
   Shirt,
@@ -30,6 +31,7 @@ export const COLLECTION_TABS = [
   'handbook',
   'living-beings',
   'local-legends',
+  'lunar-arcana',
   'tcg',
   'recipes',
   'crafting',
@@ -54,6 +56,7 @@ export const TAB_LABEL = {
   handbook: 'handbook',
   'living-beings': 'livingBeings',
   'local-legends': 'localLegends',
+  'lunar-arcana': 'lunarArcana',
   tcg: 'tcg',
   recipes: 'recipes',
   crafting: 'crafting',
@@ -78,6 +81,7 @@ export const TAB_PART: Readonly<Record<CollectionTab, keyof CapturedCollections 
   handbook: 'handbook',
   'living-beings': 'defeats',
   'local-legends': null,
+  'lunar-arcana': null,
   tcg: 'tcg',
   recipes: 'recipes',
   crafting: 'crafting',
@@ -114,6 +118,7 @@ export const TAB_COMPONENTS: Readonly<Record<CollectionTab, Component>> = {
   handbook: defineAsyncComponent(() => import('./HandbookTab.vue')),
   'living-beings': defineAsyncComponent(() => import('./LivingBeingsTab.vue')),
   'local-legends': defineAsyncComponent(() => import('./LocalLegendsTab.vue')),
+  'lunar-arcana': defineAsyncComponent(() => import('./LunarArcanaTab.vue')),
   tcg: defineAsyncComponent(() => import('./TcgTab.vue')),
   recipes: defineAsyncComponent(() => import('./RecipesTab.vue')),
   crafting: defineAsyncComponent(() => import('./CraftingTab.vue')),
@@ -134,6 +139,7 @@ export const TAB_ICON: Readonly<Record<CollectionTab, Component>> = {
   handbook: BookMarked,
   'living-beings': PawPrint,
   'local-legends': Swords,
+  'lunar-arcana': Moon,
   tcg: Layers,
   recipes: CookingPot,
   crafting: Hammer,
@@ -171,6 +177,13 @@ export const TAB_ART: Readonly<Record<CollectionTab, CardArt>> = {
   'living-beings': { name: 'UI_ItemIcon_112007' },
   // Liam, the Fontaine Treasure Hoarder who stands for Local Legends (the user's pick).
   'local-legends': { name: 'UI_MonsterIcon_Male_Standard_Rocky_001' },
+  // The Lovers, VI: the card the game's Lunar Mode opens with in its art.
+  'lunar-arcana': {
+    name: 'UI_RoleCombat_Tarot_06',
+    cdn: true,
+    tall: { ratio: 373 / 958, height: 1.5, radius: 4 },
+    rotate: 10,
+  },
   tcg: {
     name: 'UI_Gcg_CardBack_00',
     cdn: true,
@@ -205,6 +218,8 @@ export const TAB_TOPICS: Readonly<Record<CollectionTab, readonly CollectionTopic
   'living-beings': [],
   // Its own enemy data and achievements; the region names come from `world`.
   'local-legends': [],
+  // The endgame data (the cards, their text) and the captured endgame.
+  'lunar-arcana': [],
   tcg: ['tcg'],
   recipes: ['recipes'],
   crafting: ['crafting'],

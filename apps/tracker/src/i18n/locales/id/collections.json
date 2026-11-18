@@ -43,6 +43,7 @@
     "handbook": "Panduan Petualang",
     "livingBeings": "Makhluk Hidup",
     "localLegends": "Legenda Lokal",
+    "lunarArcana": "Lunar Arcana",
     "tcg": "Genius Invokation TCG",
     "recipes": "Resep",
     "wardrobe": "Lemari",
@@ -62,6 +63,32 @@
     "searchPlaceholder": "Nama atau gelar",
     "member": "Musuh yang dilawan",
     "memberN": "Musuh {n}"
+  },
+  "arcana": {
+    "held": "Dimiliki",
+    "heldHint": "Lunar Arcana berbeda yang dimiliki, di tangkapan terbaru",
+    "spare": "Cadangan",
+    "spareHint": "Salinan selain yang pertama dari tiap kartu",
+    "spareN": "Cadangan {n}",
+    "spareNote": "{n} cadangan: salinan selain yang pertama",
+    "obtainOne": "Dapatkan satu",
+    "holdN": "Miliki {n}",
+    "show": "Tampilkan",
+    "filters": {
+      "all": "Semua",
+      "held": "Dimiliki",
+      "missing": "Belum Dimiliki",
+      "spare": "Cadangan"
+    },
+    "stateHeld": "Dimiliki",
+    "stateHeldN": "Dimiliki ×{n}",
+    "stateMissing": "Belum Dimiliki",
+    "needsCapture": "Kartu yang dimiliki berasal dari Teyvat.me Capture 1.17.31 atau lebih baru",
+    "noData": "Belum ada Lunar Arcana di data game",
+    "noneShown": "Tidak ada apa pun di sini",
+    "layout": "Bentuk kartu",
+    "layoutWide": "Lebar",
+    "layoutTall": "Tinggi"
   },
   "archive": {
     "pick": "Tab Arsip",

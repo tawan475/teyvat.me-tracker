@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Trash2 } from 'lucide-vue-next'
+import { ArrowRight, Trash2 } from 'lucide-vue-next'
 import DeleteUserDialog from '@/components/staff/DeleteUserDialog.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { t } from '@/i18n'
@@ -53,6 +53,11 @@ async function remove(username: string) {
       <div class="min-w-0">
         <h2 class="text-base font-semibold">{{ $t('settings.deleteUser.title') }}</h2>
         <p class="text-sm text-text-muted">{{ $t('settings.deleteUser.body') }}</p>
+        <RouterLink
+          :to="{ name: 'privacy' }"
+          class="mt-1 inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
+          >{{ $t('settings.deleteUser.privacy') }}<ArrowRight class="size-4" aria-hidden="true"
+        /></RouterLink>
       </div>
       <UiButton variant="danger" @click="open = true">
         <Trash2 class="size-4" aria-hidden="true" />

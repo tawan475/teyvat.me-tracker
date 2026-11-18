@@ -12,7 +12,7 @@ import SettingsSection from '@/components/settings/SettingsSection.vue'
 import SupportPanel from '@/components/settings/SupportPanel.vue'
 import UserImportKeyPanel from '@/components/settings/UserImportKeyPanel.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
-import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
+import { AppWindow, ArrowRight, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -26,6 +26,13 @@ import { AppWindow, Palette, Shield, TriangleAlert } from 'lucide-vue-next'
       :description="$t('settings.sections.account')"
       :icon="Shield"
     >
+      <template #link>
+        <RouterLink
+          :to="{ name: 'privacy' }"
+          class="inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
+          >{{ $t('shell.page.privacy') }}<ArrowRight class="size-4" aria-hidden="true"
+        /></RouterLink>
+      </template>
       <ProfilePanel class="col-span-full" />
       <PasswordPanel class="min-w-0" />
       <ConnectedAccountsPanel class="min-w-0" />

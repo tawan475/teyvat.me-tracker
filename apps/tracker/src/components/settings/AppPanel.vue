@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useEventListener } from '@vueuse/core'
-import { CircleCheck, Download, Share, SquarePlus } from 'lucide-vue-next'
+import { ArrowRight, CircleCheck, Download, Share, SquarePlus } from 'lucide-vue-next'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import { t } from '@/i18n'
@@ -112,6 +112,14 @@ async function install() {
       <div class="min-w-0 flex-[999_1_30rem]">
         <BuildInfo />
       </div>
+    </div>
+    <div
+      class="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border-default pt-4"
+    >
+      <span class="text-text-secondary">{{ $t('shell.page.privacy') }}</span>
+      <UiButton size="sm" :to="{ name: 'privacy' }"
+        >{{ $t('settings.app.privacyOpen') }}<ArrowRight class="size-4" aria-hidden="true"
+      /></UiButton>
     </div>
   </UiPanel>
 </template>

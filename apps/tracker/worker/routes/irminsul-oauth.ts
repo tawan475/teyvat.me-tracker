@@ -29,6 +29,7 @@ import {
 import { Hono, type Context } from 'hono'
 import type { AppEnv } from '../env'
 import { pageOrigin } from '../lib/email'
+import { ownOrigin } from '../lib/site'
 import { ApiError, clientIp, rateLimit, validate } from '../lib/http'
 import { requireActiveSession } from '../lib/session'
 import { suspendedError } from './auth'
@@ -74,7 +75,7 @@ function oauthFailure(c: Context<AppEnv>, error: unknown) {
 
 export const irminsulOAuth = new Hono<AppEnv>()
   .get('/irminsul', (c) => {
-    const origin = new URL(c.req.url).origin
+    const origin = ownOrigin(c.env, c.req.url)
     return c.json<IrminsulDiscovery>({
       authorize_url: `${pageOrigin(c.env, c.req.url)}/link`,
       token_url: `${origin}/api/oauth/token`,

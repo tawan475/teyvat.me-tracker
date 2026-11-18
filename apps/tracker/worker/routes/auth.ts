@@ -25,6 +25,7 @@ import { getDb } from '../db/client'
 import { userSessions, users } from '../db/schema'
 import type { AppEnv } from '../env'
 import { emailEnabled, emailFeatures, linkOrigin, sendMail, signInAddedMail } from '../lib/email'
+import { siteName } from '../lib/site'
 import {
   ApiError,
   clientIp,
@@ -231,7 +232,13 @@ export function notifySignInAdded(c: Context<AppEnv>, user: User, what: string):
   c.executionCtx.waitUntil(
     sendMail(
       c.env,
-      signInAddedMail(user.email, linkOrigin(c.env, c.req.url), user.username, what),
+      signInAddedMail(
+        user.email,
+        linkOrigin(c.env, c.req.url),
+        user.username,
+        what,
+        siteName(c.env),
+      ),
     ).then(() => undefined),
   )
 }

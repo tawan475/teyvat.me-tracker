@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "總覽",
     "progression": "成長",
@@ -155,7 +155,7 @@
     }
   },
   "landingTitle": "Teyvat.me · 原神帳號追蹤器",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me 是免費的原神帳號追蹤器：隨時間記錄角色與配裝、聖遺物、素材與規劃、成就、祈願紀錄和終局挑戰紀錄，由免費的 Teyvat.me Capture 應用程式保持最新。",
     "signIn": "登入原神帳號追蹤器 Teyvat.me。",

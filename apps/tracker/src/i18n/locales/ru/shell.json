@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "Обзор",
     "progression": "Прогресс",
@@ -155,7 +155,7 @@
     }
   },
   "landingTitle": "Teyvat.me · трекер аккаунта Genshin Impact",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me — бесплатный трекер аккаунта Genshin Impact: персонажи и билды, артефакты, материалы и планировщик, достижения, история молитв и рекорды эндгейма во времени. Данные обновляет бесплатное приложение Teyvat.me Capture.",
     "signIn": "Вход в Teyvat.me — трекер аккаунта Genshin Impact.",

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Gives a user of this self-hosted tracker the Owner role (every permission).
+# The dashboard can't give it, as on teyvat.me. Run inside the container:
+#
+#   docker compose exec tracker grant-owner <username>
+#
+# Add --revoke to take it away (the last Owner can't be revoked).
+set -eu
+[ $# -ge 1 ] || { echo "usage: grant-owner <username|email> [--revoke]" >&2; exit 1; }
+user=$1
+shift
+exec node /app/apps/tracker/scripts/admin-grant.mjs "$user" owner "$@" --local \
+  --persist-to /data --config /app/apps/tracker/dist/genshin_data_tracker/wrangler.json

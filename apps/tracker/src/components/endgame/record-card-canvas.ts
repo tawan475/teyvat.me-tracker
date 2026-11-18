@@ -47,6 +47,7 @@ import {
   wrapLines,
 } from './stygian-card'
 import type { StygianProfile } from './stygian-card-canvas'
+import { SITE_HOST } from '@/lib/site'
 
 export const ABYSS_STAR = 'UI_Icon_Tower_Star'
 export const THEATER_STELLA = 'UI_Icon_RoleCombat_Star'
@@ -529,7 +530,7 @@ class RecordPainter extends CardPaint {
       this.c.muted,
       { lineHeight: box.h },
     )
-    this.line('teyvat.me', box.x + box.w, box.y, 17, 700, this.c.sub, {
+    this.line(SITE_HOST, box.x + box.w, box.y, 17, 700, this.c.sub, {
       lineHeight: box.h,
       align: 'right',
     })

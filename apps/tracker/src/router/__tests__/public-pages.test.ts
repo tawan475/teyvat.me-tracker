@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { injectPrerender } from '../../../build/prerender-html'
+import {
+  buildSiteName,
+  buildSiteOrigin,
+  PRODUCTION_NAME,
+  PRODUCTION_ORIGIN,
+  robotsFor,
+} from '../../../build/site-origin'
+import { SITE_HOST, SITE_NAME } from '../../lib/site'
 import shellFile from '../../../index.html?raw'
 import robotsFile from '../../../public/robots.txt?raw'
 import llms from '../../../public/llms.txt?raw'
@@ -138,5 +146,53 @@ describe('injectPrerender', () => {
   it('refuses a shell it cannot place the page in', () => {
     expect(() => injectPrerender(shell.replace('<div id="app"></div>', ''), page)).toThrow(/#app/)
     expect(() => injectPrerender(html, page)).toThrow()
+  })
+})
+
+describe("a self-host's origin (SITE_URL at build)", () => {
+  it('is teyvat.me without SITE_URL, else its origin; a bad one stops the build', () => {
+    expect(SITE_ORIGIN).toBe(PRODUCTION_ORIGIN)
+    expect(buildSiteOrigin(undefined)).toBe('https://teyvat.me')
+    expect(buildSiteOrigin('')).toBe('https://teyvat.me')
+    expect(buildSiteOrigin('https://tracker.example/path/')).toBe('https://tracker.example')
+    expect(buildSiteOrigin('http://localhost:8787')).toBe('http://localhost:8787')
+    expect(() => buildSiteOrigin('tracker.example')).toThrow(/not a URL/)
+    expect(() => buildSiteOrigin('ftp://tracker.example')).toThrow(/http/)
+  })
+
+  it('puts canonical links, the sitemap and robots.txt on it', () => {
+    const origin = 'https://tracker.example'
+    expect(canonicalUrl('/developers', origin)).toBe(`${origin}/developers`)
+    const xml = sitemapXml('2026-11-18', INDEXED_PAGES, origin)
+    expect(xml).not.toContain('teyvat.me')
+    for (const page of INDEXED_PAGES) expect(xml).toContain(`<loc>${origin}${page.path}</loc>`)
+    const own = robotsFor(robots, origin)
+    expect(own).toContain(`Sitemap: ${origin}/sitemap.xml`)
+    expect(own).not.toContain('Sitemap: https://teyvat.me')
+    // teyvat.me's own files are untouched.
+    expect(robotsFor(robots, PRODUCTION_ORIGIN)).toBe(robots)
+    expect(sitemapXml('2026-11-18')).toBe(
+      sitemapXml('2026-11-18', INDEXED_PAGES, PRODUCTION_ORIGIN),
+    )
+  })
+})
+
+describe("a self-host's name (SITE_NAME at build)", () => {
+  it('is Teyvat.me without SITE_NAME, else the name given', () => {
+    expect(SITE_NAME).toBe(PRODUCTION_NAME)
+    expect(PRODUCTION_NAME).toBe('Teyvat.me')
+    expect(buildSiteName(undefined)).toBe('Teyvat.me')
+    expect(buildSiteName('  ')).toBe('Teyvat.me')
+    expect(buildSiteName(' Our Tracker ')).toBe('Our Tracker')
+  })
+
+  it('leaves share cards on teyvat.me in production', () => {
+    expect(SITE_HOST).toBe('teyvat.me')
+  })
+
+  it("puts it in every language's tab titles, not in the landing title", () => {
+    expect(shellMessages.documentTitle).toBe('{title} · {site}')
+    expect(shellMessages.accountDocumentTitle).toBe('{title} · {account} · {site}')
+    expect(shellMessages.landingTitle).toContain('Teyvat.me')
   })
 })

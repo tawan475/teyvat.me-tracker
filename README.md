@@ -49,6 +49,9 @@ Cloudflare Worker serves the Vue dashboard as static assets and the API under
   <img alt="Teyvat.me Capture sends captures by live sync, or you import a Leyline or GOOD JSON, paimon.moe, UIGF or Seelie file; teyvat.me keeps snapshots, progression, planner, wishes and achievements." src="https://gi-cdn.ley-courier.workers.dev/readme/trk-flow-light.webp" width="100%">
 </picture>
 
+To run your own copy (on your PC, for friends or as a community copy), see
+[self-host/README.md](self-host/README.md): Docker Compose, best-effort support.
+
 ## What it does
 
 <picture>

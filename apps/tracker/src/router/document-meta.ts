@@ -3,6 +3,7 @@ import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
 import { pageTitle } from '@/components/shell/nav'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
+import { SITE_NAME } from '@/lib/site'
 import { useAccounts } from '@/stores/accounts'
 import { canonicalUrl } from './public-pages'
 
@@ -12,7 +13,9 @@ import { canonicalUrl } from './public-pages'
  * Teyvat.me", "Characters · <account> · Teyvat.me" on an account's pages, the
  * page's own `shell.description` sentence, og:title / og:description to match
  * and a canonical link on the pages search engines index. Kept current on a
- * page change, a language switch and an account rename.
+ * page change, a language switch and an account rename. A self-host's
+ * SITE_NAME stands in for Teyvat.me in those titles (lib/site.ts); the
+ * landing page keeps its own.
  */
 export interface DocumentMeta {
   title: string
@@ -37,8 +40,8 @@ export function documentMeta(route: RouteLocationNormalizedLoaded): DocumentMeta
     : t(`shell.description.${meta.title}`)
   const account = meta.inspect ? null : accountName(route)
   const title = account
-    ? t('shell.accountDocumentTitle', { title: page, account })
-    : t('shell.documentTitle', { title: page })
+    ? t('shell.accountDocumentTitle', { title: page, account, site: SITE_NAME })
+    : t('shell.documentTitle', { title: page, site: SITE_NAME })
   return { title, description, canonical }
 }
 

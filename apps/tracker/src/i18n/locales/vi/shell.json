@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "Tổng Quan",
     "progression": "Tiến triển",
@@ -155,7 +155,7 @@
     }
   },
   "landingTitle": "Teyvat.me · Trình theo dõi tài khoản Genshin Impact",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me là trình theo dõi tài khoản Genshin Impact miễn phí: nhân vật và build, thánh di vật, nguyên liệu và kế hoạch, thành tựu, lịch sử cầu nguyện và kỷ lục nội dung cuối, luôn cập nhật nhờ ứng dụng miễn phí Teyvat.me Capture.",
     "signIn": "Đăng nhập Teyvat.me, trình theo dõi tài khoản Genshin Impact.",

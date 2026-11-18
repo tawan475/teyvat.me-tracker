@@ -17,10 +17,12 @@
  *
  * The relying party is teyvat.me in production and localhost under
  * `vite dev`; any other host (the old genshin-tracker.475.dev included) has
- * no passkeys: a passkey is bound to one RP ID for good.
+ * no passkeys: a passkey is bound to one RP ID for good. A self-host's RP ID
+ * is its SITE_URL's host (https, or http://localhost), whatever the request.
  */
 
 import { fromBase64Url, toBase64Url } from '@gdt/shared'
+import { configuredOrigin } from './site'
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false })
@@ -38,7 +40,14 @@ export interface RelyingParty {
 const RP_NAME = 'Teyvat.me'
 
 /** The relying party for a request to `requestUrl`, or null where passkeys are off. */
-export function relyingParty(requestUrl: string): RelyingParty | null {
+export function relyingParty(vars: object, requestUrl: string): RelyingParty | null {
+  const configured = configuredOrigin(vars)
+  if (configured) {
+    // A self-host: browsers allow WebAuthn on https and on http://localhost only.
+    const site = new URL(configured)
+    if (site.protocol !== 'https:' && site.hostname !== 'localhost') return null
+    return { id: site.hostname, origin: site.origin, name: RP_NAME }
+  }
   const url = new URL(requestUrl)
   if (url.hostname === 'teyvat.me' && url.protocol === 'https:') {
     return { id: 'teyvat.me', origin: 'https://teyvat.me', name: RP_NAME }

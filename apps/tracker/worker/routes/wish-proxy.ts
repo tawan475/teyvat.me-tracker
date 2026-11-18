@@ -23,6 +23,7 @@ import { z } from 'zod'
 import type { AppEnv } from '../env'
 import { ApiError, clientIp, parseJson, rateLimit } from '../lib/http'
 import { CSRF_HEADER, requireUser } from '../lib/session'
+import { ownOrigin } from '../lib/site'
 
 const fetchPageRequest = z.object({
   url: z.string().min(1).max(16_384),
@@ -49,7 +50,7 @@ const userOrOwnPage: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (c.req.header(CSRF_HEADER) !== '1') {
     throw new ApiError(403, 'csrf', `Missing ${CSRF_HEADER} header`)
   }
-  const own = new URL(c.req.url).origin
+  const own = ownOrigin(c.env, c.req.url)
   const site = c.req.header('sec-fetch-site')
   if (c.req.header('origin') !== own || (site !== undefined && site !== 'same-origin')) {
     throw new ApiError(403, 'not_this_site', 'Only this site may ask for wish history pages')

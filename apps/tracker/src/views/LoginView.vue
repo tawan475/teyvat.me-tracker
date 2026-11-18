@@ -18,6 +18,7 @@ import { passkeyCause } from '@/components/settings/passkeys'
 import { ApiRequestError } from '@/api'
 import { t } from '@/i18n'
 import { errorText } from '@/i18n/api-errors'
+import { SITE_NAME } from '@/lib/site'
 import {
   conditionalAvailable,
   forgetPasskey,
@@ -171,7 +172,10 @@ async function submit() {
 </script>
 
 <template>
-  <AuthFrame :title="$t('auth.welcomeBack')" :subtitle="linking ? undefined : $t('auth.signInSub')">
+  <AuthFrame
+    :title="$t('auth.welcomeBack')"
+    :subtitle="linking ? undefined : $t('auth.signInSub', { site: SITE_NAME })"
+  >
     <p
       v-if="linking"
       class="mb-4 flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-gray-200"

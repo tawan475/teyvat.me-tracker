@@ -27,6 +27,7 @@ import {
   arcanaGrid,
   type ArcanaLayout,
 } from './arcana-card'
+import { SITE_HOST } from '@/lib/site'
 
 export interface ArcanaCardEntry {
   /** The card art's name (`UI_RoleCombat_Tarot_06`). */
@@ -339,7 +340,7 @@ export async function drawArcanaCard(
     for (const part of owner) {
       x += line(part.text, x, footTop, 22, part.weight, part.color, { lineHeight: spec.foot }) + 18
     }
-    const brandW = line('teyvat.me', right, footTop, 22, 600, c.text, {
+    const brandW = line(SITE_HOST, right, footTop, 22, 600, c.text, {
       align: 'right',
       lineHeight: spec.foot,
     })

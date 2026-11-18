@@ -23,6 +23,7 @@ import {
   rosterWidth,
 } from './roster-card'
 import { CARD_THEMES, type CardOwner, type CardTheme } from './share-card'
+import { SITE_HOST } from '@/lib/site'
 
 export interface RosterDrawing {
   characters: readonly CharacterView[]
@@ -409,7 +410,7 @@ export async function drawRoster(
 
   ctx.textAlign = 'right'
   const right = width - ROSTER_PAD
-  const dateParts = [input.date, 'teyvat.me'].filter((p): p is string => !!p)
+  const dateParts = [input.date, SITE_HOST].filter((p): p is string => !!p)
   ctx.font = font(400, 16, family)
   ctx.fillStyle = theme['--card-muted']!
   ctx.fillText(dateParts.join('  ·  '), right, rowBottom - 6)

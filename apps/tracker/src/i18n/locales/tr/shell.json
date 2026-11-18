@@ -1,6 +1,6 @@
 {
   "site": "Teyvat.me",
-  "documentTitle": "{title} · Teyvat.me",
+  "documentTitle": "{title} · {site}",
   "nav": {
     "overview": "Genel Bakış",
     "progression": "İlerleme",
@@ -155,7 +155,7 @@
     }
   },
   "landingTitle": "Teyvat.me · Genshin Impact hesap takipçisi",
-  "accountDocumentTitle": "{title} · {account} · Teyvat.me",
+  "accountDocumentTitle": "{title} · {account} · {site}",
   "description": {
     "landing": "Teyvat.me ücretsiz bir Genshin Impact hesap takipçisi: karakterler ve buildler, yadigarlar, malzemeler ve planlayıcı, başarımlar, dilek geçmişi ve oyun sonu rekorları; ücretsiz Teyvat.me Capture uygulamasıyla güncel kalır.",
     "signIn": "Genshin Impact hesap takipçisi Teyvat.me'ye giriş yap.",

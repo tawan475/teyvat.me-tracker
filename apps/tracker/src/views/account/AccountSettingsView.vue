@@ -150,11 +150,18 @@ async function confirmDelete() {
   deleting.value = true
   try {
     if (guest) {
-      // Everything this browser kept as the guest goes, and nothing else.
-      await api.deleteAccount(id)
+      // Everything this browser kept as the guest goes, and nothing else. The
+      // watched folder goes with the data (it is kept beside it): its reading
+      // stops first, so nothing is written back after the store is cleared.
+      const release = await (await import('@/local/folder-watch')).holdForDelete()
+      try {
+        await api.deleteAccount(id)
+      } catch (error) {
+        release(false)
+        throw error
+      }
+      release(true)
       discardImportQueue(id)
-      // The watched folder went with the data (it is kept beside it).
-      ;(await import('@/local/folder-watch')).forgetFolder()
       deleteOpen.value = false
       feedback.toast({ tone: 'success', title: t('guest.deleted'), detail: lost })
       await (await import('@/local/guest-account')).loadGuestAccount()

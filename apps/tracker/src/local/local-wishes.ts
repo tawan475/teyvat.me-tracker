@@ -25,7 +25,7 @@ import {
   type WishRecord,
 } from '@gdt/shared'
 import { GUEST_ACCOUNT_ID } from './guest-id'
-import { LocalApiError } from './errors'
+import { LocalApiError, OtherUidError } from './errors'
 import type { LocalStore } from './local-store'
 
 /** The state key the history is kept under. */
@@ -83,6 +83,13 @@ export interface LocalWishImport {
   uid?: string
   timezone?: number
   records: readonly WishRecord[]
+  /**
+   * Read from the watched folder: a file of another UID than the account's
+   * is refused (OtherUidError), and while the account has no UID yet the
+   * file's becomes its UID (and server), as a GOOD export's does, so the
+   * one-account rule holds whichever file the folder reads first.
+   */
+  folder?: boolean
 }
 
 export function importWishesLocal(
@@ -91,6 +98,9 @@ export function importWishesLocal(
 ): Promise<WishImportResponse> {
   return store.transact((tx) => {
     const account = tx.account()
+    if (input.folder && input.uid && account.uid && account.uid !== input.uid) {
+      throw new OtherUidError(input.uid, account.uid)
+    }
     const history = stored(store)
     const uid = input.uid ?? account.uid ?? ''
     const timezone =
@@ -107,6 +117,11 @@ export function importWishesLocal(
         throw new LocalApiError(400, 'invalid_records', error.message)
       }
       throw error
+    }
+    if (input.folder && input.uid && /^\d{9,10}$/.test(input.uid) && !account.uid) {
+      account.uid = input.uid
+      account.server ??= serverFromUid(input.uid)
+      tx.saveAccount()
     }
     const held = storedPulls(store)
     let added = 0

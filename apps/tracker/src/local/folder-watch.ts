@@ -18,6 +18,11 @@
  * asks; Not now = asked again next visit). One success toast per batch,
  * muted by a per-browser switch in Settings › Sync; refusals, a missing
  * folder and the paused toast always show. Stop keeps the folder.
+ *
+ * Looks and toasts happen only while a guest page is open in the tab
+ * (GuestLayout starts and stops the watch), and never while the guest data
+ * is being deleted (holdForDelete), so nothing is read into the guest store
+ * from another page or written back after a delete.
  */
 
 import { parseWishFile } from '@gdt/shared'
@@ -311,11 +316,20 @@ async function readOne(
       batch.refused.push({ name: item.name, uid: parsed.accounts[0]?.uid ?? '?', own: own ?? '?' })
       return
     }
-    await importWishesLocal(store, {
-      ...(account.uid ? { uid: account.uid } : {}),
-      ...(account.timezone !== null ? { timezone: account.timezone } : {}),
-      records: account.records,
-    })
+    try {
+      await importWishesLocal(store, {
+        ...(account.uid ? { uid: account.uid } : {}),
+        ...(account.timezone !== null ? { timezone: account.timezone } : {}),
+        records: account.records,
+        folder: true,
+      })
+    } catch (error) {
+      if (error instanceof OtherUidError) {
+        batch.refused.push({ name: item.name, uid: error.uid, own: error.own })
+        return
+      }
+      throw error
+    }
     batch.wishes++
   }
 }
@@ -328,9 +342,14 @@ function unsettled(item: FolderFile, error: unknown): boolean {
 
 let stopRequested = false
 let looking: Promise<void> | null = null
+/** The guest data is being deleted: no look starts until it is done (holdForDelete). */
+let deleting = false
+/** Whether a guest page is open in this tab (GuestLayout): looks and toasts happen only then. */
+let watching = false
 
 /** One look at the folder: reads what is new, oldest first, one toast for the batch. */
 function look(): Promise<void> {
+  if (deleting || !watching) return Promise.resolve()
   looking ??= withLock(lookNow).finally(() => (looking = null))
   return looking
 }
@@ -357,7 +376,7 @@ async function lookNow(): Promise<void> {
   }
   if (permission !== 'granted') {
     show(record, 'paused')
-    pausedToastNow()
+    if (watching) pausedToastNow()
     return
   }
   dropPausedToast()
@@ -368,12 +387,12 @@ async function lookNow(): Promise<void> {
   } catch (error) {
     if (error instanceof FolderGone) {
       show(record, 'missing')
-      missingToastNow()
+      if (watching) missingToastNow()
       return
     }
     if (error instanceof DOMException && error.name === 'NotAllowedError') {
       show(record, 'paused')
-      pausedToastNow()
+      if (watching) pausedToastNow()
       return
     }
     throw error
@@ -386,6 +405,8 @@ async function lookNow(): Promise<void> {
     return
   }
 
+  // Left the guest pages or deleting the data while listing: read nothing.
+  if (!watching || deleting) return
   const first = !record.firstDone
   stopRequested = false
   show(record, 'reading')
@@ -417,7 +438,7 @@ async function lookNow(): Promise<void> {
   importingAccounts.add(GUEST_ACCOUNT_ID)
   try {
     for (const item of readOrder(items)) {
-      if (stopRequested) break
+      if (stopRequested || deleting) break
       try {
         await readOne(item, batch, rows)
         seen[item.name] = fileKey(item)
@@ -433,8 +454,13 @@ async function lookNow(): Promise<void> {
     importingAccounts.delete(GUEST_ACCOUNT_ID)
   }
 
+  // The guest data was deleted meanwhile (the record with it): nothing to keep.
+  const now = await loadRecord()
+  if (!now || deleting) {
+    show(null)
+    return
+  }
   // Stop or Change meanwhile wrote the record: keep theirs, add what was read.
-  const now = (await loadRecord()) ?? record
   const sameFolder = now.pickedAt === record.pickedAt
   const refused = [...now.refused]
   for (const file of batch.refused) {
@@ -455,7 +481,8 @@ async function lookNow(): Promise<void> {
   if (readCount(batch) > 0 || batch.refused.length > 0) {
     await loadGuestAccount().catch(() => undefined)
   }
-  batchToastsNow(batch, first)
+  // Left the guest pages meanwhile: the read is kept, its toasts aren't shown there.
+  if (watching) batchToastsNow(batch, first)
 }
 
 // ------------------------------------------------------------------ actions
@@ -558,25 +585,47 @@ export async function dismissRefused(): Promise<void> {
 
 // ------------------------------------------------------------------ watching
 
-let started = false
+let interval: ReturnType<typeof setInterval> | null = null
 
-/** Starts watching for this tab (GuestLayout); later calls re-read the record. */
+function onFocus(): void {
+  void tick()
+}
+function onVisible(): void {
+  if (document.visibilityState === 'visible') void tick()
+}
+
+/** Starts watching for this tab while a guest page is open (GuestLayout); later calls re-read the record. */
 export async function startFolderWatch(): Promise<void> {
-  if (!started) {
-    started = true
-    window.addEventListener('focus', () => void tick())
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') void tick()
-    })
-    setInterval(() => {
+  if (!watching) {
+    watching = true
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onVisible)
+    interval = setInterval(() => {
       if (document.visibilityState === 'visible') void tick()
     }, 60_000)
   }
   await tick()
 }
 
+/**
+ * The guest pages closed (GuestLayout unmounted): no more looks, a read in
+ * progress stops after its file (what it read is kept, the rest is read on
+ * the next guest visit) and the paused toast goes.
+ */
+export function stopFolderWatch(): void {
+  if (!watching) return
+  watching = false
+  window.removeEventListener('focus', onFocus)
+  document.removeEventListener('visibilitychange', onVisible)
+  if (interval !== null) clearInterval(interval)
+  interval = null
+  if (looking) stopRequested = true
+  dropPausedToast()
+}
+
 /** A look, when there is a folder to look at (not while stopped or waiting on Allow again). */
 async function tick(): Promise<void> {
+  if (!watching) return
   try {
     const record = await loadRecord()
     if (!record) {
@@ -593,9 +642,21 @@ async function tick(): Promise<void> {
   }
 }
 
-/** The guest data was deleted (the record with it): back to no folder. */
-export function forgetFolder(): void {
+/**
+ * Before the guest data is deleted (the folder's record goes with it): no
+ * look starts and a read in progress ends after its file, so nothing is
+ * written back after the store is cleared. The answer ends the hold:
+ * `true` = deleted (back to no folder), `false` = the delete failed
+ * (watching goes on).
+ */
+export async function holdForDelete(): Promise<(deleted: boolean) => void> {
+  deleting = true
   stopRequested = true
   dropPausedToast()
-  show(null)
+  await looking?.catch(() => undefined)
+  return (deleted) => {
+    deleting = false
+    if (deleted) show(null)
+    else void tick()
+  }
 }

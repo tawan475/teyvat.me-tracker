@@ -232,6 +232,52 @@ describe('guest store', () => {
     expect(byHand.warnings?.[0]?.code).toBe('uid_mismatch')
   })
 
+  it("gives the guest a watched folder's wish file's UID, so a later file of another UID is refused", async () => {
+    const [[big, at]] = sequence() as [[Good, number]]
+    const wishUid = '712345678'
+    expect(String(big.gi_player!.uid)).not.toBe(wishUid)
+    const records = (uid: string) => ({
+      uid,
+      records: [
+        {
+          id: '1790000000000000001',
+          gacha_type: '301',
+          time: '2026-01-01 00:00:01',
+          name: 'Debate Club',
+          item_type: 'Weapon',
+          rank_type: '3',
+        },
+      ],
+      folder: true,
+    })
+    // The folder's oldest file is a wish file: its UID becomes the guest's.
+    expect(await guestModules.importWishesLocal(store, records(wishUid))).toMatchObject({
+      added: 1,
+    })
+    expect(await localJson<AccountResponse>('')).toMatchObject({ uid: wishUid })
+    // A GOOD export of another UID from the same folder is refused.
+    await expect(
+      guestModules.importLocal(store, {
+        text: JSON.stringify(big),
+        rawSize: 1,
+        timestamp: at,
+        folder: true,
+      }),
+    ).rejects.toMatchObject({
+      code: 'guest_other_uid',
+      uid: String(big.gi_player!.uid),
+      own: wishUid,
+    })
+    // So is another UID's wish file.
+    await expect(
+      guestModules.importWishesLocal(store, records(String(big.gi_player!.uid))),
+    ).rejects.toMatchObject({ code: 'guest_other_uid', own: wishUid })
+    expect((await localJson<SnapshotResponse[]>('/snapshots')).length).toBe(0)
+    // By hand, a wish file of another UID still goes in (the hand import's rule).
+    const byHand = { ...records(String(big.gi_player!.uid)), folder: false }
+    expect(await guestModules.importWishesLocal(store, byHand)).toMatchObject({ known: 1 })
+  })
+
   it('deletes snapshots with the sections only they used, and compacts', async () => {
     for (const [good, at] of sequence()) await importLocal(good, at)
     const before = store.blobs.size

@@ -322,20 +322,26 @@ function lowerBound(captures: readonly ProgressionCapture[], from: number): numb
  * keeps the last point of each run, where its slope to the next value starts.
  * Points without a value (not shared) are all kept: each one is a capture
  * the chart names in its tooltip (but for the same capture twice: a range
- * that opens on it).
+ * that opens on it). So is the last point before one: the line ends there,
+ * and without it a value that never changed would have no line at all.
  */
 function dedupe(points: LinePoint[], shape: LineShape): LinePoint[] {
   const out: LinePoint[] = []
   const last = points.length - 1
   points.forEach((point, i) => {
     const before = points[i - 1]
+    const after = points[i + 1]
     if (point.y === null && before?.y === null && before.x === point.x) return
+    // The line ends here (unless this is the range's opening point again).
+    const kept = out[out.length - 1]
+    const closes = after?.y === null && !(kept?.x === point.x && kept.y === point.y)
     if (
       i === 0 ||
       i === last ||
       point.y === null ||
       point.y !== before!.y ||
-      (shape === 'straight' && point.y !== points[i + 1]!.y)
+      closes ||
+      (shape === 'straight' && point.y !== after!.y)
     ) {
       out.push(point)
     }

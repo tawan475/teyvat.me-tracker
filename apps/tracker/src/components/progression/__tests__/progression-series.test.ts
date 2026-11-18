@@ -399,6 +399,46 @@ describe('captures that did not share a section', () => {
     expect(snapshotTotals(p, 'characters').last).toBe(86)
   })
 
+  it('draws a figure that never changed up to the break: its last shared capture is kept', () => {
+    // The roster is 85 all along, then the Characters switch goes off and stays off.
+    const flat: Capture[] = [
+      { at: t0, summary: figures(85, 1_000) },
+      { at: t0 + HOUR, summary: figures(85, 1_100) },
+      { at: t0 + 2 * HOUR, summary: figures(85, 1_200) },
+      { at: t0 + 3 * HOUR, summary: figures(85, 1_300), unshared: ['characters'] },
+    ]
+    const off = buildSnapshotProgression(flat, 'all', t0 + 5 * HOUR)!
+    // Two points with a value: a line from 10:00 to 12:00, not a lone dot.
+    expect(off.lines.characters).toEqual([
+      { x: t0, y: 85 },
+      { x: t0 + 2 * HOUR, y: 85 },
+      { x: t0 + 3 * HOUR, y: null },
+    ])
+    expect(
+      buildSnapshotProgression(flat, 'all', t0 + 5 * HOUR, 'straight')!.lines.characters,
+    ).toEqual(off.lines.characters)
+
+    // Shared again at the same count: a gap in the middle, a line on each side.
+    const back: Capture[] = [
+      ...flat,
+      { at: t0 + 4 * HOUR, summary: figures(85, 1_400) },
+      { at: t0 + 5 * HOUR, summary: figures(85, 1_500) },
+      { at: t0 + 6 * HOUR, summary: figures(85, 1_600) },
+    ]
+    expect(buildSnapshotProgression(back, 'all', t0 + 6 * HOUR)!.lines.characters).toEqual([
+      { x: t0, y: 85 },
+      { x: t0 + 2 * HOUR, y: 85 },
+      { x: t0 + 3 * HOUR, y: null },
+      { x: t0 + 4 * HOUR, y: 85 },
+      { x: t0 + 6 * HOUR, y: 85 },
+    ])
+
+    // Per period too: the last hour that shared it closes the line.
+    const hourly = buildProgression(flat, 'hour', 'all', t0 + 5 * HOUR)!
+    expect(hourly.lines.characters.map((point) => point.y)).toEqual([85, 85, null])
+    expect(hourly.lines.characters[1]!.x).toBe(t0 + 2 * HOUR)
+  })
+
   it('opens a range with a break when the capture before it did not share the figure', () => {
     const p = buildSnapshotProgression(captures, '1h', now + 30 * 60_000)!
     // The range opens at 13:30: the 13:00 capture carried in did not share it.

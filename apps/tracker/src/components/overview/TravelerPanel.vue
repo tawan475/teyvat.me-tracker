@@ -3,7 +3,7 @@ import type { GiPlayer } from '@gdt/shared'
 import { computed, ref, watch } from 'vue'
 import { FRAME_HOLE } from '@/data/profile-card'
 import { Cake, Compass, Heart, Mountain, Swords, Trophy } from 'lucide-vue-next'
-import { dateLocale, formatNumber } from '@/lib/format'
+import { dateLocale, formatMonthDay, formatNumber } from '@/lib/format'
 
 /**
  * The player's card on Overview, design "Shaded panels" (the user's pick,
@@ -34,6 +34,11 @@ const props = defineProps<{
     /** The account's UID, null when unknown. */
     uid: string | null
   }
+  /**
+   * When Teyvat.me Capture leaves the profile out (issue 12): the time of the
+   * capture the name, signature, card and picture come from.
+   */
+  profileFrom?: number | null
   stats: {
     /** Achievements done (newest capture ∪ hand marks); null until counted. */
     achievements: number | null
@@ -136,6 +141,9 @@ const right = computed(() =>
           </p>
           <p v-if="profile.uid" class="uid">
             {{ $t('overview.traveler.uid', { uid: profile.uid }) }}
+          </p>
+          <p v-if="profileFrom" class="profile-from">
+            {{ $t('snapshots.parts.profileFrom', { date: formatMonthDay(profileFrom) }) }}
           </p>
         </div>
       </div>
@@ -295,6 +303,11 @@ const right = computed(() =>
   white-space: pre-line;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+.profile-from {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
 }
 .uid {
   margin: auto 0 0;

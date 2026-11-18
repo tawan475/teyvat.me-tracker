@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import ModeCards from '@/components/endgame/ModeCards.vue'
 import SeasonArchive from '@/components/endgame/SeasonArchive.vue'
 import SeasonHero from '@/components/endgame/SeasonHero.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -162,6 +163,7 @@ function showEnemy(id: number | null, level?: number, hp = 0, before = false) {
 <template>
   <div class="flex flex-col gap-5">
     <PageHeader :title="$t('endgame.title')" />
+    <NotSharedStrip :parts="['endgame']" class="!mb-0" />
 
     <UiError
       v-if="resource.error.value && !resource.data.value"

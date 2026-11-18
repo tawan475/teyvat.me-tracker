@@ -41,6 +41,7 @@ import AchievementImportDialog from '@/components/achievements/AchievementImport
 import AchievementSummary from '@/components/achievements/AchievementSummary.vue'
 import AchievementToolbar from '@/components/achievements/AchievementToolbar.vue'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -476,6 +477,8 @@ async function importIds(ids: number[]): Promise<boolean> {
         </UiButton>
       </template>
     </PageHeader>
+
+    <NotSharedStrip :parts="['achievements']" :shown-at="captured?.takenAt ?? null" />
 
     <UiError
       v-if="loadError && !ready"

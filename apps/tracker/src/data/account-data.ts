@@ -9,7 +9,7 @@
  * version, so a reload revalidates for one round trip and no body.
  */
 
-import { accountPlayer, type AccountPlayer } from '@/data/account-player'
+import { accountPlayer, lastProfile, type AccountPlayer } from '@/data/account-player'
 import { withJournal, type LiveApplied } from '@/data/live-now'
 import { heldJournal, heldPoints, holdJournal, holdPoints, liveEventsSeen } from '@/data/live-known'
 import { liveVersions } from '@/live/journal'
@@ -405,6 +405,23 @@ export function loadPreviousArtifactIds(
  * AR, World Level and Original Resin from irminsul's `gi_player` across the
  * snapshots (see accountPlayer); one small bundle of just those sections.
  */
+/**
+ * The newest profile any snapshot has (Overview's card while Capture leaves
+ * the profile out, issue 12), with that capture's time; null for none.
+ */
+export function loadLastProfile(account: AccountRef): Promise<ReturnType<typeof lastProfile>> {
+  return cached(account, 'last-profile', async () => {
+    const bundle = await loadBundle(account, { sections: ['player'] })
+    return lastProfile(
+      bundle.snapshots.map((s) => ({ takenAt: s.takenAt, key: s.player })),
+      (key) => {
+        const text = bundle.texts.get(key)
+        return text === undefined ? {} : decodePlayer(JSON.parse(text))
+      },
+    )
+  })
+}
+
 export function loadAccountPlayer(account: AccountRef): Promise<AccountPlayer> {
   return cached(account, 'player', async () => {
     const bundle = await loadBundle(account, { sections: ['player'] })

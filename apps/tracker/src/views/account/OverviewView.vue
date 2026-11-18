@@ -19,6 +19,7 @@ import MonthlyAnalysisCard from '@/components/progression/MonthlyAnalysisCard.vu
 import OverviewSkeleton from '@/components/overview/OverviewSkeleton.vue'
 import RecentSnapshots from '@/components/overview/RecentSnapshots.vue'
 import TravelerPanel from '@/components/overview/TravelerPanel.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -30,6 +31,7 @@ import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achie
 import { groupAchievements, summarizeAchievements } from '@/data/achievement-progress'
 import {
   loadAccountPlayer,
+  loadLastProfile,
   loadBundle,
   loadLive,
   loadPoints,
@@ -123,8 +125,25 @@ const player = useResource(
 )
 // The AR table and the name cards' art (the wardrobe chunk, ~30 KB).
 const playerData = useResource(() => 'player,wardrobe', loadProfileArt)
-const traveler = computed(() => {
+/**
+ * Capture leaves the profile out (issue 12, `gi_off`): the card keeps the
+ * newest profile any capture had, and says which capture that was.
+ */
+const profileHidden = computed(() => !!list.value?.[0]?.off?.includes('gi_player.profile'))
+const lastShared = useResource(
+  () => (profileHidden.value ? account.value : null),
+  (a) => (a ? loadLastProfile(a) : Promise.resolve(null)),
+)
+const shownPlayer = computed(() => {
   const profile = player.data.value
+  const last = profileHidden.value ? lastShared.data.value : null
+  return profile && last ? { ...profile, ...last.fields } : profile
+})
+const profileFrom = computed(() =>
+  profileHidden.value ? (lastShared.data.value?.takenAt ?? null) : null,
+)
+const traveler = computed(() => {
+  const profile = shownPlayer.value
   if (!profile || (profile.ar === undefined && profile.wl === undefined)) return null
   const row = playerData.data.value?.arLevels.find((r) => r.id === profile.ar)
   const need = typeof row?.exp === 'number' && row.exp > 0 ? row.exp : null
@@ -139,7 +158,7 @@ const traveler = computed(() => {
  */
 const profileCard = computed(() => ({
   ...buildProfileCard(
-    player.data.value,
+    shownPlayer.value,
     playerData.data.value,
     accounts.displayName(account.value),
     travelerGender.value,
@@ -337,6 +356,8 @@ const importRoute = computed(() => accountLink('account-import'))
     </template>
   </PageHeader>
 
+  <NotSharedStrip all />
+
   <CapturePresence
     v-if="!demo && !guest && !travel"
     class="mb-3"
@@ -362,6 +383,7 @@ const importRoute = computed(() => accountLink('account-import'))
       :player="traveler.profile"
       :need="traveler.need"
       :profile="profileCard"
+      :profile-from="profileFrom"
       :stats="cardStats"
     />
     <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

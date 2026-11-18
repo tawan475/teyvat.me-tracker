@@ -4,6 +4,9 @@
  */
 
 import type {
+  PartsResponse,
+  RemovePartRequest,
+  RemovePartResponse,
   ApiTokenCreate,
   ApiTokenCreatedResponse,
   ApiTokensResponse,
@@ -517,6 +520,20 @@ export const api = {
     requestJson<CompactResponse>(`/api/accounts/${id}/snapshots/compact`, {
       method: 'POST',
       json: body,
+    }),
+  /** What each removable part holds in the stored history (owner only; issue 12). */
+  parts: (id: number) => requestJson<PartsResponse>(`/api/accounts/${id}/parts`),
+  /** Removes one part from every stored snapshot: no trash, no undo. */
+  removePart: (id: number, body: RemovePartRequest) =>
+    requestJson<RemovePartResponse>(`/api/accounts/${id}/parts/remove`, {
+      method: 'POST',
+      json: body,
+    }),
+  /** Hides a "Not shared by Capture" note until it changes (owner only). */
+  hidePartNote: (id: number, key: string) =>
+    requestJson<AccountSettingsResponse>(`/api/accounts/${id}/parts/hide`, {
+      method: 'POST',
+      json: { key },
     }),
   /** What the user stores against their quota, split by kind and account. */
   usage: () => requestJson<UsageResponse>('/api/me/usage'),

@@ -18,6 +18,8 @@ import UiIconButton from './UiIconButton.vue'
  * - `sheet`: below `sm` a bottom sheet (full width, pinned to the foot,
  *   rounded top corners), the same dialog from `sm` up (a short question:
  *   the guest data prompt, the user's pick 1A, 2026-11-08).
+ * - `locked`: while work runs that must not be left (a removal): the close
+ *   button is off, and Escape and the backdrop do nothing.
  * Slots: default (body), `heading` (replaces the title), `footer`.
  * Live updates reach an open dialog like any page (the user's call,
  * 2026-11-06): what it shows must find its subject again in fresh data (by
@@ -34,6 +36,7 @@ const props = withDefaults(
     loop?: boolean
     bare?: boolean
     sheet?: boolean
+    locked?: boolean
   }>(),
   { size: 'md', index: undefined, total: undefined },
 )
@@ -67,7 +70,11 @@ watch(
 )
 
 function onBackdrop(event: MouseEvent) {
-  if (event.target === dialog.value) emit('close')
+  if (event.target === dialog.value && !props.locked) emit('close')
+}
+
+function onCancel() {
+  if (!props.locked) emit('close')
 }
 
 function onKey(event: KeyboardEvent) {
@@ -108,7 +115,7 @@ const detail = computed(() => props.size === 'detail')
             ]
     "
     :aria-label="title"
-    @cancel.prevent="emit('close')"
+    @cancel.prevent="onCancel"
     @click="onBackdrop"
     @keydown="onKey"
   >
@@ -141,7 +148,12 @@ const detail = computed(() => props.size === 'detail')
             <ChevronRight class="size-5" aria-hidden="true" />
           </UiIconButton>
         </template>
-        <UiIconButton :label="$t('ui.close')" @click="emit('close')">
+        <UiIconButton
+          :label="$t('ui.close')"
+          class="disabled:pointer-events-none disabled:opacity-40"
+          :disabled="locked"
+          @click="emit('close')"
+        >
           <X class="size-5" aria-hidden="true" />
         </UiIconButton>
       </div>

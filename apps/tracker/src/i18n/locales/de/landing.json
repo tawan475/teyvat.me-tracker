@@ -197,7 +197,7 @@
       "local": "Nur auf deinem Gerät"
     },
     "what": {
-      "snapshots": "Figuren, Waffen, Artefakte, Materialien, Errungenschaften, Profil (Name, UID, AR, Signatur, Geburtstag, Namenskärtchen, Profilbild), Aufgaben, Endgame-Rekorde",
+      "snapshots": "Figuren, Waffen, Artefakte, Materialien, Errungenschaften, Profil (Name, UID, AS, Signatur, Geburtstag, Namenskärtchen, Profilbild), Aufgaben, Endgame-Rekorde",
       "wishes": "Jedes Gebet: Objekt, Banner, Zeit",
       "live": "Änderungen seit deinem letzten Snapshot, tägliche Diagrammpunkte",
       "planner": "Ziele, Häkchen, Änderungen von Hand, Harz, Kontoeinstellungen",

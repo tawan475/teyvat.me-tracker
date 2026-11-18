@@ -197,7 +197,7 @@
       "local": "Seulement sur votre appareil"
     },
     "what": {
-      "snapshots": "Personnages, armes, artéfacts, matériaux, succès, profil (nom, UID, AR, signature, anniversaire, thème, photo de profil), tâches, records de fin de jeu",
+      "snapshots": "Personnages, armes, artéfacts, matériaux, succès, profil (nom, UID, NA, signature, anniversaire, thème, photo de profil), tâches, records de fin de jeu",
       "wishes": "Chaque vœu : objet, bannière, heure",
       "live": "Les changements depuis votre dernier instantané, les points quotidiens du graphique",
       "planner": "Objectifs, coches, modifications à la main, résine, réglages du compte",

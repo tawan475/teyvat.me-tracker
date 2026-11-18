@@ -197,7 +197,7 @@
       "local": "Solo sul tuo dispositivo"
     },
     "what": {
-      "snapshots": "Personaggi, armi, manufatti, materiali, obiettivi, profilo (nome, UID, AR, firma, compleanno, carta giocatore, immagine del profilo), attività, record dell'endgame",
+      "snapshots": "Personaggi, armi, manufatti, materiali, obiettivi, profilo (nome, UID, GA, firma, compleanno, carta giocatore, immagine del profilo), attività, record dell'endgame",
       "wishes": "Ogni tiro: oggetto, banner, ora",
       "live": "Le modifiche dall'ultima istantanea, i punti giornalieri del grafico",
       "planner": "Obiettivi, spunte, modifiche a mano, resina, impostazioni dell'account",

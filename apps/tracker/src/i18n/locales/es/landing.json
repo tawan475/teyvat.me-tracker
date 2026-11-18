@@ -197,7 +197,7 @@
       "local": "Solo en tu dispositivo"
     },
     "what": {
-      "snapshots": "Personajes, armas, artefactos, materiales, logros, perfil (nombre, UID, AR, firma, cumpleaños, tarjeta, foto de perfil), tareas, récords de contenido final",
+      "snapshots": "Personajes, armas, artefactos, materiales, logros, perfil (nombre, UID, RA, firma, cumpleaños, tarjeta, foto de perfil), tareas, récords de contenido final",
       "wishes": "Cada deseo: objeto, gachapón, hora",
       "live": "Cambios desde tu última captura, puntos diarios del gráfico",
       "planner": "Objetivos, marcas, cambios a mano, resina, ajustes de la cuenta",

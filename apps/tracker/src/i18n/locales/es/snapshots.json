@@ -137,7 +137,7 @@
       "achievements": "Logros",
       "anecdotes": "Anécdotas",
       "tasks": "Tareas del planificador",
-      "endgame": "Registros de contenido final",
+      "endgame": "Récords de contenido final",
       "collections": "Colecciones",
       "profile": "Perfil",
       "wardrobe": "Armario",
@@ -150,12 +150,12 @@
       "weapons": "Armas",
       "artifacts": "Artefactos",
       "materials": "Materiales",
-      "numbers": "Datos de la cuenta"
+      "numbers": "Cifras de la cuenta"
     },
     "subs": {
       "achievements": "Hechos, fechas y progreso",
       "anecdotes": "Cuaderno de anécdotas",
-      "tasks": "Encargos, Abismo, expediciones, reino, Bendición Lunar",
+      "tasks": "Encargos, Abismo, expediciones, Intramora, Bendición Lunar",
       "endgame": "Abismo, Teatro, Conflagración",
       "collections": "Misiones, tarjetas y lo demás",
       "profile": "Apodo, firma, cumpleaños, tarjeta, imagen de perfil",

@@ -18,7 +18,12 @@ const theme = defineModel<'light' | 'dark'>('theme', { required: true })
 const showName = defineModel<boolean>('name', { default: false })
 const showUid = defineModel<boolean>('uid', { default: false })
 
-const props = defineProps<{ exporter: CardExport; size: string; themeOnly?: boolean }>()
+const props = defineProps<{
+  exporter: CardExport
+  size: string
+  themeOnly?: boolean
+  noTheme?: boolean
+}>()
 const anchor = useTemplateRef<HTMLElement>('anchor')
 const open = ref(false)
 function openMenu() {
@@ -46,6 +51,7 @@ function openMenu() {
         v-model:name="showName"
         v-model:uid="showUid"
         :theme-only="themeOnly"
+        :no-theme="noTheme"
       />
       <p
         class="flex h-5 items-center gap-1.5 text-sm"

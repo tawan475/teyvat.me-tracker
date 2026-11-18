@@ -11,7 +11,7 @@ import type { CardExport } from '@/lib/use-card-export'
  * drawing the PNG (lib/use-card-export `warm`). Nothing moves: a waiting
  * click shows a spinner in its own icon, a result swaps the icon.
  */
-defineProps<{ exporter: CardExport; themeOnly?: boolean }>()
+defineProps<{ exporter: CardExport; themeOnly?: boolean; noTheme?: boolean }>()
 const theme = defineModel<'light' | 'dark'>('theme', { required: true })
 const showName = defineModel<boolean>('name', { default: false })
 const showUid = defineModel<boolean>('uid', { default: false })
@@ -29,6 +29,7 @@ const showUid = defineModel<boolean>('uid', { default: false })
       v-model:uid="showUid"
       compact
       :theme-only="themeOnly"
+      :no-theme="noTheme"
     />
     <span class="mx-1 h-6 w-px bg-border-default" aria-hidden="true" />
     <UiIconButton

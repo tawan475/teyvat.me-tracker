@@ -13,9 +13,10 @@ import { quietTransition } from '@/lib/view-transition'
  * theme switch, two toggle chips); otherwise as a form (the phone menu).
  * Arrow keys stay here: in the details they would also step to the next
  * character. `themeOnly` leaves out the name and UID (a card that shows
- * neither, the artifact's).
+ * neither, the artifact's); `noTheme` the theme (a card drawn one way only,
+ * the Lunar Arcana's).
  */
-defineProps<{ compact?: boolean; themeOnly?: boolean }>()
+defineProps<{ compact?: boolean; themeOnly?: boolean; noTheme?: boolean }>()
 const theme = defineModel<'light' | 'dark'>('theme', { required: true })
 const name = defineModel<boolean>('name', { default: false })
 const uid = defineModel<boolean>('uid', { default: false })
@@ -58,6 +59,7 @@ const themesLong = computed(() => [
     @keydown.down.stop
   >
     <UiSegmented
+      v-if="!noTheme"
       :model-value="theme"
       :options="themes"
       :label="$t('share.options.cardTheme')"
@@ -90,6 +92,7 @@ const themesLong = computed(() => [
     @keydown.down.stop
   >
     <UiSegmented
+      v-if="!noTheme"
       :model-value="theme"
       :options="themesLong"
       :label="$t('share.options.cardTheme')"

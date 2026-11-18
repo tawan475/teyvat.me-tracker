@@ -15,7 +15,6 @@ import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
 import { canvasPng } from '@/lib/card-canvas'
 import { readJson, readStorage, writeJson, writeStorage } from '@/lib/storage'
-import { resolvedTheme } from '@/lib/theme'
 import { useCardExport } from '@/lib/use-card-export'
 import { useAccounts } from '@/stores/accounts'
 import { useAccount } from '@/views/account/context'
@@ -25,9 +24,9 @@ import { drawArcanaCard, type ArcanaDrawing, type DrawnArcana } from './arcana-c
 /**
  * The Lunar Arcana share card, as the endgame record cards
  * (RecordShareModal): drawn on a canvas once per change, the preview is that
- * canvas, the share cards' one remembered option set (theme, name, UID),
- * PNG / Copy / Share in the header. Wide (1920×1080) or tall (1080×1920),
- * remembered per device.
+ * canvas, the share cards' remembered name and UID options (no theme: this
+ * card is always dark), PNG / Copy / Share in the header. Wide (1920×1080)
+ * or tall (1080×1920), remembered per device.
  */
 type Fixed = 'theme' | 'owner' | 'layout'
 const props = defineProps<{
@@ -45,18 +44,18 @@ const latest = useResource(
 )
 
 interface Prefs {
-  theme?: 'light' | 'dark'
   name?: boolean
   uid?: boolean
 }
+// Always the dark card (the user's call, 2026-11-18: the game's sky is a night
+// sky); the shared option set's theme is left alone for the other cards.
+const theme = ref<'light' | 'dark'>('dark')
 const saved = readJson<Prefs>('share-card', {})
-const theme = ref<'light' | 'dark'>(saved.theme ?? resolvedTheme.value)
 const showName = ref(saved.name ?? true)
 const showUid = ref(saved.uid ?? false)
-watch([theme, showName, showUid], () =>
+watch([showName, showUid], () =>
   writeJson('share-card', {
     ...readJson<object>('share-card', {}),
-    theme: theme.value,
     name: showName.value,
     uid: showUid.value,
   }),
@@ -177,6 +176,7 @@ const exporter = useCardExport({
         v-model:name="showName"
         v-model:uid="showUid"
         :exporter="exporter"
+        no-theme
       />
       <ShareMenu
         v-else
@@ -185,6 +185,7 @@ const exporter = useCardExport({
         v-model:uid="showUid"
         :exporter="exporter"
         :size="$t('characters.modal.pngSize', { size })"
+        no-theme
       />
     </template>
 

@@ -149,11 +149,15 @@ export async function writePack(key: string, account: number, value: ArrayBuffer
   }
 }
 
-/** Drops the account's packs under `prefix` that `keep` no longer names. */
+/**
+ * Drops the account's packs under `prefix` that `keep` no longer names, and
+ * any of its packs `stale` names (another removal epoch's, whatever prefix).
+ */
 export async function prunePacks(
   account: number,
   prefix: string,
   keep: ReadonlySet<string>,
+  stale: (key: string) => boolean = () => false,
 ): Promise<void> {
   try {
     const db = await open()
@@ -167,7 +171,12 @@ export async function prunePacks(
       const cursor = cursors.result
       if (!cursor) return
       const entry = cursor.value as Entry
-      if (entry.pack && entry.key.startsWith(prefix) && !keep.has(entry.key)) cursor.delete()
+      if (
+        entry.pack &&
+        ((entry.key.startsWith(prefix) && !keep.has(entry.key)) || stale(entry.key))
+      ) {
+        cursor.delete()
+      }
       cursor.continue()
     }
     await done(transaction)

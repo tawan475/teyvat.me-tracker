@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { BundleSnapshot } from '@gdt/shared'
-import { bundlePacks, mergeDecoded, PACK_SIZE } from '../bundle-packs'
+import { bundlePacks, mergeDecoded, PACK_SIZE, packEpoch, packEpochOf } from '../bundle-packs'
 
 const history = (count: number, from = 0) =>
   Array.from({ length: count }, (_, i) => ({
@@ -65,5 +65,14 @@ describe('history packs', () => {
       ['a', '1'],
       ['b', '2'],
     ])
+  })
+
+  it('names a removal epoch in the keys, so packs from before a removal are never read', () => {
+    expect(packEpoch(undefined)).toBe('')
+    expect(packEpoch(1_700_000_000_000)).toBe('r1700000000000:')
+    // Keys from before any removal (and from before epochs existed) name none.
+    expect(packEpochOf('pack:7:3:all:2-abc', 7)).toBe('')
+    expect(packEpochOf('pack:7:r1700000000000:3:all:2-abc', 7)).toBe('r1700000000000:')
+    expect(packEpochOf(`pack:7:${packEpoch(5)}3:player:1-x`, 7)).toBe(packEpoch(5))
   })
 })

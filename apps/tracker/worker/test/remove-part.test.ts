@@ -183,9 +183,9 @@ describe('removing a part from history', () => {
     const { client, account, importKey } = await setup()
     const shots = await history(importKey)
     const before = await goods(client, account.id)
-    const { storedBytes: bytesBefore } = await client.json<AccountResponse>(
-      `/api/accounts/${account.id}`,
-    )
+    const { storedBytes: bytesBefore, partsRemovedAt: removedBefore } =
+      await client.json<AccountResponse>(`/api/accounts/${account.id}`)
+    expect(removedBefore).toBeUndefined()
     const response = await remove(client, account.id, 'achievements')
     expect(response.status, await response.clone().text()).toBe(200)
     const result = (await response.json()) as RemovePartResponse
@@ -209,10 +209,14 @@ describe('removing a part from history', () => {
       expect(good).toEqual(rest)
       expect(good.gi_events).toEqual(new17.events)
     }
-    const { storedBytes: bytesAfter } = await client.json<AccountResponse>(
+    const { storedBytes: bytesAfter, partsRemovedAt } = await client.json<AccountResponse>(
       `/api/accounts/${account.id}`,
     )
     expect(bytesBefore - bytesAfter).toBe(result.freed)
+    // The list says when: the history packs devices keep key on it.
+    expect(partsRemovedAt).toBe(result.removedAt)
+    const listed = await client.json<AccountResponse[]>('/api/accounts')
+    expect(listed.find((a) => a.id === account.id)?.partsRemovedAt).toBe(result.removedAt)
     // Nothing points at a blob that is gone, and nothing unreferenced is left.
     const dangling = await env.DB.prepare(
       `SELECT count(*) AS n FROM snapshots AS s WHERE s.account_id = ?1 AND (
@@ -500,5 +504,43 @@ describe('a failing live journal after the history is clean', () => {
     await result.later!()
     for (const good of (await goods(client, account.id)).values())
       expect(good.gi_tasks).toBeUndefined()
+  })
+})
+
+describe('a write that changes a snapshot in place meanwhile', () => {
+  it('refuses the whole run, like a new capture', async () => {
+    const { client, account, importKey } = await setup()
+    await history(importKey)
+    const { guard } = await countAccountParts(env.DB, null, account.id)
+    const before = await goods(client, account.id)
+    // Capture's attach lands between the read and the write: it sets a
+    // snapshot's extras_ref and bumps the data version, no new snapshot.
+    let batches = 0
+    const racing = new Proxy(env.DB, {
+      get(target, key) {
+        if (key !== 'batch') {
+          const value = Reflect.get(target, key) as unknown
+          return typeof value === 'function' ? value.bind(target) : value
+        }
+        return async (statements: D1PreparedStatement[]) => {
+          if (++batches === 2) {
+            await target
+              .prepare('UPDATE genshin_accounts SET data_version = data_version + 1 WHERE id = ?1')
+              .bind(account.id)
+              .run()
+          }
+          return target.batch(statements)
+        }
+      },
+    })
+    await expect(
+      removeAccountPart(racing, null, { id: account.id, settings: {} }, 'endgame', guard),
+    ).rejects.toMatchObject({ status: 409, code: 'capture_changed' })
+    expect(batches).toBe(2)
+    expect(await goods(client, account.id)).toEqual(before)
+    const { settings } = await client.json<AccountSettingsResponse>(
+      `/api/accounts/${account.id}/settings`,
+    )
+    expect(settings.parts.removed).toEqual({})
   })
 })

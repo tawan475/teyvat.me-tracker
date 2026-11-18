@@ -304,7 +304,8 @@ export function sameAccount(a: AccountResponse, b: AccountResponse): boolean {
     a.latest?.id === b.latest?.id &&
     a.latest?.takenAt === b.latest?.takenAt &&
     a.latest?.lastSeenAt === b.latest?.lastSeenAt &&
-    (a.liveSync ?? false) === (b.liveSync ?? false)
+    (a.liveSync ?? false) === (b.liveSync ?? false) &&
+    a.partsRemovedAt === b.partsRemovedAt
   )
 }
 

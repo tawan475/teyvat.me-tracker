@@ -2331,7 +2331,7 @@
           "Snapshots"
         ],
         "summary": "A snapshot as GOOD",
-        "description": "That capture as GOOD. A stored snapshot never changes: cache it.\n\nScope: snapshots · Read. Bucket `good`: 6 / min free, 20 / min supporter, per account.",
+        "description": "That capture as GOOD. It changes only when a part is removed from the history: revalidate with its `ETag`.\n\nScope: snapshots · Read. Bucket `good`: 6 / min free, 20 / min supporter, per account.",
         "parameters": [
           {
             "name": "id",
@@ -2347,6 +2347,14 @@
             "required": true,
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2374,6 +2382,9 @@
                 }
               }
             }
+          },
+          "304": {
+            "description": "Not modified since your ETag"
           },
           "default": {
             "description": "Error (rate_limited, not_found)",

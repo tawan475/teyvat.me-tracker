@@ -1794,11 +1794,13 @@ Errors: `not_found`, `rate_limited`.
 
 ### GET /api/v1/accounts/{id}/snapshots/{snapshotId}/good
 
-A snapshot as GOOD. That capture as GOOD. A stored snapshot never changes: cache it.
+A snapshot as GOOD. That capture as GOOD. It changes only when a part is removed from the history: revalidate with its `ETag`.
 
 - Scope: snapshots · Read
 
 - Bucket: `good` (6 / min free, 20 / min supporter, per account)
+
+- Send `If-None-Match` for a 304 when unchanged.
 
 Example:
 ```bash

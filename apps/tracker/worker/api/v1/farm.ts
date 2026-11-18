@@ -5,7 +5,10 @@
  * (with the hand edits made on it), then the farm estimates and what today's
  * open domains can farm on the account's server. The Farm view also applies
  * the goals' priority order, its filters and the gem switch; the API gives
- * the plan for all goals at once.
+ * the plan for all goals at once. Like the website's Planner (issue 12),
+ * a section the newest capture left out on purpose (Capture's `gi_off`:
+ * characters, weapons, materials) is read from the newest snapshot that
+ * shared it, and the hand edits of materials are measured against that one.
  */
 
 import {
@@ -35,7 +38,9 @@ import type {
   CurrentOverride,
   PlannerStateResponse,
   PlannerTargetsResponse,
+  SnapshotResponse,
 } from '@gdt/shared'
+import { sharedSightings, sharedSources } from '../../../src/data/shared-sources'
 import { inner, type V1Context } from './core'
 
 interface GoodLike {
@@ -45,26 +50,74 @@ interface GoodLike {
   gi_player?: { ar?: number; wl?: number }
 }
 
+/** The sections the farm plan reads that Capture can leave out. */
+const FARM_SECTIONS = ['characters', 'weapons', 'materials'] as const
+
 export async function farmPlanFor(c: V1Context, accountId: number, now = Date.now()) {
-  const [account, good, targets, state, settings, planner, drops] = await Promise.all([
+  const [account, good, list, targets, state, settings, planner, drops] = await Promise.all([
     inner<AccountResponse>(c, 'GET', `/accounts/${accountId}`),
     inner<GoodLike>(c, 'GET', `/accounts/${accountId}/latest/good`, { conditional: false }).catch(
       () => ({ data: {} as GoodLike }),
     ),
+    inner<SnapshotResponse[]>(c, 'GET', `/accounts/${accountId}/snapshots`, {
+      conditional: false,
+    }).catch(() => ({ data: [] as SnapshotResponse[] })),
     inner<PlannerTargetsResponse>(c, 'GET', `/accounts/${accountId}/planner-targets`),
     inner<PlannerStateResponse>(c, 'GET', `/accounts/${accountId}/planner-state`),
     inner<AccountSettingsResponse>(c, 'GET', `/accounts/${accountId}/settings`),
     loadPlanner(),
     loadDropRates(),
   ])
-  const capture = good.data
+  const capture: GoodLike = { ...good.data }
+
+  // A section the newest capture left out (gi_off): the newest snapshot's
+  // that shared it (none: empty), as the website's Planner reads it.
+  const latestId = account.data.latest?.id
+  const from = latestId !== undefined ? sharedSources(list.data, latestId) : null
+  const seen = from ? sharedSightings(list.data, from) : {}
+  if (from) {
+    const donors = new Map<number, Promise<GoodLike>>()
+    const donor = (id: number) => {
+      let entry = donors.get(id)
+      if (!entry) {
+        entry = inner<GoodLike>(c, 'GET', `/accounts/${accountId}/snapshots/${id}/good`, {
+          conditional: false,
+        }).then(
+          (answer) => answer.data,
+          () => ({}) as GoodLike,
+        )
+        donors.set(id, entry)
+      }
+      return entry
+    }
+    await Promise.all(
+      FARM_SECTIONS.map(async (section) => {
+        if (!(section in from)) return
+        const id = from[section]
+        const shared = id === null || id === undefined ? {} : await donor(id)
+        if (section === 'characters') capture.characters = shared.characters ?? []
+        else if (section === 'weapons') capture.weapons = shared.weapons ?? []
+        else capture.materials = shared.materials ?? {}
+      }),
+    )
+  }
   const characters = capture.characters ?? []
   const weapons = capture.weapons ?? []
 
-  // The bag: the capture's counts with the hand edits made against it.
+  // The bag: the capture's counts with the hand edits made against it, or,
+  // while the newest capture left materials out, against the newest one that
+  // shared them (0 when none did: every edit counts), like hand-edits.ts
+  // `bagSighting`.
+  const capturedAt = state.data.capturedAt
+  const sighting =
+    capturedAt === null
+      ? null
+      : seen.materials === undefined
+        ? capturedAt
+        : Math.min(seen.materials, capturedAt)
   const inventory: Record<string, number> = { ...(capture.materials ?? {}) }
   for (const adj of state.data.adjustments) {
-    if (state.data.capturedAt !== null && adj.base < state.data.capturedAt) continue
+    if (sighting !== null && adj.base < sighting) continue
     inventory[adj.key] = Math.max(0, (adj.set ?? inventory[adj.key] ?? 0) + adj.delta)
   }
   const overrides = new Map<string, CurrentOverride>()

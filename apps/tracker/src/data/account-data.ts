@@ -33,7 +33,7 @@ import { api, bundlePath, BUNDLE_FORMAT, request } from '@/api'
 import { accountPath } from '@/api/inspect'
 import { yieldToMain } from '@/lib/yield'
 import { decodeBundleOffThread } from './decode'
-import { bundlePacks, mergeDecoded } from './bundle-packs'
+import { bundlePacks, mergeDecoded, packEpoch, packEpochOf } from './bundle-packs'
 import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
 import { historyAt, type Travel } from './time-travel'
 import { sharedSightings, sharedSources, type SharedSources } from './shared-sources'
@@ -57,6 +57,11 @@ export interface AccountRef {
    * names it, so the past and now never share a cached answer.
    */
   travel?: Travel
+  /**
+   * The newest time a part was removed from the history (AccountResponse
+   * `partsRemovedAt`): the history packs kept on this device key on it.
+   */
+  partsRemovedAt?: number
 }
 
 export type SectionName =
@@ -212,7 +217,11 @@ const PACK_PARALLEL = 4
 async function loadPacked(account: AccountRef, sections: SectionName[] | undefined) {
   const list = await loadSnapshots(account)
   const packs = bundlePacks(list)
-  const prefix = `pack:${account.id}:${BUNDLE_FORMAT}:${sections?.join('+') ?? 'all'}:`
+  // A part removed from the history rewrites its snapshots in place (same
+  // ids and times): packs kept from before a removal are another epoch's,
+  // never read and dropped below, whatever their sections.
+  const epoch = packEpoch(account.partsRemovedAt)
+  const prefix = `pack:${account.id}:${epoch}${BUNDLE_FORMAT}:${sections?.join('+') ?? 'all'}:`
   const decoded: DecodedBundle[] = new Array(packs.length)
   let next = 0
   const worker = async () => {
@@ -230,7 +239,12 @@ async function loadPacked(account: AccountRef, sections: SectionName[] | undefin
     }
   }
   await Promise.all(Array.from({ length: Math.min(PACK_PARALLEL, packs.length) }, worker))
-  void prunePacks(account.id, prefix, new Set(packs.map((pack) => prefix + pack.key)))
+  void prunePacks(
+    account.id,
+    prefix,
+    new Set(packs.map((pack) => prefix + pack.key)),
+    (key) => packEpochOf(key, account.id) !== epoch,
+  )
   if (decoded.length === 0) return { snapshots: [], texts: new Map<string, string>() }
   return mergeDecoded(decoded)
 }

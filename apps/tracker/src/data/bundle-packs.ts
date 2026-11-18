@@ -51,6 +51,22 @@ export function bundlePacks(list: readonly PackSnapshot[], size = PACK_SIZE): Bu
   return packs
 }
 
+/**
+ * The pack keys' removal epoch: none before any part was removed from the
+ * history (the keys as they were), else `r<time>:`. A removal rewrites
+ * snapshots in place (same ids and last-seen times), so a pack kept from
+ * before it holds the removed part: another epoch's packs are never read.
+ */
+export function packEpoch(partsRemovedAt: number | undefined): string {
+  return partsRemovedAt ? `r${partsRemovedAt}:` : ''
+}
+
+/** The removal epoch a kept pack's key (`pack:<account>:<epoch>…`) names. */
+export function packEpochOf(key: string, accountId: number): string {
+  const rest = key.slice(`pack:${accountId}:`.length)
+  return /^r\d+:/.exec(rest)?.[0] ?? ''
+}
+
 /** Decoded packs as one bundle: snapshots in pack order, texts merged. */
 export function mergeDecoded(
   packs: readonly { snapshots: BundleSnapshot[]; texts: Map<string, string> }[],

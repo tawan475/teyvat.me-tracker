@@ -393,6 +393,70 @@ describe('/api/v1', () => {
     expect(data.today.weekday).toBeGreaterThanOrEqual(0)
   })
 
+  it('plans against the newest capture that shared the bag and roster (gi_off)', async () => {
+    const { client } = await signUp(unlimited)
+    const { account } = await createAccount(client)
+    const { secret } = await makeToken(client, { write: ['snapshots', 'planner'] })
+    const send = (good: Good, at: number) =>
+      bearer(
+        secret,
+        `/accounts/${account.id}/snapshots?timestamp=${at}`,
+        { method: 'POST', json: good },
+        unlimited,
+      )
+    expect((await send(sampleGood({ ...sampleExtras(812345678) }), 1_760_000_000_000)).status).toBe(
+      201,
+    )
+    await bearer(
+      secret,
+      `/accounts/${account.id}/planner/goals`,
+      {
+        method: 'PATCH',
+        json: {
+          upsert: [
+            {
+              kind: 'character',
+              key: 'Bennett',
+              target: { level: 90, ascension: 6, talents: { auto: 10, skill: 10, burst: 10 } },
+            },
+          ],
+          remove: [],
+        },
+      },
+      unlimited,
+    )
+    type Farm = { data: { missing: { key: string; missing: number }[]; mora: unknown } }
+    const farm = async () =>
+      (
+        (await (
+          await bearer(secret, `/accounts/${account.id}/planner/farm`, {}, unlimited)
+        ).json()) as Farm
+      ).data
+    // A hand edit made on that capture: plenty of the first thing still missing.
+    const short = (await farm()).missing[0]!.key
+    const { capturedAt } = await client.json<{ capturedAt: number }>(
+      `/api/accounts/${account.id}/planner-state`,
+    )
+    const edit = await client.fetch(`/api/accounts/${account.id}/planner-state`, {
+      method: 'PATCH',
+      json: { base: capturedAt, inventory: [{ key: short, set: 9_999 }] },
+    })
+    expect(edit.status).toBe(200)
+    const before = await farm()
+    expect(before.missing.some((m) => m.key === short)).toBe(false)
+
+    // A newer capture from a Capture with Characters and Materials switched off.
+    const { characters: _c, materials: _m, ...rest } = sampleGood({ ...sampleExtras(812345678) })
+    const off = await send(
+      { ...rest, gi_off: ['characters', 'materials'] } as Good,
+      1_760_000_100_000,
+    )
+    expect(off.status).toBe(201)
+    const after = await farm()
+    expect(after.missing).toEqual(before.missing)
+    expect(after.mora).toEqual(before.mora)
+  })
+
   it('works with the website session (the docs’ Try it)', async () => {
     const { client } = await signUp()
     const response = await client.fetch('/api/v1/me')

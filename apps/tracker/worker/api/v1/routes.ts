@@ -522,11 +522,13 @@ export const V1_ROUTES: V1Route[] = [
     path: '/accounts/{id}/snapshots/{snapshotId}/good',
     resource: 'Snapshots',
     summary: 'A snapshot as GOOD',
-    description: 'That capture as GOOD. A stored snapshot never changes: cache it.',
+    description:
+      'That capture as GOOD. It changes only when a part is removed from the history: revalidate with its `ETag`.',
     area: 'snapshots',
     access: 'read',
     bucket: 'good',
     accountParam,
+    conditional: true,
     response: s.good,
     errors: ['not_found'],
     handler: async ({ c, accountId, params }) => {
@@ -537,12 +539,9 @@ export const V1_ROUTES: V1Route[] = [
         c,
         'GET',
         `/accounts/${accountId}/snapshots/${id}/good`,
-        { conditional: false },
       )
-      return {
-        data: answer.data,
-        headers: { 'Cache-Control': 'private, max-age=31536000, immutable' },
-      }
+      if (answer.status === 304) return notModified(answer.etag)
+      return { data: answer.data, etag: answer.etag }
     },
   },
   {

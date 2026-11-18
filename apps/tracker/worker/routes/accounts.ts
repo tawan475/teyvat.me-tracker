@@ -467,10 +467,13 @@ export const accounts = new Hono<AppEnv>()
   .get('/:id/snapshots/:snapshotId/good', async (c) => {
     const id = idParam(c, 'id')
     const snapshotId = idParam(c, 'snapshotId')
-    await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    const account = await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'view')
+    // A stored snapshot changes only when a part is removed from the history
+    // (remove-part.ts), which moves the data version: revalidated, never kept
+    // as immutable, so a removed part never comes back from a browser cache.
+    const cached = checkEtag(c, accountEtag(account, `good.${snapshotId}`))
+    if (cached) return cached
     const { good, takenAt } = await buildGood(c.env.DB, id, snapshotId)
-    // A stored snapshot never changes.
-    c.header('Cache-Control', 'private, max-age=31536000, immutable')
     c.header('Content-Disposition', `attachment; filename="${goodFileName(takenAt)}"`)
     return c.json(good)
   })

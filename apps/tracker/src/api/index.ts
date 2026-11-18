@@ -550,8 +550,10 @@ export const api = {
     const response = await request(bundlePath(id, options))
     return response.arrayBuffer()
   },
+  // Always revalidated: builds before issue 12 were told a snapshot's file
+  // was immutable, and removing a part from the history changes it.
   snapshotGood: (id: number, snapshotId: number) =>
-    requestJson<Good>(accountPath(id, `snapshots/${snapshotId}/good`)),
+    requestJson<Good>(accountPath(id, `snapshots/${snapshotId}/good`), { cache: 'no-cache' }),
   latestGood: (id: number) => requestJson<Good>(accountPath(id, 'latest/good')),
 
   // ------------------------------------------------------------- live sync

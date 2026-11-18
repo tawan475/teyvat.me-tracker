@@ -976,6 +976,12 @@ export interface AccountResponse {
   access?: AccountAccess
   /** The owner's username, on accounts shared with this user. */
   owner?: string
+  /**
+   * The newest time (ms) a part was removed from this account's history
+   * (issue 12); absent when none was. A removal rewrites stored snapshots in
+   * place, so caches of history kept on a device key on it too.
+   */
+  partsRemovedAt?: number
 }
 
 /** A shared account's member role (docs/plans/account-sharing.md). */

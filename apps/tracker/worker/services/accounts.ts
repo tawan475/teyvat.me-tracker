@@ -133,9 +133,19 @@ export interface AccountListRow {
   last_seen_at: number | null
   summary?: string | null
   meta: unknown
+  /** The newest time a part was removed from the account's history (settings `parts.removed`). */
+  parts_removed?: number | null
   role: AccountAccess
   owner_name: string | null
 }
+
+/**
+ * The newest "removed from history" time in the account's settings: the
+ * device caches of history packs key on it (src/data/account-data.ts), as a
+ * removal rewrites stored snapshots without changing their ids or times.
+ */
+const PARTS_REMOVED_SQL = `(SELECT max(value) FROM json_each(
+  CASE WHEN json_valid(a.settings) THEN a.settings ELSE '{}' END, '$.parts.removed'))`
 
 /** The account list's query (see listAccounts); `accountId` narrows it to one. */
 export function accountListStatement(
@@ -149,7 +159,7 @@ export function accountListStatement(
       accessibleAccountsSql(
         `a.id, a.name, a.uid, a.server, a.created_at, a.data_version, a.snapshot_count,
          a.raw_bytes, a.stored_bytes, s.id AS latest_id, s.taken_at, s.last_seen_at,
-         ${legacy ? 's.summary, ' : ''}s.meta`,
+         ${legacy ? 's.summary, ' : ''}s.meta, ${PARTS_REMOVED_SQL} AS parts_removed`,
         {
           join: 'LEFT JOIN snapshots AS s ON s.id = a.latest_snapshot_id',
           where: '?2 IS NULL OR a.id = ?2',
@@ -185,6 +195,9 @@ export function accountsFromRows(rows: readonly AccountListRow[]): AccountRespon
             }
           })(),
     liveSync: true,
+    ...(typeof row.parts_removed === 'number' && row.parts_removed > 0
+      ? { partsRemovedAt: row.parts_removed }
+      : {}),
     access: row.role,
     ...(row.owner_name !== null ? { owner: row.owner_name } : {}),
   }))

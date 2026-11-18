@@ -47,9 +47,19 @@ import { REF_COLUMNS, REFS_SQL, toBytes } from './storage'
 /** JSON characters per bound parameter of a write (D1 takes up to 2 MB). */
 const CHUNK_CHARS = 900_000
 
-/** Every statement's guard: the account's snapshots are the ones read (?1 account, ?2 count, ?3 max id). */
-const GUARD = `(SELECT count(*) FROM snapshots WHERE account_id = ?1) = ?2
-  AND coalesce((SELECT max(id) FROM snapshots WHERE account_id = ?1), 0) = ?3`
+/**
+ * Every statement's guard: the account's snapshots are the ones read (?1
+ * account, ?2 count, ?3 max id) and its data version is too, so a write that
+ * changes a snapshot in place (Capture's attach sets `extras_ref`; every
+ * snapshot write bumps the version) also makes the run refuse. Nothing in the
+ * run's batch moves the version before its last guarded statement.
+ */
+function guardSql(dataVersion: number): string {
+  if (!Number.isSafeInteger(dataVersion)) throw new Error('data version is not an integer')
+  return `(SELECT count(*) FROM snapshots WHERE account_id = ?1) = ?2
+  AND coalesce((SELECT max(id) FROM snapshots WHERE account_id = ?1), 0) = ?3
+  AND (SELECT data_version FROM genshin_accounts WHERE id = ?1) = ${dataVersion}`
+}
 
 const hexOf = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
@@ -62,6 +72,8 @@ interface Loaded {
   blobs: Map<number, PartBlobRow>
   count: number
   maxId: number
+  /** The account's data version when read (the write's guard). */
+  dataVersion: number
   guard: string
 }
 
@@ -75,7 +87,7 @@ async function loadRows(d1: D1Database, accountId: number, slots: Slot[]): Promi
   const sized = slots.filter((slot) => !SHARED_SLOTS.has(slot))
   const codes = (list: Slot[]) =>
     JSON.stringify(list.flatMap((slot) => [kindCode(slot, false), kindCode(slot, true)]))
-  const [snapshotsResult, wholeResult, sizedResult] = await d1.batch([
+  const [snapshotsResult, wholeResult, sizedResult, versionResult] = await d1.batch([
     d1
       .prepare(`SELECT id, taken_at, deleted_at, ${REFS_SQL} FROM snapshots WHERE account_id = ?1`)
       .bind(accountId),
@@ -91,6 +103,7 @@ async function loadRows(d1: D1Database, accountId: number, slots: Slot[]): Promi
          WHERE account_id = ?1 AND kind IN (SELECT value FROM json_each(?2))`,
       )
       .bind(accountId, codes(sized)),
+    d1.prepare('SELECT data_version FROM genshin_accounts WHERE id = ?1').bind(accountId),
   ])
   const blobs = new Map<number, PartBlobRow>()
   for (const row of wholeResult!.results as Record<string, unknown>[]) {
@@ -146,7 +159,10 @@ async function loadRows(d1: D1Database, accountId: number, slots: Slot[]): Promi
   }))
   const count = rows.length
   const maxId = rows.reduce((max, row) => Math.max(max, row.id), 0)
-  return { rows, blobs, count, maxId, guard: `${count}:${maxId}` }
+  const dataVersion = Number(
+    (versionResult!.results[0] as { data_version?: number } | undefined)?.data_version ?? 0,
+  )
+  return { rows, blobs, count, maxId, dataVersion, guard: `${count}:${maxId}` }
 }
 
 /** Every slot any removable part touches. */
@@ -226,6 +242,7 @@ export async function removeAccountPart(
   const plan = await planPartRemoval(part, loaded.rows, loaded.blobs)
 
   const { count, maxId } = loaded
+  const GUARD = guardSql(loaded.dataVersion)
   const statements: D1PreparedStatement[] = []
   // Blobs that keep their id, standalone now (they leaned on a base holding the part).
   for (const json of chunks(

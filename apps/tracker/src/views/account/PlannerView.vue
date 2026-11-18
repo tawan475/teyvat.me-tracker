@@ -37,7 +37,6 @@ import {
   Eye,
   EyeOff,
   FileInput,
-  GripVertical,
   History,
   Info,
   Plus,
@@ -153,7 +152,7 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
-import UiDragGhost from '@/components/ui/UiDragGhost.vue'
+import PlannerDragGhost from '@/components/planner/PlannerDragGhost.vue'
 import { goalIcon } from '@/components/planner/goal-icon'
 import { t } from '@/i18n'
 import { formatDate, formatNumber } from '@/lib/format'
@@ -859,7 +858,7 @@ const drag = useDragOrder({
     if (target && target !== id) applyOrder(moveTo(pendingOrder.value, id, target))
   },
 })
-/** The lifted copy of the card being dragged (UiDragGhost, the tab bar's look). */
+/** The lifted copy of the card being dragged (PlannerDragGhost reads the pointer itself). */
 const dragGhost = computed(() => {
   const id = drag.dragging.value
   const entry = id ? pendingEntries.value.find((e) => e.id === id) : null
@@ -2041,29 +2040,14 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
             />
           </li>
         </ul>
-        <UiDragGhost
-          v-if="drag.lift.value && dragGhost"
-          :lift="drag.lift.value"
+        <PlannerDragGhost
+          v-if="dragGhost"
+          :lift="drag.lift"
+          :rank="dragGhost.rank"
+          :name="dragGhost.entry.name"
+          :icon="dragGhost.icon"
           :badge="dragGhost.badge"
-        >
-          <template #handle>
-            <span
-              class="inline-flex w-[44px] shrink-0 flex-col items-center justify-center gap-px text-text-primary sm:w-8"
-            >
-              <span class="tabular text-[0.6875rem] leading-none font-bold">{{
-                dragGhost.rank
-              }}</span>
-              <GripVertical class="size-3.5" aria-hidden="true" />
-            </span>
-          </template>
-          <img
-            v-if="dragGhost.icon"
-            :src="dragGhost.icon"
-            alt=""
-            class="size-[30px] shrink-0 rounded-md bg-surface-overlay object-cover"
-          />
-          <span class="min-w-0 flex-1 truncate font-semibold">{{ dragGhost.entry.name }}</span>
-        </UiDragGhost>
+        />
 
         <ExtraItems
           v-if="shownItems.length"

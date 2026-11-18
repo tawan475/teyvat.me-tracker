@@ -8,6 +8,7 @@ import { api, onSignedOut } from '@/api'
 import { forgetAccountSettings, settingsFromBootstrap } from '@/data/account-settings'
 import { clearCached } from '@/data/idb-cache'
 import { routeAccountId } from '@/lib/route-account'
+import { saveQueue } from '@/lib/save-queue'
 import { setClockPreference } from '@/lib/format'
 import { applyTheme } from '@/lib/theme'
 import { applyLocale, storedPreference } from '@/i18n/apply'
@@ -183,16 +184,22 @@ export const useSession = defineStore('session', () => {
     if (me.value?.email === email) me.value = { ...me.value, emailVerified: true }
   }
 
+  /** One save at a time, the newest change kept on screen (lib/save-queue). */
+  const settingsSaves = saveQueue<UserSettings>()
+
   /** Applies the change at once and rolls it back if the server refuses it. */
   async function updateSettings(patch: Partial<UserSettings>) {
     const before = me.value
     if (before) adopt({ ...before, settings: { ...before.settings, ...patch } })
-    try {
-      adopt(await api.updateUserSettings(patch))
-    } catch (error) {
-      if (before && me.value) adopt({ ...me.value, settings: before.settings })
-      throw error
-    }
+    await settingsSaves.save(
+      before?.settings ?? null,
+      () => api.updateUserSettings(patch),
+      (answer) => answer.settings,
+      (answer) => adopt(answer),
+      (baseline) => {
+        if (me.value) adopt({ ...me.value, settings: baseline })
+      },
+    )
   }
 
   /** A new all-accounts Irminsul key (the old one stops working); returns it once. */

@@ -111,15 +111,35 @@ function target(x: number, y: number, id: string): SortOver | null {
   if (!el || !root.value?.contains(el)) return null
   const key = keyOf(id)
   const from = fromOf(key)
-  const row = el.closest<HTMLElement>('[data-sort-row="ordered"]')
-  if (row) {
-    const rect = row.getBoundingClientRect()
+  let place = el.closest<HTMLElement>('[data-sort-row="ordered"], [data-sort-slot]')
+  // Between two rows, on the box's padding or its heading: the nearest place.
+  const box = el.closest<HTMLElement>('[data-sort-box="ordered"]')
+  if (!place && box) place = nearestPlace(box, y)
+  if (place?.dataset.sortRow === 'ordered') {
+    const rect = place.getBoundingClientRect()
     const lower = y >= rect.top + rect.height / 2
-    return overRow(list.value, key, from, Number(row.dataset.sortIndex), lower, limits.value)
+    return overRow(list.value, key, from, Number(place.dataset.sortIndex), lower, limits.value)
   }
-  if (el.closest('[data-sort-slot]')) return overEmpty(list.value, key, from, limits.value)
+  if (place) return overEmpty(list.value, key, from, limits.value)
   if (el.closest('[data-sort-box="other"]')) return overOther(list.value, from, limits.value)
   return null
+}
+
+/** The ordered list's row or empty place nearest to `y` (by its top and bottom). */
+function nearestPlace(box: HTMLElement, y: number): HTMLElement | null {
+  let best: HTMLElement | null = null
+  let gap = Infinity
+  for (const el of box.querySelectorAll<HTMLElement>(
+    '[data-sort-row="ordered"], [data-sort-slot]',
+  )) {
+    const rect = el.getBoundingClientRect()
+    const d = y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0
+    if (d < gap) {
+      gap = d
+      best = el
+    }
+  }
+  return best
 }
 
 const said = ref('')
@@ -317,6 +337,8 @@ const ghost = computed(() => {
 .drop-line {
   position: relative;
   z-index: 2;
+  /* The point under it is the gap between two rows, never the line. */
+  pointer-events: none;
   height: 0;
   margin: -2px 0;
 }

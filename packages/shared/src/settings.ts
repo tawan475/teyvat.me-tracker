@@ -31,6 +31,18 @@ export interface AccountSettings {
    * Traveler by its element key, `TravelerAnemo`). Order carries no meaning.
    */
   favoriteCharacters: string[]
+  /**
+   * The "Not shared by Capture" notes (issue 12): per removable part (and
+   * `all`, Overview's), when the owner hid its note and when they removed
+   * the part from history (ms). Written by their own routes, never by a
+   * settings patch.
+   */
+  parts: PartNotes
+}
+
+export interface PartNotes {
+  removed: Record<string, number>
+  hidden: Record<string, number>
 }
 
 /** At most this many favourite characters (more than the game has). */
@@ -185,6 +197,7 @@ export const ACCOUNT_SETTINGS_DEFAULTS: AccountSettings = {
   },
   resin: null,
   favoriteCharacters: [],
+  parts: { removed: {}, hidden: {} },
 }
 
 /**

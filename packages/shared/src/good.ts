@@ -566,6 +566,12 @@ export interface Good {
   gi_miliastra?: GiMiliastra
   /** The account's Theater run and Stygian records (Capture 1.17.12). */
   gi_endgame?: GiEndgame
+  /**
+   * Teyvat.me Capture's upload switches that are off (parts/off.ts names;
+   * [] = everything shared). Only on uploads; the tracker keeps it in the
+   * snapshot's meta and never writes it into an export.
+   */
+  gi_off?: string[]
 }
 
 /**

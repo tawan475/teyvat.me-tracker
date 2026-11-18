@@ -6,6 +6,7 @@
 import type { DeviceAlerts, PresenceResponseForAccount } from './alerts'
 import { z } from 'zod'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './password'
+import { ALL_PARTS_NOTE, REMOVABLE_PARTS, type RemovablePart } from './off'
 import {
   MAX_FAVORITE_CHARACTERS,
   MAX_PROGRESSION_GRAPHS,
@@ -183,6 +184,61 @@ export interface CompactResponse {
   removed: number
   dryRun: boolean
 }
+
+/**
+ * `GET /api/accounts/:id/parts` (owner): what each removable part holds in
+ * the stored history, for the remove dialog. `guard` names the history the
+ * counts are of; the removal is refused when it changed meanwhile.
+ */
+export interface PartsResponse {
+  /** Live snapshots in all. */
+  total: number
+  guard: string
+  /** Whether the account has live sync (the dialog counts its rows). */
+  live: boolean
+  parts: PartCountResponse[]
+}
+
+export interface PartCountResponse {
+  part: RemovablePart
+  /** Live snapshots that hold it. */
+  snapshots: number
+  /** When the newest of them was taken (null: none). */
+  lastAt: number | null
+  /** About how many bytes it takes. */
+  bytes: number
+  /** Changes of it in the open live journal. */
+  liveChanges: number
+}
+
+/** The word typed to confirm a removal (English in every language). */
+export const REMOVE_PART_WORD = 'REMOVE'
+
+export const removePartRequest = z
+  .object({
+    part: z.enum(REMOVABLE_PARTS),
+    confirm: z.literal(REMOVE_PART_WORD),
+    guard: z.string().max(64),
+  })
+  .strict()
+export type RemovePartRequest = z.infer<typeof removePartRequest>
+
+/** `POST /api/accounts/:id/parts/remove`: what went. */
+export interface RemovePartResponse {
+  part: RemovablePart
+  snapshots: number
+  /** Bytes the account stores less. */
+  freed: number
+  /** Changes dropped from the open live journal. */
+  liveChanges: number
+  removedAt: number
+}
+
+/** `POST /api/accounts/:id/parts/hide` (owner): hides a "Not shared" note until it changes. */
+export const hidePartNoteRequest = z
+  .object({ key: z.union([z.enum(REMOVABLE_PARTS), z.literal(ALL_PARTS_NOTE)]) })
+  .strict()
+export type HidePartNoteRequest = z.infer<typeof hidePartNoteRequest>
 
 /** What is stored, by kind: snapshot sections, the artifact catalog, wish history. */
 export interface StorageSplit {
@@ -971,6 +1027,11 @@ export interface SnapshotResponse {
   summary: SnapshotSummary
   /** irminsul's `gi_capture` (why it took the snapshot, its play session); live sync. */
   capture?: GiCapture
+  /**
+   * Teyvat.me Capture's `gi_off`: its upload switches that were off ([] =
+   * everything shared); absent for older builds and other uploads.
+   */
+  off?: string[]
 }
 
 export interface ImportResponse {

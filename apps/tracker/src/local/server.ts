@@ -16,6 +16,8 @@ import {
   compactPlan,
   compactRequest,
   deepMerge,
+  hidePartNoteRequest,
+  removePartRequest,
   plannerStatePatch,
   plannerTargetsPatch,
   plannerTasksPatch,
@@ -50,6 +52,7 @@ import {
   listSnapshots,
   unusedBlobs,
 } from './local-read'
+import { countPartsLocal, hidePartLocal, removePartLocal } from './local-parts'
 import { guestStore, type LocalStore } from './local-store'
 import { deleteWishesLocal, importWishesLocal, wishHistory } from './local-wishes'
 
@@ -367,6 +370,16 @@ export async function handleLocal(
     }
     const removed = await deleteSnapshots(store, plan.removed)
     return json({ kept: rows.length - removed, removed, dryRun: false } satisfies CompactResponse)
+  }
+  // Remove a part from history (issue 12), as the Worker's routes do.
+  if (rest === 'parts' && method === 'GET') return json(countPartsLocal(store))
+  if (rest === 'parts/remove' && method === 'POST') {
+    const body = parse(removePartRequest, await bodyJson(request))
+    return json(await removePartLocal(store, body.part, body.guard))
+  }
+  if (rest === 'parts/hide' && method === 'POST') {
+    const body = parse(hidePartNoteRequest, await bodyJson(request))
+    return json(await hidePartLocal(store, body.key))
   }
   const one = /^snapshots\/(\d+)$/.exec(rest)
   if (one && method === 'DELETE') {

@@ -304,6 +304,7 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
         summary: prepared.summary,
         playerVars: plan.playerVars,
         ...(prepared.good.capture ? { capture: prepared.good.capture } : {}),
+        ...(prepared.good.off ? { off: prepared.good.off } : {}),
       }),
     })
     fillAccount(tx, prepared)

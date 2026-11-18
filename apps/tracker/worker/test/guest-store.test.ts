@@ -6,9 +6,12 @@ import {
   decodeSnapshot,
   storedSnapshotOf,
   type AccountResponse,
+  type AccountSettingsResponse,
   type CatalogRow,
   type Good,
   type ImportResponse,
+  type PartsResponse,
+  type RemovePartResponse,
   type SnapshotResponse,
   type WishHistoryResponse,
 } from '@gdt/shared'
@@ -232,6 +235,68 @@ describe('guest store', () => {
     expect(after.files).toEqual(after.goods)
     const gone = await local('/snapshots/999', { method: 'DELETE' })
     expect(gone.status).toBe(404)
+  })
+
+  it('removes a part from history as the server does (issue 12)', async () => {
+    const { client, account, upload } = await serverAccount()
+    const withParts = (good: Good, i: number): Good => ({
+      ...good,
+      gi_player: { ...good.gi_player!, nickname: 'player01', nameCard: 210_001 },
+      gi_achievement_progress: { '84001': { progress: i, total: 9 } },
+      gi_events: { '2001001': { schedule: 7, start: 1_790_000_000, end: 1_800_000_000 } },
+    })
+    for (const [i, [good, at]] of sequence().entries()) {
+      await upload(withParts(good, i), at)
+      await importLocal(withParts(good, i), at)
+    }
+    const base = `/api/accounts/${account.id}`
+    const strip = ({ guard: _g, live: _l, ...rest }: PartsResponse) => rest
+    const there = await client.json<PartsResponse>(`${base}/parts`)
+    const here = await localJson<PartsResponse>('/parts')
+    expect(strip(here)).toEqual(strip(there))
+    for (const part of ['achievements', 'profile'] as const) {
+      const [serverCounts, localCounts] = [
+        await client.json<PartsResponse>(`${base}/parts`),
+        await localJson<PartsResponse>('/parts'),
+      ]
+      const removed = await client.json<RemovePartResponse>(`${base}/parts/remove`, {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: serverCounts.guard },
+      })
+      const removedHere = await localJson<RemovePartResponse>('/parts/remove', {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: localCounts.guard },
+      })
+      const { removedAt: _a, ...a } = removed
+      const { removedAt: _b, ...b } = removedHere
+      expect(b).toEqual(a)
+      // A stale guard is refused with the server's code.
+      const stale = await local('/parts/remove', {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: '0:0' },
+      })
+      expect(stale.status).toBe(409)
+      expect(await stale.json()).toMatchObject({ error: { code: 'capture_changed' } })
+    }
+    const [serverAfter, localAfter] = [
+      await serverExports(client, account.id),
+      await localExports(),
+    ]
+    expect(localAfter.goods).toEqual(serverAfter.goods)
+    expect(localAfter.files).toEqual(localAfter.goods)
+    for (const text of localAfter.goods) {
+      const good = JSON.parse(text) as Good
+      expect(good.gi_achievement_progress).toBeUndefined()
+      expect(good.gi_events).toBeDefined()
+      expect(good.gi_player?.nickname).toBeUndefined()
+    }
+    const { settings } = await localJson<AccountSettingsResponse>('/settings')
+    expect(Object.keys(settings.parts.removed).sort()).toEqual(['achievements', 'profile'])
+    const hidden = await localJson<AccountSettingsResponse>('/parts/hide', {
+      method: 'POST',
+      json: { key: 'all' },
+    })
+    expect(hidden.settings.parts.hidden.all).toEqual(expect.any(Number))
   })
 
   it('keeps marks, the plan and settings as the server routes do', async () => {

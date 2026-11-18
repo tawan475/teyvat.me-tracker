@@ -3,8 +3,8 @@
 #   docker compose up -d --build
 #
 # Settings live in self-host/.env (the template is in the README). Compose reads
-# SITE_URL from it for the build; the container reads the whole file, mounted
-# read-only, never as its environment.
+# SITE_URL and SITE_NAME from it for the build; the container reads the whole
+# file, mounted read-only, never as its environment.
 services:
   tracker:
     build:
@@ -12,6 +12,7 @@ services:
       dockerfile: self-host/Dockerfile
       args:
         SITE_URL: ${SITE_URL:?Set SITE_URL in self-host/.env (README.md)}
+        SITE_NAME: ${SITE_NAME:-}
     init: true
     ports:
       - "127.0.0.1:${PORT:-8787}:8787"

@@ -30,7 +30,12 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    ```sh
    # The address people open, with no path. The one origin for everything:
    # passkeys, sign-in links, Capture's sign-in, canonical links, the sitemap.
+   # https://, or http://localhost on your own PC (plain http anywhere else
+   # can't keep anyone signed in).
    SITE_URL=https://tracker.example
+   # The site's name in browser tab titles and on the sign-in page.
+   # Empty: Teyvat.me.
+   SITE_NAME=
    # Two different random values of 32 characters or more, e.g. from
    #   openssl rand -hex 32
    # Never change PASSWORD_PEPPER later: every password stops working.
@@ -41,6 +46,8 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    ```
 
    On your own PC, use `SITE_URL=http://localhost:8787` and skip the proxy.
+   Anyone else needs `https://` through a proxy (below): the sign-in cookies
+   are Secure, and browsers keep them over plain http on localhost only.
 
 3. Build and start it:
 
@@ -49,9 +56,11 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    ```
 
    The first build takes a few minutes. The start applies every database
-   migration, then the site answers on `http://127.0.0.1:8787` (on this machine
-   only; the proxy is what others reach). `docker compose logs -f` shows what it
-   does.
+   migration, then the site answers on port 8787 of this machine only (the
+   proxy is what others reach). `docker compose logs -f` shows what it does.
+   Always open it at exactly the `SITE_URL` address (on your own PC,
+   `http://localhost:8787`, not `127.0.0.1`): sign-in links, live updates,
+   the wish import and passkeys check that the page is on that address.
 
 4. Open the site, sign up, then make yourself the Owner (every staff
    permission; the dashboard can't give it):
@@ -65,9 +74,10 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    dashboard's Overview (`/app/staff`).
 
 The container refuses to start, and says why in `docker compose logs`, when a
-required setting is missing or too short, when `SITE_URL` differs from the one
-the image was built for (rebuild), or when the build output holds a `.dev.vars`
-file (developer secrets).
+required setting is missing or too short, when `SITE_URL` is plain http on
+another host than localhost, when `SITE_URL` or `SITE_NAME` differs from the
+one the image was built for (rebuild), or when the build output holds a
+`.dev.vars` file (developer secrets).
 
 ## A proxy in front
 

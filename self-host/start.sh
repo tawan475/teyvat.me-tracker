@@ -40,16 +40,16 @@ for key in JWT_SECRET PASSWORD_PEPPER; do
   [ "$(setting "$key" | wc -c)" -gt 32 ] || fail "$key must be at least 32 characters"
 done
 
-origin=$(node -e '
-  try {
-    const url = new URL(process.argv[1])
-    if (!/^https?:$/.test(url.protocol)) throw 0
-    console.log(url.origin)
-  } catch { process.exit(1) }' "$(setting SITE_URL)") ||
-  fail "SITE_URL is not an http(s) address"
+# https, or plain http on localhost only (site-origin.mjs says why).
+origin=$(node /app/self-host/site-origin.mjs "$(setting SITE_URL)" 2>&1) || fail "$origin"
 built=$(cat /app/self-host/built-origin)
 [ "$origin" = "$built" ] ||
   fail "SITE_URL is $origin but the image was built for $built: rebuild (docker compose up -d --build)"
+name=$(setting SITE_NAME)
+name=${name:-Teyvat.me}
+built_name=$(cat /app/self-host/built-name)
+[ "$name" = "$built_name" ] ||
+  fail "SITE_NAME is \"$name\" but the image was built for \"$built_name\": rebuild (docker compose up -d --build)"
 
 # 3. Migrations, for every D1 database in the config (gdt and gdt-live today).
 for db in $(jq -r '.d1_databases[].binding' "$CFG"); do

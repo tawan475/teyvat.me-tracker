@@ -1,0 +1,4 @@
+# The self-host scripts run in a Linux container: LF on every checkout,
+# Windows clones included (a CR stops /bin/sh at the first line).
+self-host/start.sh text eol=lf
+self-host/grant-owner text eol=lf

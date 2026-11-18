@@ -82,6 +82,16 @@ jobs:
           echo "$out"
           echo "$out" | grep -q 'missing in .env: PASSWORD_PEPPER'
 
+      - name: Plain http off localhost stops the start
+        run: |
+          echo "refuses plain http off localhost" > "$RUNNER_TEMP/step"
+          sed 's#^SITE_URL=.*#SITE_URL=http://192.168.1.20:8787#' "$RUNNER_TEMP/full.env" > .env
+          if out=$($COMPOSE run --rm --no-deps tracker 2>&1); then
+            echo "::error::the container started on plain http off localhost"; exit 1
+          fi
+          echo "$out"
+          echo "$out" | grep -q 'plain http works only on localhost'
+
       - name: Start
         run: |
           echo "start" > "$RUNNER_TEMP/step"

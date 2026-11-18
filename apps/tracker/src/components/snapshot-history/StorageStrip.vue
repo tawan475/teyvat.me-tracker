@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UsageResponse } from '@gdt/shared'
 import { computed, ref } from 'vue'
-import { ChevronDown, Shrink } from 'lucide-vue-next'
+import { ChevronDown, Shrink, Trash2 } from 'lucide-vue-next'
 import StorageSplitBar from '@/components/staff/StorageSplitBar.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
@@ -13,7 +13,8 @@ import { formatNumber } from '@/lib/format'
  * raw, stored, saved), what the user stores against their allocated space
  * (every account of theirs, the quota bar), and a fold with the breakdown:
  * this account's split and all their accounts' with live sync. Compact
- * opens the owner's one-a-day / one-a-week tool.
+ * opens the owner's one-a-day / one-a-week tool, "Remove part…" the remove
+ * dialog (issue 12). The guest has both, without the quota.
  */
 const props = defineProps<{
   accountId: number
@@ -24,8 +25,9 @@ const props = defineProps<{
   /** The user's usage; null while loading or on a shared/inspected account. */
   usage: UsageResponse | null
   canCompact: boolean
+  canRemovePart?: boolean
 }>()
-const emit = defineEmits<{ compact: [] }>()
+const emit = defineEmits<{ compact: []; removePart: [] }>()
 
 /** The old dashboard's formatBytes (two decimals, trailing zeros dropped). */
 function formatBytes(bytes: number): string {
@@ -95,10 +97,10 @@ const thisAccount = computed(
     </div>
 
     <div
-      v-if="usage"
+      v-if="usage || canCompact || canRemovePart"
       class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border-subtle px-4 py-3 text-sm"
     >
-      <span class="flex min-w-0 flex-[1_1_16rem] items-center gap-3">
+      <span v-if="usage" class="flex min-w-0 flex-[1_1_16rem] items-center gap-3">
         <span class="shrink-0 text-text-muted">{{ $t('snapshots.storage.allocated') }}</span>
         <UiProgress
           class="min-w-0 flex-1"
@@ -120,7 +122,17 @@ const thisAccount = computed(
           <Shrink class="size-4" aria-hidden="true" />
           {{ $t('snapshots.storage.compact') }}
         </UiButton>
-        <UiButton variant="ghost" size="sm" :aria-expanded="open" @click="open = !open">
+        <UiButton v-if="canRemovePart" variant="ghost" size="sm" @click="emit('removePart')">
+          <Trash2 class="size-4" aria-hidden="true" />
+          {{ $t('snapshots.parts.storageButton') }}
+        </UiButton>
+        <UiButton
+          v-if="usage"
+          variant="ghost"
+          size="sm"
+          :aria-expanded="open"
+          @click="open = !open"
+        >
           {{ $t('snapshots.storage.breakdown') }}
           <ChevronDown
             class="size-4 transition-transform"

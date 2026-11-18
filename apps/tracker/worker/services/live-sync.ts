@@ -443,7 +443,9 @@ export async function readJournal(
       items,
       bytes: journal.bytes,
     },
-    etag: `"live-${journal.base_key}-${journal.base_snapshot_id}-${journal.last_seq}"`,
+    // `changes`: a part removed from history (remove-part.ts) rewrites the
+    // rows without moving the seq.
+    etag: `"live-${journal.base_key}-${journal.base_snapshot_id}-${journal.last_seq}-${journal.changes}"`,
   }
 }
 

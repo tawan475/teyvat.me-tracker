@@ -45,6 +45,12 @@ export function usePlannerState(
   onCaptureChanged: (accountId: number) => Promise<void>,
   /** Runs before each send (the goals' own writes: a current state lands only on a stored goal). */
   before: () => Promise<void> = async () => {},
+  /**
+   * The sighting of the capture the bag is from (hand-edits.ts
+   * `bagSighting`): older than `base` while the newest capture left
+   * materials out, so the edits made since the bag's capture are kept.
+   */
+  bagBase: Ref<number> = base,
 ) {
   const feedback = useFeedback()
   /** The server's answer; the view is this plus what is waiting to be sent. */
@@ -95,7 +101,7 @@ export function usePlannerState(
     const s = server.value
     if (!s) return null
     return inventory.size
-      ? applyChanges(s.adjustments, inventory.values(), base.value, Date.now())
+      ? applyChanges(s.adjustments, inventory.values(), base.value, Date.now(), bagBase.value)
       : s.adjustments
   })
 
@@ -130,8 +136,11 @@ export function usePlannerState(
   }
 
   function send(id: number, at: number, changes: StateChanges & { prune?: boolean }) {
+    const bag = bagBase.value
     return api.updatePlannerState(id, {
       base: at,
+      // Only while the newest capture left materials out (and is the one sent against).
+      ...(bag < at && at === base.value ? { bagBase: bag } : {}),
       inventory: changes.inventory ?? [],
       current: changes.current ?? [],
       ...(changes.prune ? { prune: true } : {}),

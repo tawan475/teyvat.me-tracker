@@ -6,6 +6,7 @@
 import type { DeviceAlerts, PresenceResponseForAccount } from './alerts'
 import { z } from 'zod'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './password'
+import { ALL_PARTS_NOTE, REMOVABLE_PARTS, type RemovablePart } from './off'
 import {
   MAX_FAVORITE_CHARACTERS,
   MAX_PROGRESSION_GRAPHS,
@@ -184,6 +185,61 @@ export interface CompactResponse {
   removed: number
   dryRun: boolean
 }
+
+/**
+ * `GET /api/accounts/:id/parts` (owner): what each removable part holds in
+ * the stored history, for the remove dialog. `guard` names the history the
+ * counts are of; the removal is refused when it changed meanwhile.
+ */
+export interface PartsResponse {
+  /** Live snapshots in all. */
+  total: number
+  guard: string
+  /** Whether the account has live sync (the dialog counts its rows). */
+  live: boolean
+  parts: PartCountResponse[]
+}
+
+export interface PartCountResponse {
+  part: RemovablePart
+  /** Live snapshots that hold it. */
+  snapshots: number
+  /** When the newest of them was taken (null: none). */
+  lastAt: number | null
+  /** About how many bytes it takes. */
+  bytes: number
+  /** Changes of it in the open live journal. */
+  liveChanges: number
+}
+
+/** The word typed to confirm a removal (English in every language). */
+export const REMOVE_PART_WORD = 'REMOVE'
+
+export const removePartRequest = z
+  .object({
+    part: z.enum(REMOVABLE_PARTS),
+    confirm: z.literal(REMOVE_PART_WORD),
+    guard: z.string().max(64),
+  })
+  .strict()
+export type RemovePartRequest = z.infer<typeof removePartRequest>
+
+/** `POST /api/accounts/:id/parts/remove`: what went. */
+export interface RemovePartResponse {
+  part: RemovablePart
+  snapshots: number
+  /** Bytes the account stores less. */
+  freed: number
+  /** Changes dropped from the open live journal. */
+  liveChanges: number
+  removedAt: number
+}
+
+/** `POST /api/accounts/:id/parts/hide` (owner): hides a "Not shared" note until it changes. */
+export const hidePartNoteRequest = z
+  .object({ key: z.union([z.enum(REMOVABLE_PARTS), z.literal(ALL_PARTS_NOTE)]) })
+  .strict()
+export type HidePartNoteRequest = z.infer<typeof hidePartNoteRequest>
 
 /** What is stored, by kind: snapshot sections, the artifact catalog, wish history. */
 export interface StorageSplit {
@@ -622,11 +678,15 @@ export const currentOverride = z.discriminatedUnion('kind', [
  * `lastSeenAt`, 0 without one. When the account's newest capture is another
  * one by now, nothing is written and the answer is a 409 (`capture_changed`).
  * Every write also drops the material edits a newer capture has replaced;
- * `prune` asks for just that.
+ * `prune` asks for just that. `bagBase` is the `lastSeenAt` of the capture
+ * the bag comes from when the newest one left materials out (Capture's
+ * `gi_off`, issue 12): edits made at or after it still count and are kept
+ * (absent: `base`; more than `base` counts as `base`).
  */
 export const plannerStatePatch = z
   .object({
     base: z.number().int().min(0),
+    bagBase: z.number().int().min(0).optional(),
     inventory: z.array(inventoryChange).max(1000).default([]),
     current: z.array(currentOverride).max(1000).default([]),
     prune: z.boolean().optional(),
@@ -973,6 +1033,11 @@ export interface SnapshotResponse {
   summary: SnapshotSummary
   /** irminsul's `gi_capture` (why it took the snapshot, its play session); live sync. */
   capture?: GiCapture
+  /**
+   * Teyvat.me Capture's `gi_off`: its upload switches that were off ([] =
+   * everything shared); absent for older builds and other uploads.
+   */
+  off?: string[]
 }
 
 export interface ImportResponse {
@@ -1264,7 +1329,9 @@ export type WeaponCurrent = z.infer<typeof weaponCurrent>
  * One material's hand edit: the count is `set ?? the capture's count`, plus
  * `delta`. It applies while the account's newest capture is the one it was
  * made against (`base`, that capture's `lastSeenAt`, 0 for none) or older;
- * a newer capture replaces it (irminsul is the truth).
+ * a newer capture replaces it (irminsul is the truth). A newer capture that
+ * left materials out (Capture's `gi_off`) brought no bag and replaces none:
+ * the edit applies while `base` is at or after the bag's capture.
  */
 export interface InventoryAdjustment {
   key: string

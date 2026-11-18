@@ -47,6 +47,7 @@ import {
 } from '../good'
 import { GOOD_LIMITS } from '../import'
 import { readCapture, type GiCapture } from '../live/capture'
+import { readOff } from '../off'
 
 export interface ArtifactOccurrence {
   identity: ArtifactIdentity
@@ -87,6 +88,13 @@ export interface NormalizedGood {
    */
   itemGuids?: { artifacts: (string | null)[]; weapons: (string | null)[] }
   capture?: GiCapture | null
+  /**
+   * Teyvat.me Capture's `gi_off`: the upload switches that were off (names,
+   * valid ones only; [] = everything shared). Never stored in a section and
+   * never part of a hash: the snapshot's meta keeps it. Absent when the
+   * file had none (older Capture builds, website imports).
+   */
+  off?: string[]
   /** `gi_tasks`, the parts that pass their checks whole (see toTasks). */
   tasks: GiTasks | null
   /** `gi_collections`, the parts that pass their checks whole (see toCollections). */
@@ -201,6 +209,8 @@ export function normalizeGood(input: unknown, options: NormalizeOptions = {}): N
   const itemGuids = toItemGuids(input)
   if (itemGuids) good.itemGuids = itemGuids
   if (input.gi_capture !== undefined) good.capture = readCapture(input.gi_capture)
+  const off = readOff(input.gi_off)
+  if (off) good.off = off
   checkKeys(good, options)
   checkWholeCapture(input, good)
   return good
@@ -233,6 +243,8 @@ function isPacketCapture(input: Json, good: NormalizedGood): boolean {
  */
 function checkWholeCapture(input: Json, good: NormalizedGood): void {
   if (good.characters.length > 0) return
+  // Capture says the roster was left out on purpose (its Characters switch).
+  if (good.off?.includes('characters')) return
   const bag = good.weapons.length + good.artifacts.length + good.materials.size
   if (bag === 0 || !isPacketCapture(input, good)) return
   throw new GoodPartialCaptureError(

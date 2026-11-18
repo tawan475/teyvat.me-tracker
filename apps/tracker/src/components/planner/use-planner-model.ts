@@ -17,7 +17,7 @@ import { updatesHeld } from '@/live/holds'
 import { onPlannerChange } from '@/live/planner-changes'
 import { useAccounts } from '@/stores/accounts'
 import { preloadMaterialRarities } from '@/utils/materials'
-import { countChange, effectiveInventory, replacedAdjustments } from './hand-edits'
+import { bagSighting, countChange, effectiveInventory, replacedAdjustments } from './hand-edits'
 import { withCustomCharacters } from './custom-character'
 import { setCustomProfiles } from './custom-registry'
 import { withCustomWeapons } from './custom-weapon'
@@ -96,6 +96,19 @@ export function usePlannerModel(
     return loaded ? localizeFarming(loaded) : null
   })
   const hasCapture = computed(() => !!data.value?.inventory)
+  /**
+   * The sighting hand edits of materials are measured against: `base`, or,
+   * while the newest capture left materials out (Capture's `gi_off`), the
+   * newest capture's that shared them, whose bag the Planner shows. Edits
+   * made since then still count.
+   */
+  const bagBase = computed(() => {
+    const inventory = data.value?.inventory
+    const latest = account.value.latest
+    // Only the newest capture's own reading (not one still loading in its place).
+    if (!inventory || !latest || inventory.snapshot.id !== latest.id) return base.value
+    return bagSighting(base.value, inventory.sharedSeenAt?.materials)
+  })
   /** irminsul's `gi_tasks` in the newest capture, with when it was taken. */
   const capturedTasks = computed<CapturedTasks | null>(() => {
     const inventory = data.value?.inventory
@@ -152,6 +165,7 @@ export function usePlannerModel(
     },
     // A new goal's current state needs the goal on the server first.
     () => store.flush(),
+    bagBase,
   )
   onBeforeUnmount(() => void state.flush())
 
@@ -170,7 +184,7 @@ export function usePlannerModel(
   const bag = computed(() => {
     const g = good.value
     const edits = liveEdits.value
-    return g && edits ? effectiveInventory(g.materials, edits, base.value) : null
+    return g && edits ? effectiveInventory(g.materials, edits, bagBase.value) : null
   })
   /** The capture with the planner's bag, for the dialogs that read counts. */
   const goodView = computed<Good | null>(() =>
@@ -178,7 +192,9 @@ export function usePlannerModel(
   )
   /** Edits a newer capture replaced (until the next write drops them). */
   const replaced = computed(() =>
-    state.adjustments.value ? replacedAdjustments(state.adjustments.value, base.value).length : 0,
+    state.adjustments.value
+      ? replacedAdjustments(state.adjustments.value, bagBase.value).length
+      : 0,
   )
 
   const { settings, save: saveSettings, reload: reloadSettings } = usePlannerSettings(accountId)
@@ -294,6 +310,8 @@ export function usePlannerModel(
   return {
     accountId,
     base,
+    /** The sighting the bag and its hand edits are measured against (`base` unless the newest capture left materials out). */
+    bagBase,
     resource,
     data,
     planner,

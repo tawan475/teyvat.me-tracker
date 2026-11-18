@@ -60,6 +60,7 @@ import MaterialFocus from '@/components/planner/MaterialFocus.vue'
 import PlannerSettings from '@/components/planner/PlannerSettings.vue'
 import ResinTracker from '@/components/planner/ResinTracker.vue'
 import TasksStrip from '@/components/planner/TasksStrip.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import {
   allocateNeeds,
   createAllocationMemo,
@@ -1847,6 +1848,7 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
         @set="(value) => void saveSettings({ resin: value })"
         @settings="settingsOpen = true"
       />
+      <NotSharedStrip :parts="['tasks']" class="!mb-0" />
       <TasksStrip
         :tasks="tasks.tasks.value"
         :now="now"

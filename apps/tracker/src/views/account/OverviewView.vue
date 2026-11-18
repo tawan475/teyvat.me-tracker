@@ -19,6 +19,7 @@ import MonthlyAnalysisCard from '@/components/progression/MonthlyAnalysisCard.vu
 import OverviewSkeleton from '@/components/overview/OverviewSkeleton.vue'
 import RecentSnapshots from '@/components/overview/RecentSnapshots.vue'
 import TravelerPanel from '@/components/overview/TravelerPanel.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -30,6 +31,7 @@ import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achie
 import { groupAchievements, summarizeAchievements } from '@/data/achievement-progress'
 import {
   loadAccountPlayer,
+  loadLastProfile,
   loadBundle,
   loadLive,
   loadPoints,
@@ -37,6 +39,8 @@ import {
 } from '@/data/account-data'
 import {
   buildHistory,
+  sharedSummary,
+  withSharedFigures,
   currencyMissing,
   latestDelta,
   serverLabel,
@@ -113,7 +117,11 @@ const liveFigures = computed(() => {
   const journal = live.data.value
   const latest = account.value.latest
   if (!journal?.open || !latest || journal.base?.snapshotId !== latest.id) return null
-  return journal.changes?.length ? (journal.figures ?? null) : null
+  const figures = journal.changes?.length ? (journal.figures ?? null) : null
+  // A section the base left out (Capture's gi_off) keeps the last shared figures.
+  const newest = list.value?.[0]
+  if (!figures || newest?.id !== latest.id || !newest.off || !newestSummary.value) return figures
+  return withSharedFigures(figures, newest.off, newestSummary.value)
 })
 
 // The Traveler (gi_player of the newest snapshot) and the EXP its next rank needs.
@@ -123,8 +131,25 @@ const player = useResource(
 )
 // The AR table and the name cards' art (the wardrobe chunk, ~30 KB).
 const playerData = useResource(() => 'player,wardrobe', loadProfileArt)
-const traveler = computed(() => {
+/**
+ * Capture leaves the profile out (issue 12, `gi_off`): the card keeps the
+ * newest profile any capture had, and says which capture that was.
+ */
+const profileHidden = computed(() => !!list.value?.[0]?.off?.includes('gi_player.profile'))
+const lastShared = useResource(
+  () => (profileHidden.value ? account.value : null),
+  (a) => (a ? loadLastProfile(a) : Promise.resolve(null)),
+)
+const shownPlayer = computed(() => {
   const profile = player.data.value
+  const last = profileHidden.value ? lastShared.data.value : null
+  return profile && last ? { ...profile, ...last.fields } : profile
+})
+const profileFrom = computed(() =>
+  profileHidden.value ? (lastShared.data.value?.takenAt ?? null) : null,
+)
+const traveler = computed(() => {
+  const profile = shownPlayer.value
   if (!profile || (profile.ar === undefined && profile.wl === undefined)) return null
   const row = playerData.data.value?.arLevels.find((r) => r.id === profile.ar)
   const need = typeof row?.exp === 'number' && row.exp > 0 ? row.exp : null
@@ -139,7 +164,7 @@ const traveler = computed(() => {
  */
 const profileCard = computed(() => ({
   ...buildProfileCard(
-    player.data.value,
+    shownPlayer.value,
     playerData.data.value,
     accounts.displayName(account.value),
     travelerGender.value,
@@ -242,8 +267,19 @@ const delta = computed(() => {
   return latestDelta(loaded)
 })
 
+/**
+ * The newest snapshot's figures, a section Capture left out (gi_off) read
+ * from the newest snapshot that shared it (issue 12).
+ */
+const newestSummary = computed(() => {
+  const latest = account.value.latest
+  const loaded = list.value
+  if (latest && loaded && loaded[0]?.id === latest.id) return sharedSummary(loaded, 0)
+  return latest?.summary
+})
+
 const tiles = computed(() => {
-  const latestSummary = account.value.latest?.summary
+  const latestSummary = newestSummary.value
   if (!latestSummary) return []
   // Live: the figures now, each against the newest snapshot.
   const figures = liveFigures.value
@@ -291,7 +327,7 @@ const tiles = computed(() => {
   ]
 })
 const lowRarity = computed(() => {
-  const summary = liveFigures.value ?? account.value.latest?.summary
+  const summary = liveFigures.value ?? newestSummary.value
   if (!summary) return null
   const d = liveFigures.value ? undefined : delta.value
   return {
@@ -339,6 +375,8 @@ const importRoute = computed(() => accountLink('account-import'))
     </template>
   </PageHeader>
 
+  <NotSharedStrip all />
+
   <CapturePresence
     v-if="!demo && !guest && !travel"
     class="mb-3"
@@ -366,6 +404,7 @@ const importRoute = computed(() => accountLink('account-import'))
       :player="traveler.profile"
       :need="traveler.need"
       :profile="profileCard"
+      :profile-from="profileFrom"
       :stats="cardStats"
     />
     <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

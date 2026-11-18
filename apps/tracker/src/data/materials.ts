@@ -7,10 +7,12 @@
  * measured at 8 ms for 151 snapshots and 22 ms for 1,208, so no worker.
  */
 
+import { sharesSection } from '@gdt/shared/off'
 import {
   accountCacheKey,
   loadBundle,
   loadMaterialsDictionary,
+  loadSnapshots,
   type AccountRef,
 } from './account-data'
 import { buildMaterialsHistory, type MaterialsHistory } from './materials-history'
@@ -25,11 +27,19 @@ export function loadMaterialsHistory(account: AccountRef): Promise<MaterialsHist
   let entry = cache.get(key)
   if (!entry) {
     entry = (async () => {
-      const [bundle, dictionary] = await Promise.all([
+      const [bundle, dictionary, list] = await Promise.all([
         loadBundle(account, { sections: ['materials'] }),
         loadMaterialsDictionary(),
+        loadSnapshots(account),
       ])
-      const snapshots = [...bundle.snapshots].sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
+      // A capture whose Materials switch was off (Capture's gi_off, issue 12)
+      // holds no bag: it is left out, so every count holds the last shared one.
+      const unshared = new Set(
+        list.filter((s) => !sharesSection(s.off, 'materials')).map((s) => s.id),
+      )
+      const snapshots = bundle.snapshots
+        .filter((s) => !unshared.has(s.id))
+        .sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
       return buildMaterialsHistory(snapshots, bundle.texts, dictionary)
     })()
     entry.catch(() => cache.delete(key))

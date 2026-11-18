@@ -3771,6 +3771,11 @@ Body:
    "minimum": 0,
    "maximum": 9007199254740991
   },
+  "bagBase": {
+   "type": "integer",
+   "minimum": 0,
+   "maximum": 9007199254740991
+  },
   "inventory": {
    "default": [],
    "maxItems": 1000,

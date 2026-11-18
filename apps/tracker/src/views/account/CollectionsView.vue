@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import CaptureTime from '@/components/collections/CaptureTime.vue'
 import CollectionsHub from '@/components/collections/CollectionsHub.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import {
   HUB_TOPICS,
   NEEDS_CATALOG,
@@ -11,6 +12,7 @@ import {
   TAB_COMPONENTS,
   TAB_LABEL,
   TAB_PART,
+  TAB_REMOVABLE,
   isCollectionTab,
 } from '@/components/collections/tabs'
 import { topicsKey, useCollectionCatalog } from '@/components/collections/use-catalog'
@@ -85,6 +87,13 @@ const part = computed(() => {
         <h2 class="min-w-0 flex-1 truncate text-lg font-semibold">{{ title }}</h2>
         <CaptureTime v-if="TAB_PART[tab] && ready" :taken-at="part?.takenAt" />
       </div>
+
+      <!-- Achievements shows its own (it knows which capture it shows). -->
+      <NotSharedStrip
+        v-if="tab !== 'achievements'"
+        :parts="TAB_REMOVABLE[tab]"
+        :shown-at="part?.takenAt ?? null"
+      />
 
       <!-- Achievements and Anecdotes load their own data and hand marks. -->
       <component :is="TAB_COMPONENTS[tab]" v-if="TAB_PART[tab] === null" />

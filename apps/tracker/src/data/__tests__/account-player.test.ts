@@ -76,3 +76,24 @@ describe('accountPlayer', () => {
     expect(accountPlayer([{ takenAt: 1 }, { takenAt: 2, key: null }], decode)).toEqual(NO_PLAYER)
   })
 })
+
+describe('the last profile (issue 12)', () => {
+  it('is the newest snapshot that has one, with its time', async () => {
+    const { lastProfile } = await import('../account-player')
+    const sections = {
+      a: { ar: 58, nickname: 'player01', nameCard: 210_001 },
+      b: { ar: 59 },
+    }
+    const decode = (key: string) => sections[key as keyof typeof sections]
+    expect(
+      lastProfile(
+        [
+          { takenAt: 1, key: 'a' },
+          { takenAt: 2, key: 'b' },
+        ],
+        decode,
+      ),
+    ).toEqual({ fields: { nickname: 'player01', nameCard: 210_001 }, takenAt: 1 })
+    expect(lastProfile([{ takenAt: 2, key: 'b' }], decode)).toBeNull()
+  })
+})

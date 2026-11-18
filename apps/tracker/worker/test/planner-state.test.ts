@@ -113,6 +113,36 @@ describe('planner hand edits', () => {
     // Several imports and writes in one test: allow for a busy machine.
   }, 20_000)
 
+  it("keeps edits through captures that left materials out (Capture's gi_off)", async () => {
+    const { importKey, patch, state } = await setup()
+    expect((await importByKey(importKey, sampleGood(), 1_000)).status).toBe(201)
+    // A Done spends against the capture that brought the bag.
+    expect((await patch({ base: 1_000, inventory: [{ key: 'Mora', add: -500 }] })).status).toBe(200)
+    // The next login leaves the bag out: no new bag arrived.
+    const { materials: _, ...rest } = sampleGood()
+    const off = { ...rest, gi_off: ['materials'] }
+    expect((await importByKey(importKey, off, 2_000)).status).toBe(201)
+    expect((await state()).capturedAt).toBe(2_000)
+    // Edits on the newer one, measured against the bag's capture: the Done stays.
+    const next = await patch({
+      base: 2_000,
+      bagBase: 1_000,
+      inventory: [{ key: 'HerosWit', set: 9 }],
+    })
+    expect(next.status).toBe(200)
+    expect(brief((await next.json()) as State)).toEqual([
+      { key: 'HerosWit', delta: 0, set: 9, base: 2_000 },
+      { key: 'Mora', delta: -500, set: null, base: 1_000 },
+    ])
+    // Seen again with the bag still left out: still kept.
+    expect((await importByKey(importKey, off, 3_000)).status).toBe(200)
+    const again = await patch({ base: 3_000, bagBase: 1_000, prune: true })
+    expect(brief((await again.json()) as State).map((a) => a.key)).toEqual(['HerosWit', 'Mora'])
+    // A bag past `base` counts as `base`; without one, the newest replaces older edits.
+    const pruned = await patch({ base: 3_000, bagBase: 9_000, prune: true })
+    expect(((await pruned.json()) as State).adjustments).toEqual([])
+  }, 20_000)
+
   it("sets and clears a goal's current state, which goal edits leave alone", async () => {
     const { client, targets, patch, state } = await setup()
     await client.json(targets, {

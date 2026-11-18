@@ -6,7 +6,11 @@ import {
   snapshotIdsRequest,
   compactPlan,
   compactRequest,
+  hidePartNoteRequest,
+  removePartRequest,
   type CompactResponse,
+  type PartsResponse,
+  type RemovePartResponse,
   type AccountCreatedResponse,
   type AccountSettingsResponse,
   type SnapshotResponse,
@@ -53,6 +57,7 @@ import {
 import { snapshotFacts } from '../services/alerts'
 import { deleteLiveData, endJournalBehind, endJournalOn, liveDb } from '../services/live-sync'
 import { collectAccountBlobs } from '../services/maintenance'
+import { countAccountParts, removeAccountPart } from '../services/remove-part'
 
 /** Work that must not hold the response (or fail it): logged when it fails. */
 function afterResponse(c: Context<AppEnv>, work: Promise<unknown>): void {
@@ -335,6 +340,71 @@ export const accounts = new Hono<AppEnv>()
       ),
     )
     return c.json(answer(deleted!.results.length))
+  })
+
+  /**
+   * What each removable part (achievements, the profile, Planner tasks …)
+   * holds in the stored history, for the remove dialog (issue 12). Owner only.
+   */
+  .get('/:id/parts', async (c) => {
+    const id = idParam(c, 'id')
+    await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
+    return c.json<PartsResponse>(await countAccountParts(c.env.DB, liveDb(c.env), id))
+  })
+
+  /**
+   * Removes one part from every stored snapshot (the trash too) and drops its
+   * changes from the open live journal: all or nothing, refused with 409
+   * `capture_changed` when the history is no longer the one counted
+   * (`guard`). No trash, no undo. Owner only.
+   */
+  .post('/:id/parts/remove', async (c) => {
+    const id = idParam(c, 'id')
+    const body = await parseJson(c, removePartRequest)
+    const account = await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
+    const result = await removeAccountPart(c.env.DB, liveDb(c.env), account, body.part, body.guard)
+    if (result.later) afterResponse(c, result.later())
+    notifyData(c, id, result.recomputed, result.listening)
+    // The "Removed from history" mark lives in the settings: open pages re-read them.
+    notifyAccount(
+      c,
+      listenerOf(result.listening),
+      { type: 'planner', accountId: id, ...senderTab(c) },
+      c.get('userId'),
+    )
+    return c.json<RemovePartResponse>(result.response)
+  })
+
+  /**
+   * Hides a "Not shared by Capture" note (a part's, or Overview's `all`)
+   * until the part is shared again: the time it was hidden, kept in the
+   * account's settings. Owner only (the note stays for editors and viewers
+   * until the owner hides it).
+   */
+  .post('/:id/parts/hide', async (c) => {
+    const id = idParam(c, 'id')
+    const body = await parseJson(c, hidePartNoteRequest)
+    const account = await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
+    const settings = deepMerge(ACCOUNT_SETTINGS_DEFAULTS, account.settings)
+    const stored = deepMerge(account.settings, {
+      parts: { hidden: { ...settings.parts.hidden, [body.key]: Date.now() } },
+    })
+    const [, listener] = await c.env.DB.batch([
+      c.env.DB.prepare('UPDATE genshin_accounts SET settings = ?1 WHERE id = ?2').bind(
+        JSON.stringify(stored),
+        id,
+      ),
+      listenerStatement(c.env.DB, id),
+    ])
+    notifyAccount(
+      c,
+      listenerOf(listener),
+      { type: 'planner', accountId: id, ...senderTab(c) },
+      c.get('userId'),
+    )
+    return c.json<AccountSettingsResponse>({
+      settings: deepMerge(ACCOUNT_SETTINGS_DEFAULTS, stored),
+    })
   })
 
   .delete('/:id/snapshots/:snapshotId', async (c) => {

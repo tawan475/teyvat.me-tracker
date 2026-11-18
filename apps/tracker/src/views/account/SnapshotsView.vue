@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SnapshotResponse } from '@gdt/shared'
+import { PART_SWITCH, REMOVABLE_PARTS, type SnapshotResponse } from '@gdt/shared'
 import { useElementSize, useIntervalFn } from '@vueuse/core'
 import {
   computed,
@@ -23,6 +23,7 @@ import RowActions from '@/components/snapshot-history/RowActions.vue'
 import SelectionBar from '@/components/snapshot-history/SelectionBar.vue'
 import SnapshotCards from '@/components/snapshot-history/SnapshotCards.vue'
 import GuestBackupNote from '@/components/guest/GuestBackupNote.vue'
+import RemovePartDialog from '@/components/not-shared/RemovePartDialog.vue'
 import StorageStrip from '@/components/snapshot-history/StorageStrip.vue'
 import { inDayRange, snapshotChanges } from '@/components/snapshot-history/snapshot-figures'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -34,6 +35,7 @@ import LiveRow from '@/components/live/LiveRow.vue'
 import { loadLive, loadSnapshots } from '@/data/account-data'
 import { noteLiveChange } from '@/live/journal'
 import { cancelExport, downloadSnapshotGood, exportJob, exportZip } from '@/data/export'
+import { offSince } from '@/data/not-shared'
 import { currencyMissing, dayKey } from '@/data/overview'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
@@ -96,6 +98,14 @@ const {
 
 /** Every snapshot, newest first. */
 const list = computed<readonly SnapshotResponse[]>(() => snapshots.value ?? [])
+
+// Remove a part from history (issue 12): the owner's and the guest's, like Compact.
+const canRemovePart = computed(() => owner && !readOnly && !mode.demo && list.value.length > 0)
+const removePartOpen = ref(false)
+/** The parts Capture leaves out of the newest capture (the dialog lists them first). */
+const notShared = computed(() =>
+  REMOVABLE_PARTS.filter((part) => offSince(list.value, PART_SWITCH[part]) !== null),
+)
 
 // Live sync: the open journal shows as the first row (owner can delete it).
 const live = useResource(
@@ -512,7 +522,9 @@ function selectionClearance(): number {
       :loading="!snapshots && !error"
       :usage="usage.data.value ?? null"
       :can-compact="owner && !readOnly && list.length > 1"
+      :can-remove-part="canRemovePart"
       @compact="compactOpen = true"
+      @remove-part="removePartOpen = true"
     />
 
     <FolderSourceStrip v-if="showFolder" :now="liveNow" />
@@ -812,6 +824,14 @@ function selectionClearance(): number {
     </div>
 
     <ConfirmDialog ref="confirmDialog" />
+    <RemovePartDialog
+      v-if="canRemovePart"
+      :open="removePartOpen"
+      :account-id="account.id"
+      :not-shared="notShared"
+      :guest="mode.guest === true"
+      @close="removePartOpen = false"
+    />
     <CompactDialog
       :open="compactOpen"
       :snapshots="list"

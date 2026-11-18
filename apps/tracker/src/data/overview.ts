@@ -5,6 +5,7 @@
  */
 
 import type { AccountResponse, GenshinServer, SnapshotResponse, SnapshotSummary } from '@gdt/shared'
+import { OFF_SECTIONS, sharesSection, type OffSection } from '@gdt/shared/off'
 import { t } from '@/i18n'
 import { dateLocale, formatNumber } from '@/lib/format'
 import { rangeStart, type ChartRange } from './chart-range'
@@ -67,6 +68,14 @@ const SUMMARY_KEYS: SummaryKey[] = [
 
 const CURRENCY_KEYS: ReadonlySet<SummaryKey> = new Set(['mora', 'primogem'])
 
+/** The summary figures each section Capture can leave out is counted from. */
+export const SECTION_FIGURES: Readonly<Record<OffSection, readonly (keyof SnapshotSummary)[]>> = {
+  characters: ['characters'],
+  weapons: ['weapons'],
+  artifacts: ['artifacts', 'artifact3', 'artifact4'],
+  materials: ['materials', 'mora', 'primogem'],
+}
+
 /**
  * Irminsul sometimes misses the packet that carries mora and primogems: the
  * snapshot then reads 0 for both while the rest of the inventory is there.
@@ -90,8 +99,44 @@ export function summaryDelta(current: SnapshotSummary, previous: SnapshotSummary
  * newest first (as loadSnapshots returns it); null when there is no pair.
  */
 export function latestDelta(snapshots: readonly SnapshotResponse[]): SummaryDelta | null {
-  const [latest, previous] = snapshots
-  return latest && previous ? summaryDelta(latest.summary, previous.summary) : null
+  return snapshots.length > 1
+    ? summaryDelta(sharedSummary(snapshots, 0), sharedSummary(snapshots, 1))
+    : null
+}
+
+/**
+ * Snapshot `index`'s figures (`snapshots` newest first), those of a section
+ * it left out on purpose (Capture's gi_off, issue 12) from the newest older
+ * snapshot that shared it, as the pages show "now"; 0 when none did.
+ */
+export function sharedSummary(
+  snapshots: readonly SnapshotResponse[],
+  index: number,
+): SnapshotSummary {
+  const snapshot = snapshots[index]!
+  let summary = snapshot.summary
+  for (const section of OFF_SECTIONS) {
+    if (sharesSection(snapshot.off, section)) continue
+    const donor = snapshots.slice(index + 1).find((s) => sharesSection(s.off, section))
+    summary = { ...summary }
+    for (const field of SECTION_FIGURES[section]) summary[field] = donor?.summary[field] ?? 0
+  }
+  return summary
+}
+
+/** `figures` with those of the sections `off` names taken from `from` (live figures over a base that left them out). */
+export function withSharedFigures(
+  figures: SnapshotSummary,
+  off: readonly string[] | undefined,
+  from: SnapshotSummary,
+): SnapshotSummary {
+  let out = figures
+  for (const section of OFF_SECTIONS) {
+    if (sharesSection(off, section)) continue
+    out = { ...out }
+    for (const field of SECTION_FIGURES[section]) out[field] = from[field]
+  }
+  return out
 }
 
 // ------------------------------------------------------------------- history
@@ -137,6 +182,7 @@ export function dayKey(ms: number): string {
 
 /** Everything the overview charts and the monthly table need, computed once. */
 export function buildHistory(snapshots: readonly SnapshotResponse[]): History {
+  const offById = new Map(snapshots.map((s) => [s.id, s.off]))
   const captures: Capture[] = []
   for (const s of snapshots) {
     captures.push({ at: s.takenAt, summary: s.summary, snapshot: s.id })
@@ -147,9 +193,23 @@ export function buildHistory(snapshots: readonly SnapshotResponse[]): History {
   captures.sort((a, b) => a.at - b.at)
 
   // A capture without currency keeps the previous known mora and primogems,
-  // so charts and daily changes don't plunge to 0 and back.
+  // so charts and daily changes don't plunge to 0 and back. A section
+  // Capture left out on purpose (its gi_off, issue 12) does the same with its
+  // figures: no step on those captures, the last shared value held.
   let known: SnapshotSummary | null = null
+  const shared = new Map<OffSection, SnapshotSummary>()
   for (const capture of captures) {
+    const off = offById.get(capture.snapshot ?? -1)
+    for (const section of OFF_SECTIONS) {
+      if (sharesSection(off, section)) {
+        shared.set(section, capture.summary)
+        continue
+      }
+      const last = shared.get(section)
+      const next = { ...capture.summary }
+      for (const field of SECTION_FIGURES[section]) next[field] = last?.[field] ?? 0
+      capture.summary = next
+    }
     if (!currencyMissing(capture.summary)) known = capture.summary
     else if (known) {
       capture.summary = { ...capture.summary, mora: known.mora, primogem: known.primogem }

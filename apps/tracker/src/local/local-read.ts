@@ -85,6 +85,7 @@ export function listSnapshots(store: LocalStore): SnapshotResponse[] {
       storedSize: row.storedSize,
       summary: meta.summary,
       ...(meta.capture ? { capture: meta.capture } : {}),
+      ...(meta.off ? { off: meta.off } : {}),
     }
   })
 }

@@ -14,6 +14,10 @@
  * Format byte 2 (2026-10-15, live sync): format 1's fields, then irminsul's
  * `gi_capture`: reason (index in CAPTURE_REASONS), session (string), world,
  * journal seq (uints). A meta without a capture is still written as format 1.
+ * Format byte 3 (2026-11-18, issue 12): format 1's fields, then a flag (uint
+ * 0/1) and format 2's capture fields when it is 1, then Teyvat.me Capture's
+ * `gi_off`: a count, then each name as its index + 1 in OFF_SWITCHES, or 0
+ * and the string. Written only when the upload had `gi_off`.
  * `format` is "GOOD" (normalizeGood allows nothing else). Anything that does
  * not fit (a float count, another format) is stored as format byte 0 and the
  * JSON of the whole value.
@@ -24,6 +28,7 @@
 
 import type { GiPlayer } from '../good'
 import { CAPTURE_REASONS, type GiCapture } from '../live/capture'
+import { OFF_SWITCHES } from '../off'
 import { ByteReader, ByteWriter, CorruptDataError } from './bytes'
 import { PLAYER_KEY_ORDER } from './normalize'
 import type { SnapshotSummary } from './snapshot'
@@ -52,11 +57,17 @@ export interface SnapshotMeta {
   playerVars: PlayerVars
   /** Why irminsul took the snapshot (live sync); absent on older ones and other uploads. */
   capture?: GiCapture
+  /**
+   * Teyvat.me Capture's `gi_off`: the upload switches that were off ([] =
+   * everything shared); absent when the upload had none.
+   */
+  off?: string[]
 }
 
 const JSON_META = 0
 const META_V1 = 1
 const META_V2 = 2
+const META_V3 = 3
 
 const SUMMARY_FIELDS = [
   'characters',
@@ -97,6 +108,7 @@ function canonicalMeta(meta: SnapshotMeta): SnapshotMeta {
     summary: meta.summary,
     playerVars,
     ...(meta.capture ? { capture: canonicalCapture(meta.capture) } : {}),
+    ...(meta.off ? { off: [...meta.off] } : {}),
   }
 }
 
@@ -117,7 +129,7 @@ function binaryMeta(meta: SnapshotMeta): Uint8Array {
   if (keys.length !== SUMMARY_FIELDS.length || keys.some((k, i) => k !== SUMMARY_FIELDS[i])) {
     throw new TypeError('Summary has other fields')
   }
-  const w = new ByteWriter().byte(meta.capture ? META_V2 : META_V1)
+  const w = new ByteWriter().byte(meta.off ? META_V3 : meta.capture ? META_V2 : META_V1)
   for (const field of SUMMARY_FIELDS) w.uint(meta.summary[field])
   w.int(meta.version)
   const source = (SOURCES as readonly string[]).indexOf(meta.source)
@@ -127,11 +139,20 @@ function binaryMeta(meta: SnapshotMeta): Uint8Array {
   w.uint((resin !== undefined ? 1 : 0) | (arExp !== undefined ? 2 : 0))
   if (resin !== undefined) w.int(resin)
   if (arExp !== undefined) w.int(arExp)
+  if (meta.off) w.uint(meta.capture ? 1 : 0)
   if (meta.capture) {
     const reason = (CAPTURE_REASONS as readonly string[]).indexOf(meta.capture.reason)
     if (reason < 0) throw new TypeError('Unknown capture reason')
     w.uint(reason).string(meta.capture.session).uint(meta.capture.world)
     w.uint(meta.capture.journal.seq)
+  }
+  if (meta.off) {
+    w.uint(meta.off.length)
+    for (const name of meta.off) {
+      const known = (OFF_SWITCHES as readonly string[]).indexOf(name)
+      if (known >= 0) w.uint(known + 1)
+      else w.uint(0).string(name)
+    }
   }
   return w.finish()
 }
@@ -147,7 +168,7 @@ export function decodeSnapshotMeta(data: Uint8Array): SnapshotMeta {
       throw new CorruptDataError('Invalid snapshot meta JSON')
     }
   }
-  if (data[0] !== META_V1 && data[0] !== META_V2) {
+  if (data[0] !== META_V1 && data[0] !== META_V2 && data[0] !== META_V3) {
     throw new CorruptDataError(`Unknown snapshot meta format ${data[0]}`)
   }
   const r = new ByteReader(data.subarray(1))
@@ -168,15 +189,36 @@ export function decodeSnapshotMeta(data: Uint8Array): SnapshotMeta {
   if (flags & 1) playerVars.resin = r.int()
   if (flags & 2) playerVars.arExp = r.int()
   let capture: GiCapture | undefined
-  if (data[0] === META_V2) {
+  if (data[0] === META_V2 || (data[0] === META_V3 && r.uint() === 1)) {
     const reason = CAPTURE_REASONS[r.uint()]
     if (reason === undefined) throw new CorruptDataError('Unknown capture reason')
     const session = r.string()
     const world = r.uint()
     capture = { v: 1, reason, session, world, journal: { seq: r.uint() } }
   }
+  let off: string[] | undefined
+  if (data[0] === META_V3) {
+    off = []
+    for (let n = r.uint(); n > 0; n--) {
+      const code = r.uint()
+      if (code === 0) off.push(r.string())
+      else {
+        const known = OFF_SWITCHES[code - 1]
+        if (known === undefined) throw new CorruptDataError(`Unknown switch ${code}`)
+        off.push(known)
+      }
+    }
+  }
   r.end()
-  return { format: 'GOOD', version, source, summary, playerVars, ...(capture ? { capture } : {}) }
+  return {
+    format: 'GOOD',
+    version,
+    source,
+    summary,
+    playerVars,
+    ...(capture ? { capture } : {}),
+    ...(off ? { off } : {}),
+  }
 }
 
 // --------------------------------------------------------------- player

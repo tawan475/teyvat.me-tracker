@@ -36,7 +36,7 @@ import MaterialDetail from '@/components/materials-page/MaterialDetail.vue'
 import MaterialsBag from '@/components/materials-page/MaterialsBag.vue'
 import ItemPopover from '@/components/planner/ItemPopover.vue'
 import { craftChanges, type CraftRow } from '@/components/planner/crafting'
-import { adjustmentApplies } from '@/components/planner/hand-edits'
+import { editedCounts } from '@/components/planner/hand-edits'
 import { usePlannerModel } from '@/components/planner/use-planner-model'
 import TrackedPanel from '@/components/materials-page/TrackedPanel.vue'
 import TrackPicker from '@/components/materials-page/TrackPicker.vue'
@@ -182,18 +182,13 @@ const editorOpen = ref(false)
 
 /** Counts set by hand that differ from the capture's (the bag shows them). */
 const edited = computed(() => {
-  const map = new Map<string, number>()
-  if (!planning) return map
+  if (!planning) return new Map<string, number>()
   const bag = planning.bag.value
   const good = planning.good.value
   const edits = planning.state.adjustments.value
-  if (!bag || !good || !edits) return map
-  for (const edit of edits) {
-    if (!adjustmentApplies(edit, planning.base.value)) continue
-    const count = bag[edit.key] ?? 0
-    if (count !== (good.materials[edit.key] ?? 0)) map.set(edit.key, count)
-  }
-  return map
+  if (!bag || !good || !edits) return new Map<string, number>()
+  // Measured against the bag's capture: an older one while the newest left materials out.
+  return editedCounts(edits, bag, good.materials, planning.bagBase.value)
 })
 
 function openTile(key: string, anchor: HTMLElement, touch: boolean) {

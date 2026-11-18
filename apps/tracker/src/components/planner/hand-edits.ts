@@ -6,7 +6,9 @@
  *   the edit was made against (or older). A newer capture replaces every
  *   older edit: irminsul is the truth, so the planner never drifts from the
  *   game. With no capture at all the bag starts empty and edits are all
- *   there is.
+ *   there is. A capture that left materials out (Capture's `gi_off`) brought
+ *   no bag: the bag and the edits are measured against the newest capture
+ *   that shared it (`bagSighting`).
  * - a goal's current state (`CurrentOverride`): counts where it is ahead of
  *   the capture, field by field (a level/ascension pair as one), so a
  *   capture that reaches it retires it without anyone clearing it.
@@ -36,6 +38,17 @@ const count = (value: number | undefined) =>
 /** Whether an edit made against the capture seen at `edit.base` still counts with the newest at `capturedAt`. */
 export function adjustmentApplies(edit: Pick<InventoryAdjustment, 'base'>, capturedAt: number) {
   return edit.base >= capturedAt
+}
+
+/**
+ * The sighting edits are measured against: the newest capture's
+ * (`newestSeenAt`), or, when it left materials out, the `lastSeenAt` of the
+ * newest capture that shared them (0 when none did: the bag is empty and
+ * every edit counts). `materialsSeenAt` is undefined when the newest capture
+ * shared its materials.
+ */
+export function bagSighting(newestSeenAt: number, materialsSeenAt: number | undefined): number {
+  return materialsSeenAt === undefined ? newestSeenAt : Math.min(materialsSeenAt, newestSeenAt)
 }
 
 /** The count an edit gives, over the capture's count. */
@@ -69,6 +82,26 @@ export function replacedAdjustments(
 }
 
 /**
+ * The counts set by hand that differ from the capture's, as the bag shows
+ * them: an edit that still applies at `bagBase` (the bag's capture, see
+ * `bagSighting`) whose count in `bag` is not `capture`'s.
+ */
+export function editedCounts(
+  adjustments: readonly InventoryAdjustment[],
+  bag: Bag,
+  capture: Bag,
+  bagBase: number,
+): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const edit of adjustments) {
+    if (!adjustmentApplies(edit, bagBase)) continue
+    const count = bag[edit.key] ?? 0
+    if (count !== (capture[edit.key] ?? 0)) map.set(edit.key, count)
+  }
+  return map
+}
+
+/**
  * Two changes to one material as one (the page sends one per material): a
  * `set` replaces what came before it; adds add up, on top of an earlier set.
  */
@@ -81,16 +114,21 @@ export function mergeChange(before: InventoryChange | undefined, next: Inventory
 /**
  * What the server will store after `changes` made against the capture seen
  * at `base` (the page shows this until it answers): replaced edits dropped,
- * sets and adds applied, edits that add up to nothing removed.
+ * sets and adds applied, edits that add up to nothing removed. `bagBase` is
+ * the sighting of the capture the bag is from: older than `base` when the
+ * newest capture left materials out (Capture's `gi_off`), which replaces no
+ * edit.
  */
 export function applyChanges(
   adjustments: readonly InventoryAdjustment[],
   changes: Iterable<InventoryChange>,
   base: number,
   now: number,
+  bagBase: number = base,
 ): InventoryAdjustment[] {
+  const from = Math.min(bagBase, base)
   const byKey = new Map(
-    adjustments.filter((edit) => adjustmentApplies(edit, base)).map((edit) => [edit.key, edit]),
+    adjustments.filter((edit) => adjustmentApplies(edit, from)).map((edit) => [edit.key, edit]),
   )
   for (const change of changes) {
     const before = byKey.get(change.key)

@@ -9,10 +9,13 @@
  */
 
 import {
+  ALL_PARTS_NOTE,
   MAX_IMPORT_FILES,
   buildUigf,
+  isRemovablePart,
   parseUigf,
   serverTimezone,
+  type AccountSettings,
   type AccountSettingsResponse,
   type PlannerStateResponse,
   type PlannerTargetsResponse,
@@ -166,9 +169,16 @@ export async function convertGuest(
     api.plannerState(GUEST_ACCOUNT_ID),
   ])
   // Settings as the guest set them (the defaults are the account's already).
-  const ownSettings = (store.state.get('settings') as AccountSettingsResponse | undefined)?.settings
-  if (ownSettings && Object.keys(ownSettings).length > 0) {
+  const stored = (store.state.get('settings') as AccountSettingsResponse | undefined)?.settings
+  // The part notes (issue 12) are written by their own routes, never by a
+  // settings patch (its schema refuses them): the hidden notes are replayed
+  // there; the removals need nothing, the snapshots sent are without the part.
+  const { parts, ...ownSettings } = (stored ?? {}) as Partial<AccountSettings>
+  if (Object.keys(ownSettings).length > 0) {
     await api.updateAccountSettings(accountId, ownSettings as never)
+  }
+  for (const key of Object.keys(parts?.hidden ?? {})) {
+    if (isRemovablePart(key) || key === ALL_PARTS_NOTE) await api.hidePartNote(accountId, key)
   }
   if (achievements.done.length > 0) {
     await api.updateAchievementMarks(accountId, { done: achievements.done })

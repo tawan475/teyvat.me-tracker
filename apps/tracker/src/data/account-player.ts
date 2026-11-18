@@ -9,7 +9,7 @@
  */
 
 import type { LoginResin } from '@gdt/game-data/planner-estimate'
-import type { GiPlayer } from '@gdt/shared'
+import { PROFILE_FIELDS, type GiPlayer } from '@gdt/shared'
 
 /** One snapshot's `gi_player`. */
 export type PlayerValues = GiPlayer
@@ -72,4 +72,29 @@ export function accountPlayer(
   }
 
   return { ar, wl, resin, profile: newest?.key ? values(newest.key) : null }
+}
+
+/**
+ * The profile (name, signature, name card, picture, birthday) of the newest
+ * snapshot that has one, and when it was taken: what Overview's card keeps
+ * showing while Teyvat.me Capture leaves the profile out (issue 12). Null
+ * when no snapshot has one.
+ */
+export function lastProfile(
+  sections: readonly PlayerSection[],
+  decode: (key: string) => PlayerValues,
+): { fields: Partial<GiPlayer>; takenAt: number } | null {
+  const newestFirst = [...sections].sort((a, b) => b.takenAt - a.takenAt)
+  const seen = new Set<string>()
+  for (const { key, takenAt } of newestFirst) {
+    if (!key || seen.has(key)) continue
+    seen.add(key)
+    const player = decode(key)
+    const fields: Partial<GiPlayer> = {}
+    for (const field of PROFILE_FIELDS) {
+      if (player[field] !== undefined) (fields as Record<string, unknown>)[field] = player[field]
+    }
+    if (Object.keys(fields).length > 0) return { fields, takenAt }
+  }
+  return null
 }

@@ -3,12 +3,18 @@ import {
   asLeyline,
   catalogFromRows,
   decodeBundle,
+  BlobDecoder,
   decodeSnapshot,
+  holdsPartKeys,
+  kindCode,
   storedSnapshotOf,
   type AccountResponse,
+  type AccountSettingsResponse,
   type CatalogRow,
   type Good,
   type ImportResponse,
+  type PartsResponse,
+  type RemovePartResponse,
   type SnapshotResponse,
   type WishHistoryResponse,
 } from '@gdt/shared'
@@ -304,6 +310,128 @@ describe('guest store', () => {
     expect(gone.status).toBe(404)
   })
 
+  it('removes a part from history as the server does (issue 12)', async () => {
+    const { client, account, upload } = await serverAccount()
+    const withParts = (good: Good, i: number): Good => ({
+      ...good,
+      gi_player: { ...good.gi_player!, nickname: 'player01', nameCard: 210_001 },
+      gi_achievement_progress: { '84001': { progress: i, total: 9 } },
+      gi_events: { '2001001': { schedule: 7, start: 1_790_000_000, end: 1_800_000_000 } },
+    })
+    for (const [i, [good, at]] of sequence().entries()) {
+      await upload(withParts(good, i), at)
+      await importLocal(withParts(good, i), at)
+    }
+    const base = `/api/accounts/${account.id}`
+    const strip = ({ guard: _g, live: _l, ...rest }: PartsResponse) => rest
+    const there = await client.json<PartsResponse>(`${base}/parts`)
+    const here = await localJson<PartsResponse>('/parts')
+    expect(strip(here)).toEqual(strip(there))
+    for (const part of ['achievements', 'profile'] as const) {
+      const [serverCounts, localCounts] = [
+        await client.json<PartsResponse>(`${base}/parts`),
+        await localJson<PartsResponse>('/parts'),
+      ]
+      const removed = await client.json<RemovePartResponse>(`${base}/parts/remove`, {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: serverCounts.guard },
+      })
+      const removedHere = await localJson<RemovePartResponse>('/parts/remove', {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: localCounts.guard },
+      })
+      const { removedAt: _a, ...a } = removed
+      const { removedAt: _b, ...b } = removedHere
+      expect(b).toEqual(a)
+      // A stale guard is refused with the server's code.
+      const stale = await local('/parts/remove', {
+        method: 'POST',
+        json: { part, confirm: 'REMOVE', guard: '0:0' },
+      })
+      expect(stale.status).toBe(409)
+      expect(await stale.json()).toMatchObject({ error: { code: 'capture_changed' } })
+    }
+    const [serverAfter, localAfter] = [
+      await serverExports(client, account.id),
+      await localExports(),
+    ]
+    expect(localAfter.goods).toEqual(serverAfter.goods)
+    expect(localAfter.files).toEqual(localAfter.goods)
+    for (const text of localAfter.goods) {
+      const good = JSON.parse(text) as Good
+      expect(good.gi_achievement_progress).toBeUndefined()
+      expect(good.gi_events).toBeDefined()
+      expect(good.gi_player?.nickname).toBeUndefined()
+    }
+    const { settings } = await localJson<AccountSettingsResponse>('/settings')
+    expect(Object.keys(settings.parts.removed).sort()).toEqual(['achievements', 'profile'])
+    const hidden = await localJson<AccountSettingsResponse>('/parts/hide', {
+      method: 'POST',
+      json: { key: 'all' },
+    })
+    expect(hidden.settings.parts.hidden.all).toEqual(expect.any(Number))
+  })
+
+  it('leaves no stored base holding a removed part, and stores the next capture anew', async () => {
+    const { client, account, upload } = await serverAccount()
+    const [big] = sequence()[0]!
+    const full = (i: number): Good => ({
+      ...big,
+      gi_achievement_progress: Object.fromEntries(
+        Array.from({ length: 200 }, (_, n) => [String(84_000 + n), { progress: n + i, total: 9 }]),
+      ),
+      gi_events: { '2001001': { schedule: 7, start: 1_790_000_000, end: 1_800_000_000 } },
+    })
+    const {
+      gi_achievement_progress: _p,
+      gi_achievements: _a,
+      gi_achievement_times: _t,
+      ...off
+    } = full(3)
+    const shots: [unknown, number][] = [
+      [full(1), 1_000],
+      [full(2), 2_000],
+      [{ ...off, gi_off: ['gi_achievements'] }, 3_000],
+    ]
+    for (const [good, at] of shots) {
+      await upload(good, at)
+      await importLocal(good, at)
+    }
+    const counts = await localJson<PartsResponse>('/parts')
+    const serverCounts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    const here = await localJson<RemovePartResponse>('/parts/remove', {
+      method: 'POST',
+      json: { part: 'achievements', confirm: 'REMOVE', guard: counts.guard },
+    })
+    const there = await client.json<RemovePartResponse>(
+      `/api/accounts/${account.id}/parts/remove`,
+      {
+        method: 'POST',
+        json: { part: 'achievements', confirm: 'REMOVE', guard: serverCounts.guard },
+      },
+    )
+    const { removedAt: _x, ...a } = here
+    const { removedAt: _y, ...b } = there
+    expect(a).toEqual(b)
+    const rows = [
+      ...(
+        store.blobs as Map<
+          number,
+          { id: number; code: number; baseId: number | null; data: Uint8Array }
+        >
+      ).values(),
+    ]
+    const progress = new Set([kindCode('progress', false), kindCode('progress', true)])
+    const decoder = new BlobDecoder((id) => (store.blobs as Map<number, never>).get(id))
+    const held = rows.filter((r) => progress.has(r.code))
+    expect(held.length).toBeGreaterThan(0)
+    for (const row of held) expect(holdsPartKeys(decoder.decode(row.id).value, ['a'])).toBe(false)
+    // The newest capture again, with the part shared: stored anew, as on the server.
+    const back = await importLocal(full(3), 4_000)
+    expect(back.status).toBe('created')
+    expect((await upload(full(3), 4_000)).status).toBe('created')
+  })
+
   it('keeps marks, the plan and settings as the server routes do', async () => {
     const [big, at] = sequence()[0]!
     await importLocal(big, at)
@@ -346,6 +474,14 @@ describe('guest store', () => {
       { method: 'PATCH', json: { base: at + 1_000, inventory: [{ key: 'Crystalfly', add: 2 }] } },
     )
     expect(fresh.adjustments.map((a) => a.key)).toEqual(['Crystalfly'])
+    // A capture that left the bag out (Capture's gi_off) replaces none of them.
+    const { materials: _m, ...noBag } = sequence()[1]![0]
+    await importLocal({ ...noBag, gi_off: ['materials'] }, at + 2_000)
+    const kept = await localJson<{ adjustments: { key: string }[] }>('/planner-state', {
+      method: 'PATCH',
+      json: { base: at + 2_000, bagBase: at + 1_000, inventory: [{ key: 'Mora', add: 3 }] },
+    })
+    expect(kept.adjustments.map((a) => a.key)).toEqual(['Crystalfly', 'Mora'])
 
     // What only a server does: refused, nothing sent.
     const presence = await local('/presence')

@@ -18,6 +18,7 @@ import {
   Sprout,
   Trophy,
 } from 'lucide-vue-next'
+import type { RemovablePart } from '@gdt/shared'
 import type { CollectionTopic } from '@gdt/game-data/collections'
 import type { CapturedCollections } from '@/data/collections'
 
@@ -90,6 +91,30 @@ export const TAB_PART: Readonly<Record<CollectionTab, keyof CapturedCollections 
   blueprints: 'blueprints',
   music: 'musicGame',
   aranara: 'aranara',
+}
+
+/**
+ * The parts of a capture each tab shows that Capture can leave out and an
+ * owner can remove from history (issue 12): its "Not shared by Capture" strip.
+ */
+export const TAB_REMOVABLE: Readonly<Record<CollectionTab, readonly RemovablePart[]>> = {
+  achievements: ['achievements'],
+  world: ['exploration'],
+  spincrystals: ['collections'],
+  anecdotes: ['anecdotes'],
+  archive: ['collections'],
+  handbook: ['collections'],
+  'living-beings': ['collections'],
+  'local-legends': ['achievements'],
+  'lunar-arcana': ['endgame'],
+  tcg: ['collections'],
+  recipes: ['collections'],
+  crafting: ['collections'],
+  wardrobe: ['wardrobe'],
+  hangouts: ['collections'],
+  blueprints: ['collections', 'teapot'],
+  music: ['collections'],
+  aranara: ['collections'],
 }
 
 /** Tabs that list the game data's collections (names, totals): they wait for it. */

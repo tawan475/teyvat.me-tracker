@@ -22,7 +22,10 @@
  * Looks and toasts happen only while a guest page is open in the tab
  * (GuestLayout starts and stops the watch), and never while the guest data
  * is being deleted (holdForDelete), so nothing is read into the guest store
- * from another page or written back after a delete.
+ * from another page or written back after a delete. A delete in another tab
+ * is seen at the next write: the record and every file read are written
+ * under the guest store's write lock, only while this folder is still the
+ * one kept (folder-record.ts).
  */
 
 import { parseWishFile } from '@gdt/shared'
@@ -33,7 +36,17 @@ import { importingAccounts } from '@/live/holds'
 import { appRouter } from '@/router/instance'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
-import { OtherUidError } from './errors'
+import { FolderForgottenError, OtherUidError } from './errors'
+import {
+  loadRecord,
+  pickRecord,
+  stillKept,
+  updateRecord,
+  type DirectoryHandle,
+  type FileHandle,
+  type FolderRecord,
+  type Permission,
+} from './folder-record'
 import {
   folder,
   folderSupported,
@@ -65,61 +78,8 @@ import { importWishesLocal } from './local-wishes'
 
 // ------------------------------------------------- File System Access (Chromium)
 
-type Permission = 'granted' | 'denied' | 'prompt'
-
-/** The parts of FileSystemDirectoryHandle used here (the permission calls aren't in TS's DOM lib). */
-interface DirectoryHandle {
-  readonly kind: 'directory'
-  readonly name: string
-  values(): AsyncIterable<FileHandle | DirectoryHandle>
-  queryPermission(options: { mode: 'read' }): Promise<Permission>
-  requestPermission(options: { mode: 'read' }): Promise<Permission>
-}
-interface FileHandle {
-  readonly kind: 'file'
-  readonly name: string
-  getFile(): Promise<File>
-}
 type PickerWindow = Window & {
   showDirectoryPicker(options?: { id?: string; mode?: 'read' }): Promise<DirectoryHandle>
-}
-
-// ----------------------------------------------------------------- the record
-
-/** What is kept for the folder (IndexedDB `gdt-guest`, `meta` / `folder`). */
-interface FolderRecord {
-  v: 1
-  handle: DirectoryHandle
-  name: string
-  /** When it was picked: tells this folder from one picked since (Change during a read). */
-  pickedAt: number
-  /** Stopped by the user: the folder is kept (Watch again is one click). */
-  stopped: boolean
-  /** Whether the first read (every export already there) finished. */
-  firstDone: boolean
-  /** Every file looked at: name → fileKey. */
-  seen: Record<string, string>
-  /** The newest file read and its time. */
-  last: { name: string; at: number } | null
-  /** Files of another UID, listed until dismissed. */
-  refused: RefusedFile[]
-  /** Snapshots read from a watched folder: id → file name (the Snapshots folder glyph). */
-  rows: Record<number, string>
-}
-
-const RECORD_KEY = 'folder'
-
-async function loadRecord(): Promise<FolderRecord | null> {
-  try {
-    const value = (await guestStore().backend.get('meta', RECORD_KEY)) as FolderRecord | undefined
-    return value?.v === 1 ? value : null
-  } catch {
-    return null
-  }
-}
-
-async function saveRecord(record: FolderRecord | null): Promise<void> {
-  await guestStore().backend.write([{ table: 'meta', key: RECORD_KEY, value: record }])
 }
 
 function show(record: FolderRecord | null, status?: FolderStatus): void {
@@ -285,6 +245,7 @@ async function readOne(
   item: Listed & { kind: FileKind; takenAt: number | null; fromName: boolean },
   batch: BatchResult,
   rows: Record<number, string>,
+  watched: () => Promise<boolean>,
 ): Promise<void> {
   const store = await guestStore().ready()
   if (item.kind === 'good') {
@@ -295,6 +256,7 @@ async function readOne(
         rawSize: item.size,
         timestamp: item.fromName ? (item.takenAt ?? undefined) : undefined,
         folder: true,
+        watched,
       })
       if (answer.status === 'created') {
         batch.created++
@@ -322,6 +284,7 @@ async function readOne(
         ...(account.timezone !== null ? { timezone: account.timezone } : {}),
         records: account.records,
         folder: true,
+        watched,
       })
     } catch (error) {
       if (error instanceof OtherUidError) {
@@ -400,7 +363,16 @@ async function lookNow(): Promise<void> {
   missingShown = false
   const fresh = newFiles(listing, record.seen)
   if (fresh.length === 0) {
-    if (!record.firstDone) await saveRecord({ ...record, firstDone: true })
+    if (!record.firstDone) {
+      const kept = await updateRecord((now) =>
+        now.pickedAt === record.pickedAt ? { ...now, firstDone: true } : now,
+      )
+      // The guest data was deleted meanwhile (the record with it).
+      if (!kept) {
+        show(null)
+        return
+      }
+    }
     show(record, 'watching')
     return
   }
@@ -434,16 +406,24 @@ async function lookNow(): Promise<void> {
 
   const batch = emptyBatch()
   const seen = { ...record.seen }
-  const rows = { ...record.rows }
+  /** The snapshots this look made (id → file name), and the guest account they were made in. */
+  const rows: Record<number, string> = {}
+  let madeIn: number | null = null
+  // Each file is stored only while this folder is still the one kept (asked under the write lock).
+  const watched = stillKept(record.pickedAt)
   importingAccounts.add(GUEST_ACCOUNT_ID)
   try {
     for (const item of readOrder(items)) {
       if (stopRequested || deleting) break
       try {
-        await readOne(item, batch, rows)
+        await readOne(item, batch, rows, watched)
+        madeIn = guestStore().account?.createdAt ?? madeIn
         seen[item.name] = fileKey(item)
         if (item.kind !== 'other') batch.newest = newer(batch.newest, item)
       } catch (error) {
+        // The guest data was deleted, or another folder picked, in another
+        // tab meanwhile: nothing more of this folder is stored.
+        if (error instanceof FolderForgottenError) break
         // Not a capture this build can read (or one still being written: tried again next look).
         if (!unsettled(item, error)) seen[item.name] = fileKey(item)
         console.warn('watched folder', item.name, error)
@@ -454,29 +434,42 @@ async function lookNow(): Promise<void> {
     importingAccounts.delete(GUEST_ACCOUNT_ID)
   }
 
-  // The guest data was deleted meanwhile (the record with it): nothing to keep.
-  const now = await loadRecord()
-  if (!now || deleting) {
+  // The guest data is being deleted here: nothing to keep.
+  if (deleting) {
     show(null)
     return
   }
   // Stop or Change meanwhile wrote the record: keep theirs, add what was read.
-  const sameFolder = now.pickedAt === record.pickedAt
-  const refused = [...now.refused]
-  for (const file of batch.refused) {
-    if (!refused.some((r) => r.name === file.name)) refused.push(file)
+  // On the record as it is now, under the write lock: none any more means
+  // the guest data was deleted in another tab, and nothing is written back.
+  let sameFolder = false
+  const saved = await updateRecord((now, store) => {
+    sameFolder = now.pickedAt === record.pickedAt
+    if (!sameFolder) {
+      // Another folder since. The snapshots read before it keep their glyph,
+      // unless the guest data they were in went too (deleted, then picked anew).
+      const theirs = madeIn !== null && store.account?.createdAt === madeIn
+      return theirs && Object.keys(rows).length > 0
+        ? { ...now, rows: { ...now.rows, ...rows } }
+        : now
+    }
+    const refused = [...now.refused]
+    for (const file of batch.refused) {
+      if (!refused.some((r) => r.name === file.name)) refused.push(file)
+    }
+    return {
+      ...now,
+      firstDone: now.firstDone || !stopRequested,
+      seen: { ...now.seen, ...seen },
+      last: batch.newest ? { name: batch.newest.name, at: batch.newest.lastModified } : now.last,
+      refused,
+      rows: { ...now.rows, ...rows },
+    }
+  })
+  if (!saved) {
+    show(null)
+    return
   }
-  const saved: FolderRecord = sameFolder
-    ? {
-        ...now,
-        firstDone: now.firstDone || !stopRequested,
-        seen: { ...now.seen, ...seen },
-        last: batch.newest ? { name: batch.newest.name, at: batch.newest.lastModified } : now.last,
-        refused,
-        rows: { ...now.rows, ...rows },
-      }
-    : { ...now, rows: { ...now.rows, ...rows } }
-  await saveRecord(saved)
   show(saved, saved.stopped ? 'stopped' : sameFolder ? 'watching' : undefined)
   if (readCount(batch) > 0 || batch.refused.length > 0) {
     await loadGuestAccount().catch(() => undefined)
@@ -500,9 +493,8 @@ export async function pickFolder(): Promise<void> {
     // Cancelled (or refused by the browser): nothing changes.
     return
   }
-  const before = await loadRecord()
   stopRequested = true
-  const record: FolderRecord = {
+  const record = await pickRecord((before) => ({
     v: 1,
     handle,
     name: handle.name,
@@ -513,8 +505,7 @@ export async function pickFolder(): Promise<void> {
     last: null,
     refused: [],
     rows: before?.rows ?? {},
-  }
-  await saveRecord(record)
+  }))
   dropPausedToast()
   missingShown = false
   show(record, 'watching')
@@ -524,11 +515,10 @@ export async function pickFolder(): Promise<void> {
 
 /** Stop: no confirm (nothing stored goes), an Undo toast; the folder is kept. */
 export async function stopWatching(): Promise<void> {
-  const record = await loadRecord()
-  if (!record) return
+  // A read in progress ends after its file (the record's write waits for that file's).
   stopRequested = true
-  const stopped = { ...record, stopped: true }
-  await saveRecord(stopped)
+  const stopped = await updateRecord((now) => ({ ...now, stopped: true }))
+  if (!stopped) return
   dropPausedToast()
   show(stopped, 'stopped')
   useFeedback().toast({
@@ -541,11 +531,9 @@ export async function stopWatching(): Promise<void> {
 
 /** Watch again (or Undo): the kept folder; a lost permission asks on the paused toast. */
 export async function watchAgain(): Promise<void> {
-  const record = await loadRecord()
+  const record = await updateRecord((now) => ({ ...now, stopped: false }))
   if (!record) return
-  const watching = { ...record, stopped: false }
-  await saveRecord(watching)
-  show(watching, 'watching')
+  show(record, 'watching')
   let permission: Permission = 'prompt'
   try {
     permission = await record.handle.queryPermission({ mode: 'read' })
@@ -553,7 +541,7 @@ export async function watchAgain(): Promise<void> {
     // Treated as not granted.
   }
   if (permission !== 'granted') {
-    show(watching, 'paused')
+    show(record, 'paused')
     pausedToastNow(true)
     return
   }
@@ -576,10 +564,7 @@ async function allowAgain(): Promise<void> {
 
 /** The strip's Dismiss: forget the refused files (they stay unread). */
 export async function dismissRefused(): Promise<void> {
-  const record = await loadRecord()
-  if (!record) return
-  const next = { ...record, refused: [] }
-  await saveRecord(next)
+  if (!(await updateRecord((now) => ({ ...now, refused: [] })))) return
   folder.refused = []
 }
 

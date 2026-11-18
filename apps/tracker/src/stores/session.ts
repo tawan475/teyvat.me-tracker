@@ -43,10 +43,16 @@ export const useSession = defineStore('session', () => {
     return hasPermission(me.value?.permissions ?? [], node)
   }
 
+  /** One save at a time, the newest change kept on screen (lib/save-queue). */
+  const settingsSaves = saveQueue<UserSettings>()
+
   function adopt(user: MeResponse | null) {
     // What this device keeps (boot-cache, idb-cache) is one user's: never
     // shown to another, nor kept past signing out.
     if (user?.id !== bootCacheUser()) forgetDevice()
+    // Signed out or another user: a settings save still on its way is the
+    // earlier user's, and its answer must not sign them back in here.
+    if (user?.id !== me.value?.id) settingsSaves.forget()
     me.value = user
     status.value = user ? 'signed-in' : 'signed-out'
     if (user) {
@@ -183,9 +189,6 @@ export const useSession = defineStore('session', () => {
   function emailConfirmed(email: string) {
     if (me.value?.email === email) me.value = { ...me.value, emailVerified: true }
   }
-
-  /** One save at a time, the newest change kept on screen (lib/save-queue). */
-  const settingsSaves = saveQueue<UserSettings>()
 
   /** Applies the change at once and rolls it back if the server refuses it. */
   async function updateSettings(patch: Partial<UserSettings>) {

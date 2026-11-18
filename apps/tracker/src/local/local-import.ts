@@ -34,7 +34,7 @@ import {
   type KnownBlob,
   type PreparedSnapshot,
 } from '@gdt/shared'
-import { LocalApiError, OtherUidError } from './errors'
+import { FolderForgottenError, LocalApiError, OtherUidError } from './errors'
 import type { BlobRow, LocalStore, SnapshotRow, Transaction } from './local-store'
 
 let materials: Promise<KeyDictionary> | null = null
@@ -189,6 +189,13 @@ export interface LocalUpload {
    * user imports by hand keeps the warning.
    */
   folder?: boolean
+  /**
+   * The watched folder's reads: asked under the store's write lock, before
+   * anything is recorded. `false`: the file's folder is no longer the one
+   * kept (folder-record.ts `stillKept`), so nothing is stored
+   * (FolderForgottenError).
+   */
+  watched?: () => Promise<boolean>
 }
 
 /** Stores one GOOD file in the guest store. */
@@ -197,6 +204,7 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
   const dictionary = await materialsDictionary()
   const sections = await encodeStaticSections(prepared, dictionary)
   return store.transact(async (tx) => {
+    if (upload.watched && !(await upload.watched())) throw new FolderForgottenError()
     const now = Date.now()
     const takenAt = resolveImportTimestamp(upload.timestamp, prepared.good.timestamp, now)
     const account = tx.account()

@@ -46,6 +46,9 @@ Support is best effort: ask on the [Discord](https://discord.gg/W6GUY3UtAx).
    DIAG_KEY=
    ```
 
+   A `#` after a value starts a comment (`SITE_NAME=Our Tracker # ours` is
+   "Our Tracker"): put a value that has a `#` of its own in quotes.
+
    On your own PC, use `SITE_URL=http://localhost:8787` and skip the proxy.
    Anyone else needs `https://` through a proxy (below): the sign-in cookies
    are Secure, and browsers keep them over plain http on localhost only.

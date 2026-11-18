@@ -182,6 +182,16 @@ export class LocalStore {
     return next
   }
 
+  /**
+   * Runs `work` under the write lock, with the store current: for what is
+   * kept beside the store's own rows (the watched folder's record,
+   * folder-record.ts), so it is never written while another tab clears the
+   * store. `work` writes to the backend itself.
+   */
+  locked<T>(work: () => Promise<T>): Promise<T> {
+    return this.transact(work)
+  }
+
   /** Deletes the guest data (the store is empty after). */
   async clear(): Promise<void> {
     await this.transact(async () => {

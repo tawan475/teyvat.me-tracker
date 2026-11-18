@@ -17,20 +17,17 @@
  */
 
 import {
-  ACCOUNT_SETTINGS_DEFAULTS,
   PART_DECODED_SLOTS,
   REMOVABLE_PARTS,
   SLOTS,
   countParts,
   decodeChanges,
-  deepMerge,
   encodeChangesNative,
   isPartChange,
   kindCode,
   partSlots,
   planPartRemoval,
   withoutPartChanges,
-  type AccountSettings,
   type PartBlobRow,
   type PartCountResponse,
   type PartSnapshotRow,
@@ -40,7 +37,7 @@ import {
   type Slot,
 } from '@gdt/shared'
 import { ApiError } from '../lib/http'
-import { recomputeAccount } from './accounts'
+import { patchedSettingsSql, recomputeAccount } from './accounts'
 import { listenerStatement } from './live'
 import { collectAccountBlobs } from './maintenance'
 import { REF_COLUMNS, REFS_SQL, toBytes } from './storage'
@@ -236,7 +233,7 @@ export interface RemovePartResult {
 export async function removeAccountPart(
   d1: D1Database,
   live: D1Database | null,
-  account: { id: number; settings: unknown },
+  account: { id: number },
   part: RemovablePart,
   guard: string,
   now = Date.now(),
@@ -332,19 +329,16 @@ export async function removeAccountPart(
         .bind(accountId, count, maxId, json),
     )
   }
-  // The mark the pages read ("Removed from history"), written with the rest.
-  const settings = deepMerge(
-    ACCOUNT_SETTINGS_DEFAULTS,
-    (account.settings ?? {}) as object,
-  ) as AccountSettings
-  const stored = deepMerge((account.settings ?? {}) as object, {
-    parts: { removed: { ...settings.parts.removed, [part]: now } },
-  })
+  // The mark the pages read ("Removed from history"), written with the rest:
+  // merged into the settings as stored (a save or a hidden note meanwhile stays).
   const marked = statements.length
   statements.push(
     d1
-      .prepare(`UPDATE genshin_accounts SET settings = ?4 WHERE id = ?1 AND ${GUARD} RETURNING id`)
-      .bind(accountId, count, maxId, JSON.stringify(stored)),
+      .prepare(
+        `UPDATE genshin_accounts SET settings = ${patchedSettingsSql('?4')}
+         WHERE id = ?1 AND ${GUARD} RETURNING id`,
+      )
+      .bind(accountId, count, maxId, JSON.stringify({ parts: { removed: { [part]: now } } })),
   )
   const recomputedAt = statements.length
   statements.push(recomputeAccount(d1, accountId), collectAccountBlobs(d1, accountId))

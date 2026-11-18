@@ -25,7 +25,7 @@ import {
   type WishRecord,
 } from '@gdt/shared'
 import { GUEST_ACCOUNT_ID } from './guest-id'
-import { LocalApiError, OtherUidError } from './errors'
+import { FolderForgottenError, LocalApiError, OtherUidError } from './errors'
 import type { LocalStore } from './local-store'
 
 /** The state key the history is kept under. */
@@ -90,13 +90,21 @@ export interface LocalWishImport {
    * one-account rule holds whichever file the folder reads first.
    */
   folder?: boolean
+  /**
+   * The watched folder's reads: asked under the store's write lock, before
+   * anything is recorded. `false`: the file's folder is no longer the one
+   * kept (folder-record.ts `stillKept`), so nothing is stored
+   * (FolderForgottenError).
+   */
+  watched?: () => Promise<boolean>
 }
 
 export function importWishesLocal(
   store: LocalStore,
   input: LocalWishImport,
 ): Promise<WishImportResponse> {
-  return store.transact((tx) => {
+  return store.transact(async (tx) => {
+    if (input.watched && !(await input.watched())) throw new FolderForgottenError()
     const account = tx.account()
     if (input.folder && input.uid && account.uid && account.uid !== input.uid) {
       throw new OtherUidError(input.uid, account.uid)

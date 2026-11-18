@@ -28,3 +28,15 @@ export class OtherUidError extends LocalApiError {
     this.name = 'OtherUidError'
   }
 }
+
+/**
+ * A watched folder's file whose folder is no longer the one kept: the guest
+ * data was deleted, or another folder picked, while it was being read
+ * (folder-record.ts). Nothing of it is stored.
+ */
+export class FolderForgottenError extends LocalApiError {
+  constructor() {
+    super(409, 'guest_folder_gone', 'This folder is not watched any more')
+    this.name = 'FolderForgottenError'
+  }
+}

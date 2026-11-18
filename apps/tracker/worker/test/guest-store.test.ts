@@ -23,7 +23,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { synthetic18 } from '../../../../packages/shared/test/synthetic'
 import { GUEST_ACCOUNT_ID, isGuestPath } from '@/local/guest-id'
 import { ORIGIN, bigGood, irminsulForm, signUp, type Client } from './client'
-import { loadGuestModules, type GuestStore } from './guest-modules'
+import { loadGuestModules, type GuestFolderRecord, type GuestStore } from './guest-modules'
 
 // Guest mode (docs/plans/open-site.md §4): the guest account's API answered
 // in the browser from its own store. These run the same captures through the
@@ -557,5 +557,116 @@ describe('guest store', () => {
     ).rejects.toThrow('no')
     await one.ready()
     expect(one.state.has('c')).toBe(false)
+  })
+})
+
+describe('a watched folder read in one tab while another changes the guest store', () => {
+  const { pickRecord, updateRecord, stillKept, loadRecord } = guestModules
+  const TABLES = ['meta', 'blobs', 'snapshots', 'artifacts', 'state']
+  const picked = (pickedAt: number) => (before: GuestFolderRecord | null) => ({
+    v: 1 as const,
+    handle: { kind: 'directory', name: 'captures' },
+    name: 'captures',
+    pickedAt,
+    stopped: false,
+    firstDone: false,
+    seen: {},
+    last: null,
+    refused: [],
+    rows: before?.rows ?? {},
+  })
+  const wishes = {
+    uid: '812345678',
+    records: [
+      {
+        id: '1790000000000000001',
+        gacha_type: '301',
+        time: '2026-01-01 00:00:01',
+        name: 'Debate Club',
+        item_type: 'Weapon',
+        rank_type: '3',
+      },
+    ],
+    folder: true,
+  }
+
+  /** Two tabs over the one stored copy: `reading` is mid-read of the folder picked at 1,000. */
+  async function tabs() {
+    const backend = memoryBackend()
+    const reading = new LocalStore(backend)
+    const other = new LocalStore(backend)
+    const record = await pickRecord(picked(1_000), reading)
+    const watched = stillKept(record.pickedAt, reading)
+    const read = (good: Good, time: number) =>
+      guestModules.importLocal(reading, {
+        text: JSON.stringify(good),
+        rawSize: 1,
+        timestamp: time,
+        folder: true,
+        watched,
+      })
+    return { backend, reading, other, watched, read }
+  }
+
+  it('stores nothing more once the other tab deleted the guest data', async () => {
+    const { backend, reading, other, watched, read } = await tabs()
+    const [[big, at], [played, later]] = sequence() as [[Good, number], [Good, number]]
+    const first = await read(big, at)
+    expect(first.status).toBe('created')
+    expect(
+      await updateRecord((now) => ({ ...now, rows: { [first.snapshotId]: 'a.json' } }), reading),
+    ).toMatchObject({ pickedAt: 1_000, rows: { [first.snapshotId]: 'a.json' } })
+
+    // Settings, Delete guest data, in the other tab: the folder's record goes with it.
+    await other.clear()
+    // The reading tab's next files, and what it read so far, are not written back.
+    await expect(read(played, later)).rejects.toMatchObject({ code: 'guest_folder_gone' })
+    await expect(
+      guestModules.importWishesLocal(reading, { ...wishes, watched }),
+    ).rejects.toMatchObject({ code: 'guest_folder_gone' })
+    expect(
+      await updateRecord((now) => ({ ...now, firstDone: true, seen: { 'a.json': '1' } }), reading),
+    ).toBeNull()
+    for (const table of TABLES) expect(await backend.entries(table), table).toEqual([])
+    await reading.ready()
+    expect([reading.account, reading.snapshots.size, reading.state.size]).toEqual([null, 0, 0])
+    // By hand (no folder), the emptied store takes a file as before.
+    expect(
+      await guestModules.importLocal(reading, {
+        text: JSON.stringify(played),
+        rawSize: 1,
+        timestamp: later,
+      }),
+    ).toMatchObject({ status: 'created' })
+  })
+
+  it("stores nothing more of a folder once another was picked, and keeps the new one's record", async () => {
+    const { reading, other, watched, read } = await tabs()
+    const [[big, at], [played, later]] = sequence() as [[Good, number], [Good, number]]
+    const first = await read(big, at)
+    await updateRecord((now) => ({ ...now, rows: { [first.snapshotId]: 'a.json' } }), reading)
+    // Change, in the other tab: the new folder's record carries the rows read so far.
+    const changed = await pickRecord(picked(2_000), other)
+    expect(changed.rows).toEqual({ [first.snapshotId]: 'a.json' })
+    await expect(read(played, later)).rejects.toMatchObject({ code: 'guest_folder_gone' })
+    expect(await watched()).toBe(false)
+    expect(await stillKept(2_000, reading)()).toBe(true)
+    // What the earlier read adds at its end goes onto the record as it is now,
+    // with the store as it is now (the guest data it wrote into is still there).
+    const saved = await updateRecord(
+      (now, store) => ({ ...now, seen: { 'a.json': store.account ? 'kept' : 'deleted' } }),
+      reading,
+    )
+    expect(saved).toMatchObject({ pickedAt: 2_000, seen: { 'a.json': 'kept' } })
+    expect(await loadRecord(other)).toMatchObject({ pickedAt: 2_000, seen: { 'a.json': 'kept' } })
+    await other.ready()
+    expect(other.snapshots.size).toBe(1)
+  })
+
+  it('writes nothing for a change that changes nothing', async () => {
+    const { backend, reading } = await tabs()
+    const before = await backend.entries('meta')
+    expect(await updateRecord((now) => now, reading)).toMatchObject({ pickedAt: 1_000 })
+    expect(await backend.entries('meta')).toEqual(before)
   })
 })

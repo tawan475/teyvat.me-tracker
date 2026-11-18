@@ -147,6 +147,41 @@ export interface AccountListRow {
 const PARTS_REMOVED_SQL = `(SELECT max(value) FROM json_each(
   CASE WHEN json_valid(a.settings) THEN a.settings ELSE '{}' END, '$.parts.removed'))`
 
+/**
+ * `genshin_accounts.settings` with a JSON merge patch (the bound parameter
+ * `param`) laid over it, for `UPDATE genshin_accounts SET settings = …`. The
+ * merge happens in the statement, on the row as stored at that moment, so
+ * writers of different keys (a settings save, a hidden note, a removed part)
+ * never write back a copy read before another's write. It merges as
+ * deepMerge does: objects key by key, lists and scalars replaced. A null in
+ * the patch removes the key, which then reads as its default: null for
+ * every setting that can be null (ar, wl, resin).
+ */
+export const patchedSettingsSql = (param: string): string =>
+  `json_patch(CASE WHEN json_valid(settings) THEN settings ELSE '{}' END, ${param})`
+
+/** Lays `patch` over an account's settings (patchedSettingsSql) and answers them as written. */
+export function patchSettingsStatement(
+  d1: D1Database,
+  accountId: number,
+  patch: object,
+): D1PreparedStatement {
+  return d1
+    .prepare(
+      `UPDATE genshin_accounts SET settings = ${patchedSettingsSql('?2')}
+       WHERE id = ?1 RETURNING settings`,
+    )
+    .bind(accountId, JSON.stringify(patch))
+}
+
+/** What patchSettingsStatement wrote: the settings as stored (no defaults). */
+export function writtenSettings(result: D1Result | undefined): object {
+  const row = (result?.results ?? [])[0] as { settings?: unknown } | undefined
+  // Deleted between the access check and the write.
+  if (typeof row?.settings !== 'string') throw notFound('Account')
+  return JSON.parse(row.settings) as object
+}
+
 /** The account list's query (see listAccounts); `accountId` narrows it to one. */
 export function accountListStatement(
   d1: D1Database,

@@ -25,10 +25,22 @@ fi
 # 2. The settings, from self-host/.env (mounted, never baked into the image).
 [ -f "$ENV_FILE" ] || fail "no settings file at $ENV_FILE (copy the template in self-host/README.md to self-host/.env)"
 
-# A setting's value: its last line in the file, without surrounding quotes.
+# A setting's line in the file: what follows its last `KEY=`.
+line_of() {
+  sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$ENV_FILE" | tail -n 1
+}
+
+# A setting's value, read as the Worker gets it (wrangler's --env-file, dotenv's
+# rules): a quoted value is what its quotes hold, and a "# comment" may follow
+# it; a value without quotes ends at the first #, so `SITE_NAME=Our Tracker # ours`
+# is "Our Tracker", as Compose reads it for the build.
 setting() {
-  sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$ENV_FILE" | tail -n 1 |
-    sed -e 's/[[:space:]]*$//' -e "s/^'\(.*\)'\$/\1/" -e 's/^"\(.*\)"$/\1/'
+  line_of "$1" | sed \
+    -e "s/^'\([^']*\)'[[:space:]]*\(#.*\)\{0,1\}\$/\1/" -e 't end' \
+    -e 's/^"\([^"]*\)"[[:space:]]*\(#.*\)\{0,1\}$/\1/' -e 't end' \
+    -e 's/#.*$//' -e 's/[[:space:]]*$//' -e 't bare' -e ':bare' \
+    -e "s/^'\(.*\)'\$/\1/" -e 't end' \
+    -e 's/^"\(.*\)"$/\1/' -e ':end'
 }
 
 missing=""
@@ -48,8 +60,19 @@ built=$(cat /app/self-host/built-origin)
 name=$(setting SITE_NAME)
 name=${name:-Teyvat.me}
 built_name=$(cat /app/self-host/built-name)
-[ "$name" = "$built_name" ] ||
+if [ "$name" != "$built_name" ]; then
+  # Without quotes, Compose (the build) starts a comment at " #" only and the
+  # Worker at any #: a name the two read differently never matches.
+  case "$(line_of SITE_NAME)" in
+    \"* | \'*) ;;
+    *)
+      composed=$(line_of SITE_NAME | sed -e 's/ #.*$//' -e 's/[[:space:]]*$//')
+      [ "$composed" = "$(setting SITE_NAME)" ] ||
+        fail "SITE_NAME has a # outside quotes, which the build and the site read differently: put the name in quotes, then rebuild (docker compose up -d --build)"
+      ;;
+  esac
   fail "SITE_NAME is \"$name\" but the image was built for \"$built_name\": rebuild (docker compose up -d --build)"
+fi
 
 # 3. Migrations, for every D1 database in the config (gdt and gdt-live today).
 for db in $(jq -r '.d1_databases[].binding' "$CFG"); do

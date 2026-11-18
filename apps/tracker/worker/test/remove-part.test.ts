@@ -593,13 +593,7 @@ describe('a failing live journal after the history is clean', () => {
       prepare: () => ({ bind: () => ({}) }),
       batch: () => Promise.reject(new Error('gdt-live is down')),
     } as unknown as D1Database
-    const result = await removeAccountPart(
-      env.DB,
-      broken,
-      { id: account.id, settings: {} },
-      'tasks',
-      guard,
-    )
+    const result = await removeAccountPart(env.DB, broken, { id: account.id }, 'tasks', guard)
     expect(result.response).toMatchObject({ part: 'tasks', snapshots: 3, liveChanges: 0 })
     expect(result.later).toBeTypeOf('function')
     await result.later!()
@@ -635,7 +629,7 @@ describe('a write that changes a snapshot in place meanwhile', () => {
       },
     })
     await expect(
-      removeAccountPart(racing, null, { id: account.id, settings: {} }, 'endgame', guard),
+      removeAccountPart(racing, null, { id: account.id }, 'endgame', guard),
     ).rejects.toMatchObject({ status: 409, code: 'capture_changed' })
     expect(batches).toBe(2)
     expect(await goods(client, account.id)).toEqual(before)
@@ -643,5 +637,105 @@ describe('a write that changes a snapshot in place meanwhile', () => {
       `/api/accounts/${account.id}/settings`,
     )
     expect(settings.parts.removed).toEqual({})
+  })
+})
+
+describe('writers of the account settings', () => {
+  const HIDE = { method: 'POST', json: { key: 'all' } } as const
+
+  it("keep each other's keys when they overlap", async () => {
+    const { client, account, importKey } = await setup()
+    await history(importKey)
+    const url = `/api/accounts/${account.id}`
+    // A settings save, two hidden notes and a removal, each reading the row
+    // before another has written it.
+    const counts = await client.json<PartsResponse>(`${url}/parts`)
+    const answers = await Promise.all([
+      client.fetch(`${url}/settings`, {
+        method: 'PATCH',
+        json: { ar: 55, planner: { azoth: true } },
+      }),
+      client.fetch(`${url}/parts/hide`, HIDE),
+      client.fetch(`${url}/parts/remove`, {
+        method: 'POST',
+        json: { part: 'tasks', confirm: 'REMOVE', guard: counts.guard },
+      }),
+      client.fetch(`${url}/parts/hide`, { method: 'POST', json: { key: 'characters' } }),
+      client.fetch(`${url}/settings`, { method: 'PATCH', json: { traveler: 'M' } }),
+    ])
+    expect(answers.map((r) => r.status)).toEqual([200, 200, 200, 200, 200])
+    const { settings } = await client.json<AccountSettingsResponse>(`${url}/settings`)
+    expect(settings).toMatchObject({
+      ar: 55,
+      traveler: 'M',
+      planner: { azoth: true, passives: true },
+      parts: {
+        hidden: { all: expect.any(Number), characters: expect.any(Number) },
+        removed: { tasks: expect.any(Number) },
+      },
+    })
+  })
+
+  it('a removal merges into the row as stored, whatever the caller read', async () => {
+    const { client, account, importKey } = await setup()
+    await history(importKey)
+    const url = `/api/accounts/${account.id}`
+    const { guard } = await countAccountParts(env.DB, null, account.id)
+    // A settings save and a hidden note land between the removal's read and its write.
+    let batches = 0
+    const racing = new Proxy(env.DB, {
+      get(target, key) {
+        if (key !== 'batch') {
+          const value = Reflect.get(target, key) as unknown
+          return typeof value === 'function' ? value.bind(target) : value
+        }
+        return async (statements: D1PreparedStatement[]) => {
+          if (++batches === 2) {
+            await client.json(`${url}/settings`, { method: 'PATCH', json: { wl: 8 } })
+            await client.json(`${url}/parts/hide`, HIDE)
+          }
+          return target.batch(statements)
+        }
+      },
+    })
+    await removeAccountPart(racing, null, { id: account.id }, 'tasks', guard)
+    expect(batches).toBe(2)
+    const { settings } = await client.json<AccountSettingsResponse>(`${url}/settings`)
+    expect(settings).toMatchObject({
+      wl: 8,
+      parts: { hidden: { all: expect.any(Number) }, removed: { tasks: expect.any(Number) } },
+    })
+  })
+
+  it('a patch still clears, replaces and merges as before', async () => {
+    const { client, account } = await setup()
+    const url = `/api/accounts/${account.id}/settings`
+    const patch = (json: unknown) =>
+      client.json<AccountSettingsResponse>(url, { method: 'PATCH', json })
+    await patch({
+      ar: 55,
+      resin: { value: 120, at: 1_000 },
+      planner: { resinSteps: [-40, 60], azoth: true },
+      favoriteCharacters: ['Furina', 'HuTao'],
+    })
+    await client.json(`/api/accounts/${account.id}/parts/hide`, HIDE)
+    // null clears, a list replaces the list, an object merges key by key.
+    const { settings } = await patch({
+      ar: null,
+      resin: null,
+      planner: { resinSteps: [-20], refreshes: 2 },
+      favoriteCharacters: [],
+      liveSync: true,
+    })
+    expect(settings).toMatchObject({
+      ar: null,
+      wl: null,
+      resin: null,
+      planner: { resinSteps: [-20], refreshes: 2, azoth: true, resinMarks: [40, 200] },
+      favoriteCharacters: [],
+      parts: { hidden: { all: expect.any(Number) }, removed: {} },
+    })
+    expect(settings).not.toHaveProperty('liveSync')
+    expect(await client.json<AccountSettingsResponse>(url)).toEqual({ settings })
   })
 })

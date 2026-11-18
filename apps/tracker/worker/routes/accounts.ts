@@ -32,9 +32,11 @@ import {
   loadAccount,
   newImportKey,
   ownerOnly,
+  patchSettingsStatement,
   recomputeAccount,
   uidTaken,
   uploadsRefused,
+  writtenSettings,
 } from '../services/accounts'
 import { listSnapshots, parseIds, parseSections } from '../services/account-views'
 import {
@@ -183,17 +185,14 @@ export const accounts = new Hono<AppEnv>()
     const id = idParam(c, 'id')
     const patch = await parseJson(c, accountSettingsPatch)
     const db = getDb(c.env.DB)
-    const account = await loadAccount(db, c.get('userId'), id, 'edit')
+    await loadAccount(db, c.get('userId'), id, 'edit')
     // Live sync has no switch any more (cached builds may still send one).
     const { liveSync: _ignored, ...rest } = patch
-    const stored = deepMerge(account.settings, rest)
-    const [, listener] = await c.env.DB.batch([
-      c.env.DB.prepare('UPDATE genshin_accounts SET settings = ?1 WHERE id = ?2').bind(
-        JSON.stringify(stored),
-        id,
-      ),
+    const [written, listener] = await c.env.DB.batch([
+      patchSettingsStatement(c.env.DB, id, rest),
       listenerStatement(c.env.DB, id),
     ])
+    const stored = writtenSettings(written)
     // The planner reads AR/WL, its options and the resin set by hand, the Characters
     // page the favourites: open ones follow.
     notifyAccount(
@@ -384,18 +383,12 @@ export const accounts = new Hono<AppEnv>()
   .post('/:id/parts/hide', async (c) => {
     const id = idParam(c, 'id')
     const body = await parseJson(c, hidePartNoteRequest)
-    const account = await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
-    const settings = deepMerge(ACCOUNT_SETTINGS_DEFAULTS, account.settings)
-    const stored = deepMerge(account.settings, {
-      parts: { hidden: { ...settings.parts.hidden, [body.key]: Date.now() } },
-    })
-    const [, listener] = await c.env.DB.batch([
-      c.env.DB.prepare('UPDATE genshin_accounts SET settings = ?1 WHERE id = ?2').bind(
-        JSON.stringify(stored),
-        id,
-      ),
+    await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
+    const [written, listener] = await c.env.DB.batch([
+      patchSettingsStatement(c.env.DB, id, { parts: { hidden: { [body.key]: Date.now() } } }),
       listenerStatement(c.env.DB, id),
     ])
+    const stored = writtenSettings(written)
     notifyAccount(
       c,
       listenerOf(listener),

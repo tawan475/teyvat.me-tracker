@@ -123,4 +123,61 @@ describe('saveQueue', () => {
     await expect(b).rejects.toThrow()
     expect(restored).toEqual(['old'])
   })
+
+  it('shows and restores nothing for saves the owner left behind', async () => {
+    const queue = saveQueue<string>()
+    const shown: string[] = []
+    const restored: string[] = []
+    const answers = [deferred<string>(), deferred<string>()]
+    const save = (held: string, answer: Promise<string>) =>
+      queue.save(
+        held,
+        () => answer,
+        (a) => a,
+        (a) => shown.push(a),
+        (b) => restored.push(b),
+      )
+    // Two saves on their way when the user signs out: one answers, one fails.
+    const first = save('old', answers[0]!.promise)
+    const second = save('one', answers[1]!.promise)
+    queue.forget()
+    answers[0]!.resolve('one')
+    await expect(first).resolves.toBe('one')
+    answers[1]!.reject(new Error('signed out'))
+    await expect(second).rejects.toThrow('signed out')
+    expect(shown).toEqual([])
+    expect(restored).toEqual([])
+
+    // The next owner's saves start anew: their own baseline, their own answers.
+    const third = save('theirs', Promise.reject(new Error('offline')))
+    await expect(third).rejects.toThrow('offline')
+    expect(restored).toEqual(['theirs'])
+    await expect(save('theirs', Promise.resolve('new'))).resolves.toBe('new')
+    expect(shown).toEqual(['new'])
+  })
+
+  it("keeps an earlier owner's late answer out of the next owner's saves", async () => {
+    const queue = saveQueue<string>()
+    const shown: string[] = []
+    const restored: string[] = []
+    const late = deferred<string>()
+    const save = (held: string, send: () => Promise<string>) =>
+      queue.save(
+        held,
+        send,
+        (a) => a,
+        (a) => shown.push(a),
+        (b) => restored.push(b),
+      )
+    const before = save('old', () => late.promise)
+    queue.forget()
+    // Queued behind the earlier save, which is still on its way.
+    const after = save('theirs', () => Promise.reject(new Error('offline')))
+    late.resolve('earlier user')
+    await expect(before).resolves.toBe('earlier user')
+    await expect(after).rejects.toThrow('offline')
+    expect(shown).toEqual([])
+    // Not the earlier user's answer: what the next owner had before their change.
+    expect(restored).toEqual(['theirs'])
+  })
 })

@@ -29,11 +29,16 @@ import { useTimeTravel } from '@/views/account/use-time-travel'
  * it lives (AccountMode `guest`).
  */
 const error = shallowRef<unknown>(null)
+/** The guest pages were left (the layout unmounted): nothing more starts for them. */
+let left = false
 
 async function open() {
   error.value = null
   try {
     await loadGuestAccount()
+    // Left while the account loaded: the watch stopped at unmount would start
+    // again here, with nothing to stop it.
+    if (left) return
     void loadTraveler(GUEST_ACCOUNT_ID)
     // The watched folder (Settings › Sync): reads Capture's exports by itself.
     void startFolderWatch().catch(() => undefined)
@@ -72,6 +77,7 @@ watch(
   { immediate: true },
 )
 onBeforeUnmount(() => {
+  left = true
   cancelIdle?.()
   // The watched folder is read only while a guest page is open.
   stopFolderWatch()

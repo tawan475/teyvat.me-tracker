@@ -1,6 +1,6 @@
 {
   "section": "Paylaşım",
-  "sync": "Yakalama",
+  "sync": "Senkronizasyon",
   "title": "Hesap paylaşımı",
   "sharedWithMe": "Benimle paylaşılanlar",
   "sharedBy": "{owner} paylaştı · {role}",

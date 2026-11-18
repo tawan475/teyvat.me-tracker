@@ -8,7 +8,7 @@ import {
   type TasksSection,
 } from '@gdt/shared'
 import { withLiveParts } from '@/data/live-now'
-import { computed, shallowRef, watch } from 'vue'
+import { computed, defineAsyncComponent, shallowRef, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { History, Upload } from 'lucide-vue-next'
 import ChangeValue from '@/components/overview/ChangeValue.vue'
@@ -322,6 +322,8 @@ const readOnly = useReadOnly()
 const demo = useDemo()
 const accountLink = useAccountLink()
 const guest = useGuest()
+/** Guest mode's empty state with the watched folder (its code loads only there). */
+const FolderEmpty = defineAsyncComponent(() => import('@/components/guest/FolderEmpty.vue'))
 const importRoute = computed(() => accountLink('account-import'))
 </script>
 
@@ -345,7 +347,9 @@ const importRoute = computed(() => accountLink('account-import'))
     :can-act="!readOnly && access !== 'viewer'"
   />
 
-  <UiPanel v-if="!account.latest" flush>
+  <!-- Guest mode: Watch a folder beside Import, where the browser has the folder picker. -->
+  <FolderEmpty v-if="!account.latest && guest" :import-route="importRoute" :read-only="readOnly" />
+  <UiPanel v-else-if="!account.latest" flush>
     <UiEmpty :title="$t('overview.noSnapshots')">
       <template #icon><History aria-hidden="true" /></template>
       <UiButton v-if="!readOnly && !demo" variant="primary" :to="importRoute">

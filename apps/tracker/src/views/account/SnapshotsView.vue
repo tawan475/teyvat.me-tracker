@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import type { SnapshotResponse } from '@gdt/shared'
 import { useElementSize, useIntervalFn } from '@vueuse/core'
-import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
-import { CalendarX, History, Repeat2, Upload } from 'lucide-vue-next'
+import {
+  computed,
+  defineAsyncComponent,
+  nextTick,
+  ref,
+  shallowRef,
+  useTemplateRef,
+  watch,
+} from 'vue'
+import { CalendarX, FolderSync, History, Repeat2, Upload } from 'lucide-vue-next'
 import { api } from '@/api'
 import BaseTable, { type TableLabel } from '@/components/legacy/BaseTable.vue'
 import CompactDialog from '@/components/snapshot-history/CompactDialog.vue'
@@ -33,6 +41,7 @@ import { clock24, dateLocale, formatBytes, formatFullDateTime, formatNumber } fr
 import { useAccounts } from '@/stores/accounts'
 import { useFeedback } from '@/stores/feedback'
 import { invalidateUsage, loadUsage, usageVersion } from '@/data/usage'
+import { folder, folderSet } from '@/local/folder-state'
 import { useAccess, useAccount, useAccountLink, useAccountMode } from './context'
 
 /** The bulk delete endpoint takes at most this many ids per request. */
@@ -66,6 +75,14 @@ const canDelete = (!readOnly && owner) || mode.purge !== undefined
 // past, view-only sharing), not in staff Inspect, whose layout keeps neither.
 const rowActions = !readOnly || mode.demo === true || mode.guest === true || !mode.route
 const feedback = useFeedback()
+
+/** Guest mode's watched folder: the Source strip over the list (its code loads only there). */
+const FolderSourceStrip = defineAsyncComponent(
+  () => import('@/components/guest/FolderSourceStrip.vue'),
+)
+const showFolder = computed(() => mode.guest === true && folderSet(folder))
+/** The file a row was read from, when the guest's watched folder read it. */
+const folderFile = (id: number): string | undefined => (mode.guest ? folder.rows[id] : undefined)
 
 const {
   data: snapshots,
@@ -209,7 +226,7 @@ const tableLabels = computed<TableLabel[]>(() => [
   { key: 'takenAt', title: t('snapshots.column.date'), slot: true },
   ...(layout.value === 'full'
     ? [
-        { key: 'source', title: t('snapshots.column.source') },
+        { key: 'source', title: t('snapshots.column.source'), slot: true },
         { key: 'rawSize', title: t('snapshots.column.rawSize'), slot: true },
       ]
     : []),
@@ -498,6 +515,8 @@ function selectionClearance(): number {
       @compact="compactOpen = true"
     />
 
+    <FolderSourceStrip v-if="showFolder" :now="liveNow" />
+
     <div ref="host" class="space-y-3">
       <!-- Sticks within this block (the whole table), so not wrapped with the heading. -->
       <SelectionBar
@@ -697,6 +716,20 @@ function selectionClearance(): number {
               </span>
             </span>
           </span>
+        </template>
+        <template #source="{ item }">
+          <span
+            v-if="folderFile(item.id)"
+            class="inline-flex max-w-full min-w-0 items-center gap-1.5"
+            :title="$t('guest.folder.fromFolder', { file: folderFile(item.id) })"
+          >
+            <FolderSync class="size-4 shrink-0 text-text-secondary" aria-hidden="true" />
+            <span class="sr-only">{{
+              $t('guest.folder.fromFolder', { file: folderFile(item.id) })
+            }}</span>
+            <span class="truncate">{{ item.source }}</span>
+          </span>
+          <template v-else>{{ item.source }}</template>
         </template>
         <template #rawSize="{ item }">
           <span class="font-medium whitespace-nowrap text-text-muted">{{

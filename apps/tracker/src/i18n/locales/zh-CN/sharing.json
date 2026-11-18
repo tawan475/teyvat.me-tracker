@@ -1,6 +1,6 @@
 {
   "section": "共享",
-  "sync": "抓包",
+  "sync": "同步",
   "title": "账号共享",
   "sharedWithMe": "共享给我的",
   "sharedBy": "{owner} 共享 · {role}",

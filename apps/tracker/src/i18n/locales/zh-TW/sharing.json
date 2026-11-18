@@ -1,6 +1,6 @@
 {
   "section": "共用",
-  "sync": "擷取",
+  "sync": "同步",
   "title": "帳號共用",
   "sharedWithMe": "與我共用",
   "sharedBy": "{owner} 共用 · {role}",

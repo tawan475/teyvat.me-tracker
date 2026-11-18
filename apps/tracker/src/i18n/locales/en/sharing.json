@@ -1,6 +1,6 @@
 {
   "section": "Sharing",
-  "sync": "Capture",
+  "sync": "Sync",
   "title": "Account sharing",
   "sharedWithMe": "Shared with me",
   "sharedBy": "Shared by {owner} · {role}",

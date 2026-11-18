@@ -32,7 +32,7 @@ import {
   type KnownBlob,
   type PreparedSnapshot,
 } from '@gdt/shared'
-import { LocalApiError } from './errors'
+import { LocalApiError, OtherUidError } from './errors'
 import type { BlobRow, LocalStore, SnapshotRow, Transaction } from './local-store'
 
 let materials: Promise<KeyDictionary> | null = null
@@ -164,6 +164,12 @@ export interface LocalUpload {
   rawSize: number
   /** The uploader's explicit capture time, if it sent one. */
   timestamp?: unknown
+  /**
+   * Read from the watched folder: a file of another UID than the account's
+   * is refused (OtherUidError) instead of stored with a warning. A file the
+   * user imports by hand keeps the warning.
+   */
+  folder?: boolean
 }
 
 /** Stores one GOOD file in the guest store. */
@@ -175,6 +181,10 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
     const now = Date.now()
     const takenAt = resolveImportTimestamp(upload.timestamp, prepared.good.timestamp, now)
     const account = tx.account()
+    const fileUid = prepared.good.player?.uid
+    if (upload.folder && fileUid !== undefined && account.uid && account.uid !== String(fileUid)) {
+      throw new OtherUidError(String(fileUid), account.uid)
+    }
     const warnings =
       prepared.good.player?.uid !== undefined &&
       account.uid &&

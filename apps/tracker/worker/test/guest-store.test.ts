@@ -24,7 +24,8 @@ import { loadGuestModules, type GuestStore } from './guest-modules'
 
 const BASE = `/api/accounts/${GUEST_ACCOUNT_ID}`
 
-const { memoryBackend, LocalStore, setGuestStore, localFetch } = await loadGuestModules()
+const guestModules = await loadGuestModules()
+const { memoryBackend, LocalStore, setGuestStore, localFetch } = guestModules
 
 let store: GuestStore
 beforeEach(() => {
@@ -206,6 +207,29 @@ describe('guest store', () => {
     const bad = await local('/import', { method: 'POST', body: '{nope' })
     expect(bad.status).toBe(400)
     expect(await bad.json()).toMatchObject({ error: { code: 'invalid_json' } })
+  })
+
+  it("refuses a watched folder's file of another UID, where a hand import warns", async () => {
+    const [[big, at], [played, later]] = sequence() as [[Good, number], [Good, number]]
+    const upload = (good: Good, time: number, folder: boolean) =>
+      guestModules.importLocal(store, {
+        text: JSON.stringify(good),
+        rawSize: 1,
+        timestamp: time,
+        folder,
+      })
+    expect(await upload(big, at, true)).toMatchObject({ status: 'created' })
+    const other = { ...played, gi_player: { ...played.gi_player!, uid: 712345678 } }
+    await expect(upload(other, later, true)).rejects.toMatchObject({
+      code: 'guest_other_uid',
+      uid: '712345678',
+      own: String(big.gi_player!.uid),
+    })
+    expect((await localJson<SnapshotResponse[]>('/snapshots')).length).toBe(1)
+    // By hand: stored, with the warning (as before).
+    const byHand = await upload(other, later, false)
+    expect(byHand.status).toBe('created')
+    expect(byHand.warnings?.[0]?.code).toBe('uid_mismatch')
   })
 
   it('deletes snapshots with the sections only they used, and compacts', async () => {

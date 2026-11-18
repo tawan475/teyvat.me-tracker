@@ -271,7 +271,23 @@ const TILE =
             </span>
           </div>
         </div>
-        <div class="flex flex-[1_1_auto] flex-wrap items-end justify-end gap-2">
+      </div>
+
+      <!-- The capture's date (or the note it needs one), then the filter and Share on the same line. -->
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p
+          v-if="captured.data.value && !known"
+          class="mr-auto flex min-w-0 items-center gap-1.5 text-sm text-text-secondary"
+        >
+          <Info class="size-4 shrink-0" aria-hidden="true" />
+          {{ $t('collections.arcana.needsCapture') }}
+        </p>
+        <p v-else class="mr-auto min-w-0 text-xs text-text-muted">
+          <template v-if="arcana">{{
+            $t('endgame.captured.fromCapture', { date: formatDate(arcana.takenAt) })
+          }}</template>
+        </p>
+        <div class="flex flex-wrap items-center justify-end gap-2">
           <UiSegmented
             v-if="known"
             v-model="filter"
@@ -288,17 +304,6 @@ const TILE =
           </UiButton>
         </div>
       </div>
-
-      <p
-        v-if="captured.data.value && !known"
-        class="flex items-center gap-1.5 text-sm text-text-secondary"
-      >
-        <Info class="size-4 shrink-0" aria-hidden="true" />
-        {{ $t('collections.arcana.needsCapture') }}
-      </p>
-      <p v-else-if="arcana" class="text-xs text-text-muted">
-        {{ $t('endgame.captured.fromCapture', { date: formatDate(arcana.takenAt) }) }}
-      </p>
 
       <div
         v-if="!game.data.value"

@@ -363,6 +363,7 @@ export const accounts = new Hono<AppEnv>()
     const body = await parseJson(c, removePartRequest)
     const account = await loadAccount(getDb(c.env.DB), c.get('userId'), id, 'own')
     const result = await removeAccountPart(c.env.DB, liveDb(c.env), account, body.part, body.guard)
+    if (result.later) afterResponse(c, result.later())
     notifyData(c, id, result.recomputed, result.listening)
     // The "Removed from history" mark lives in the settings: open pages re-read them.
     notifyAccount(

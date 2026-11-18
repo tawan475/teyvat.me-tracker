@@ -1,5 +1,9 @@
 import {
+  BlobDecoder,
+  PROFILE_FIELDS,
   REMOVABLE_PARTS,
+  holdsPartKeys,
+  kindCode,
   type AccountCreatedResponse,
   type AccountResponse,
   type AccountSettingsResponse,
@@ -18,6 +22,8 @@ import {
   synthetic18,
   syntheticEndgame,
 } from '../../../../packages/shared/test/synthetic'
+import { countAccountParts, removeAccountPart } from '../services/remove-part'
+import { toBytes } from '../services/storage'
 import { ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp, type Client } from './client'
 
 // "Remove this part from my history" and Capture's gi_off (issue 12, item 3).
@@ -390,5 +396,109 @@ describe('removing a part from the live journal', () => {
     ])
     // The next batch still follows the journal.
     await batch(importKey, delta(base, 3, [['set', ['materials', 'Mora'], 6000]]))
+  })
+})
+
+/**
+ * Whether any stored blob of a shared slot (every row of its kinds, whether
+ * a snapshot or only a base points at it) still decodes to the part's keys.
+ */
+async function storedHold(accountId: number, slot: 'player' | 'progress', keys: readonly string[]) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, kind, base_id, data FROM section_blobs WHERE account_id = ?1 AND kind IN (?2, ?3)`,
+  )
+    .bind(accountId, kindCode(slot, false), kindCode(slot, true))
+    .all<{ id: number; kind: number; base_id: number | null; data: unknown }>()
+  const blobs = new Map(
+    results.map((r) => [
+      r.id,
+      { id: r.id, code: r.kind, baseId: r.base_id, data: toBytes(r.data) },
+    ]),
+  )
+  const decoder = new BlobDecoder((id) => blobs.get(id))
+  return {
+    count: blobs.size,
+    holds: [...blobs.keys()].some((id) => holdsPartKeys(decoder.decode(id).value, keys)),
+  }
+}
+
+describe('removing a part leaves nothing of it stored (issue 12 review)', () => {
+  it('drops the bases later sections were compressed against', async () => {
+    const { client, account, importKey } = await setup()
+    await history(importKey)
+    expect((await storedHold(account.id, 'progress', ['a'])).holds).toBe(true)
+    expect((await remove(client, account.id, 'achievements')).status).toBe(200)
+    const progress = await storedHold(account.id, 'progress', ['a'])
+    expect(progress.count).toBeGreaterThan(0)
+    expect(progress.holds).toBe(false)
+    expect((await remove(client, account.id, 'profile')).status).toBe(200)
+    const player = await storedHold(account.id, 'player', PROFILE_FIELDS)
+    expect(player.holds).toBe(false)
+    const raw = await env.DB.prepare(
+      'SELECT count(*) AS n FROM section_blobs WHERE account_id = ?1 AND instr(data, ?2) > 0',
+    )
+      .bind(account.id, new TextEncoder().encode('player01'))
+      .first<{ n: number }>()
+    expect(raw!.n).toBe(0)
+    // Every snapshot still decodes, events kept.
+    for (const good of (await goods(client, account.id)).values()) {
+      expect(good.gi_events).toEqual(new17.events)
+      expect(good.gi_achievement_progress).toBeUndefined()
+    }
+  })
+
+  it('brings the part back with the next capture, even one equal to the newest', async () => {
+    const { client, account, importKey } = await setup()
+    await send(importKey, capture(1), 1_000)
+    expect((await remove(client, account.id, 'achievements')).status).toBe(200)
+    const again = await send(importKey, capture(1), 2_000)
+    expect(again.status).toBe('created')
+    const back = await client.json<Good>(
+      `/api/accounts/${account.id}/snapshots/${again.snapshotId}/good`,
+    )
+    expect(back.gi_achievements).toEqual(capture(1).gi_achievements)
+    // From then on, equal captures are a no-op again.
+    expect((await send(importKey, capture(1), 3_000)).status).toBe('unchanged')
+  })
+})
+
+describe('gi_off in the no-op decision', () => {
+  it('stores an equal capture whose switches changed, and only then', async () => {
+    const { client, account, importKey } = await setup()
+    const first = await send(importKey, { ...capture(1), gi_off: [] }, 1_000)
+    expect(first.status).toBe('created')
+    expect((await send(importKey, { ...capture(1), gi_off: [] }, 2_000)).status).toBe('unchanged')
+    // A switch for a part the account has nothing of: the sections stay equal.
+    const flipped = await send(importKey, { ...capture(1), gi_off: ['gi_wardrobe'] }, 3_000)
+    expect(flipped.status).toBe('created')
+    expect((await send(importKey, { ...capture(1), gi_off: ['gi_wardrobe'] }, 4_000)).status).toBe(
+      'unchanged',
+    )
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list.map((s) => s.off)).toEqual([['gi_wardrobe'], []])
+  })
+})
+
+describe('a failing live journal after the history is clean', () => {
+  it('still answers with what was removed, and leaves the journal for later', async () => {
+    const { client, account, importKey } = await setup()
+    await history(importKey)
+    const { guard } = await countAccountParts(env.DB, null, account.id)
+    const broken = {
+      prepare: () => ({ bind: () => ({}) }),
+      batch: () => Promise.reject(new Error('gdt-live is down')),
+    } as unknown as D1Database
+    const result = await removeAccountPart(
+      env.DB,
+      broken,
+      { id: account.id, settings: {} },
+      'tasks',
+      guard,
+    )
+    expect(result.response).toMatchObject({ part: 'tasks', snapshots: 3, liveChanges: 0 })
+    expect(result.later).toBeTypeOf('function')
+    await result.later!()
+    for (const good of (await goods(client, account.id)).values())
+      expect(good.gi_tasks).toBeUndefined()
   })
 })

@@ -51,6 +51,39 @@ export function readOff(value: unknown): string[] | null {
   return out
 }
 
+/**
+ * Whether two uploads' `gi_off` say the same (the import's no-op decision):
+ * the same names in any order. Absent (an older Capture, a website import)
+ * and [] (everything shared) are different states.
+ */
+export function sameOff(
+  a: readonly string[] | undefined,
+  b: readonly string[] | undefined,
+): boolean {
+  if (a === undefined || b === undefined) return a === b
+  return a.length === b.length && a.every((name) => b.includes(name))
+}
+
+/** The GOOD sections Capture can leave out (the builds; never removable). */
+export const OFF_SECTIONS = ['characters', 'weapons', 'artifacts', 'materials'] as const
+export type OffSection = (typeof OFF_SECTIONS)[number]
+
+/** Whether a snapshot with this `off` shared the section (absent `off`: it did). */
+export const sharesSection = (off: readonly string[] | undefined, section: OffSection): boolean =>
+  !off?.includes(section)
+
+/**
+ * The newest time a part was removed from history (settings `parts.removed`),
+ * or 0. A snapshot stored before it no longer holds what its content key
+ * names, so an upload equal to that key is stored anew (import's no-op).
+ */
+export function lastRemoval(removed: Readonly<Record<string, number>> | undefined): number {
+  let newest = 0
+  for (const at of Object.values(removed ?? {}))
+    if (typeof at === 'number' && at > newest) newest = at
+  return newest
+}
+
 /** The parts that can be removed from history, in the remove dialog's order. */
 export const REMOVABLE_PARTS = [
   'achievements',

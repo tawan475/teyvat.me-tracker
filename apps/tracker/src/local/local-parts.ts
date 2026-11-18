@@ -86,6 +86,11 @@ export function removePartLocal(
       newIds.set(blob.hash, id)
       tx.putBlob({ id, code: blob.code, hash: blob.hash, baseId: null, data: blob.data })
     }
+    // Blobs that leaned on a base holding the part: standalone now, same id.
+    for (const blob of plan.rewrites) {
+      const row = store.blobs.get(blob.id)!
+      tx.putBlob({ ...row, code: blob.code, baseId: null, data: blob.data })
+    }
     for (const update of plan.updates) {
       const row = store.snapshots.get(update.id)!
       const refs = [...row.refs]

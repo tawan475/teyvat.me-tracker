@@ -3,6 +3,7 @@ import {
   type AccountSettingsResponse,
   type AchievementMarksResponse,
   type PlannerStateResponse,
+  type PartsResponse,
   type PlannerTargetsResponse,
   type SnapshotResponse,
   type WishHistoryResponse,
@@ -148,5 +149,31 @@ describe('bringing guest data into an account', () => {
     expect(state.capturedAt).toBe(2500)
     expect(state.adjustments).toMatchObject([{ key: 'Mora', delta: 123, base: 2500 }])
     expect((await client.json<WishHistoryResponse>(`${base}/wishes`)).chunks.length).toBe(1)
+  })
+
+  it('sends settings without the part notes, and the hidden notes through their route (issue 12)', async () => {
+    await guest('/import?timestamp=1000', { method: 'POST', body: JSON.stringify(bigGood()) })
+    await guest('/settings', { method: 'PATCH', json: { traveler: 'M' } })
+    await guest('/achievement-marks', { method: 'PATCH', json: { done: [84500] } })
+    await guest('/parts/hide', { method: 'POST', json: { key: 'all' } })
+    const counts = (await guest('/parts')) as PartsResponse
+    await guest('/parts/remove', {
+      method: 'POST',
+      json: { part: 'tasks', confirm: 'REMOVE', guard: counts.guard },
+    })
+    const { account } = await client.json<{ account: AccountResponse }>('/api/accounts', {
+      method: 'POST',
+      json: { name: 'Main' },
+    })
+    const result = await convertGuest(account.id, () => {}, store)
+    expect(result).toMatchObject({ snapshots: { failed: 0 } })
+    const base = `/api/accounts/${account.id}`
+    const { settings } = await client.json<AccountSettingsResponse>(`${base}/settings`)
+    expect(settings.traveler).toBe('M')
+    expect(settings.parts.hidden.all).toEqual(expect.any(Number))
+    // The steps after the settings ran.
+    expect((await client.json<AchievementMarksResponse>(`${base}/achievement-marks`)).done).toEqual(
+      [84500],
+    )
   })
 })

@@ -8,9 +8,12 @@
  * whole run refuse (409 `capture_changed`), all or nothing. Blobs nothing
  * points at any more are collected in the same batch, so the space is free
  * at once. The open live journal then loses that part's changes only (its
- * own guard: the journal's last seq). Content keys stay as they were, so a
- * live journal's base still names its snapshot. Ids and byte counts only in
- * logs, never inventory data.
+ * own guard: the journal's last seq); when gdt-live fails or stays busy, the
+ * history is already clean and the journal is retried after the response.
+ * Content keys stay as they were, so a live journal's base still names its
+ * snapshot; the import stores an equal upload anew once a part was removed
+ * after its newest snapshot (import.ts `sameInventory`). Ids and byte
+ * counts only in logs, never inventory data.
  */
 
 import {
@@ -198,6 +201,11 @@ export interface RemovePartResult {
   /** The batch's recomputeAccount and listener results (for the live notice). */
   recomputed: D1Result | undefined
   listening: D1Result | undefined
+  /**
+   * The live journal step, when it failed or stayed busy: run again after
+   * the response (the history is removed already, so the route answers 200).
+   */
+  later?: () => Promise<void>
 }
 
 /**
@@ -219,6 +227,36 @@ export async function removeAccountPart(
 
   const { count, maxId } = loaded
   const statements: D1PreparedStatement[] = []
+  // Blobs that keep their id, standalone now (they leaned on a base holding the part).
+  for (const json of chunks(
+    plan.rewrites.map((b) => ({ id: b.id, k: b.code, d: hexOf(b.data) })),
+  )) {
+    statements.push(
+      d1
+        .prepare(
+          `UPDATE section_blobs SET kind = json_extract(j.value, '$.k'), base_id = NULL,
+             data = unhex(json_extract(j.value, '$.d'))
+           FROM json_each(?4) AS j
+           WHERE section_blobs.account_id = ?1 AND section_blobs.id = json_extract(j.value, '$.id')
+             AND ${GUARD}`,
+        )
+        .bind(accountId, count, maxId, json),
+    )
+  }
+  // The byte counter's triggers see inserts and deletes only (migration 0002).
+  const rewritten = plan.rewrites.reduce(
+    (sum, b) => sum + b.data.length - (loaded.blobs.get(b.id)?.data.length ?? 0),
+    0,
+  )
+  if (rewritten !== 0) {
+    statements.push(
+      d1
+        .prepare(
+          `UPDATE genshin_accounts SET stored_bytes = stored_bytes + ?4 WHERE id = ?1 AND ${GUARD}`,
+        )
+        .bind(accountId, count, maxId, rewritten),
+    )
+  }
   for (const json of chunks(plan.blobs.map((b) => ({ h: b.hash, k: b.code, d: hexOf(b.data) })))) {
     statements.push(
       d1
@@ -293,11 +331,43 @@ export async function removeAccountPart(
   const results = await d1.batch(statements)
   if ((results[marked]!.results ?? []).length === 0) throw historyChanged()
 
-  const liveChanges = live ? await removeLiveChanges(live, accountId, part) : 0
+  // The history is clean and written: a failing or busy journal never turns
+  // that into an error; it is tried again after the response.
+  let liveChanges = 0
+  let later: (() => Promise<void>) | undefined
+  if (live) {
+    const dropped = await tryLiveChanges(live, accountId, part)
+    if (dropped === null) {
+      later = async () => {
+        if ((await tryLiveChanges(live, accountId, part)) === null) {
+          console.warn('remove_part_live_pending', accountId)
+        }
+      }
+    } else liveChanges = dropped
+  }
   return {
     response: { part, snapshots: plan.snapshots, freed: plan.freed, liveChanges, removedAt: now },
     recomputed: results[recomputedAt],
     listening: results[listeningAt],
+    ...(later ? { later } : {}),
+  }
+}
+
+/** removeLiveChanges, its errors logged: null when it failed or stayed busy. */
+async function tryLiveChanges(
+  live: D1Database,
+  accountId: number,
+  part: RemovablePart,
+): Promise<number | null> {
+  try {
+    return await removeLiveChanges(live, accountId, part)
+  } catch (error) {
+    console.warn(
+      'remove_part_live_failed',
+      accountId,
+      error instanceof Error ? error.name : 'error',
+    )
+    return null
   }
 }
 
@@ -349,13 +419,13 @@ async function readJournalRows(live: D1Database, accountId: number): Promise<Jou
  * Drops the part's changes from the account's open live journal (its rows
  * and its tail), the rest kept; the journal stays open. Guarded by the
  * journal's last seq: a batch that lands meanwhile makes it read again.
- * Returns how many changes went.
+ * Returns how many changes went; null when batches kept landing (busy).
  */
 export async function removeLiveChanges(
   live: D1Database,
   accountId: number,
   part: RemovablePart,
-): Promise<number> {
+): Promise<number | null> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const journal = await readJournalRows(live, accountId)
     if (!journal) return 0
@@ -414,5 +484,5 @@ export async function removeLiveChanges(
     if ((results.at(-1)!.meta.changes ?? 0) > 0) return dropped
   }
   console.warn('remove_part_live_busy', accountId)
-  return 0
+  return null
 }

@@ -3,7 +3,14 @@
  * snapshot (see artifact-rarity-history), cached per data version.
  */
 
-import { accountCacheKey, loadBundle, loadCatalog, type AccountRef } from './account-data'
+import { sharesSection } from '@gdt/shared/off'
+import {
+  accountCacheKey,
+  loadBundle,
+  loadCatalog,
+  loadSnapshots,
+  type AccountRef,
+} from './account-data'
 import { buildArtifactRarityHistory, type ArtifactRarityHistory } from './artifact-rarity-history'
 
 const cache = new Map<string, Promise<ArtifactRarityHistory>>()
@@ -15,12 +22,18 @@ export function loadArtifactRarityHistory(account: AccountRef): Promise<Artifact
   let entry = cache.get(key)
   if (!entry) {
     entry = (async () => {
-      const [bundle, catalog] = await Promise.all([
+      const [bundle, catalog, list] = await Promise.all([
         loadBundle(account, { sections: ['artifacts'] }),
         loadCatalog(account),
+        loadSnapshots(account),
       ])
+      // A capture whose Artifacts switch was off (issue 12) gets no count:
+      // the charts hold the last shared one.
+      const unshared = new Set(
+        list.filter((s) => !sharesSection(s.off, 'artifacts')).map((s) => s.id),
+      )
       return buildArtifactRarityHistory(
-        bundle.snapshots,
+        bundle.snapshots.filter((s) => !unshared.has(s.id)),
         bundle.texts,
         (id) => catalog.get(id)?.rarity,
       )

@@ -35,6 +35,7 @@ import { decodeBundleOffThread } from './decode'
 import { bundlePacks, mergeDecoded } from './bundle-packs'
 import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
 import { historyAt, type Travel } from './time-travel'
+import { sharedSources, type SharedSources } from './shared-sources'
 
 export interface AccountRef {
   id: number
@@ -267,6 +268,12 @@ export interface Inventory {
   artifactIds: number[]
   /** The live journal applied on top of the snapshot (absent: the snapshot alone). */
   live?: LiveApplied
+  /**
+   * Sections the newest capture left out on purpose (Capture's `gi_off`,
+   * issue 12) and the snapshot each was taken from instead: the newest one
+   * that shared it. Absent when the newest snapshot shared them all.
+   */
+  sharedFrom?: SharedSources
 }
 
 /** Catalog ids of a snapshot's artifacts, in `decodeArtifacts` order. */
@@ -280,27 +287,68 @@ function artifactIdsOf(snapshot: BundleSnapshot, bundle: DecodedBundle): number[
   return artifactRows(section, text(snapshot.artifactsBase)).map((row) => row[0])
 }
 
-/** The newest snapshot, fully decoded, with the catalog for artifact details. */
+/**
+ * The newest snapshot, fully decoded, with the catalog for artifact details.
+ * A build section the newest capture left out on purpose (Capture's
+ * `gi_off`: characters, weapons, artifacts, materials) is the newest
+ * snapshot's that shared it (issue 12), read in one more small bundle.
+ */
 function loadSnapshotInventory(
   account: AccountRef & { latest: { id: number } },
 ): Promise<Inventory | null> {
   const latest = account.latest
   return cached(account, `latest:${latest.id}`, async () => {
-    const [bundle, catalog, materials] = await Promise.all([
+    const [bundle, catalog, materials, list] = await Promise.all([
       loadBundle(account, { ids: [latest.id] }),
       loadCatalog(account),
       loadMaterialsDictionary(),
+      // Already read by the page in most cases (cached): only its `off`.
+      loadSnapshots(account).catch(() => [] as SnapshotResponse[]),
     ])
     const snapshot = bundle.snapshots[0]
     if (!snapshot) return null
+    const from = sharedSources(list, latest.id)
+    const donors = from ? [...new Set(Object.values(from).filter((id) => id !== null))] : []
+    const donorBundle =
+      donors.length > 0 ? await loadBundle(account, { ids: donors.sort((a, b) => a - b) }) : null
     // The catalog and the bundle may have come in this same task: the
     // snapshot's decode gets one of its own.
     await yieldToMain()
+    const good = decodeBundleSnapshot(snapshot, bundle, catalog, materials)
+    let artifactIds = artifactIdsOf(snapshot, bundle)
+    if (from && donorBundle) {
+      const decoded = new Map<number, { good: Good; snapshot: BundleSnapshot }>()
+      const donor = (id: number) => {
+        let entry = decoded.get(id)
+        if (!entry) {
+          const shot = donorBundle.snapshots.find((s) => s.id === id)
+          if (!shot) return null
+          entry = {
+            snapshot: shot,
+            good: decodeBundleSnapshot(shot, donorBundle, catalog, materials),
+          }
+          decoded.set(id, entry)
+        }
+        return entry
+      }
+      for (const [section, id] of Object.entries(from)) {
+        const entry = id === null ? null : donor(id)
+        if (!entry) continue
+        if (section === 'characters') good.characters = entry.good.characters
+        else if (section === 'weapons') good.weapons = entry.good.weapons
+        else if (section === 'materials') good.materials = entry.good.materials
+        else if (section === 'artifacts') {
+          good.artifacts = entry.good.artifacts
+          artifactIds = artifactIdsOf(entry.snapshot, donorBundle)
+        }
+      }
+    }
     return {
       snapshot,
-      good: decodeBundleSnapshot(snapshot, bundle, catalog, materials),
+      good,
       catalog,
-      artifactIds: artifactIdsOf(snapshot, bundle),
+      artifactIds,
+      ...(from ? { sharedFrom: from } : {}),
     }
   })
 }

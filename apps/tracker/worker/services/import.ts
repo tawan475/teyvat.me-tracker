@@ -42,6 +42,7 @@ import {
   planSnapshotV2,
   prepareSnapshot,
   resolveImportTimestamp,
+  sameOff,
   shortHashHex,
   storedPlayer,
   BlobDecoder,
@@ -85,6 +86,9 @@ interface LatestRow extends Record<string, unknown> {
   content_key: number | null
   characters_ref: number | null
   meta: unknown
+  created_at: number
+  /** The newest time a part was removed from the account's history (null: never). */
+  removed_at: number | null
 }
 
 /** The snapshot an upload is stored against (NEAREST_SQL). */
@@ -104,9 +108,16 @@ const ARTIFACT_INSERT_CHUNK = 400
 /** Artifacts per catalog chunk an import writes (repack merges small ones). */
 export const CATALOG_CHUNK_SIZE = 512
 
-/** The latest live snapshot (a v1 row's content hash only while the schema has v1). */
-const latestSql = (legacy: boolean) => `SELECT id, taken_at,
-    ${legacy ? 'content_hash' : 'NULL AS content_hash'}, content_key, meta, ${REFS_SQL}
+/**
+ * The latest live snapshot (a v1 row's content hash only while the schema has
+ * v1), with the newest time a part was removed from the account's history
+ * (settings `parts.removed`, issue 12): a row stored before that no longer
+ * holds what its content key names.
+ */
+const latestSql = (legacy: boolean) => `SELECT id, taken_at, created_at,
+    ${legacy ? 'content_hash' : 'NULL AS content_hash'}, content_key, meta, ${REFS_SQL},
+    (SELECT max(j.value) FROM genshin_accounts AS g,
+       json_each(g.settings, '$.parts.removed') AS j WHERE g.id = ?1) AS removed_at
   FROM snapshots WHERE account_id = ?1 AND deleted_at IS NULL
   ORDER BY taken_at DESC, id DESC LIMIT 1`
 
@@ -389,7 +400,15 @@ async function importOnce(
         row.content_hash === encoded.pre22ContentHash ||
         row.content_hash === encoded.preRecipesContentHash
   const sameInventory = (row: LatestRow) =>
-    row.content_key !== null ? row.content_key === key : row.content_hash === encoded.contentHash
+    (row.content_key !== null
+      ? row.content_key === key
+      : row.content_hash === encoded.contentHash) &&
+    // A part removed from history since the row was stored: its key names
+    // what it held before, so an equal upload brings the part back (issue 12).
+    (row.removed_at === null || row.removed_at < row.created_at) &&
+    // Capture's switches changed: the pages' "Not shared" notes read them
+    // from the newest snapshot, so it is stored even when equal.
+    sameOff(prepared.good.off, offOf(row.meta))
 
   if (sameTime) {
     // A re-upload of the same capture is a no-op, so uploaders can retry freely.
@@ -513,6 +532,16 @@ async function importOnce(
     listenerOf(results.at(-1)),
     !latest || takenAt >= latest.taken_at,
   )
+}
+
+/** A stored meta's `gi_off` (undefined: none, or a meta that does not decode). */
+function offOf(meta: unknown): string[] | undefined {
+  if (meta === null || meta === undefined) return undefined
+  try {
+    return decodeSnapshotMeta(toBytes(meta)).off
+  } catch {
+    return undefined
+  }
 }
 
 /**

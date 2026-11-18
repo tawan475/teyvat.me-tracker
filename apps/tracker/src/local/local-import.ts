@@ -20,9 +20,11 @@ import {
   decodeSnapshotMeta,
   encodeSnapshotMeta,
   encodeStaticSections,
+  lastRemoval,
   planSnapshotV2,
   prepareSnapshot,
   resolveImportTimestamp,
+  sameOff,
   serverFromUid,
   type ArtifactIdentity,
   type BlobRef,
@@ -84,6 +86,23 @@ function newWorld(capture: GiCapture | null | undefined, latest: SnapshotRow): b
     return false
   }
   return !previous || previous.session !== capture.session || previous.world !== capture.world
+}
+
+/** A stored snapshot's `gi_off` (undefined: none, or a meta that does not decode). */
+function offOf(row: SnapshotRow): string[] | undefined {
+  try {
+    return decodeSnapshotMeta(row.meta).off
+  } catch {
+    return undefined
+  }
+}
+
+/** When the guest removed each part from history (settings `parts.removed`). */
+function removedParts(store: LocalStore): Record<string, number> | undefined {
+  const stored = store.state.get('settings') as
+    | { settings?: { parts?: { removed?: Record<string, number> } } }
+    | undefined
+  return stored?.settings?.parts?.removed
 }
 
 /** The snapshot an upload is stored against: the nearest at or before its time, else the first after. */
@@ -238,7 +257,11 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
       latest &&
       latest.contentKey === key &&
       takenAt > latest.takenAt &&
-      !newWorld(prepared.good.capture, latest)
+      !newWorld(prepared.good.capture, latest) &&
+      // A part removed since (its key names what it held), or Capture's
+      // switches changed: stored anew, as the Worker does (issue 12).
+      lastRemoval(removedParts(store)) < latest.createdAt &&
+      sameOff(prepared.good.off, offOf(latest))
     ) {
       account.nextArtifactId -= staged.length
       tx.putSnapshot({ ...latest, lastSeenAt: Math.max(latest.lastSeenAt, takenAt) })

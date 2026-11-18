@@ -144,6 +144,17 @@ export interface PartRowUpdate {
   storedDelta: number
 }
 
+/**
+ * A blob re-encoded in place: the same id, hash and value, stored standalone
+ * now (no base). One whose value never held the part but was compressed
+ * against a base that does: kept as it was, that base would stay stored.
+ */
+export interface RewrittenPartBlob {
+  id: number
+  code: number
+  data: Uint8Array
+}
+
 export interface PartRemovalPlan {
   part: RemovablePart
   /** Live snapshots that hold the part (the trash is cleaned too, not counted). */
@@ -155,6 +166,8 @@ export interface PartRemovalPlan {
   /** Bytes the account stores less afterwards (blobs collected, minus new ones). */
   freed: number
   blobs: PlannedPartBlob[]
+  /** Blobs that keep their id, now standalone (written before the rows change). */
+  rewrites: RewrittenPartBlob[]
   updates: PartRowUpdate[]
 }
 
@@ -162,9 +175,12 @@ export interface PartRemovalPlan {
  * Removes `part` from every snapshot row: its own slots become null, its
  * shared slot points at a standalone blob of the section without it (the
  * same blob for every row that shared one; an existing blob when one already
- * holds exactly that). Every new blob is checked to decode back to the value
- * it was made of. `blobs` must hold every blob the rows point at in the
- * part's slots, with their bases.
+ * holds exactly that). A shared-slot blob that does not hold the part but is
+ * compressed against a base that does (its preset dictionary: a capture
+ * after the part was switched off) is re-encoded standalone in place, so no
+ * base holding the part stays referenced. Every new or rewritten blob is
+ * checked to decode back to the value it was made of. `blobs` must hold
+ * every blob the rows point at in the part's slots, with their bases.
  */
 export async function planPartRemoval(
   part: RemovablePart,
@@ -179,36 +195,64 @@ export async function planPartRemoval(
   // The shared slot's blobs, each re-encoded once.
   const replaced = new Map<number, BlobRef | null>()
   const made = new Map<string, PlannedPartBlob>()
+  const rewrites = new Map<number, RewrittenPartBlob>()
   const shared = place.shared
   const sharedIds = new Set<number>()
   if (shared) {
+    const slot = shared.slot
+    const holder = new Map<number, boolean>()
+    const holds = (id: number) => {
+      let known = holder.get(id)
+      if (known === undefined) {
+        known = holdsPartKeys(decoder.decode(id).value, shared.keys)
+        holder.set(id, known)
+      }
+      return known
+    }
+    // Its base chain reaches a blob that holds the part.
+    const leans = (id: number) => {
+      for (let base = blobs.get(id)?.baseId ?? null; base !== null; ) {
+        if (holds(base)) return true
+        base = blobs.get(base)?.baseId ?? null
+      }
+      return false
+    }
+    const standalone = (value: unknown) => {
+      const code = kindCode(slot, false)
+      const blob = encodeSectionBlob(slot, value, false, null)
+      const back = decodeSectionBlob(code, blob.data, null, null).value
+      if (JSON.stringify(back) !== JSON.stringify(value)) {
+        throw new Error(`The ${slot} section did not decode back without ${part}`)
+      }
+      return { code, data: blob.data }
+    }
+    const rewrite = (id: number) => {
+      if (!rewrites.has(id)) rewrites.set(id, { id, ...standalone(decoder.decode(id).value) })
+    }
     for (const row of rows) {
-      const id = row.refs[shared.slot] ?? null
+      const id = row.refs[slot] ?? null
       if (id !== null) sharedIds.add(id)
     }
     for (const id of sharedIds) {
-      const value = decoder.decode(id).value
-      if (!holdsPartKeys(value, shared.keys)) continue
-      const rest = withoutPartKeys(value, shared.keys)
+      if (!holds(id)) {
+        if (leans(id)) rewrite(id)
+        continue
+      }
+      const rest = withoutPartKeys(decoder.decode(id).value, shared.keys)
       if (rest === null) {
         replaced.set(id, null)
         continue
       }
-      const hash = shortHashHex(await sectionHashOf(shared.slot, rest))
+      const hash = shortHashHex(await sectionHashOf(slot, rest))
       const existing = byHash.get(hash)
       if (existing !== undefined && existing !== id) {
+        // It holds exactly the rest; when it leans on a base holding the
+        // part, it is rewritten standalone too.
+        if (leans(existing)) rewrite(existing)
         replaced.set(id, { id: existing })
         continue
       }
-      if (!made.has(hash)) {
-        const code = kindCode(shared.slot, false)
-        const blob = encodeSectionBlob(shared.slot, rest, false, null)
-        const back = decodeSectionBlob(code, blob.data, null, null).value
-        if (JSON.stringify(back) !== JSON.stringify(rest)) {
-          throw new Error(`The ${shared.slot} section did not decode back without ${part}`)
-        }
-        made.set(hash, { hash, code, data: blob.data })
-      }
+      if (!made.has(hash)) made.set(hash, { hash, ...standalone(rest) })
       replaced.set(id, { hash })
     }
   }
@@ -238,12 +282,12 @@ export async function planPartRemoval(
   }
 
   // Bytes: the blobs every row reaches (with bases) before and after.
-  const reach = (ids: Iterable<number>) => {
+  const reach = (ids: Iterable<number>, rewritten: boolean) => {
     const seen = new Set<number>()
     for (const id of ids) {
       for (let next: number | null = id; next !== null && !seen.has(next); ) {
         seen.add(next)
-        next = blobs.get(next)?.baseId ?? null
+        next = rewritten && rewrites.has(next) ? null : (blobs.get(next)?.baseId ?? null)
       }
     }
     return seen
@@ -264,11 +308,14 @@ export async function planPartRemoval(
       } else if (id !== null) after.push(id)
     }
   }
-  const was = reach(before)
-  const is = reach(after)
+  const was = reach(before, false)
+  const is = reach(after, true)
   let freed = 0
   for (const id of was) if (!is.has(id)) freed += sizeOf(blobs.get(id))
   for (const blob of made.values()) freed -= blob.data.length
+  for (const blob of rewrites.values()) {
+    if (is.has(blob.id)) freed += sizeOf(blobs.get(blob.id)) - blob.data.length
+  }
 
   // stored_size: a blob's bytes count on the oldest row that points at it.
   const firstOf = new Map<string, number>()
@@ -291,8 +338,29 @@ export async function planPartRemoval(
     const update = changed.get(rowId)
     if (update) update.storedDelta += made.get(hash)?.data.length ?? 0
   }
+  // A rewritten blob's new size counts on the oldest row pointing at it.
+  for (const blob of rewrites.values()) {
+    const rowId = firstById.get(blob.id)
+    if (rowId === undefined || !is.has(blob.id)) continue
+    let update = changed.get(rowId)
+    if (!update) {
+      update = { id: rowId, refs: {}, storedDelta: 0 }
+      changed.set(rowId, update)
+      updates.push(update)
+    }
+    update.storedDelta += blob.data.length - sizeOf(blobs.get(blob.id))
+  }
 
-  return { part, snapshots, total, lastAt, freed, blobs: [...made.values()], updates }
+  return {
+    part,
+    snapshots,
+    total,
+    lastAt,
+    freed,
+    blobs: [...made.values()],
+    rewrites: [...rewrites.values()],
+    updates,
+  }
 }
 
 /**

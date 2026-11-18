@@ -1,18 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BlobDecoder,
   OFF_SWITCHES,
   PART_SWITCH,
   REMOVABLE_PARTS,
+  decodeSectionBlob,
   decodeSnapshotMeta,
+  encodeSectionBlob,
+  encodeSectionBlobVariants,
   encodeSnapshotMeta,
+  holdsPartKeys,
   isPartChange,
+  kindCode,
+  lastRemoval,
   normalizeGood,
   partNeighbours,
   partOfSwitch,
+  planPartRemoval,
   readOff,
+  sameOff,
+  sectionHashOf,
+  shortHashHex,
   withoutPartChanges,
   withoutPartKeys,
   type DeltaChange,
+  type PartBlobRow,
+  type PartSnapshotRow,
 } from '../src'
 
 // Capture's gi_off and the parts a user can remove (issue 12, item 3).
@@ -127,5 +140,100 @@ describe('removable parts', () => {
     expect(isPartChange('profile', changes[3]!)).toBe(false)
     expect(isPartChange('collections', changes[4]!)).toBe(true)
     expect(isPartChange('tasks', changes[5]!)).toBe(true)
+  })
+})
+
+describe('the no-op decision', () => {
+  it('tells switch lists apart, in any order; absent is not []', () => {
+    expect(sameOff(['gi_tasks', 'gi_events'], ['gi_events', 'gi_tasks'])).toBe(true)
+    expect(sameOff(['gi_tasks'], [])).toBe(false)
+    expect(sameOff(undefined, [])).toBe(false)
+    expect(sameOff(undefined, undefined)).toBe(true)
+  })
+
+  it('reads the newest removal time', () => {
+    expect(lastRemoval(undefined)).toBe(0)
+    expect(lastRemoval({ tasks: 5, profile: 9 })).toBe(9)
+  })
+})
+
+describe('planning a removal', () => {
+  const progress = (achievements: boolean) => ({
+    ...(achievements
+      ? {
+          a: Object.fromEntries(
+            Array.from({ length: 300 }, (_, i) => [String(80_000 + i), { progress: i, total: 9 }]),
+          ),
+        }
+      : {}),
+    e: { '2001': { progress: 3, total: 7 } },
+  })
+  async function blob(id: number, value: unknown, base: PartBlobRow | null): Promise<PartBlobRow> {
+    const code = kindCode('progress', false)
+    const encoded = base
+      ? encodeSectionBlobVariants(
+          'progress',
+          value,
+          decodeSectionBlob(base.code, base.data, null, null),
+        ).withBase!
+      : encodeSectionBlob('progress', value, false, null)
+    return {
+      id,
+      code,
+      baseId: base ? base.id : null,
+      data: encoded.data,
+      hash: shortHashHex(await sectionHashOf('progress', value)),
+    }
+  }
+
+  it('leaves no base holding the part: a later section compressed against it is made standalone', async () => {
+    const anchor = await blob(1, progress(true), null)
+    const later = await blob(2, progress(false), anchor)
+    expect(later.baseId).toBe(1)
+    const blobs = new Map([anchor, later].map((b) => [b.id, b]))
+    const rows: PartSnapshotRow[] = [
+      { id: 10, takenAt: 1, deleted: false, refs: { progress: 1 } },
+      { id: 11, takenAt: 2, deleted: false, refs: { progress: 2 } },
+    ]
+    const plan = await planPartRemoval('achievements', rows, blobs)
+    // The anchor's rest is exactly the later blob: reused, and that one rewritten standalone.
+    expect(plan.blobs).toEqual([])
+    expect(plan.rewrites.map((r) => r.id)).toEqual([2])
+    expect(plan.updates.find((u) => u.id === 10)!.refs).toEqual({ progress: { id: 2 } })
+    expect(plan.snapshots).toBe(1)
+
+    // Applied: every blob the rows still reach decodes without the part.
+    const after = new Map(blobs)
+    for (const r of plan.rewrites) after.set(r.id, { ...after.get(r.id)!, ...r, baseId: null })
+    const refs = rows.map((row) => {
+      const ref = plan.updates.find((u) => u.id === row.id)?.refs.progress
+      return ref && 'id' in ref ? ref.id : row.refs.progress!
+    })
+    const reached = new Set<number>()
+    for (let id of refs) {
+      for (let next: number | null = id; next !== null; next = after.get(next)!.baseId) {
+        reached.add(next)
+      }
+    }
+    expect([...reached]).toEqual([2])
+    const decoder = new BlobDecoder((id) => after.get(id))
+    expect(holdsPartKeys(decoder.decode(2).value, ['a'])).toBe(false)
+    expect(decoder.decode(2).value).toEqual(progress(false))
+    expect(plan.freed).toBe(anchor.data.length + later.data.length - plan.rewrites[0]!.data.length)
+  })
+
+  it('rewrites a section that never held the part when its base did', async () => {
+    const anchor = await blob(1, progress(true), null)
+    const later = await blob(2, { e: { '2001': { progress: 4, total: 7 } } }, anchor)
+    const blobs = new Map([anchor, later].map((b) => [b.id, b]))
+    const rows: PartSnapshotRow[] = [
+      { id: 10, takenAt: 1, deleted: false, refs: { progress: 1 } },
+      { id: 11, takenAt: 2, deleted: false, refs: { progress: 2 } },
+    ]
+    const plan = await planPartRemoval('achievements', rows, blobs)
+    expect(plan.blobs).toHaveLength(1)
+    expect(plan.rewrites.map((r) => r.id)).toEqual([2])
+    // Only the snapshot whose own section held it counts.
+    expect(plan.snapshots).toBe(1)
   })
 })

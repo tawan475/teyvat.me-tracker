@@ -3,7 +3,10 @@ import {
   asLeyline,
   catalogFromRows,
   decodeBundle,
+  BlobDecoder,
   decodeSnapshot,
+  holdsPartKeys,
+  kindCode,
   storedSnapshotOf,
   type AccountResponse,
   type AccountSettingsResponse,
@@ -297,6 +300,66 @@ describe('guest store', () => {
       json: { key: 'all' },
     })
     expect(hidden.settings.parts.hidden.all).toEqual(expect.any(Number))
+  })
+
+  it('leaves no stored base holding a removed part, and stores the next capture anew', async () => {
+    const { client, account, upload } = await serverAccount()
+    const [big] = sequence()[0]!
+    const full = (i: number): Good => ({
+      ...big,
+      gi_achievement_progress: Object.fromEntries(
+        Array.from({ length: 200 }, (_, n) => [String(84_000 + n), { progress: n + i, total: 9 }]),
+      ),
+      gi_events: { '2001001': { schedule: 7, start: 1_790_000_000, end: 1_800_000_000 } },
+    })
+    const {
+      gi_achievement_progress: _p,
+      gi_achievements: _a,
+      gi_achievement_times: _t,
+      ...off
+    } = full(3)
+    const shots: [unknown, number][] = [
+      [full(1), 1_000],
+      [full(2), 2_000],
+      [{ ...off, gi_off: ['gi_achievements'] }, 3_000],
+    ]
+    for (const [good, at] of shots) {
+      await upload(good, at)
+      await importLocal(good, at)
+    }
+    const counts = await localJson<PartsResponse>('/parts')
+    const serverCounts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    const here = await localJson<RemovePartResponse>('/parts/remove', {
+      method: 'POST',
+      json: { part: 'achievements', confirm: 'REMOVE', guard: counts.guard },
+    })
+    const there = await client.json<RemovePartResponse>(
+      `/api/accounts/${account.id}/parts/remove`,
+      {
+        method: 'POST',
+        json: { part: 'achievements', confirm: 'REMOVE', guard: serverCounts.guard },
+      },
+    )
+    const { removedAt: _x, ...a } = here
+    const { removedAt: _y, ...b } = there
+    expect(a).toEqual(b)
+    const rows = [
+      ...(
+        store.blobs as Map<
+          number,
+          { id: number; code: number; baseId: number | null; data: Uint8Array }
+        >
+      ).values(),
+    ]
+    const progress = new Set([kindCode('progress', false), kindCode('progress', true)])
+    const decoder = new BlobDecoder((id) => (store.blobs as Map<number, never>).get(id))
+    const held = rows.filter((r) => progress.has(r.code))
+    expect(held.length).toBeGreaterThan(0)
+    for (const row of held) expect(holdsPartKeys(decoder.decode(row.id).value, ['a'])).toBe(false)
+    // The newest capture again, with the part shared: stored anew, as on the server.
+    const back = await importLocal(full(3), 4_000)
+    expect(back.status).toBe('created')
+    expect((await upload(full(3), 4_000)).status).toBe('created')
   })
 
   it('keeps marks, the plan and settings as the server routes do', async () => {

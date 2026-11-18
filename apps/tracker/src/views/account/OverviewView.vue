@@ -39,6 +39,8 @@ import {
 } from '@/data/account-data'
 import {
   buildHistory,
+  sharedSummary,
+  withSharedFigures,
   currencyMissing,
   latestDelta,
   serverLabel,
@@ -115,7 +117,11 @@ const liveFigures = computed(() => {
   const journal = live.data.value
   const latest = account.value.latest
   if (!journal?.open || !latest || journal.base?.snapshotId !== latest.id) return null
-  return journal.changes?.length ? (journal.figures ?? null) : null
+  const figures = journal.changes?.length ? (journal.figures ?? null) : null
+  // A section the base left out (Capture's gi_off) keeps the last shared figures.
+  const newest = list.value?.[0]
+  if (!figures || newest?.id !== latest.id || !newest.off || !newestSummary.value) return figures
+  return withSharedFigures(figures, newest.off, newestSummary.value)
 })
 
 // The Traveler (gi_player of the newest snapshot) and the EXP its next rank needs.
@@ -261,8 +267,19 @@ const delta = computed(() => {
   return latestDelta(loaded)
 })
 
+/**
+ * The newest snapshot's figures, a section Capture left out (gi_off) read
+ * from the newest snapshot that shared it (issue 12).
+ */
+const newestSummary = computed(() => {
+  const latest = account.value.latest
+  const loaded = list.value
+  if (latest && loaded && loaded[0]?.id === latest.id) return sharedSummary(loaded, 0)
+  return latest?.summary
+})
+
 const tiles = computed(() => {
-  const latestSummary = account.value.latest?.summary
+  const latestSummary = newestSummary.value
   if (!latestSummary) return []
   // Live: the figures now, each against the newest snapshot.
   const figures = liveFigures.value
@@ -310,7 +327,7 @@ const tiles = computed(() => {
   ]
 })
 const lowRarity = computed(() => {
-  const summary = liveFigures.value ?? account.value.latest?.summary
+  const summary = liveFigures.value ?? newestSummary.value
   if (!summary) return null
   const d = liveFigures.value ? undefined : delta.value
   return {

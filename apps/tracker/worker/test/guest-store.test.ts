@@ -404,6 +404,14 @@ describe('guest store', () => {
       { method: 'PATCH', json: { base: at + 1_000, inventory: [{ key: 'Crystalfly', add: 2 }] } },
     )
     expect(fresh.adjustments.map((a) => a.key)).toEqual(['Crystalfly'])
+    // A capture that left the bag out (Capture's gi_off) replaces none of them.
+    const { materials: _m, ...noBag } = sequence()[1]![0]
+    await importLocal({ ...noBag, gi_off: ['materials'] }, at + 2_000)
+    const kept = await localJson<{ adjustments: { key: string }[] }>('/planner-state', {
+      method: 'PATCH',
+      json: { base: at + 2_000, bagBase: at + 1_000, inventory: [{ key: 'Mora', add: 3 }] },
+    })
+    expect(kept.adjustments.map((a) => a.key)).toEqual(['Crystalfly', 'Mora'])
 
     // What only a server does: refused, nothing sent.
     const presence = await local('/presence')

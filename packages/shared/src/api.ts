@@ -676,11 +676,15 @@ export const currentOverride = z.discriminatedUnion('kind', [
  * `lastSeenAt`, 0 without one. When the account's newest capture is another
  * one by now, nothing is written and the answer is a 409 (`capture_changed`).
  * Every write also drops the material edits a newer capture has replaced;
- * `prune` asks for just that.
+ * `prune` asks for just that. `bagBase` is the `lastSeenAt` of the capture
+ * the bag comes from when the newest one left materials out (Capture's
+ * `gi_off`, issue 12): edits made at or after it still count and are kept
+ * (absent: `base`; more than `base` counts as `base`).
  */
 export const plannerStatePatch = z
   .object({
     base: z.number().int().min(0),
+    bagBase: z.number().int().min(0).optional(),
     inventory: z.array(inventoryChange).max(1000).default([]),
     current: z.array(currentOverride).max(1000).default([]),
     prune: z.boolean().optional(),
@@ -1323,7 +1327,9 @@ export type WeaponCurrent = z.infer<typeof weaponCurrent>
  * One material's hand edit: the count is `set ?? the capture's count`, plus
  * `delta`. It applies while the account's newest capture is the one it was
  * made against (`base`, that capture's `lastSeenAt`, 0 for none) or older;
- * a newer capture replaces it (irminsul is the truth).
+ * a newer capture replaces it (irminsul is the truth). A newer capture that
+ * left materials out (Capture's `gi_off`) brought no bag and replaces none:
+ * the edit applies while `base` is at or after the bag's capture.
  */
 export interface InventoryAdjustment {
   key: string

@@ -25,6 +25,7 @@ import {
   type Good,
   type KeyDictionary,
   type LiveJournalResponse,
+  type OffSection,
   type SnapshotResponse,
   type SnapshotSummary,
 } from '@gdt/shared'
@@ -35,7 +36,7 @@ import { decodeBundleOffThread } from './decode'
 import { bundlePacks, mergeDecoded } from './bundle-packs'
 import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
 import { historyAt, type Travel } from './time-travel'
-import { sharedSources, type SharedSources } from './shared-sources'
+import { sharedSightings, sharedSources, type SharedSources } from './shared-sources'
 
 export interface AccountRef {
   id: number
@@ -274,6 +275,11 @@ export interface Inventory {
    * that shared it. Absent when the newest snapshot shared them all.
    */
   sharedFrom?: SharedSources
+  /**
+   * When each of `sharedFrom`'s snapshots was last seen (0 where none shared
+   * the section): the Planner measures its hand edits of materials against it.
+   */
+  sharedSeenAt?: Partial<Record<OffSection, number>>
 }
 
 /** Catalog ids of a snapshot's artifacts, in `decodeArtifacts` order. */
@@ -348,7 +354,7 @@ function loadSnapshotInventory(
       good,
       catalog,
       artifactIds,
-      ...(from ? { sharedFrom: from } : {}),
+      ...(from ? { sharedFrom: from, sharedSeenAt: sharedSightings(list, from) } : {}),
     }
   })
 }

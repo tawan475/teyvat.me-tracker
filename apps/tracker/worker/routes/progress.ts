@@ -583,14 +583,17 @@ export const progress = new Hono<AppEnv>()
     const d1 = c.env.DB
     const now = Date.now()
     const when = `${CAPTURED} = ?2`
+    // The capture the bag is from: older than `base` when the newest left
+    // materials out (Capture's gi_off), which replaces no edit.
+    const bagBase = Math.min(body.bagBase ?? body.base, body.base)
     const statements: D1PreparedStatement[] = [
       // Edits a newer capture has replaced.
       d1
         .prepare(
           `DELETE FROM inventory_adjustments
-           WHERE account_id = ?1 AND base_seen_at < ?2 AND ${when}`,
+           WHERE account_id = ?1 AND base_seen_at < ?3 AND ${when}`,
         )
-        .bind(id, body.base),
+        .bind(id, body.base, bagBase),
     ]
     const sets = body.inventory
       .filter((change) => change.set !== undefined)

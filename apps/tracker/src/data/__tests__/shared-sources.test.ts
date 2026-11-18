@@ -1,7 +1,7 @@
 import type { SnapshotResponse, SnapshotSummary } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { buildHistory, latestDelta, sharedSummary, withSharedFigures } from '../overview'
-import { sharedSources } from '../shared-sources'
+import { sharedSightings, sharedSources } from '../shared-sources'
 
 // "Now" while Teyvat.me Capture leaves a build section out (gi_off, issue 12).
 
@@ -43,6 +43,12 @@ describe('the newest capture that shared a section', () => {
     expect(sharedSources(list, 2)).toBeNull()
     // None shared it: nothing to read.
     expect(sharedSources(snaps([1, summary(0, 0), ['weapons']]), 1)).toEqual({ weapons: null })
+    // When each stand-in was last seen (0 where none shared): the Planner's edits count from it.
+    expect(sharedSightings(list, { characters: 2, materials: 3, weapons: null })).toEqual({
+      characters: 2_000,
+      materials: 3_000,
+      weapons: 0,
+    })
   })
 
   it("gives the newest snapshot's figures, and its change, from the shared ones", () => {

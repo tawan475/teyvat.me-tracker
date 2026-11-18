@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   adjustmentApplies,
   applyChanges,
+  bagSighting,
   characterNow,
   countChange,
   effectiveInventory,
@@ -101,6 +102,26 @@ describe('material counts on top of the newest capture', () => {
     expect(applyChanges(second, [{ key: 'HerosWit', add: 1 }], 5, 11)).toEqual([
       { key: 'HerosWit', delta: 1, set: null, base: 5, updatedAt: 11 },
     ])
+  })
+
+  it("keeps edits through a capture that left materials out (Capture's gi_off)", () => {
+    // A Done spent against the capture seen at 10; the next one (at 20) brought no bag.
+    const spent = [edit('Mora', null, -30, 10)]
+    const bag = bagSighting(20, 10)
+    expect(bag).toBe(10)
+    expect(effectiveInventory(capture, spent, bag)).toMatchObject({ Mora: 70 })
+    expect(replacedAdjustments(spent, bag)).toEqual([])
+    // An edit made on the newer one adds to it, and both are kept.
+    expect(applyChanges(spent, [{ key: 'HerosWit', add: 1 }], 20, 21, bag)).toEqual([
+      { key: 'HerosWit', delta: 1, set: null, base: 20, updatedAt: 21 },
+      { key: 'Mora', delta: -30, set: null, base: 10, updatedAt: 1 },
+    ])
+    // Without the bag's capture (none shared materials) every edit counts.
+    expect(bagSighting(20, 0)).toBe(0)
+    // The newest shared its materials: the newest is the bag.
+    expect(bagSighting(20, undefined)).toBe(20)
+    // A capture that shares materials again replaces them.
+    expect(effectiveInventory(capture, spent, bagSighting(30, undefined))).toEqual(capture)
   })
 
   it('turns a typed count into an edit, or none when it is the capture’s', () => {

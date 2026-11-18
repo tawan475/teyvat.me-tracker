@@ -33,6 +33,22 @@ export function sharedSources(
   return any ? from : null
 }
 
+/**
+ * When each stand-in of `from` was last seen (its `lastSeenAt`; 0 when no
+ * snapshot shared the section): what the Planner's hand edits of a section
+ * left out are measured against (hand-edits.ts `bagSighting`).
+ */
+export function sharedSightings(
+  list: readonly Pick<SnapshotResponse, 'id' | 'lastSeenAt'>[],
+  from: SharedSources,
+): Partial<Record<OffSection, number>> {
+  const seen: Partial<Record<OffSection, number>> = {}
+  for (const [section, id] of Object.entries(from) as [OffSection, number | null][]) {
+    seen[section] = id === null ? 0 : (list.find((s) => s.id === id)?.lastSeenAt ?? 0)
+  }
+  return seen
+}
+
 /** Whether a snapshot with this `off` shared every section a figure reads. */
 export function sharesAll(
   off: readonly string[] | undefined,

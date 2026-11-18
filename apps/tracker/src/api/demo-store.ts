@@ -264,11 +264,13 @@ export async function demoState(
       'A newer capture arrived; nothing was changed',
     )
   }
+  // The capture the bag is from (older when the newest left materials out).
+  const bagBase = Math.min(body.bagBase ?? body.base, body.base)
   return holder.change<PlannerStateResponse>('planner-state', (state) => {
     const adjustments = new Map<string, InventoryAdjustment>(
       state.adjustments
         // Edits a newer capture has replaced.
-        .filter((a) => captured === undefined || a.base >= body.base)
+        .filter((a) => captured === undefined || a.base >= bagBase)
         .map((a) => [a.key, a]),
     )
     for (const edit of body.inventory ?? []) {

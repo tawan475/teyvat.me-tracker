@@ -44,7 +44,7 @@ import KofiButton from './KofiButton.vue'
 import LastSync from './LastSync.vue'
 import { t } from '@/i18n'
 import { ACCOUNT_SECTIONS, NAV_PARENT, STAFF_SECTIONS, pageTitle } from './nav'
-import { USER_SETTINGS_DEFAULTS } from '@gdt/shared/settings'
+import { tabBarPages } from '@gdt/shared/settings'
 import { NAV_COLLAPSED_KEY, useNavCollapse } from './nav-collapse'
 import SectionLabel from './SectionLabel.vue'
 import SiteSearch from './SiteSearch.vue'
@@ -239,11 +239,17 @@ const sections = computed(() => {
       }))
     : []
 })
-/** The phone tab bar: the pages the user picked (Settings → Appearance), in the sidebar's order. */
+/**
+ * The phone tab bar: the pages the user picked (Settings → Appearance), in
+ * the order they dragged them (the sidebar keeps its own order).
+ */
 const primary = computed(() => {
   if (staffMode.value) return staffSections.value.filter((s) => s.primary)
-  const picked = new Set(session.settings.tabBar ?? USER_SETTINGS_DEFAULTS.tabBar)
-  return sections.value.filter((s) => picked.has(s.key))
+  const byKey = new Map(sections.value.map((s) => [s.key as string, s]))
+  return tabBarPages(session.settings.tabBar).flatMap((key) => {
+    const section = byKey.get(key)
+    return section ? [section] : []
+  })
 })
 const title = computed(() => pageTitle(route.meta))
 
@@ -696,6 +702,7 @@ const footButton =
 
     <nav
       v-if="primary.length"
+      data-tab-bar
       class="fixed inset-x-0 bottom-0 z-30 flex border-t border-border-default bg-surface-nav pb-[env(safe-area-inset-bottom)] lg:hidden"
       :aria-label="staffMode ? $t('shell.section.staff') : $t('shell.section.account')"
     >

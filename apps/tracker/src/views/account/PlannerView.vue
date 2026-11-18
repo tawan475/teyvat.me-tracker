@@ -152,6 +152,8 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import PlannerDragGhost from '@/components/planner/PlannerDragGhost.vue'
+import { goalIcon } from '@/components/planner/goal-icon'
 import { t } from '@/i18n'
 import { formatDate, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
@@ -855,6 +857,20 @@ const drag = useDragOrder({
     const target = shown[Math.max(0, Math.min(shown.length - 1, to))]
     if (target && target !== id) applyOrder(moveTo(pendingOrder.value, id, target))
   },
+})
+/** The lifted copy of the card being dragged (PlannerDragGhost reads the pointer itself). */
+const dragGhost = computed(() => {
+  const id = drag.dragging.value
+  const entry = id ? pendingEntries.value.find((e) => e.id === id) : null
+  if (!id || !entry) return null
+  const to = drag.over.value
+  const target = to && to !== id ? ranks.value.get(to) : undefined
+  return {
+    entry,
+    icon: goalIcon(entry),
+    rank: ranks.value.get(id) ?? 0,
+    badge: target ? `→ #${target}` : null,
+  }
 })
 const sorting = computed(() => sort.value === 'priority' && !selecting.value)
 /** Each card's last place object: the same one while it doesn't change (no re-render). */
@@ -2024,6 +2040,14 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
             />
           </li>
         </ul>
+        <PlannerDragGhost
+          v-if="dragGhost"
+          :lift="drag.lift"
+          :rank="dragGhost.rank"
+          :name="dragGhost.entry.name"
+          :icon="dragGhost.icon"
+          :badge="dragGhost.badge"
+        />
 
         <ExtraItems
           v-if="shownItems.length"

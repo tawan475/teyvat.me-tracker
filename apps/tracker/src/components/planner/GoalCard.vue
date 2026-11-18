@@ -10,27 +10,21 @@ import {
   CircleArrowUp,
   Eye,
   EyeOff,
-  GripVertical,
   PencilLine,
   Star,
 } from 'lucide-vue-next'
 import NamecardBackdrop from '@/components/characters/NamecardBackdrop.vue'
 import GameIcon from '@/components/ui/GameIcon.vue'
+import UiSortableHandle from '@/components/ui/UiSortableHandle.vue'
 import MaterialIcon from '@/components/materials-page/MaterialIcon.vue'
-import {
-  artifactSetIcon,
-  characterBanner,
-  characterIcon,
-  gameIcon,
-  materialIcon,
-  weaponIcon,
-} from '@/lib/assets'
+import { artifactSetIcon, characterBanner, gameIcon, materialIcon, weaponIcon } from '@/lib/assets'
 import { t } from '@/i18n'
 import { formatCompact, formatNumber } from '@/lib/format'
 import { formatSetName } from '@/utils/artifact-stats'
 import { plannerWeaponIcon } from './custom-registry'
 import { characterParts, weaponPart, type DonePart } from './done'
 import { ARTIFACTS_LEFT, GOAL_UNSET, READINESS } from './farm-format'
+import { goalIcon } from './goal-icon'
 import GoalPortrait from './GoalPortrait.vue'
 import { fromTouch, useItemPopover } from './item-popover'
 import { expName, type FocusChip } from './material-filter'
@@ -220,7 +214,7 @@ const portrait = computed(() => {
   const ch = c.value
   if (ch)
     return {
-      src: ch.custom ? (ch.custom.image ?? '') : characterIcon(ch.key),
+      src: goalIcon(props.entry),
       name: ch.name,
       rarity: ch.rarity,
       element: ch.element,
@@ -230,7 +224,7 @@ const portrait = computed(() => {
     }
   const w = props.entry.weapons[0]!
   return {
-    src: plannerWeaponIcon(w.key, w.target.ascension),
+    src: goalIcon(props.entry),
     name: w.name,
     rarity: w.rarity,
     element: null,
@@ -320,16 +314,21 @@ const activeLabel = computed(() =>
 <template>
   <!-- content-visibility: cards off screen skip layout and paint (100 goals on a phone). -->
   <article
-    class="flex w-full flex-col rounded-xl border bg-surface-raised shadow-sm transition-[color,border-color,opacity] [contain-intrinsic-size:auto_18rem] [content-visibility:auto]"
-    :class="[
-      order?.over && !order.dragging
-        ? 'border-accent-text ring-2 ring-accent/30'
-        : selected
-          ? 'border-accent-text'
-          : 'border-border-default hover:border-border-strong',
-      order?.dragging ? 'opacity-50' : '',
-    ]"
+    class="flex w-full flex-col rounded-xl border transition-[color,border-color,opacity] [contain-intrinsic-size:auto_18rem] [content-visibility:auto]"
+    :class="
+      order?.dragging
+        ? 'border-dashed border-border-strong bg-transparent [&>*]:opacity-45'
+        : [
+            'bg-surface-raised shadow-sm',
+            order?.over
+              ? 'border-accent-text outline-2 outline-offset-2 outline-accent-text'
+              : selected
+                ? 'border-accent-text'
+                : 'border-border-default hover:border-border-strong',
+          ]
+    "
     :data-goal-card="entry.id"
+    data-drag-item
   >
     <div class="relative overflow-hidden rounded-t-xl">
       <NamecardBackdrop
@@ -339,19 +338,16 @@ const activeLabel = computed(() =>
         class="absolute inset-y-0 right-0 h-full w-4/5 opacity-30 [mask-image:linear-gradient(to_left,black_30%,transparent_95%)] dark:opacity-20"
       />
       <div class="relative flex items-stretch gap-1 p-3 pr-1.5" :class="order ? 'pl-1' : ''">
-        <button
+        <UiSortableHandle
           v-if="order"
-          type="button"
-          class="-my-1 inline-flex w-8 shrink-0 cursor-grab touch-none flex-col items-center justify-center gap-0.5 self-stretch rounded-md text-text-muted transition-colors select-none hover:bg-surface-overlay hover:text-text-primary active:cursor-grabbing"
+          class="-my-1 rounded-md"
+          :place="order.rank"
           :data-goal-handle="entry.id"
-          :aria-label="$t('planner.card.handleLabel', { name: entry.name, rank: order.rank })"
+          :label="$t('planner.card.handleLabel', { name: entry.name, rank: order.rank })"
           :title="$t('planner.card.handleTitle', { rank: order.rank })"
-          @pointerdown="emit('grab', $event)"
-          @keydown="emit('nudge', $event)"
-        >
-          <span class="tabular font-mono text-xs">{{ order.rank }}</span>
-          <GripVertical class="size-4" aria-hidden="true" />
-        </button>
+          @grab="emit('grab', $event)"
+          @nudge="emit('nudge', $event)"
+        />
         <button
           type="button"
           :aria-haspopup="selecting ? undefined : 'dialog'"

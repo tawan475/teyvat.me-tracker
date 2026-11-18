@@ -33,9 +33,11 @@ import { locale } from '@/i18n/locale'
 import { giCdnArt } from '@/lib/assets'
 import { formatDate, formatNumber } from '@/lib/format'
 import { useAccount } from '@/views/account/context'
+import { ARCANA_SKY } from './arcana-card'
 import type { ArcanaDrawing } from './arcana-card-canvas'
 
 const ArcanaShareModal = defineAsyncComponent(() => import('./ArcanaShareModal.vue'))
+const SKY = giCdnArt(ARCANA_SKY)
 
 /**
  * Lunar Arcana (Imaginarium Theater's Lunar Mode): the 22 cards, which the
@@ -317,8 +319,11 @@ const TILE =
       <UiEmpty v-else-if="!views.length" :title="$t('collections.arcana.noData')" />
       <!-- B2's layout: the cards, and the picked one read in full beside them. -->
       <div v-else class="flex flex-wrap items-start gap-4">
+        <!-- On the game's Lunar Arcana sky, in the dark theme's colours whatever the page's. -->
         <div
-          class="min-w-0 flex-[999_1_32rem] rounded-xl border border-border-default bg-surface-raised p-3 shadow-sm sm:p-4"
+          data-theme="dark"
+          class="min-w-0 flex-[999_1_32rem] rounded-xl border border-border-default bg-[#070a1f] bg-cover bg-center p-3 shadow-sm sm:p-4"
+          :style="{ backgroundImage: `url(${SKY})` }"
         >
           <UiEmpty v-if="!shown.length" :title="$t('collections.arcana.noneShown')" />
           <ul v-else class="flex flex-wrap justify-center gap-x-3 gap-y-4">

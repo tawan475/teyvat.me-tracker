@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { LOCKED_LOOK, lockedOvalCss } from './arcana-card'
+
 /**
  * A Lunar Arcanum's picture. Held (or not known): the card art. Missing:
- * its own art very dark and blurred, the numeral over it as the lock (the
- * user's pick, 2026-11-18), so missing differs in lightness, sharpness and a
- * mark, never by hue alone. Copies beyond the first: a "×2" badge.
+ * its own art dimmed with a tall oval darkening from the middle and the
+ * numeral over it as the lock (LOCKED_LOOK, the user's pick of 2026-11-18),
+ * so missing differs in lightness and a mark, never by hue alone. Copies
+ * beyond the first: a "×2" badge.
  */
 withDefaults(
   defineProps<{
@@ -19,14 +22,16 @@ withDefaults(
   }>(),
   { count: null, size: 'sm', ratio: '373 / 958' },
 )
+const DIM = `brightness(${LOCKED_LOOK.brightness}) saturate(${LOCKED_LOOK.saturate})`
+const OVAL = lockedOvalCss()
 </script>
 
 <template>
   <span class="relative block w-full" :style="{ aspectRatio: ratio }">
-    <!-- The card's own outline (the art as a mask), filled with its art blurred and darkened. -->
+    <!-- The card's own outline (the art as a mask): its art dimmed, the oval darkening, the numeral. -->
     <span
       v-if="missing"
-      class="absolute inset-0 overflow-hidden bg-[#0b1020]"
+      class="absolute inset-0 overflow-hidden"
       :style="{
         maskImage: `url(${src})`,
         maskSize: '100% 100%',
@@ -39,14 +44,10 @@ withDefaults(
         :loading="lazy ? 'lazy' : 'eager'"
         decoding="async"
         data-skeleton="off"
-        class="size-full scale-105 object-contain saturate-[.7]"
-        :class="size === 'lg' ? 'blur-[5px] brightness-[.6]' : 'blur-[1.5px] brightness-[.6]'"
+        class="size-full object-contain"
+        :style="{ filter: DIM }"
       />
-      <!-- A mild darkening that radiates from the middle, where the numeral sits. -->
-      <span
-        class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(4,6,16,.5),rgba(4,6,16,0)_72%)]"
-        aria-hidden="true"
-      />
+      <span class="absolute inset-0" :style="{ background: OVAL }" aria-hidden="true" />
       <span
         class="absolute inset-0 flex items-center justify-center font-bold tracking-wider text-slate-100 [text-shadow:0_2px_8px_rgba(0,0,0,.7)]"
         :class="

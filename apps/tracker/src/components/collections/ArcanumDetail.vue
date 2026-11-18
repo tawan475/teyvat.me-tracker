@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Check } from 'lucide-vue-next'
 import ArcanumArt from './ArcanumArt.vue'
+import { ARCANA_SKY } from './arcana-card'
 import { giCdnArt } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import type { ArcanumView } from '@/data/lunar-arcana'
@@ -31,7 +32,11 @@ const numberLine = computed(() => {
 
 <template>
   <div class="flex min-w-0 flex-col">
-    <div class="flex justify-center bg-[#1e1b2e] px-6 py-5">
+    <!-- The card on the game's Lunar Arcana sky. -->
+    <div
+      class="flex justify-center bg-[#070a1f] bg-cover bg-center px-6 py-5"
+      :style="{ backgroundImage: `url(${giCdnArt(ARCANA_SKY)})` }"
+    >
       <div class="w-full" :class="held ? 'max-w-[18rem]' : 'max-w-[10.5rem]'">
         <ArcanumArt
           :src="giCdnArt(held ? view.card.framed : view.card.icon)"

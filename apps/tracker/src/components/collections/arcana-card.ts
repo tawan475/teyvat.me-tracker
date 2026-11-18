@@ -104,3 +104,38 @@ export function arcanaFileName(layout: ArcanaLayout, takenAt: number | null): st
   const date = `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
   return `lunar-arcana-${layout}-${date}.png`
 }
+
+/**
+ * A missing card's look, the same on the page and the PNG (the user's pick,
+ * 2026-11-18, "XX" with oval B): its own art, sharp, dimmed and a little
+ * desaturated, then a darkening from the middle in a tall oval like the card
+ * (radii 55% of its width, 50% of its height, smoothstep falloff), the
+ * numeral over it. Missing differs from held in lightness and the numeral,
+ * never by hue alone.
+ */
+export const LOCKED_LOOK = {
+  brightness: 0.6,
+  saturate: 0.75,
+  oval: { rx: 0.55, ry: 0.5 },
+  color: [4, 6, 16] as const,
+  /** [where along the radius, alpha]: 0.78 × smoothstep(1 − r). */
+  stops: [
+    [0, 0.78],
+    [0.25, 0.66],
+    [0.5, 0.39],
+    [0.75, 0.12],
+    [1, 0],
+  ] as const,
+} as const
+
+/** The oval darkening as a CSS background (radii in % of the box). */
+export function lockedOvalCss(): string {
+  const { oval, color, stops } = LOCKED_LOOK
+  const rgb = color.join(',')
+  return `radial-gradient(${oval.rx * 100}% ${oval.ry * 100}% at 50% 50%, ${stops
+    .map(([at, a]) => `rgba(${rgb},${a}) ${at * 100}%`)
+    .join(', ')})`
+}
+
+/** The game's Lunar Arcana sky (gi-cdn), behind the cards on the page and the PNG. */
+export const ARCANA_SKY = 'UI_Bg_RoleCombat_Tarot_01'

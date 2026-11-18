@@ -19,7 +19,7 @@ import {
 } from '@/lib/card-canvas'
 import { formatDate, formatNumber } from '@/lib/format'
 import type { CardTheme } from '../characters/share-card'
-import { ARCANA_CARD, arcanaGrid, type ArcanaLayout } from './arcana-card'
+import { ARCANA_CARD, ARCANA_SKY, LOCKED_LOOK, arcanaGrid, type ArcanaLayout } from './arcana-card'
 
 export interface ArcanaCardEntry {
   /** The card art's name (`UI_RoleCombat_Tarot_06`). */
@@ -95,10 +95,7 @@ export async function drawArcanaCard(
 ): Promise<DrawnArcana> {
   const spec = ARCANA_CARD[input.layout]
   const [images, fonts] = await Promise.all([
-    CardImages.load(
-      input.cards.map((c) => giCdnArt(c.icon)),
-      progress,
-    ),
+    CardImages.load([giCdnArt(ARCANA_SKY), ...input.cards.map((c) => giCdnArt(c.icon))], progress),
     cardFonts([400, 500, 600, 700]),
   ])
   const p = new Painter(spec.width, spec.height, scale)
@@ -124,22 +121,45 @@ export async function drawArcanaCard(
   }
 
   try {
-    // The ground: a moonlit glow from the top's middle.
-    // CSS `radial-gradient(120% 90% at 50% 0%, …)` (70% tall on the tall card).
-    const rx = spec.width * 1.2
-    const ry = spec.height * (input.layout === 'wide' ? 0.9 : 0.7)
-    ctx.fillStyle = c.stops[2]
-    ctx.fillRect(0, 0, spec.width, spec.height)
-    ctx.save()
-    ctx.translate(spec.width / 2, 0)
-    ctx.scale(1, ry / rx)
-    const ground = ctx.createRadialGradient(0, 0, 0, 0, 0, rx)
-    ground.addColorStop(0, c.stops[0])
-    ground.addColorStop(0.45, c.stops[1])
-    ground.addColorStop(1, c.stops[2])
-    ctx.fillStyle = ground
-    ctx.fillRect(-spec.width / 2, 0, spec.width, rx)
-    ctx.restore()
+    // The ground: the game's Lunar Arcana sky (a pale veil over it on the light
+    // card); the violet glow only when the sky couldn't be had.
+    const sky = images.get(giCdnArt(ARCANA_SKY))
+    if (sky) {
+      if (input.layout === 'wide') p.cover(sky, 0, 0, spec.width, spec.height)
+      else {
+        // The tall card: the sky at full width, stacked, every other copy mirrored (no seams).
+        const h = (spec.width * sky.height) / sky.width
+        for (let i = 0, y = 0; y < spec.height; i++, y += h) {
+          ctx.save()
+          if (i % 2) {
+            ctx.translate(0, y + h)
+            ctx.scale(1, -1)
+            ctx.drawImage(sky, 0, 0, spec.width, h + 1)
+          } else ctx.drawImage(sky, 0, y, spec.width, h + 1)
+          ctx.restore()
+        }
+      }
+      if (input.theme === 'light') {
+        ctx.fillStyle = 'rgba(244,243,255,0.84)'
+        ctx.fillRect(0, 0, spec.width, spec.height)
+      }
+    } else {
+      // CSS `radial-gradient(120% 90% at 50% 0%, …)` (70% tall on the tall card).
+      const rx = spec.width * 1.2
+      const ry = spec.height * (input.layout === 'wide' ? 0.9 : 0.7)
+      ctx.fillStyle = c.stops[2]
+      ctx.fillRect(0, 0, spec.width, spec.height)
+      ctx.save()
+      ctx.translate(spec.width / 2, 0)
+      ctx.scale(1, ry / rx)
+      const ground = ctx.createRadialGradient(0, 0, 0, 0, 0, rx)
+      ground.addColorStop(0, c.stops[0])
+      ground.addColorStop(0.45, c.stops[1])
+      ground.addColorStop(1, c.stops[2])
+      ctx.fillStyle = ground
+      ctx.fillRect(-spec.width / 2, 0, spec.width, rx)
+      ctx.restore()
+    }
 
     const { side, top } = spec.pad
     const right = spec.width - side
@@ -189,9 +209,10 @@ export async function drawArcanaCard(
     }
 
     /**
-     * A missing card on its own layer: the art blurred (where canvas filters
-     * work; Safari before 18 draws it sharp), darkened by a veil, cut to the
-     * art's own outline.
+     * A missing card on its own layer (LOCKED_LOOK, as on the page): the art,
+     * dimmed by black at 1 − brightness (the same as CSS brightness(), and it
+     * works where canvas filters don't), desaturated where filters work, then
+     * the tall oval darkening, all cut to the art's own outline.
      */
     function shaded(
       image: ImageBitmap | null,
@@ -212,25 +233,22 @@ export async function drawArcanaCard(
       const dh = image.height * fit
       const dx = (layer.width - dw) / 2
       const dy = (layer.height - dh) / 2
-      lctx.fillStyle = '#0b1020'
-      lctx.fillRect(0, 0, layer.width, layer.height)
-      lctx.filter = `blur(${3.5 * k}px) saturate(0.7)`
-      const grow = 3 * k
-      lctx.drawImage(image, dx - grow, dy - grow, dw + grow * 2, dh + grow * 2)
+      lctx.filter = `saturate(${LOCKED_LOOK.saturate})`
+      lctx.drawImage(image, dx, dy, dw, dh)
       lctx.filter = 'none'
-      // A light veil, then a mild darkening that radiates from the middle (where the numeral sits).
-      lctx.fillStyle = 'rgba(8,12,28,0.4)'
+      const rgb = LOCKED_LOOK.color.join(',')
+      lctx.fillStyle = `rgba(0,0,0,${1 - LOCKED_LOOK.brightness})`
       lctx.fillRect(0, 0, layer.width, layer.height)
-      const cx = layer.width / 2
-      const cy = layer.height / 2
+      // The oval: radii as shares of the card's width and height.
+      const rx = layer.width * LOCKED_LOOK.oval.rx
+      const ry = layer.height * LOCKED_LOOK.oval.ry
       lctx.save()
-      lctx.translate(cx, cy)
-      lctx.scale(1, layer.height / layer.width)
-      const glow = lctx.createRadialGradient(0, 0, 0, 0, 0, layer.width * 0.62)
-      glow.addColorStop(0, 'rgba(4,6,16,0.5)')
-      glow.addColorStop(1, 'rgba(4,6,16,0)')
-      lctx.fillStyle = glow
-      lctx.fillRect(-cx, -cx, layer.width, layer.width)
+      lctx.translate(layer.width / 2, layer.height / 2)
+      lctx.scale(1, ry / rx)
+      const oval = lctx.createRadialGradient(0, 0, 0, 0, 0, rx)
+      for (const [at, alpha] of LOCKED_LOOK.stops) oval.addColorStop(at, `rgba(${rgb},${alpha})`)
+      lctx.fillStyle = oval
+      lctx.fillRect(-rx, -rx, rx * 2, rx * 2)
       lctx.restore()
       lctx.globalCompositeOperation = 'destination-in'
       lctx.drawImage(image, dx, dy, dw, dh)

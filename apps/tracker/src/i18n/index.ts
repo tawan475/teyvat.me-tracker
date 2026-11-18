@@ -1,4 +1,5 @@
-import { createI18n } from 'vue-i18n'
+import type { App } from 'vue'
+import { createI18n, Translation } from 'vue-i18n'
 import en from './locales/en'
 import { locale, type Locale } from './locale'
 
@@ -20,6 +21,20 @@ export const i18n = createI18n<[MessageSchema], Locale, false>({
   missingWarn: false,
   fallbackWarn: false,
 })
+
+/**
+ * Puts the translations on the app, with the `<i18n-t>` component. The build
+ * turns vue-i18n's own registration off (`__VUE_I18N_FULL_INSTALL__` in
+ * vite.config.ts: no `v-t`, `<i18n-n>` or `<i18n-d>`, which nothing uses), and
+ * without this an `<i18n-t>` renders as an empty unknown element: only in the
+ * built site, since the dev server leaves vue-i18n's default on. main.ts
+ * installs through here; a test renders it as the build would.
+ */
+export function installI18n(app: App): void {
+  app.use(i18n)
+  // Already there when vue-i18n registered its own (the dev server).
+  if (!app.component('I18nT')) app.component('I18nT', Translation)
+}
 
 /** Translate a key (with named values, or a count for plurals). Reactive to the language. */
 export const t = i18n.global.t

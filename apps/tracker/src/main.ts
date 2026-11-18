@@ -4,7 +4,7 @@ import './assets/main.css'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
-import { i18n } from './i18n'
+import { installI18n } from './i18n'
 // Registers its preload before the first language applies (game names in Chinese).
 import './i18n/game-names'
 import { applyLocale, resolveLocale, storedPreference, warnMissingKeys } from './i18n/apply'
@@ -16,7 +16,7 @@ watchImageLoading()
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
-app.use(i18n)
+installI18n(app)
 warnMissingKeys()
 
 // Another language's messages and game names load before the first paint (a

@@ -1,0 +1,161 @@
+name: Self-host smoke test
+# Builds the self-host image (self-host/compose.yml) the way a host does, starts
+# it and drives it: settings checks, sign-up, the Owner command, an upload read
+# back, a forged Host, live updates, live sync, every cron, a restart. Only on
+# pushes to main that touch what a self-host runs on. It is not part of
+# deploy.yml: a failure opens (or comments on) one issue labelled `self-host`
+# and never holds up the Cloudflare deploy.
+#
+# The image builds from the public game data (tawan475/teyvat.me-game-data at
+# the tag apps/tracker pins), so this needs no secret.
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/tracker/wrangler.jsonc
+      - apps/tracker/migrations/**
+      - apps/tracker/migrations-live/**
+      - self-host/**
+      - pnpm-lock.yaml
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: self-host-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SITE_URL: http://localhost:8787
+      DIAG_KEY: smoke-diag-key-smoke-diag-key-0123456789
+      SMOKE_BASE: http://127.0.0.1:8787
+      SMOKE_STATE: ${{ github.workspace }}/smoke-state.json
+      COMPOSE: docker compose -p tracker-smoke
+    defaults:
+      run:
+        working-directory: self-host
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: A checkout like a developer's (a .dev.vars) and test settings
+        run: |
+          echo "settings" > "$RUNNER_TEMP/step"
+          # Must never reach the image: the dockerignore, the build and the
+          # start script each keep it out.
+          printf 'JWT_SECRET=dev-vars-dev-vars-dev-vars-dev-vars-00\nPASSWORD_PEPPER=dev-vars-dev-vars-dev-vars-dev-vars-11\nDIAG_KEY=from-dev-vars\n' > ../apps/tracker/.dev.vars
+          {
+            echo "SITE_URL=$SITE_URL"
+            echo "JWT_SECRET=$(openssl rand -hex 24)"
+            echo "PASSWORD_PEPPER=$(openssl rand -hex 24)"
+            echo "DIAG_KEY=$DIAG_KEY"
+          } > "$RUNNER_TEMP/full.env"
+          grep -v "^PASSWORD_PEPPER=" "$RUNNER_TEMP/full.env" > .env
+
+      - name: Build the image
+        run: |
+          echo "build" > "$RUNNER_TEMP/step"
+          $COMPOSE build --progress plain
+
+      - name: No .dev.vars in the image
+        run: |
+          echo "no .dev.vars in the image" > "$RUNNER_TEMP/step"
+          found=$($COMPOSE run --rm --no-deps tracker sh -c 'find /app -name ".dev.vars*"')
+          if [ -n "$found" ]; then echo "::error::the image holds $found"; exit 1; fi
+
+      - name: A missing secret stops the start
+        run: |
+          echo "refuses a missing PASSWORD_PEPPER" > "$RUNNER_TEMP/step"
+          if out=$($COMPOSE run --rm --no-deps tracker 2>&1); then
+            echo "::error::the container started without PASSWORD_PEPPER"; exit 1
+          fi
+          echo "$out"
+          echo "$out" | grep -q 'missing in .env: PASSWORD_PEPPER'
+
+      - name: Start
+        run: |
+          echo "start" > "$RUNNER_TEMP/step"
+          cp "$RUNNER_TEMP/full.env" .env
+          $COMPOSE up -d --wait --wait-timeout 300
+
+      - name: Health, migrations, sign-up, Owner, uploads, forged Host, live
+        run: |
+          echo "health" > "$RUNNER_TEMP/step"
+          node smoke.mjs health
+          echo "migrations" > "$RUNNER_TEMP/step"
+          $COMPOSE exec -T tracker sh -c '
+            CFG=/app/apps/tracker/dist/genshin_data_tracker/wrangler.json
+            for db in $(jq -r ".d1_databases[].binding" "$CFG"); do
+              out=$(wrangler d1 migrations list "$db" --local --persist-to /data --config "$CFG" 2>&1)
+              echo "$out" | grep -q "No migrations to apply" || { echo "$db: $out"; exit 1; }
+              echo "$db: up to date"
+            done'
+          echo "register" > "$RUNNER_TEMP/step"
+          node smoke.mjs register
+          echo "grant-owner" > "$RUNNER_TEMP/step"
+          $COMPOSE exec -T tracker grant-owner player01
+          echo "uploads, forged Host, live" > "$RUNNER_TEMP/step"
+          node smoke.mjs check
+
+      - name: Every cron runs
+        run: |
+          echo "crons" > "$RUNNER_TEMP/step"
+          since=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          $COMPOSE exec -T tracker sh -c '
+            CFG=/app/apps/tracker/dist/genshin_data_tracker/wrangler.json
+            for cron in $(jq -r ".triggers.crons[] | @uri" "$CFG"); do
+              answer=$(curl -fsS "http://localhost:8787/cdn-cgi/handler/scheduled?cron=$cron")
+              [ "$answer" = "ok" ] || { echo "cron $cron: $answer"; exit 1; }
+              echo "cron $cron: ok"
+            done
+            grep -q "cdn-cgi/handler/scheduled" /etc/cron.d/tracker'
+          sleep 10
+          logs=$($COMPOSE logs --since "$since" tracker)
+          echo "$logs"
+          if echo "$logs" | grep -qi 'uncaught'; then echo "::error::a cron threw"; exit 1; fi
+
+      - name: Data survives a restart
+        run: |
+          echo "restart" > "$RUNNER_TEMP/step"
+          $COMPOSE restart tracker
+          $COMPOSE up -d --wait --wait-timeout 300
+          node smoke.mjs restarted
+
+      - name: Container logs
+        if: always()
+        run: $COMPOSE logs --no-color tracker | tail -n 300 || true
+
+      - name: Stop
+        if: always()
+        run: $COMPOSE down -v || true
+
+      - name: Open or update the self-host issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          step=$(cat "$RUNNER_TEMP/step" 2>/dev/null || echo "setup")
+          body="The self-host smoke test failed at **${step}** on ${GITHUB_SHA::8}: ${RUN_URL}
+
+          The Cloudflare deploy is not affected (this workflow is separate from deploy.yml)."
+          gh label create self-host --repo "$GITHUB_REPOSITORY" --color 5319e7 \
+            --description "Self-hosting (self-host/)" 2>/dev/null || true
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --label self-host --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --label self-host \
+              --title "Self-host smoke test failed" --body "$body"
+          fi

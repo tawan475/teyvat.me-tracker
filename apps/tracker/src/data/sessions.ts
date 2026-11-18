@@ -3,6 +3,9 @@
  * irminsul's `gi_capture.session` (one game login), each split into world
  * stays at the game's full sends (`login`, `world`). Snapshots without a
  * capture (older ones, other uploaders) group by local day, as the list does.
+ * A snapshot that left a figure's section out on purpose (Capture's gi_off,
+ * issue 12) says nothing about the figure: a change is counted only between
+ * snapshots that shared it, never as a drop to 0 and back.
  * Pure: the Snapshots page and Overview render the result.
  */
 
@@ -12,7 +15,7 @@ import type {
   SnapshotResponse,
   SnapshotSummary,
 } from '@gdt/shared'
-import { dayKey } from './overview'
+import { dayKey, sharesFigure, type SummaryKey } from './overview'
 
 export interface Stay {
   /** 1 = the first world of the session (the player's own at login), 2+ in order. */
@@ -68,8 +71,18 @@ export function buildSessions(
       const first = group.snapshots[0]!
       const last = group.snapshots.at(-1)!
       const isLive = journalOpen && last.id === newestId
+      // The journal's figures are counted from what Capture uploads: a
+      // section its base left out counts 0 there, like the base's own.
       const endSummary: SnapshotSummary = isLive ? live!.figures! : last.summary
       const end = isLive ? Math.max(live!.updatedAt ?? 0, last.takenAt) : lastTime(last)
+      /** From the first snapshot that shared the figure to the last (the journal's when it follows one). */
+      const total = (key: SummaryKey) => {
+        const shared = group.snapshots.filter((s) => sharesFigure(s.off, key))
+        const from = shared[0]
+        if (!from) return 0
+        const to = shared.at(-1) === last ? endSummary : shared.at(-1)!.summary
+        return to[key] - from.summary[key]
+      }
       return {
         key: group.key,
         byDay: group.byDay,
@@ -77,13 +90,13 @@ export function buildSessions(
         end,
         snapshots: group.snapshots,
         totals: {
-          mora: endSummary.mora - first.summary.mora,
-          primogem: endSummary.primogem - first.summary.primogem,
-          artifacts: endSummary.artifacts - first.summary.artifacts,
-          characters: endSummary.characters - first.summary.characters,
-          weapons: endSummary.weapons - first.summary.weapons,
+          mora: total('mora'),
+          primogem: total('primogem'),
+          artifacts: total('artifacts'),
+          characters: total('characters'),
+          weapons: total('weapons'),
         },
-        stays: group.byDay ? [] : stays(group.snapshots, endSummary, end),
+        stays: group.byDay ? [] : stays(group.snapshots, endSummary, last.off, end),
         live: isLive,
       }
     })
@@ -95,19 +108,33 @@ function lastTime(snapshot: SnapshotResponse): number {
   return Math.max(snapshot.takenAt, snapshot.lastSeenAt)
 }
 
-/** World stays: a new one at each full send of the game; other snapshots fall within. */
-function stays(snapshots: readonly SnapshotResponse[], endSummary: SnapshotSummary, end: number) {
+/**
+ * World stays: a new one at each full send of the game; other snapshots fall
+ * within. `endOff`: the last snapshot's gi_off (the end's figures are its
+ * own, or its journal's). A figure either end of a stay did not share counts 0.
+ */
+function stays(
+  snapshots: readonly SnapshotResponse[],
+  endSummary: SnapshotSummary,
+  endOff: readonly string[] | undefined,
+  end: number,
+) {
   const starts = snapshots.filter((s, i) => i === 0 || STAY_REASONS.has(s.capture?.reason ?? ''))
   return starts.map((snapshot, i): Stay => {
     const next = starts[i + 1]
     const to = next ? next.summary : endSummary
+    const toOff = next ? next.off : endOff
+    const brought = (key: SummaryKey) =>
+      sharesFigure(snapshot.off, key) && sharesFigure(toOff, key)
+        ? to[key] - snapshot.summary[key]
+        : 0
     return {
       world: snapshot.capture?.world ?? 1,
       start: snapshot.takenAt,
       end: next ? next.takenAt : end,
-      mora: to.mora - snapshot.summary.mora,
-      primogem: to.primogem - snapshot.summary.primogem,
-      artifacts: to.artifacts - snapshot.summary.artifacts,
+      mora: brought('mora'),
+      primogem: brought('primogem'),
+      artifacts: brought('artifacts'),
     }
   })
 }

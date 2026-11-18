@@ -167,6 +167,7 @@
       "characterExtras": "ความประทับใจและเวลาที่ได้รับ"
     },
     "notShared": "Capture ไม่ได้แชร์",
+    "notSharedShort": "ไม่ได้แชร์",
     "since": "ตั้งแต่ {date}",
     "sinceList": "ตั้งแต่ {date}: {parts}",
     "showing": "แสดงสแนปช็อตของ {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "ส่วนที่ไม่ได้แชร์ขึ้นก่อน",
       "notSharedMark": "ไม่ได้แชร์",
       "last": "ล่าสุด {date}",
+      "inTrash": "อยู่ในถังขยะ {n}",
       "pick": "เลือกส่วนเพื่อดูว่าจะลบอะไร",
       "counting": "กำลังนับ…",
       "line": "ลบ{part}ออกจาก {n} จาก {total} สแนปช็อต และคืนพื้นที่ {size}",

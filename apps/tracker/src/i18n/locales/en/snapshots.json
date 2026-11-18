@@ -167,6 +167,7 @@
       "characterExtras": "Friendship and when obtained"
     },
     "notShared": "Not shared by Capture",
+    "notSharedShort": "Not shared",
     "since": "since {date}",
     "sinceList": "since {date}: {parts}",
     "showing": "showing the capture of {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Not shared first",
       "notSharedMark": "Not shared",
       "last": "last {date}",
+      "inTrash": "{n} in the trash",
       "pick": "Pick a part to see what it removes.",
       "counting": "Counting…",
       "line": "Removes {part} from {n} of {total} snapshots, frees {size}.",

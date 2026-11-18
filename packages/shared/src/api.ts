@@ -6,7 +6,7 @@
 import type { DeviceAlerts, PresenceResponseForAccount } from './alerts'
 import { z } from 'zod'
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from './password'
-import { ALL_PARTS_NOTE, REMOVABLE_PARTS, type RemovablePart } from './off'
+import { ALL_PARTS_NOTE, OFF_SECTIONS, REMOVABLE_PARTS, type RemovablePart } from './off'
 import {
   MAX_FAVORITE_CHARACTERS,
   MAX_PROGRESSION_GRAPHS,
@@ -192,7 +192,7 @@ export interface CompactResponse {
  * counts are of; the removal is refused when it changed meanwhile.
  */
 export interface PartsResponse {
-  /** Live snapshots in all. */
+  /** Snapshots in all, those in the trash too (a removal cleans them as well). */
   total: number
   guard: string
   /** Whether the account has live sync (the dialog counts its rows). */
@@ -202,8 +202,10 @@ export interface PartsResponse {
 
 export interface PartCountResponse {
   part: RemovablePart
-  /** Live snapshots that hold it. */
+  /** Snapshots that hold it, those in the trash too. */
   snapshots: number
+  /** How many of them are in the trash (absent from older servers: 0). */
+  trashed?: number
   /** When the newest of them was taken (null: none). */
   lastAt: number | null
   /** About how many bytes it takes. */
@@ -227,6 +229,7 @@ export type RemovePartRequest = z.infer<typeof removePartRequest>
 /** `POST /api/accounts/:id/parts/remove`: what went. */
 export interface RemovePartResponse {
   part: RemovablePart
+  /** Snapshots it was removed from, those in the trash too. */
   snapshots: number
   /** Bytes the account stores less. */
   freed: number
@@ -235,9 +238,15 @@ export interface RemovePartResponse {
   removedAt: number
 }
 
-/** `POST /api/accounts/:id/parts/hide` (owner): hides a "Not shared" note until it changes. */
+/**
+ * `POST /api/accounts/:id/parts/hide` (owner): hides a "Not shared" note until
+ * it changes. A removable part's, a build section's (characters, weapons,
+ * artifacts, materials: their pages' and the Planner's), or Overview's `all`.
+ */
 export const hidePartNoteRequest = z
-  .object({ key: z.union([z.enum(REMOVABLE_PARTS), z.literal(ALL_PARTS_NOTE)]) })
+  .object({
+    key: z.union([z.enum(REMOVABLE_PARTS), z.enum(OFF_SECTIONS), z.literal(ALL_PARTS_NOTE)]),
+  })
   .strict()
 export type HidePartNoteRequest = z.infer<typeof hidePartNoteRequest>
 

@@ -32,9 +32,9 @@ export interface AccountSettings {
    */
   favoriteCharacters: string[]
   /**
-   * The "Not shared by Capture" notes (issue 12): per removable part (and
-   * `all`, Overview's), when the owner hid its note and when they removed
-   * the part from history (ms). Written by their own routes, never by a
+   * The "Not shared by Capture" notes (issue 12): per removable part (a
+   * build section's and `all`, Overview's, hidden only), when the owner hid
+   * its note and when they removed the part from history (ms). Written by their own routes, never by a
    * settings patch.
    */
   parts: PartNotes

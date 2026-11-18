@@ -20,6 +20,7 @@ import {
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { synthetic18 } from '../../../../packages/shared/test/synthetic'
 import { GUEST_ACCOUNT_ID, isGuestPath } from '@/local/guest-id'
 import { ORIGIN, bigGood, irminsulForm, signUp, type Client } from './client'
 import { loadGuestModules, type GuestStore } from './guest-modules'
@@ -317,6 +318,9 @@ describe('guest store', () => {
       gi_player: { ...good.gi_player!, nickname: 'player01', nameCard: 210_001 },
       gi_achievement_progress: { '84001': { progress: i, total: 9 } },
       gi_events: { '2001001': { schedule: 7, start: 1_790_000_000, end: 1_800_000_000 } },
+      // The teapot, and the jar's realm currency stored with the Planner tasks.
+      gi_teapot: synthetic18(31).teapot,
+      gi_tasks: { ...good.gi_tasks, welkin: { days: 20 }, realm: { value: 300 + i, limit: 2400 } },
     })
     for (const [i, [good, at]] of sequence().entries()) {
       await upload(withParts(good, i), at)
@@ -327,7 +331,7 @@ describe('guest store', () => {
     const there = await client.json<PartsResponse>(`${base}/parts`)
     const here = await localJson<PartsResponse>('/parts')
     expect(strip(here)).toEqual(strip(there))
-    for (const part of ['achievements', 'profile'] as const) {
+    for (const part of ['achievements', 'profile', 'teapot'] as const) {
       const [serverCounts, localCounts] = [
         await client.json<PartsResponse>(`${base}/parts`),
         await localJson<PartsResponse>('/parts'),
@@ -362,14 +366,28 @@ describe('guest store', () => {
       expect(good.gi_achievement_progress).toBeUndefined()
       expect(good.gi_events).toBeDefined()
       expect(good.gi_player?.nickname).toBeUndefined()
+      // The teapot went with its realm currency; the other tasks stay.
+      expect(good.gi_teapot).toBeUndefined()
+      expect(good.gi_tasks?.realm).toBeUndefined()
+      expect(good.gi_tasks?.welkin).toEqual({ days: 20 })
     }
     const { settings } = await localJson<AccountSettingsResponse>('/settings')
-    expect(Object.keys(settings.parts.removed).sort()).toEqual(['achievements', 'profile'])
+    expect(Object.keys(settings.parts.removed).sort()).toEqual([
+      'achievements',
+      'profile',
+      'teapot',
+    ])
     const hidden = await localJson<AccountSettingsResponse>('/parts/hide', {
       method: 'POST',
       json: { key: 'all' },
     })
     expect(hidden.settings.parts.hidden.all).toEqual(expect.any(Number))
+    // A build section's note is hidden the same way (its page's strip).
+    const section = await localJson<AccountSettingsResponse>('/parts/hide', {
+      method: 'POST',
+      json: { key: 'materials' },
+    })
+    expect(section.settings.parts.hidden.materials).toEqual(expect.any(Number))
   })
 
   it('leaves no stored base holding a removed part, and stores the next capture anew', async () => {

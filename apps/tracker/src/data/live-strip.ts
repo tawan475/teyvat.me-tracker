@@ -6,6 +6,7 @@
  */
 
 import type { LiveJournalResponse, SnapshotResponse, SnapshotSummary } from '@gdt/shared'
+import { sharesFigure, type SummaryKey } from './overview'
 
 export interface LiveStrip {
   /** Change since the session began. */
@@ -50,10 +51,15 @@ export function liveStrip(
     if (path[2] === 'level') levelled.add(String(path[1]))
     else if (path[2] === 'talent') talents++
   }
+  // The journal's figures are counted from what Capture uploads: a section
+  // its base or the session's first snapshot left out (gi_off) counts no change.
+  const figures = live.figures
+  const brought = (key: SummaryKey) =>
+    sharesFigure(newest.off, key) && sharesFigure(start.off, key) ? figures[key] - from[key] : 0
   return {
-    mora: live.figures.mora - from.mora,
-    primogem: live.figures.primogem - from.primogem,
-    artifacts: live.figures.artifacts - from.artifacts,
+    mora: brought('mora'),
+    primogem: brought('primogem'),
+    artifacts: brought('artifacts'),
     levelUps: levelled.size,
     talents,
     updatedAt: live.updatedAt ?? 0,

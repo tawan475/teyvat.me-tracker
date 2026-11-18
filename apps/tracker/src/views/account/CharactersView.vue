@@ -9,6 +9,7 @@ import CharacterTable from '@/components/characters/CharacterTable.vue'
 import CharacterToolbar from '@/components/characters/CharacterToolbar.vue'
 import { useProgressive } from '@/components/planner/use-progressive'
 import StatStrip, { type StripItem } from '@/components/characters/StatStrip.vue'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import SavedTeams from '@/components/characters/SavedTeams.vue'
 import { teamMembers } from '@/components/characters/team-card'
@@ -388,6 +389,12 @@ watch(
 <template>
   <div>
     <PageHeader :title="$t('game.characters')" />
+    <!-- The roster of the newest capture that shared it; its extras join the strip. -->
+    <NotSharedStrip
+      :sections="['characters']"
+      :parts="['characterExtras']"
+      :shown-at="inventory.data.value?.extrasShownAt ?? null"
+    />
 
     <UiError
       v-if="inventory.error.value"

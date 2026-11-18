@@ -25,7 +25,11 @@ import SnapshotCards from '@/components/snapshot-history/SnapshotCards.vue'
 import GuestBackupNote from '@/components/guest/GuestBackupNote.vue'
 import RemovePartDialog from '@/components/not-shared/RemovePartDialog.vue'
 import StorageStrip from '@/components/snapshot-history/StorageStrip.vue'
-import { inDayRange, snapshotChanges } from '@/components/snapshot-history/snapshot-figures'
+import {
+  figureNotShared,
+  inDayRange,
+  snapshotChanges,
+} from '@/components/snapshot-history/snapshot-figures'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
@@ -756,13 +760,25 @@ function selectionClearance(): number {
           >
         </template>
         <template #characters="{ item }">
-          <FigureCell :value="item.summary.characters" :change="changes.get(item.id)?.characters" />
+          <FigureCell
+            :value="item.summary.characters"
+            :change="changes.get(item.id)?.characters"
+            :not-shared="figureNotShared(item, 'characters')"
+          />
         </template>
         <template #artifacts="{ item }">
-          <FigureCell :value="item.summary.artifacts" :change="changes.get(item.id)?.artifacts" />
+          <FigureCell
+            :value="item.summary.artifacts"
+            :change="changes.get(item.id)?.artifacts"
+            :not-shared="figureNotShared(item, 'artifacts')"
+          />
         </template>
         <template #weapons="{ item }">
-          <FigureCell :value="item.summary.weapons" :change="changes.get(item.id)?.weapons" />
+          <FigureCell
+            :value="item.summary.weapons"
+            :change="changes.get(item.id)?.weapons"
+            :not-shared="figureNotShared(item, 'weapons')"
+          />
         </template>
         <template #mora="{ item }">
           <FigureCell
@@ -770,6 +786,7 @@ function selectionClearance(): number {
             :value="item.summary.mora"
             :change="changes.get(item.id)?.mora"
             :missing="currencyMissing(item.summary)"
+            :not-shared="figureNotShared(item, 'mora')"
           />
         </template>
         <template #primogem="{ item }">
@@ -778,6 +795,7 @@ function selectionClearance(): number {
             :value="item.summary.primogem"
             :change="changes.get(item.id)?.primogem"
             :missing="currencyMissing(item.summary)"
+            :not-shared="figureNotShared(item, 'primogem')"
           />
         </template>
         <template #actions="{ item }">

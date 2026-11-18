@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { SearchX, Swords, Upload } from 'lucide-vue-next'
 import StatStrip, { type StripItem } from '@/components/characters/StatStrip.vue'
 import { useProgressive } from '@/components/planner/use-progressive'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -238,6 +239,7 @@ function close() {
 <template>
   <div>
     <PageHeader :title="$t('game.weapons')" />
+    <NotSharedStrip :sections="['weapons']" />
 
     <UiError
       v-if="inventory.error.value"

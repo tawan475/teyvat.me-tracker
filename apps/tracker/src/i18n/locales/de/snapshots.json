@@ -167,6 +167,7 @@
       "characterExtras": "Freundschaft und Erhaltdatum"
     },
     "notShared": "Nicht von Capture geteilt",
+    "notSharedShort": "Nicht geteilt",
     "since": "seit {date}",
     "sinceList": "seit {date}: {parts}",
     "showing": "zeigt die Aufnahme vom {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Nicht geteilte zuerst",
       "notSharedMark": "Nicht geteilt",
       "last": "zuletzt {date}",
+      "inTrash": "{n} im Papierkorb",
       "pick": "Wähle einen Teil, um zu sehen, was entfernt wird.",
       "counting": "Wird gezählt…",
       "line": "Entfernt {part} aus {n} von {total} Snapshots und gibt {size} frei.",

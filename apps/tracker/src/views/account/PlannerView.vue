@@ -1788,6 +1788,8 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       </UiIconButton>
     </template>
   </PageHeader>
+  <!-- Levels, gear and the bag come from the newest capture that shared each. -->
+  <NotSharedStrip :sections="['characters', 'weapons', 'artifacts', 'materials']" />
 
   <UiError
     v-if="loadError && !board"

@@ -84,6 +84,41 @@ describe('buildSessions', () => {
       false,
     )
   })
+
+  it('counts no change for a figure a snapshot did not share (a switch went off mid-session)', () => {
+    const off = (s: SnapshotResponse, names: string[], zero: Partial<typeof FIGURES>) => ({
+      ...s,
+      off: names,
+      summary: { ...s.summary, ...zero },
+    })
+    // The switch went off after the second world: the snapshots after it have no roster.
+    const list = [
+      off(run[0]!, ['characters'], { characters: 0 }),
+      off(run[1]!, ['characters'], { characters: 0 }),
+      { ...run[2]!, summary: { ...run[2]!.summary, characters: 91 } },
+      ...run.slice(3),
+    ]
+    const [session] = buildSessions(list)
+    // From the first snapshot that shared it to the last: +1, never -90.
+    expect(session!.totals).toMatchObject({ characters: 1, mora: 41_000, artifacts: 10 })
+    // A journal on a base that left the bag out counts it as 0: no change either.
+    const bagOff = [
+      off(run[0]!, ['materials'], { mora: 0, primogem: 0, materials: 0 }),
+      ...run.slice(1),
+    ]
+    const live: LiveJournalResponse = {
+      open: true,
+      base: { snapshotId: 5, contentKey: 'k', takenAt: T0 + 250 * MIN },
+      seq: 3,
+      updatedAt: T0 + 260 * MIN,
+      figures: { ...FIGURES, mora: 0, primogem: 0, materials: 0, artifacts: 1815 },
+      changes: [['set', ['gi_tasks', 'welkin'], { days: 3 }]],
+    }
+    const [open] = buildSessions(bagOff, live)
+    expect(open!.totals).toMatchObject({ mora: 31_300, artifacts: 15 })
+    expect(open!.stays.map((s) => s.mora)).toEqual([10_200, 11_000, 10_100, 0])
+    expect(open!.stays.at(-1)).toMatchObject({ artifacts: 7 })
+  })
 })
 
 describe('characterChanges', () => {

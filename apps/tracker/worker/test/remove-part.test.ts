@@ -275,14 +275,87 @@ describe('removing a part from history', () => {
       },
     )
     expect(deleted.status).toBe(204)
+    // The counts include the one in the trash: it still holds the part.
+    const counts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    expect(counts.total).toBe(3)
+    expect(counts.parts.find((p) => p.part === 'tasks')).toMatchObject({ snapshots: 3, trashed: 1 })
     const response = await remove(client, account.id, 'tasks')
-    expect(((await response.json()) as RemovePartResponse).snapshots).toBe(2)
+    expect(((await response.json()) as RemovePartResponse).snapshots).toBe(3)
     const rows = await env.DB.prepare(
       'SELECT count(*) AS n FROM snapshots WHERE account_id = ?1 AND tasks_ref IS NOT NULL',
     )
       .bind(account.id)
       .first<{ n: number }>()
     expect(rows!.n).toBe(0)
+  })
+
+  it('counts a part that survives only in the trash, and removes it from there', async () => {
+    const { client, account, importKey } = await setup()
+    // Only the first capture has anecdotes; it goes to the trash.
+    const first = await send(
+      importKey,
+      capture(1, {
+        gi_anecdotes: { anecdotes: { '100001': { state: 3, finishCount: 1 } }, unlockedAreas: [1] },
+      }),
+      1_000,
+    )
+    await send(importKey, capture(2), 2_000)
+    const deleted = await client.fetch(
+      `/api/accounts/${account.id}/snapshots/${first.snapshotId}`,
+      {
+        method: 'DELETE',
+      },
+    )
+    expect(deleted.status).toBe(204)
+    const counts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    expect(counts.total).toBe(2)
+    expect(counts.parts.find((p) => p.part === 'anecdotes')).toMatchObject({
+      snapshots: 1,
+      trashed: 1,
+      lastAt: 1_000,
+    })
+    const response = await remove(client, account.id, 'anecdotes')
+    expect(response.status, await response.clone().text()).toBe(200)
+    const result = (await response.json()) as RemovePartResponse
+    expect(result.snapshots).toBe(1)
+    expect(result.freed).toBeGreaterThan(0)
+    const rows = await env.DB.prepare(
+      'SELECT count(*) AS n FROM snapshots WHERE account_id = ?1 AND anecdotes_ref IS NOT NULL',
+    )
+      .bind(account.id)
+      .first<{ n: number }>()
+    expect(rows!.n).toBe(0)
+  })
+
+  it("removes the teapot with the realm currency of the Planner tasks, as Capture's switch does", async () => {
+    const { client, account, importKey } = await setup()
+    const realm = { value: 900, limit: 2400 }
+    await send(importKey, capture(1, { gi_tasks: { welkin: { days: 29 }, realm } }), 1_000)
+    // A capture whose tasks are the jar alone, and one without the jar.
+    await send(importKey, capture(2, { gi_tasks: { realm } }), 2_000)
+    await send(importKey, capture(3), 3_000)
+    const counts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    expect(counts.parts.find((p) => p.part === 'teapot')).toMatchObject({ snapshots: 3 })
+    const before = await goods(client, account.id)
+    expect((await remove(client, account.id, 'teapot')).status).toBe(200)
+    const after = await goods(client, account.id)
+    for (const [id, good] of after) {
+      const was = before.get(id)!
+      expect(good.gi_teapot).toBeUndefined()
+      expect(good.gi_tasks?.realm).toBeUndefined()
+      // The other Planner tasks and the sections stored beside the teapot stay.
+      const { realm: _r, ...tasks } = was.gi_tasks ?? {}
+      expect(good.gi_tasks).toEqual(Object.keys(tasks).length > 0 ? tasks : undefined)
+      expect(good.gi_endgame).toEqual(was.gi_endgame)
+      expect(good.gi_miliastra).toEqual(new18.miliastra)
+      const { gi_teapot: _t, gi_tasks: _k, ...rest } = was
+      const { gi_tasks: _k2, ...now } = good
+      expect(now).toEqual(rest)
+    }
+    const again = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    expect(again.parts.find((p) => p.part === 'teapot')).toMatchObject({ snapshots: 0, bytes: 0 })
+    // The Planner tasks that are left are still counted as theirs.
+    expect(again.parts.find((p) => p.part === 'tasks')).toMatchObject({ snapshots: 2 })
   })
 
   it('refuses when a capture arrived since the counts, and changes nothing', async () => {
@@ -325,9 +398,16 @@ describe('removing a part from history', () => {
       { method: 'POST', json: { key: 'all' } },
     )
     expect(response.settings.parts.hidden.all).toEqual(expect.any(Number))
+    // A build section's note (its page's and the Planner's strip) hides the same way.
+    const section = await client.json<AccountSettingsResponse>(
+      `/api/accounts/${account.id}/parts/hide`,
+      { method: 'POST', json: { key: 'characters' } },
+    )
+    expect(section.settings.parts.hidden.characters).toEqual(expect.any(Number))
+    expect(section.settings.parts.hidden.all).toEqual(expect.any(Number))
     const bad = await client.fetch(`/api/accounts/${account.id}/parts/hide`, {
       method: 'POST',
-      json: { key: 'characters' },
+      json: { key: 'gi_player.numbers' },
     })
     expect(bad.status).toBe(400)
   })
@@ -400,6 +480,27 @@ describe('removing a part from the live journal', () => {
     ])
     // The next batch still follows the journal.
     await batch(importKey, delta(base, 3, [['set', ['materials', 'Mora'], 6000]]))
+  })
+
+  it("drops the realm currency's changes with the teapot, the other tasks' stay", async () => {
+    const { client, account, importKey } = await setup()
+    const opened = await send(importKey, liveCapture(), 1_000)
+    const base = opened.live!.base
+    await batch(
+      importKey,
+      delta(base, 1, [
+        ['set', ['gi_tasks', 'realm'], { value: 1200, limit: 2400 }],
+        ['set', ['gi_tasks', 'welkin'], { days: 12 }],
+      ]),
+    )
+    const counts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
+    expect(counts.parts.find((p) => p.part === 'teapot')!.liveChanges).toBe(1)
+    expect(counts.parts.find((p) => p.part === 'tasks')!.liveChanges).toBe(2)
+    const response = await remove(client, account.id, 'teapot')
+    expect(((await response.json()) as RemovePartResponse).liveChanges).toBe(1)
+    const after = await client.json<LiveJournalResponse>(`/api/accounts/${account.id}/live`)
+    if (!after.open) throw new Error('journal closed')
+    expect(after.changes).toEqual([['set', ['gi_tasks', 'welkin'], { days: 12 }]])
   })
 })
 

@@ -12,7 +12,7 @@ import type { TimelineSeries } from '@/components/charts/TimelineChart.vue'
 import { axisFormat, fitGroupBy, formatWindow, groupFits } from '@/data/chart-range'
 import { loadArtifactRarityHistory } from '@/data/artifact-rarity'
 import { loadMaterialsHistory } from '@/data/materials'
-import type { Capture, Point } from '@/data/overview'
+import type { Capture } from '@/data/overview'
 import { GROUP_BY_OPTIONS, nextPeriod } from '@/data/progression'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
@@ -27,6 +27,7 @@ import {
   buildProgression,
   buildSnapshotProgression,
   defaultGroup,
+  FIGURE_KEYS,
   MAX_PERIODS,
   periodTick,
   periodTitle,
@@ -38,7 +39,9 @@ import {
   ARTIFACT_RARITY_FIGURES,
   LINE_SHAPES,
   MATERIAL_FIGURES,
+  sharesFigure,
   type FigureKey,
+  type LinePoint,
   type LineShape,
   type PeriodTotals,
   type ProgressionGroup,
@@ -60,7 +63,9 @@ import { useProgressionGraphs } from './use-progression-graphs'
  * ranges up to a week show snapshots and longer ones days. A period too
  * coarse for the range is greyed out and the next finer one shown (6h is per
  * hour), the choice coming back with a longer range. `captures` is undefined
- * while the history loads.
+ * while the history loads. A capture that did not share a figure's section
+ * (Capture's gi_off) breaks its line and counts no change (progression-series);
+ * a figure no capture ever shared has no graph.
  */
 const props = withDefaults(
   defineProps<{
@@ -166,6 +171,12 @@ const seriesCaptures = computed(() => {
 const hasMaterials = computed(() => !books.error.value && !!books.data.value)
 /** Likewise the counted artifact rarities. */
 const hasRarities = computed(() => !rarities.error.value && !!rarities.data.value)
+/** The figures some capture shared: one that Capture always left out has nothing to draw. */
+const everShared = computed(() => {
+  const all = seriesCaptures.value ?? []
+  if (!all.some((capture) => capture.unshared)) return null
+  return new Set(FIGURE_KEYS.filter((key) => all.some((capture) => sharesFigure(capture, key))))
+})
 
 const GROUPS: SegmentedOption<ProgressionGroup>[] = [
   {
@@ -240,7 +251,7 @@ const perSnapshot = computed(() =>
 )
 
 /** Whichever grouping is in use, or null without currency data. */
-const shown = computed<{ lines: Record<FigureKey, Point[]>; truncated: boolean } | null>(
+const shown = computed<{ lines: Record<FigureKey, LinePoint[]>; truncated: boolean } | null>(
   () => perSnapshot.value ?? periodic.value,
 )
 
@@ -327,6 +338,7 @@ function viewOf(graph: Graph, id: string): GraphView | null {
   if (!lines) return null
   if (MATERIAL_FIGURES.includes(graph.figure) && !hasMaterials.value) return null
   if (ARTIFACT_RARITY_FIGURES.includes(graph.figure) && !hasRarities.value) return null
+  if (everShared.value && !everShared.value.has(graph.figure)) return null
   const figure = barsOf(graph.figure)
   if (!figure) return null
   const { bars, totals } = figure
@@ -371,10 +383,11 @@ const charts = computed<GraphView[]>(() =>
 
 /** A figure's values along its line (at most ~25), for the dialog's sparklines. */
 function spark(figure: FigureKey): readonly number[] | null {
-  const points = shown.value?.lines[figure]
+  // The values alone: a sparkline has no room for a break.
+  const points = shown.value?.lines[figure].flatMap((p) => (p.y === null ? [] : [p.y]))
   if (!points || points.length < 2) return null
   const step = Math.max(1, Math.floor(points.length / 24))
-  return points.filter((_, i) => i % step === 0 || i === points.length - 1).map((p) => p.y)
+  return points.filter((_, i) => i % step === 0 || i === points.length - 1)
 }
 const colorOf = (figure: FigureKey) => COLORS[figure]
 

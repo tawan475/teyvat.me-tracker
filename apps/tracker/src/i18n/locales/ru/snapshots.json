@@ -167,6 +167,7 @@
       "characterExtras": "Уровень дружбы и дата получения"
     },
     "notShared": "Capture не передаёт",
+    "notSharedShort": "Не передаётся",
     "since": "с {date}",
     "sinceList": "с {date}: {parts}",
     "showing": "показан снимок от {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Сначала не передаваемые",
       "notSharedMark": "Не передаётся",
       "last": "последний {date}",
+      "inTrash": "В корзине: {n}",
       "pick": "Выберите часть, чтобы увидеть, что будет удалено.",
       "counting": "Подсчёт…",
       "line": "Удаляет «{part}» из {n} из {total} снимков и освобождает {size}.",

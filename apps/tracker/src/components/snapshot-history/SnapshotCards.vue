@@ -6,7 +6,7 @@ import { formatFullDateTime } from '@/lib/format'
 import FigureCell from './FigureCell.vue'
 import LegacyCheckbox from './LegacyCheckbox.vue'
 import RowActions from './RowActions.vue'
-import type { RowChanges } from './snapshot-figures'
+import { figureNotShared, type RowChanges } from './snapshot-figures'
 
 /**
  * The Import History rows as stacked cards, for widths where the table's
@@ -121,6 +121,7 @@ const FIGURES = [
                 :kind="figure.kind"
                 :change="changes.get(item.id)?.[figure.key]"
                 :missing="figure.kind !== 'count' && currencyMissing(item.summary)"
+                :not-shared="figureNotShared(item, figure.key)"
               />
             </dd>
           </div>

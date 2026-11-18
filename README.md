@@ -403,6 +403,35 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   /login and /register. localStorage `gdt:guest-data` hints that guest data
   exists. The guest tests load `src/local` untyped (`worker/test/guest-modules.ts`):
   its types need the DOM, which the workerd project lacks.
+- **Parts Capture leaves out** (`gi_off`, `packages/shared/src/off.ts`,
+  `parts.ts`). Capture lists its upload switches that are off in `gi_off`;
+  the key of an off part is absent from the file. The list is kept in the
+  snapshot meta and on the snapshot list (`off`). Where the newest capture
+  leaves a part out, its page has the "Not shared by Capture since …" strip
+  (`components/not-shared/NotSharedStrip.vue`, rules in `data/not-shared.ts`):
+  everyone who sees the account sees it, the owner can hide it per account
+  (`POST /api/accounts/:id/parts/hide`).
+  - **Builds** (characters, weapons, artifacts, materials) are never
+    removable. Characters, Weapons, Artifacts, Materials and the Planner keep
+    showing the newest capture that shared the section
+    (`data/shared-sources.ts`), and their strip names its date. Character
+    extras join the Characters page's strip.
+  - **Figures.** A capture that did not share a figure's section says
+    nothing about it: the progression charts break their line there (a point
+    without a value, "Not shared" in the tooltip; no drop to 0 and no value
+    held across), the change bars skip it, and the next capture that shares it
+    is measured against the last one that did (`data/overview.ts`
+    `buildHistory` / `sharedDelta`, `progression-series.ts`). Live sync's
+    chart points after such a capture are treated the same way: Capture
+    counts their sums from the stripped export, where an off section is 0.
+    The Snapshots table says "Not shared" in those cells.
+  - **Remove a part from history** (twelve removable parts; `POST
+    /api/accounts/:id/parts/remove`, plan in `parts.ts` `planPartRemoval`,
+    Worker `services/remove-part.ts`, guest `local/local-parts.ts`): all or
+    nothing, no trash. The counts and the removal include snapshots in the
+    trash. The Teapot takes the realm currency of the Planner tasks with it
+    (`gi_tasks.realm`, stored as `r` in the tasks section), as Capture's
+    Serenitea Pot switch does.
 - **Capture app contract**: `POST
   /api/genshin-accounts-public/import-by-key` (multipart `file` + optional
   `timestamp`, header `x-import-key`) and `GET .../verify-key`. Any 2xx is

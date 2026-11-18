@@ -9,13 +9,15 @@ import { figureTitle, type Change } from './snapshot-figures'
 /**
  * A table figure with its change since the snapshot before, in small green
  * or red under it; the tooltip has the exact numbers. "—" when the snapshot
- * has no currency.
+ * has no currency; "Not shared" when Capture left the figure's section out
+ * of it on purpose (its gi_off), never 0 or a change.
  */
 const props = defineProps<{
   value: number
   kind?: 'count' | 'mora' | 'primogem'
   change?: Change
   missing?: boolean
+  notShared?: boolean
 }>()
 
 const delta = computed(() => props.change?.delta ?? 0)
@@ -24,7 +26,13 @@ const title = computed(() => figureTitle(props.value, props.change))
 
 <template>
   <span
-    v-if="missing"
+    v-if="notShared"
+    class="text-xs font-medium whitespace-nowrap text-text-muted"
+    :title="$t('snapshots.parts.notShared')"
+    >{{ $t('snapshots.parts.notSharedShort') }}</span
+  >
+  <span
+    v-else-if="missing"
     class="font-medium text-text-muted"
     :title="$t('snapshots.figure.noCurrency')"
     >—</span

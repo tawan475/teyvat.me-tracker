@@ -15,9 +15,16 @@
  * Captures come from buildHistory, so a capture that missed the currency
  * packet already carries the previous mora and primogems. Leading captures
  * with nothing to carry (still 0 / 0) are left out rather than drawn as 0.
+ *
+ * A capture that did not share a figure's section (Capture's gi_off, issue
+ * 12: `unshared`) says nothing about the figure: its line has a plain break
+ * there (a point without a value, never 0 and never the last value held
+ * across), and it counts as no change, so the bars skip it and the next
+ * shared capture is measured against the last shared one.
  */
 
 import type { SnapshotSummary, TimelineGroupBy } from '@gdt/shared'
+import type { OffSection } from '@gdt/shared/off'
 import {
   DAY,
   finerBucket,
@@ -36,7 +43,7 @@ import {
   type MaterialsHistory,
 } from '@/data/materials-history'
 import type { ArtifactRarityHistory } from '@/data/artifact-rarity-history'
-import { currencyMissing, type Capture, type Point } from '@/data/overview'
+import { currencyLost, type Capture } from '@/data/overview'
 import { nextPeriod } from '@/data/progression'
 import { dateLocale } from '@/lib/format'
 
@@ -101,6 +108,22 @@ export function wishesHeld(primogem: number, genesis: number, fates: number): nu
   return Math.floor((primogem + genesis) / WISH_PRICE) + fates
 }
 
+/** The section each figure is counted from (what Capture's switches can leave out). */
+export const FIGURE_SECTION: Readonly<Record<FigureKey, OffSection>> = {
+  mora: 'materials',
+  primogem: 'materials',
+  wishes: 'materials',
+  characterExp: 'materials',
+  artifacts: 'artifacts',
+  artifact5: 'artifacts',
+  artifact4: 'artifacts',
+  artifact3: 'artifacts',
+  artifact2: 'artifacts',
+  artifact1: 'artifacts',
+  characters: 'characters',
+  weapons: 'weapons',
+}
+
 /** What the series read from a capture: its summary, plus the materials' figures once known. */
 export interface ProgressionCapture {
   at: number
@@ -111,10 +134,46 @@ export interface ProgressionCapture {
     artifact2?: number
     artifact1?: number
   }
+  /** The sections it did not share (see Capture.unshared): their figures are carried, not its own. */
+  unshared?: readonly OffSection[]
 }
 
-/** A figure of a capture; the materials' figures are 0 until withMaterialFigures adds them. */
+/** A line's point: `y` null where the capture did not share the figure (the line breaks). */
+export interface LinePoint {
+  x: number
+  y: number | null
+}
+
+/**
+ * A figure of a capture; the materials' figures are 0 until withMaterialFigures
+ * adds them. On a capture that did not share it: the last shared value.
+ */
 const figureOf = (capture: ProgressionCapture, key: FigureKey): number => capture.summary[key] ?? 0
+
+/** Whether the capture shared the figure (its value is the capture's own). */
+export const sharesFigure = (capture: ProgressionCapture, key: FigureKey): boolean =>
+  !capture.unshared?.includes(FIGURE_SECTION[key])
+
+/**
+ * The captures the series are built from: those that lost their currency
+ * with nothing to carry are left out, and a figure reads its first shared
+ * value on the captures before it (they did not share it and nothing was
+ * carried: 0 would count the first shared capture as a gain).
+ */
+function settled(all: readonly ProgressionCapture[]): readonly ProgressionCapture[] {
+  const captures = all.filter((c) => !currencyLost(c))
+  if (!captures.some((c) => c.unshared)) return captures
+  const out = [...captures]
+  for (const key of FIGURE_KEYS) {
+    const first = captures.findIndex((c) => sharesFigure(c, key))
+    if (first <= 0) continue
+    const value = figureOf(captures[first]!, key)
+    for (let i = 0; i < first; i++) {
+      out[i] = { ...out[i]!, summary: { ...out[i]!.summary, [key]: value } }
+    }
+  }
+  return out
+}
 
 /**
  * `captures` with the materials' figures at each one (character EXP held in
@@ -144,7 +203,11 @@ export function withMaterialFigures(
         indexById.get(capture.snapshot) ?? indexAtOrBefore(materials.times, capture.at),
       )
     }
-    return { at: capture.at, summary: { ...capture.summary, ...carried } }
+    return {
+      at: capture.at,
+      summary: { ...capture.summary, ...carried },
+      ...(capture.unshared ? { unshared: capture.unshared } : {}),
+    }
   })
 }
 
@@ -229,7 +292,7 @@ export interface Progression {
    * Stepped line per figure from the value held at the range start: every
    * capture, or the closing capture per `lineBucket`.
    */
-  lines: Record<FigureKey, Point[]>
+  lines: Record<FigureKey, LinePoint[]>
   lineBucket: PointBucket | TimelineGroupBy
   /** What the first period is measured against. */
   open: Figures
@@ -257,15 +320,21 @@ function lowerBound(captures: readonly ProgressionCapture[], from: number): numb
  * Drops repeats of a value (the step line draws them anyway), keeping the
  * final point so the line reaches the newest capture. A straight line also
  * keeps the last point of each run, where its slope to the next value starts.
+ * Points without a value (not shared) are all kept: each one is a capture
+ * the chart names in its tooltip (but for the same capture twice: a range
+ * that opens on it).
  */
-function dedupe(points: Point[], shape: LineShape): Point[] {
-  const out: Point[] = []
+function dedupe(points: LinePoint[], shape: LineShape): LinePoint[] {
+  const out: LinePoint[] = []
   const last = points.length - 1
   points.forEach((point, i) => {
+    const before = points[i - 1]
+    if (point.y === null && before?.y === null && before.x === point.x) return
     if (
       i === 0 ||
       i === last ||
-      point.y !== points[i - 1]!.y ||
+      point.y === null ||
+      point.y !== before!.y ||
       (shape === 'straight' && point.y !== points[i + 1]!.y)
     ) {
       out.push(point)
@@ -278,35 +347,50 @@ function dedupe(points: Point[], shape: LineShape): Point[] {
  * Line points from the value held at `x0` through the captures from `index`
  * on: every capture, or the last one per period of `by`, then held flat to
  * `end` (now): the newest value is still the value until a capture says not.
+ * A capture that did not share a figure gives its line a point without a
+ * value (the line breaks; `opens`: whether the value carried in at `x0` was
+ * shared). A period closes on its last capture that shared the figure, and
+ * has no value only when none did. Nothing is held to `end` after one.
  */
 function linePoints(
   captures: readonly ProgressionCapture[],
   index: number,
   x0: number,
   open: Figures,
+  opens: Record<FigureKey, boolean>,
   by: PointBucket | TimelineGroupBy,
   end: number,
   shape: LineShape,
-): Record<FigureKey, Point[]> {
-  const lines = perFigure<Point[]>((key) => [{ x: x0, y: open[key] }])
+): Record<FigureKey, LinePoint[]> {
+  const lines = perFigure<LinePoint[]>((key) => [{ x: x0, y: opens[key] ? open[key] : null }])
   let period = Number.NaN
   for (let i = index; i < captures.length; i++) {
     const capture = captures[i]!
     const p = by === 'raw' ? Number.NaN : periodStart(capture.at, by)
     for (const key of CURRENCY_KEYS) {
-      const point = { x: capture.at, y: figureOf(capture, key) }
-      // Same period as the capture before: the later one closes it.
-      if (p === period) lines[key][lines[key].length - 1] = point
-      else lines[key].push(point)
+      const line = lines[key]
+      const point = { x: capture.at, y: sharesFigure(capture, key) ? figureOf(capture, key) : null }
+      // Same period as the capture before: the later one closes it, unless
+      // it did not share the figure and an earlier one of the period did.
+      if (p !== period) line.push(point)
+      else if (point.y !== null || line[line.length - 1]!.y === null) line[line.length - 1] = point
     }
     period = p
   }
   for (const key of CURRENCY_KEYS) {
     const line = lines[key]
     const held = line[line.length - 1]!
-    if (end > held.x) line.push({ x: end, y: held.y })
+    if (end > held.x && held.y !== null) line.push({ x: end, y: held.y })
   }
   return perFigure((key) => dedupe(lines[key], shape))
+}
+
+/** Whether the value carried into a range is a shared one (the first capture's own when none is carried). */
+function opensShared(
+  baseline: ProgressionCapture | null,
+  first: ProgressionCapture,
+): Record<FigureKey, boolean> {
+  return perFigure((key) => sharesFigure(baseline ?? first, key))
 }
 
 /** The chart's right edge: now, or the newest capture if the clock is behind it. */
@@ -324,7 +408,7 @@ export function buildProgression(
   now: number = Date.now(),
   shape: LineShape = 'stepped',
 ): Progression | null {
-  const captures = allCaptures.filter((c) => !currencyMissing(c.summary))
+  const captures = settled(allCaptures)
   const first = captures[0]
   const last = captures[captures.length - 1]
   if (!first || !last) return null
@@ -347,7 +431,16 @@ export function buildProgression(
   const open = figures(baseline ?? first)
   const x0 = baseline ? from : first.at
   const lineBucket = finerBucket(pointBucket(end - x0), groupBy)
-  const lines = linePoints(captures, j, x0, open, lineBucket, end, shape)
+  const lines = linePoints(
+    captures,
+    j,
+    x0,
+    open,
+    opensShared(baseline, first),
+    lineBucket,
+    end,
+    shape,
+  )
 
   const periods: Period[] = []
   let previous = open
@@ -411,7 +504,7 @@ export interface SnapshotProgression {
   /** Per figure, oldest first: one bar per capture that changed it. */
   changes: Record<FigureKey, CaptureChange[]>
   /** Every capture as a line from the value held at `domain[0]`. */
-  lines: Record<FigureKey, Point[]>
+  lines: Record<FigureKey, LinePoint[]>
   /** The time axis the line and the bars share: the line's start to now. */
   domain: [number, number]
   /** What the first change is measured against. */
@@ -434,7 +527,7 @@ export function buildSnapshotProgression(
   now: number = Date.now(),
   shape: LineShape = 'stepped',
 ): SnapshotProgression | null {
-  const captures = allCaptures.filter((c) => !currencyMissing(c.summary))
+  const captures = settled(allCaptures)
   const first = captures[0]
   const last = captures[captures.length - 1]
   if (!first || !last) return null
@@ -463,7 +556,7 @@ export function buildSnapshotProgression(
   const open = figures(baseline ?? first)
   return {
     changes: perFigure((key) => captureChanges(captures, index, open[key], key)),
-    lines: linePoints(captures, index, x0, open, 'raw', end, shape),
+    lines: linePoints(captures, index, x0, open, opensShared(baseline, first), 'raw', end, shape),
     domain: [x0, end],
     open,
     truncated,

@@ -167,6 +167,7 @@
       "characterExtras": "호감도와 획득 시점"
     },
     "notShared": "Capture에서 공유하지 않음",
+    "notSharedShort": "공유하지 않음",
     "since": "{date}부터",
     "sinceList": "{date}부터: {parts}",
     "showing": "{date} 스냅샷을 표시 중",
@@ -187,6 +188,7 @@
       "notSharedFirst": "공유하지 않는 항목 먼저",
       "notSharedMark": "공유하지 않음",
       "last": "마지막 {date}",
+      "inTrash": "휴지통에 {n}개",
       "pick": "항목을 고르면 제거될 내용이 표시됩니다.",
       "counting": "세는 중…",
       "line": "스냅샷 {total}개 중 {n}개에서 {part}을(를) 제거하고 {size}를 비웁니다.",

@@ -10,7 +10,9 @@
  * a removable part's sections are dropped, and the sections it shares with
  * others (the profile in the player section, achievement progress and events
  * in `progress`, endgame, teapot and Miliastra in `extras`) are re-encoded
- * without it, their neighbours kept. Builds (characters, weapons, artifacts,
+ * without it, their neighbours kept. The teapot also takes the realm currency
+ * out of the Planner tasks section (Capture's Serenitea Pot switch leaves
+ * `gi_tasks.realm` out too). Builds (characters, weapons, artifacts,
  * materials) are never removable.
  *
  * Pure: the Worker (services/remove-part.ts) and guest mode (local/server.ts)
@@ -41,13 +43,22 @@ export const PROFILE_FIELDS = [
   'birthday',
 ] as const satisfies readonly (keyof GiPlayer)[]
 
+/** A section a part is some keys of (re-encoded without them). */
+interface SharedPlace {
+  slot: Slot
+  keys: readonly string[]
+}
+
 /**
- * Where a part is stored: slots it has to itself (dropped whole), and the
- * shared slot it is one key of (re-encoded without it).
+ * Where a part is stored: slots it has to itself (dropped whole), the
+ * shared slot it is one key of (re-encoded without it), and keys it has in
+ * another part's section (`also`: the teapot's realm currency in the Planner
+ * tasks, stored there as `r`).
  */
 interface PartPlace {
   own: Slot[]
-  shared?: { slot: 'player' | 'progress' | 'extras'; keys: readonly string[] }
+  shared?: SharedPlace & { slot: 'player' | 'progress' | 'extras' }
+  also?: readonly SharedPlace[]
 }
 
 export const PART_PLACES: Readonly<Record<RemovablePart, PartPlace>> = {
@@ -62,7 +73,11 @@ export const PART_PLACES: Readonly<Record<RemovablePart, PartPlace>> = {
   profile: { own: [], shared: { slot: 'player', keys: PROFILE_FIELDS } },
   wardrobe: { own: ['wardrobe'] },
   exploration: { own: ['exploration'] },
-  teapot: { own: [], shared: { slot: 'extras', keys: ['t'] } },
+  teapot: {
+    own: [],
+    shared: { slot: 'extras', keys: ['t'] },
+    also: [{ slot: 'tasks', keys: ['r'] }],
+  },
   events: { own: [], shared: { slot: 'progress', keys: ['e'] } },
   miliastra: { own: [], shared: { slot: 'extras', keys: ['m'] } },
   characterExtras: { own: ['characterExtras'] },
@@ -77,11 +92,24 @@ export function partNeighbours(part: RemovablePart): RemovablePart[] {
   )
 }
 
+/** Every section a part is some keys of: its shared slot, then its keys elsewhere. */
+function sharedPlaces(part: RemovablePart): SharedPlace[] {
+  const place = PART_PLACES[part]
+  return [...(place.shared ? [place.shared] : []), ...(place.also ?? [])]
+}
+
 /** Every slot a part touches. */
 export function partSlots(part: RemovablePart): Slot[] {
-  const place = PART_PLACES[part]
-  return place.shared ? [...place.own, place.shared.slot] : [...place.own]
+  return [...PART_PLACES[part].own, ...sharedPlaces(part).map((shared) => shared.slot)]
 }
+
+/**
+ * The slots whose blobs the plan and the counts decode (a part is only some
+ * keys of them); a part's own slots are counted by size alone.
+ */
+export const PART_DECODED_SLOTS: readonly Slot[] = [
+  ...new Set(REMOVABLE_PARTS.flatMap((part) => sharedPlaces(part).map((shared) => shared.slot))),
+]
 
 /** The section kind codes a part's slots are stored under (full and delta). */
 export function partKindCodes(part: RemovablePart): number[] {
@@ -157,11 +185,13 @@ export interface RewrittenPartBlob {
 
 export interface PartRemovalPlan {
   part: RemovablePart
-  /** Live snapshots that hold the part (the trash is cleaned too, not counted). */
+  /** Snapshots that hold the part, those in the trash too (they are cleaned as well). */
   snapshots: number
-  /** Live snapshots in all. */
+  /** How many of them are in the trash. */
+  trashed: number
+  /** Snapshots in all, the trash included. */
   total: number
-  /** Takes of the newest live snapshot that holds it (null: none). */
+  /** Takes of the newest snapshot that holds it (null: none). */
   lastAt: number | null
   /** Bytes the account stores less afterwards (blobs collected, minus new ones). */
   freed: number
@@ -173,7 +203,8 @@ export interface PartRemovalPlan {
 
 /**
  * Removes `part` from every snapshot row: its own slots become null, its
- * shared slot points at a standalone blob of the section without it (the
+ * shared slot (and each section it has keys in, `also`) points at a
+ * standalone blob of the section without it (the
  * same blob for every row that shared one; an existing blob when one already
  * holds exactly that). A shared-slot blob that does not hold the part but is
  * compressed against a base that does (its preset dictionary: a capture
@@ -196,10 +227,10 @@ export async function planPartRemoval(
   const replaced = new Map<number, BlobRef | null>()
   const made = new Map<string, PlannedPartBlob>()
   const rewrites = new Map<number, RewrittenPartBlob>()
-  const shared = place.shared
-  const sharedIds = new Set<number>()
-  if (shared) {
+  const places = sharedPlaces(part)
+  for (const shared of places) {
     const slot = shared.slot
+    const sharedIds = new Set<number>()
     const holder = new Map<number, boolean>()
     const holds = (id: number) => {
       let known = holder.get(id)
@@ -260,21 +291,20 @@ export async function planPartRemoval(
   // Which rows change, and what they hold.
   const holds = (row: PartSnapshotRow) =>
     place.own.some((slot) => (row.refs[slot] ?? null) !== null) ||
-    (shared !== undefined && replaced.has(row.refs[shared.slot] ?? -1))
+    places.some((shared) => replaced.has(row.refs[shared.slot] ?? -1))
   const updates: PartRowUpdate[] = []
   let snapshots = 0
-  let total = 0
+  let trashed = 0
   let lastAt: number | null = null
   for (const row of rows) {
-    if (!row.deleted) total++
     if (!holds(row)) continue
-    if (!row.deleted) {
-      snapshots++
-      if (lastAt === null || row.takenAt > lastAt) lastAt = row.takenAt
-    }
+    // The trash still holds it until it is purged: counted, and cleaned too.
+    snapshots++
+    if (row.deleted) trashed++
+    if (lastAt === null || row.takenAt > lastAt) lastAt = row.takenAt
     const refs: PartRowUpdate['refs'] = {}
     for (const slot of place.own) if ((row.refs[slot] ?? null) !== null) refs[slot] = null
-    if (shared) {
+    for (const shared of places) {
       const id = row.refs[shared.slot] ?? null
       if (id !== null && replaced.has(id)) refs[shared.slot] = replaced.get(id)!
     }
@@ -354,7 +384,8 @@ export async function planPartRemoval(
   return {
     part,
     snapshots,
-    total,
+    trashed,
+    total: rows.length,
     lastAt,
     freed,
     blobs: [...made.values()],
@@ -371,7 +402,10 @@ export async function planPartRemoval(
  */
 export interface PartCount {
   part: RemovablePart
+  /** Snapshots that hold it, those in the trash too. */
   snapshots: number
+  /** How many of them are in the trash. */
+  trashed: number
   lastAt: number | null
   bytes: number
 }
@@ -396,10 +430,10 @@ export function countParts(
   }
   return REMOVABLE_PARTS.map((part) => {
     const place = PART_PLACES[part]
-    const shared = place.shared
+    const places = sharedPlaces(part)
     const holding = new Map<number, number>()
     let share = 0
-    if (shared) {
+    for (const shared of places) {
       const ids = new Set<number>()
       for (const row of rows) {
         const id = row.refs[shared.slot] ?? null
@@ -417,6 +451,7 @@ export function countParts(
     }
     const own = new Set<number>()
     let snapshots = 0
+    let trashed = 0
     let lastAt: number | null = null
     for (const row of rows) {
       let holds = false
@@ -427,13 +462,14 @@ export function countParts(
           holds = true
         }
       }
-      if (shared && holding.has(row.refs[shared.slot] ?? -1)) holds = true
-      if (holds && !row.deleted) {
-        snapshots++
-        if (lastAt === null || row.takenAt > lastAt) lastAt = row.takenAt
-      }
+      if (places.some((shared) => holding.has(row.refs[shared.slot] ?? -1))) holds = true
+      if (!holds) continue
+      // A snapshot in the trash still holds it (the removal cleans it too).
+      snapshots++
+      if (row.deleted) trashed++
+      if (lastAt === null || row.takenAt > lastAt) lastAt = row.takenAt
     }
-    return { part, snapshots, lastAt, bytes: reachSize(own) + share }
+    return { part, snapshots, trashed, lastAt, bytes: reachSize(own) + share }
   })
 }
 
@@ -459,13 +495,24 @@ const LIVE_ROOTS: Readonly<Record<RemovablePart, readonly string[]>> = {
   characterExtras: ['gi_characters'],
 }
 
+/**
+ * A part's fields under another part's root: `gi_tasks.realm`, the realm
+ * currency, goes with the teapot as in Capture (it is one of the Planner
+ * tasks as well, so removing those takes it too).
+ */
+const LIVE_FIELDS: Partial<Record<RemovablePart, Readonly<Record<string, readonly string[]>>>> = {
+  teapot: { gi_tasks: ['realm'] },
+}
+
 /** Whether a live change belongs to the part (by its path). */
 export function isPartChange(part: RemovablePart, change: DeltaChange): boolean {
   const [root, field] = change[1].map(String)
   if (part === 'profile') {
     return root === 'gi_player' && (PROFILE_FIELDS as readonly string[]).includes(field ?? '')
   }
-  return root !== undefined && LIVE_ROOTS[part].includes(root)
+  if (root === undefined) return false
+  if (LIVE_ROOTS[part].includes(root)) return true
+  return LIVE_FIELDS[part]?.[root]?.includes(field ?? '') ?? false
 }
 
 /** A journal row's changes without the part's: the rest, and how many went. */

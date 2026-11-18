@@ -18,6 +18,7 @@
 
 import {
   ACCOUNT_SETTINGS_DEFAULTS,
+  PART_DECODED_SLOTS,
   REMOVABLE_PARTS,
   SLOTS,
   countParts,
@@ -64,8 +65,12 @@ function guardSql(dataVersion: number): string {
 const hexOf = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 
-/** The slots whose blobs are decoded (shared sections); the rest are counted by size. */
-const SHARED_SLOTS = new Set<Slot>(['player', 'progress', 'extras'])
+/**
+ * The slots whose blobs are decoded (sections a part is some keys of: the
+ * shared ones, and the Planner tasks for the teapot's realm currency); the
+ * rest are counted by size.
+ */
+const SHARED_SLOTS = new Set<Slot>(PART_DECODED_SLOTS)
 
 interface Loaded {
   rows: PartSnapshotRow[]
@@ -186,7 +191,7 @@ export async function countAccountParts(
     liveChanges: changes.filter((change) => isPartChange(count.part, change)).length,
   }))
   return {
-    total: loaded.rows.filter((row) => !row.deleted).length,
+    total: loaded.rows.length,
     guard: loaded.guard,
     live: journal !== null,
     parts,

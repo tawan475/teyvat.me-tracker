@@ -162,4 +162,12 @@ describe('liveStrip', () => {
     expect(liveStrip(journal([]), list)).toBeNull()
     expect(liveStrip(journal([['set', ['materials', 'Mora'], 1]]), [snapshot(8, 4_000)])).toBeNull()
   })
+
+  it('counts no change for a figure the base did not share (Capture counts it as 0)', () => {
+    const base = { ...snapshot(7, 3_000, 'SESSION-1234', 0), off: ['materials'] }
+    const list = [base, snapshot(6, 2_000, 'SESSION-1234', 120)]
+    const strip = liveStrip(journal([['set', ['gi_tasks', 'welkin'], { days: 3 }]]), list)
+    // The Mora the journal counts is not the bag: never "-120".
+    expect(strip).toMatchObject({ mora: 0, primogem: 0 })
+  })
 })

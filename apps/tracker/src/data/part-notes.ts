@@ -1,6 +1,7 @@
 import {
   ACCOUNT_SETTINGS_DEFAULTS,
   type AccountSettings,
+  type OffSection,
   type PartNotes,
   type RemovablePart,
 } from '@gdt/shared'
@@ -41,8 +42,11 @@ export function usePartNotes(accountId: () => number): ComputedRef<PartNotes | n
   return computed(() => known.value.get(accountId()) ?? null)
 }
 
-/** Hides a note (a part's, or Overview's `all`) until it changes. */
-export async function hidePartNote(id: number, key: RemovablePart | 'all'): Promise<void> {
+/** Hides a note (a part's, a build section's, or Overview's `all`) until it changes. */
+export async function hidePartNote(
+  id: number,
+  key: RemovablePart | OffSection | 'all',
+): Promise<void> {
   const { settings } = await api.hidePartNote(id, key)
   seedAccountSettings(id, settings as AccountSettings)
   set(id, settings.parts)

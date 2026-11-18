@@ -1,6 +1,6 @@
 import type { PartNotes, SnapshotResponse } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
-import { allPartsNote, offSince, partNote } from '../not-shared'
+import { allPartsNote, noteRows, offSince, partNote, sectionNote } from '../not-shared'
 
 const SUMMARY = {
   characters: 1,
@@ -86,5 +86,87 @@ describe('not shared by Capture', () => {
     })
     expect(allPartsNote(list, { removed: {}, hidden: { all: 30 } })).toBeNull()
     expect(allPartsNote(list, { removed: {}, hidden: { all: 25 } })).not.toBeNull()
+  })
+})
+
+describe('a build section not shared by Capture', () => {
+  it('says since when, and which capture its page shows instead', () => {
+    const list = snaps([40, ['characters']], [30, ['characters', 'weapons']], [20, []], [10])
+    expect(sectionNote('characters', list, NONE)).toEqual({
+      section: 'characters',
+      since: 30,
+      shownAt: 20,
+    })
+    // Shared by the newest capture: nothing to say, whatever older ones did.
+    expect(sectionNote('weapons', list, NONE)).toBeNull()
+    expect(sectionNote('materials', list, NONE)).toBeNull()
+    // An older snapshot without gi_off (an older Capture, an import) shared it.
+    expect(sectionNote('artifacts', snaps([40, ['artifacts']], [10]), NONE)).toMatchObject({
+      since: 40,
+      shownAt: 10,
+    })
+  })
+
+  it('shows no capture when none ever shared it, and nothing without gi_off', () => {
+    expect(sectionNote('materials', snaps([40, ['materials']], [30, ['materials']]), NONE)).toEqual(
+      { section: 'materials', since: 30, shownAt: null },
+    )
+    expect(sectionNote('materials', snaps([40], [30, ['materials']]), NONE)).toBeNull()
+    expect(sectionNote('materials', [], NONE)).toBeNull()
+  })
+
+  it('stays hidden by the owner until a new run starts', () => {
+    const list = snaps([40, ['weapons']], [30, ['weapons']], [20, []])
+    expect(sectionNote('weapons', list, { removed: {}, hidden: { weapons: 35 } })).toBeNull()
+    const again = snaps([60, ['weapons']], [50, []], [40, ['weapons']])
+    expect(sectionNote('weapons', again, { removed: {}, hidden: { weapons: 45 } })).toMatchObject({
+      since: 60,
+      shownAt: 50,
+    })
+    // Hiding another note does not hide this one.
+    expect(sectionNote('weapons', list, { removed: {}, hidden: { all: 99 } })).not.toBeNull()
+  })
+
+  it('puts what was left out with the same capture in one row, a removable part too', () => {
+    const list = snaps(
+      [50, ['characters', 'weapons', 'materials', 'gi_characters']],
+      [40, ['characters', 'materials', 'gi_characters']],
+      [30, ['materials']],
+      [20, []],
+    )
+    const sections = (['characters', 'weapons', 'artifacts', 'materials'] as const).flatMap(
+      (section) => sectionNote(section, list, NONE) ?? [],
+    )
+    expect(noteRows(sections, [])).toEqual([
+      { key: 'characters', subjects: ['characters'], since: 40, shownAt: 30, removable: false },
+      { key: 'weapons', subjects: ['weapons'], since: 50, shownAt: 40, removable: false },
+      { key: 'materials', subjects: ['materials'], since: 30, shownAt: 20, removable: false },
+    ])
+    // The Characters page: the roster and its extras, shown from one capture.
+    const extras = partNote('characterExtras', list, NONE)!
+    expect(
+      noteRows(
+        [sectionNote('characters', list, NONE)!],
+        [{ part: extras.part, since: extras.since!, shownAt: 30 }],
+      ),
+    ).toEqual([
+      {
+        key: 'characters',
+        subjects: ['characters', 'characterExtras'],
+        since: 40,
+        shownAt: 30,
+        removable: true,
+      },
+    ])
+    // Extras the page shows nothing of (the capture shown had none): a row of their own.
+    expect(
+      noteRows(
+        [sectionNote('characters', list, NONE)!],
+        [{ part: extras.part, since: extras.since!, shownAt: null }],
+      ).map((row) => [row.subjects, row.shownAt, row.removable]),
+    ).toEqual([
+      [['characters'], 30, false],
+      [['characterExtras'], null, true],
+    ])
   })
 })

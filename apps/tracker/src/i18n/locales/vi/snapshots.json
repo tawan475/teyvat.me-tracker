@@ -167,6 +167,7 @@
       "characterExtras": "Độ yêu thích và thời điểm nhận"
     },
     "notShared": "Capture không chia sẻ",
+    "notSharedShort": "Không chia sẻ",
     "since": "từ {date}",
     "sinceList": "từ {date}: {parts}",
     "showing": "đang hiển thị ảnh chụp ngày {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Phần không chia sẻ trước",
       "notSharedMark": "Không chia sẻ",
       "last": "lần cuối {date}",
+      "inTrash": "{n} trong thùng rác",
       "pick": "Chọn một phần để xem sẽ xóa gì.",
       "counting": "Đang đếm…",
       "line": "Xóa {part} khỏi {n} trên {total} ảnh chụp, giải phóng {size}.",

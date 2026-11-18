@@ -29,6 +29,10 @@ import { partLabel } from './part-names'
  * Every way in opens it with nothing picked. All or nothing: a capture that
  * lands meanwhile makes the server refuse, and the counts are read again.
  * The guest's runs in the browser (local/server.ts), with no live sync.
+ * The counts include snapshots in the trash that still hold the part (the
+ * row says how many), so a part that survives only there can be removed.
+ * The Teapot takes the realm currency of the Planner tasks with it, as
+ * Capture's switch does: its row names it.
  */
 const props = defineProps<{
   open: boolean
@@ -93,6 +97,12 @@ const hasSomething = computed(
   () => !!pickedCount.value && pickedCount.value.snapshots + pickedCount.value.liveChanges > 0,
 )
 const canRemove = computed(() => !busy.value && hasSomething.value && matches.value)
+
+/** A part's second line: what it holds (the Teapot's realm currency is stored with the tasks). */
+function partSub(part: RemovablePart): string {
+  const sub = t(`snapshots.parts.subs.${part}`)
+  return part === 'teapot' ? `${sub}, ${t('planner.task.builtin.realm')}` : sub
+}
 
 /** Parts with hand marks of their own, which stay. */
 const MARKED = new Set<RemovablePart>(['achievements', 'anecdotes', 'collections'])
@@ -232,10 +242,14 @@ function close() {
                 {{
                   row.count?.lastAt
                     ? $t('snapshots.parts.dialog.last', { date: formatMonthDay(row.count.lastAt) })
-                    : $t(`snapshots.parts.subs.${row.part}`)
+                    : partSub(row.part)
                 }}
               </template>
-              <template v-else>{{ $t(`snapshots.parts.subs.${row.part}`) }}</template>
+              <template v-else>{{ partSub(row.part) }}</template>
+              <template v-if="row.count?.trashed">
+                ·
+                {{ $t('snapshots.parts.dialog.inTrash', { n: formatNumber(row.count.trashed) }) }}
+              </template>
             </span>
           </span>
           <span class="tabular text-right whitespace-nowrap text-text-secondary">

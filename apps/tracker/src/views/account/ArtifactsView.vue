@@ -20,6 +20,7 @@ import ArtifactTable from '@/components/artifacts/ArtifactTable.vue'
 import ArtifactToolbar from '@/components/artifacts/ArtifactToolbar.vue'
 import LowerRarityStrip from '@/components/artifacts/LowerRarityStrip.vue'
 import { SLOT_ICONS } from '@/components/artifacts/styles'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -428,6 +429,7 @@ const GRID =
 
 <template>
   <PageHeader :title="$t('game.artifacts')" />
+  <NotSharedStrip :sections="['artifacts']" />
 
   <UiPanel v-if="!account.latest" flush>
     <UiEmpty :title="$t('characters.page.noSnapshots')">

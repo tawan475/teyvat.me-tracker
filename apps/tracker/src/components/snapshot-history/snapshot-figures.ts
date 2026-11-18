@@ -4,7 +4,7 @@
  */
 
 import type { SnapshotResponse } from '@gdt/shared'
-import { currencyMissing, dayKey, formatSignedExact } from '@/data/overview'
+import { currencyMissing, dayKey, formatSignedExact, sharesFigure } from '@/data/overview'
 import { t } from '@/i18n'
 import { formatFullDateTime, formatNumber } from '@/lib/format'
 
@@ -22,24 +22,35 @@ export interface Change {
 export type RowChanges = Partial<Record<FigureKey, Change>>
 
 /**
+ * Whether the snapshot left the figure's section out on purpose (Capture's
+ * gi_off, issue 12): its cell says "Not shared", not 0.
+ */
+export const figureNotShared = (snapshot: Pick<SnapshotResponse, 'off'>, key: FigureKey): boolean =>
+  !sharesFigure(snapshot.off, key)
+
+/**
  * Changes of every snapshot (`list` newest first) against the one before it.
  * Mora and primogems compare with the closest older snapshot that has them,
- * so one capture without currency doesn't hide the next change.
+ * so one capture without currency doesn't hide the next change. A figure the
+ * snapshot did not share has no change (never "-85 characters"), and the
+ * next snapshot that shares it compares with the closest older one that did
+ * (never "+85").
  */
 export function snapshotChanges(list: readonly SnapshotResponse[]): Map<number, RowChanges> {
   const changes = new Map<number, RowChanges>()
-  let withCurrency: SnapshotResponse | null = null
+  /** Per figure, the closest older snapshot that has it. */
+  const last: Partial<Record<FigureKey, SnapshotResponse>> = {}
   for (let i = list.length - 1; i >= 0; i--) {
     const current = list[i]!
-    const previous = list[i + 1]
     const row: RowChanges = {}
     for (const key of FIGURE_KEYS) {
-      const since = CURRENCY.has(key) ? withCurrency : previous
-      if (!since || (CURRENCY.has(key) && currencyMissing(current.summary))) continue
-      row[key] = { delta: current.summary[key] - since.summary[key], since }
+      if (figureNotShared(current, key)) continue
+      if (CURRENCY.has(key) && currencyMissing(current.summary)) continue
+      const since = last[key]
+      if (since) row[key] = { delta: current.summary[key] - since.summary[key], since }
+      last[key] = current
     }
     changes.set(current.id, row)
-    if (!currencyMissing(current.summary)) withCurrency = current
   }
   return changes
 }

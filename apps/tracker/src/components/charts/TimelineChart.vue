@@ -9,11 +9,13 @@ import {
   PointElement,
   Tooltip,
   type ChartConfiguration,
+  type ChartDataset,
 } from 'chart.js'
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useMutationObserver } from '@vueuse/core'
 import { axisFormat, axisTick, axisTicks } from '@/data/chart-range'
 import { useAfterPaint } from '@/lib/after-paint'
+import { lonePoints } from './line-gaps'
 import { CHART_FONT } from '@/lib/chart-defaults'
 import { t } from '@/i18n'
 import { clock24, formatCompactTick, formatDateTime, formatNumber, tickStep } from '@/lib/format'
@@ -32,12 +34,23 @@ export interface TimelineSeries {
   label: string
   /** A chart token: 1–6 (see --chart-N in main.css). */
   color: 1 | 2 | 3 | 4 | 5 | 6
-  points: { x: number; y: number }[]
+  /**
+   * `y` null: a capture that did not share the figure (Capture's gi_off).
+   * The line breaks there, never 0 and never the last value held across;
+   * hovering it says "not shared".
+   */
+  points: { x: number; y: number | null }[]
 }
+
+/** The hidden axis the not-shared marks sit on (the plot's foot). */
+const GAP_AXIS = 'gap'
 
 /**
  * A line chart over time (x in epoch ms). Colours come from the design
- * tokens and are re-read when the theme flips. Series with very different
+ * tokens and are re-read when the theme flips. A point without a value
+ * breaks the line (the gap, not a colour, carries it) and has a mark on the
+ * plot's foot that shows only under the pointer, with "not shared" in the
+ * tooltip. Series with very different
  * scales belong in separate charts: there is one y axis. The x axis ticks
  * fall on round local times, labelled by the span shown (see axisFormat):
  * times of day up to a day, day and time up to a week, dates beyond.
@@ -80,12 +93,15 @@ function config(): ChartConfiguration<'line'> {
   const span = xs.length ? Math.max(...xs) - Math.min(...xs) : 0
   const axis = axisFormat(span)
   const hour12 = !clock24()
+  const gapped = props.series.some((s) => s.points.some((p) => p.y === null))
   return {
     type: 'line',
     data: {
-      datasets: props.series.map((s) => {
+      datasets: props.series.flatMap((s) => {
         const color = token(`--chart-${s.color}`)
-        return {
+        const radius = s.points.length > 60 ? 0 : 2
+        const alone = gapped ? lonePoints(s.points) : null
+        const line: ChartDataset<'line', TimelineSeries['points']> = {
           label: s.label,
           data: s.points,
           borderColor: color,
@@ -93,10 +109,26 @@ function config(): ChartConfiguration<'line'> {
           fill: props.fill ?? props.series.length === 1,
           stepped: props.stepped ? 'before' : false,
           borderWidth: 2,
-          pointRadius: s.points.length > 60 ? 0 : 2,
+          pointRadius: alone?.size ? (ctx) => (alone.has(ctx.dataIndex) ? 2 : radius) : radius,
           pointHoverRadius: 4,
           tension: 0,
         }
+        const gaps = s.points.filter((p) => p.y === null)
+        if (gaps.length === 0) return [line]
+        // Not shared: nothing drawn until the pointer is there.
+        const marks: ChartDataset<'line', TimelineSeries['points']> = {
+          label: s.label,
+          data: gaps.map((p) => ({ x: p.x, y: 0 })),
+          yAxisID: GAP_AXIS,
+          showLine: false,
+          fill: false,
+          borderColor: muted,
+          backgroundColor: token('--surface-raised'),
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 2,
+        }
+        return [line, marks]
       }),
     },
     options: {
@@ -153,6 +185,7 @@ function config(): ChartConfiguration<'line'> {
             scale.width = Math.max(scale.width, props.yAxisWidth)
           },
         },
+        ...(gapped ? { [GAP_AXIS]: { type: 'linear', display: false, min: 0, max: 1 } } : {}),
       },
       plugins: {
         tooltip: {
@@ -169,7 +202,10 @@ function config(): ChartConfiguration<'line'> {
             label: (item) =>
               t('progression.tooltip', {
                 name: item.dataset.label ?? '',
-                value: formatNumber(Number(item.parsed.y)),
+                value:
+                  item.dataset.yAxisID === GAP_AXIS
+                    ? t('snapshots.parts.notSharedShort')
+                    : formatNumber(Number(item.parsed.y)),
               }),
           },
         },

@@ -4,6 +4,7 @@ import {
   OFF_SWITCHES,
   PART_SWITCH,
   REMOVABLE_PARTS,
+  countParts,
   decodeSectionBlob,
   decodeSnapshotMeta,
   encodeSectionBlob,
@@ -141,6 +142,18 @@ describe('removable parts', () => {
     expect(isPartChange('collections', changes[4]!)).toBe(true)
     expect(isPartChange('tasks', changes[5]!)).toBe(true)
   })
+
+  it("count the realm currency's live changes with the teapot, as Capture's switch does", () => {
+    const realm: DeltaChange = ['set', ['gi_tasks', 'realm'], { value: 900, limit: 2400 }]
+    const welkin: DeltaChange = ['del', ['gi_tasks', 'welkin']]
+    const comfort: DeltaChange = ['set', ['gi_teapot', 'comfort'], {}]
+    expect(isPartChange('teapot', realm)).toBe(true)
+    expect(isPartChange('teapot', comfort)).toBe(true)
+    expect(isPartChange('teapot', welkin)).toBe(false)
+    // It is one of the Planner tasks too: removing those takes it as well.
+    expect(isPartChange('tasks', realm)).toBe(true)
+    expect(withoutPartChanges('teapot', [realm, welkin, comfort]).changes).toEqual([welkin])
+  })
 })
 
 describe('the no-op decision', () => {
@@ -235,5 +248,89 @@ describe('planning a removal', () => {
     expect(plan.rewrites.map((r) => r.id)).toEqual([2])
     // Only the snapshot whose own section held it counts.
     expect(plan.snapshots).toBe(1)
+  })
+
+  async function sectionBlob(
+    id: number,
+    slot: 'extras' | 'tasks',
+    value: unknown,
+  ): Promise<PartBlobRow> {
+    return {
+      id,
+      code: kindCode(slot, false),
+      baseId: null,
+      data: encodeSectionBlob(slot, value, false, null).data,
+      hash: shortHashHex(await sectionHashOf(slot, value)),
+    }
+  }
+  const TEAPOT = [[1, 20000, [1500, 900]]]
+
+  it('takes the realm currency out of the Planner tasks with the teapot', async () => {
+    const extras = await sectionBlob(1, 'extras', { t: TEAPOT, m: [[7, 1]] })
+    const tasks = await sectionBlob(2, 'tasks', { c: [4, 4], r: [900, 2400], w: 12 })
+    const onlyRealm = await sectionBlob(3, 'tasks', { r: [1200, 2400] })
+    const noRealm = await sectionBlob(4, 'tasks', { c: [2, 4] })
+    const blobs = new Map([extras, tasks, onlyRealm, noRealm].map((b) => [b.id, b]))
+    const rows: PartSnapshotRow[] = [
+      { id: 10, takenAt: 1, deleted: false, refs: { extras: 1, tasks: 2 } },
+      // Capture's Serenitea Pot switch went off, an older build still sent the jar.
+      { id: 11, takenAt: 2, deleted: false, refs: { tasks: 3 } },
+      { id: 12, takenAt: 3, deleted: false, refs: { tasks: 4 } },
+    ]
+    const counted = countParts(rows, blobs).find((c) => c.part === 'teapot')!
+    expect(counted).toMatchObject({ snapshots: 2, trashed: 0, lastAt: 2 })
+    expect(counted.bytes).toBeGreaterThan(0)
+
+    const plan = await planPartRemoval('teapot', rows, blobs)
+    expect(plan.snapshots).toBe(2)
+    expect(plan.total).toBe(3)
+    // The rest of the tasks stays, re-encoded; tasks that were only the jar go.
+    const first = plan.updates.find((u) => u.id === 10)!.refs
+    expect(Object.keys(first).sort()).toEqual(['extras', 'tasks'])
+    expect(plan.updates.find((u) => u.id === 11)!.refs).toEqual({ tasks: null })
+    expect(plan.updates.find((u) => u.id === 12)).toBeUndefined()
+    const made = new Map(plan.blobs.map((b) => [b.hash, b]))
+    const decode = (ref: unknown) => {
+      const blob = made.get((ref as { hash: string }).hash)!
+      return decodeSectionBlob(blob.code, blob.data, null, null).value
+    }
+    expect(decode(first.tasks)).toEqual({ c: [4, 4], w: 12 })
+    expect(decode(first.extras)).toEqual({ m: [[7, 1]] })
+
+    // Removing the Planner tasks leaves the teapot's comfort where it is.
+    const tasksPlan = await planPartRemoval('tasks', rows, blobs)
+    expect(tasksPlan.updates.find((u) => u.id === 10)!.refs).toEqual({ tasks: null })
+    expect(tasksPlan.snapshots).toBe(3)
+  })
+
+  it('counts and cleans snapshots in the trash that still hold the part', async () => {
+    const extras = await sectionBlob(1, 'extras', { t: TEAPOT })
+    const blobs = new Map([[extras.id, extras]])
+    const rows: PartSnapshotRow[] = [
+      { id: 10, takenAt: 5, deleted: true, refs: { extras: 1, anecdotes: 9 } },
+      { id: 11, takenAt: 6, deleted: false, refs: {} },
+    ]
+    blobs.set(9, {
+      id: 9,
+      code: kindCode('anecdotes', false),
+      baseId: null,
+      hash: 'aa',
+      data: new Uint8Array(40),
+    })
+    const counts = countParts(rows, blobs)
+    // Only the trash holds them: still something to remove.
+    expect(counts.find((c) => c.part === 'teapot')).toMatchObject({
+      snapshots: 1,
+      trashed: 1,
+      lastAt: 5,
+    })
+    expect(counts.find((c) => c.part === 'anecdotes')).toMatchObject({ snapshots: 1, trashed: 1 })
+    expect(counts.find((c) => c.part === 'tasks')).toMatchObject({ snapshots: 0, trashed: 0 })
+    const plan = await planPartRemoval('teapot', rows, blobs)
+    expect(plan).toMatchObject({ snapshots: 1, trashed: 1, total: 2, lastAt: 5 })
+    expect(plan.updates).toEqual([
+      { id: 10, refs: { extras: null }, storedDelta: -extras.data.length },
+    ])
+    expect(plan.freed).toBe(extras.data.length)
   })
 })

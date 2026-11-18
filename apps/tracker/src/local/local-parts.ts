@@ -50,6 +50,7 @@ export function countPartsLocal(store: LocalStore): PartsResponse {
     total: rows.length,
     guard,
     live: false,
+    // The guest store has no trash: every count is of snapshots on the list.
     parts: countParts(rows, blobs).map((count) => ({ ...count, liveChanges: 0 })),
   }
 }

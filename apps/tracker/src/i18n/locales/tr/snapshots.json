@@ -167,6 +167,7 @@
       "characterExtras": "Arkadaşlık ve elde edilme zamanı"
     },
     "notShared": "Capture paylaşmıyor",
+    "notSharedShort": "Paylaşılmıyor",
     "since": "{date} tarihinden beri",
     "sinceList": "{date} tarihinden beri: {parts}",
     "showing": "{date} tarihli kayıt gösteriliyor",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Önce paylaşılmayanlar",
       "notSharedMark": "Paylaşılmıyor",
       "last": "son {date}",
+      "inTrash": "Çöp kutusunda {n}",
       "pick": "Neyin kaldırılacağını görmek için bir bölüm seç.",
       "counting": "Sayılıyor…",
       "line": "{part} verisini {total} anlık görüntünün {n} tanesinden kaldırır, {size} boşaltır.",

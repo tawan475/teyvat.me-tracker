@@ -347,3 +347,136 @@ describe('character EXP', () => {
     expect(captures.map((c) => c.summary.wishes)).toEqual([2 + 3, 13 + 34])
   })
 })
+
+// Capture's gi_off (issue 12): a capture that did not share a figure's
+// section breaks its line and counts no change.
+describe('captures that did not share a section', () => {
+  const t0 = at(2026, 10, 5, 10)
+  const figures = (characters: number, mora: number): SnapshotSummary => ({
+    ...summary(mora, 100),
+    characters,
+  })
+  // As buildHistory gives them: the last shared figures on the marked ones.
+  const captures: Capture[] = [
+    { at: t0, summary: figures(85, 1_000) },
+    { at: t0 + HOUR, summary: figures(86, 1_500) },
+    { at: t0 + 2 * HOUR, summary: figures(86, 1_700), unshared: ['characters'] },
+    { at: t0 + 3 * HOUR, summary: figures(86, 1_900), unshared: ['characters'] },
+    { at: t0 + 4 * HOUR, summary: figures(88, 2_000) },
+  ]
+  const now = t0 + 4 * HOUR
+
+  it('breaks the line there: no drop to 0, no value held across', () => {
+    const p = buildSnapshotProgression(captures, 'all', now)!
+    expect(p.lines.characters).toEqual([
+      { x: t0, y: 85 },
+      { x: t0 + HOUR, y: 86 },
+      { x: t0 + 2 * HOUR, y: null },
+      { x: t0 + 3 * HOUR, y: null },
+      { x: t0 + 4 * HOUR, y: 88 },
+    ])
+    // The figures of another section run through.
+    expect(p.lines.mora.map((point) => point.y)).toEqual([1_000, 1_500, 1_700, 1_900, 2_000])
+  })
+
+  it('gives those captures no bar, and measures the next shared one against the last shared', () => {
+    const p = buildSnapshotProgression(captures, 'all', now)!
+    expect(p.changes.characters).toEqual([
+      { at: t0 + HOUR, change: 1, value: 86 },
+      { at: t0 + 4 * HOUR, change: 2, value: 88 },
+    ])
+    expect(snapshotTotals(p, 'characters')).toEqual({ last: 88, net: 3, gained: 3, spent: 0 })
+  })
+
+  it('holds nothing to now after a newest capture that did not share it', () => {
+    const still = captures.slice(0, 4)
+    const later = now + 2 * HOUR
+    const p = buildSnapshotProgression(still, 'all', later)!
+    expect(p.lines.characters.at(-1)).toEqual({ x: t0 + 3 * HOUR, y: null })
+    // Mora is held to now as ever.
+    expect(p.lines.mora.at(-1)).toEqual({ x: later, y: 1_900 })
+    // The heading keeps the last shared value.
+    expect(snapshotTotals(p, 'characters').last).toBe(86)
+  })
+
+  it('opens a range with a break when the capture before it did not share the figure', () => {
+    const p = buildSnapshotProgression(captures, '1h', now + 30 * 60_000)!
+    // The range opens at 13:30: the 13:00 capture carried in did not share it.
+    expect(p.lines.characters[0]).toEqual({ x: t0 + 3.5 * HOUR, y: null })
+    expect(p.changes.characters).toEqual([{ at: t0 + 4 * HOUR, change: 2, value: 88 }])
+  })
+
+  it('counts the first shared capture as no gain when none before it shared the figure', () => {
+    const fresh: Capture[] = [
+      { at: t0, summary: figures(0, 1_000), unshared: ['characters'] },
+      { at: t0 + HOUR, summary: figures(0, 1_200), unshared: ['characters'] },
+      { at: t0 + 2 * HOUR, summary: figures(85, 1_300) },
+      { at: t0 + 3 * HOUR, summary: figures(86, 1_400) },
+    ]
+    const p = buildSnapshotProgression(fresh, 'all', t0 + 3 * HOUR)!
+    expect(p.lines.characters.map((point) => point.y)).toEqual([null, null, 85, 86])
+    expect(p.changes.characters).toEqual([{ at: t0 + 3 * HOUR, change: 1, value: 86 }])
+    const periodic = buildProgression(fresh, 'hour', 'all', t0 + 3 * HOUR)!
+    expect(periodic.periods.map((period) => period.change.characters)).toEqual([0, 0, 0, 1])
+  })
+
+  it('keeps captures whose materials were left out (no currency is not a missed packet)', () => {
+    // Never shared: mora and primogems stay 0 / 0, the roster is still charted.
+    const noBag: Capture[] = [1, 2, 3].map((i) => ({
+      at: t0 + i * HOUR,
+      summary: { ...summary(0, 0), characters: 80 + i },
+      unshared: ['materials'],
+    }))
+    const p = buildSnapshotProgression(noBag, 'all', t0 + 3 * HOUR)!
+    expect(p.lines.characters.map((point) => point.y)).toEqual([81, 82, 83])
+    expect(p.lines.mora.every((point) => point.y === null)).toBe(true)
+    expect(p.changes.mora).toEqual([])
+    // A capture that lost its currency with the bag shared is still left out.
+    expect(buildSnapshotProgression([{ at: t0, summary: summary(0, 0) }], 'all', t0)).toBeNull()
+  })
+
+  it('closes a period on its last capture that shared the figure; none: a break', () => {
+    const day = at(2026, 3, 1, 9)
+    const daily: Capture[] = [
+      // Long enough ago for the line to keep one point a day.
+      { at: day - 100 * DAY, summary: figures(80, 50) },
+      { at: day, summary: figures(80, 100) },
+      // Day 2: shared in the morning, not in the evening.
+      { at: day + DAY, summary: figures(81, 200) },
+      { at: day + DAY + 6 * HOUR, summary: figures(81, 250), unshared: ['characters'] },
+      // Day 3: never shared.
+      { at: day + 2 * DAY, summary: figures(81, 300), unshared: ['characters'] },
+      { at: day + 3 * DAY, summary: figures(84, 400) },
+    ]
+    const p = buildProgression(daily, 'day', 'all', day + 3 * DAY)!
+    expect(p.lineBucket).toBe('day')
+    expect(p.lines.characters.map((point) => point.y)).toEqual([80, 81, null, 84])
+    expect(p.lines.characters[2]!.x).toBe(day + 2 * DAY)
+    expect(p.periods.slice(-4).map((period) => period.change.characters)).toEqual([0, 1, 0, 3])
+    expect(periodTotals(p, 'characters')).toEqual({ last: 84, net: 4, gained: 4, spent: 0 })
+  })
+
+  it('carries the mark through the materials figures', () => {
+    const history: MaterialsHistory = {
+      times: [t0],
+      ids: [1],
+      lastSeenAt: t0,
+      series: new Map([['HerosWit', { at: [0], value: [3] }]]),
+      latest: new Map(),
+    }
+    const withBooks = withMaterialFigures(
+      [
+        { at: t0, summary: figures(85, 1_000), snapshot: 1 },
+        { at: t0 + HOUR, summary: figures(85, 1_000), snapshot: 2, unshared: ['materials'] },
+      ],
+      history,
+    )
+    expect(withBooks.map((c) => [c.summary.characterExp, c.unshared])).toEqual([
+      [60_000, undefined],
+      [60_000, ['materials']],
+    ])
+    const p = buildSnapshotProgression(withBooks, 'all', t0 + HOUR)!
+    expect(p.lines.characterExp.map((point) => point.y)).toEqual([60_000, null])
+    expect(p.lines.characters.map((point) => point.y)).toEqual([85, 85])
+  })
+})

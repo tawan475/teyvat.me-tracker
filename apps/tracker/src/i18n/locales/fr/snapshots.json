@@ -167,6 +167,7 @@
       "characterExtras": "Affinité et date d’obtention"
     },
     "notShared": "Non partagé par Capture",
+    "notSharedShort": "Non partagé",
     "since": "depuis le {date}",
     "sinceList": "depuis le {date} : {parts}",
     "showing": "capture du {date} affichée",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Non partagées d’abord",
       "notSharedMark": "Non partagé",
       "last": "dernière {date}",
+      "inTrash": "{n} dans la corbeille",
       "pick": "Choisissez une partie pour voir ce qui sera retiré.",
       "counting": "Calcul…",
       "line": "Retire {part} de {n} instantanés sur {total} et libère {size}.",

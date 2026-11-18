@@ -63,6 +63,7 @@ import {
 } from '@/components/materials-page/material-stats'
 import { useMaterialIcons } from '@/components/materials/use-material-icons'
 import { MAX_SERIES, useMaterialsGraph } from '@/components/materials/use-materials-graph'
+import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -264,6 +265,7 @@ const importTo = computed(() => accountLink('account-import'))
       </span>
     </template>
   </PageHeader>
+  <NotSharedStrip :sections="['materials']" />
 
   <UiPanel v-if="!account.latest" flush>
     <UiEmpty :title="$t('materials.noSnapshots')">

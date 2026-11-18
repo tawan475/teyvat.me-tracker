@@ -167,6 +167,7 @@
       "characterExtras": "好感度与获得时间"
     },
     "notShared": "Capture 未共享",
+    "notSharedShort": "未共享",
     "since": "自 {date} 起",
     "sinceList": "自 {date} 起：{parts}",
     "showing": "显示的是 {date} 的快照",
@@ -187,6 +188,7 @@
       "notSharedFirst": "未共享的在前",
       "notSharedMark": "未共享",
       "last": "最后 {date}",
+      "inTrash": "回收站中 {n} 份",
       "pick": "选择一个部分以查看将移除的内容。",
       "counting": "正在统计…",
       "line": "将从 {total} 个快照中的 {n} 个移除{part}，释放 {size}。",

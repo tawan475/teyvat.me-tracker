@@ -167,6 +167,7 @@
       "characterExtras": "Persahabatan dan kapan didapat"
     },
     "notShared": "Tidak dibagikan oleh Capture",
+    "notSharedShort": "Tidak dibagikan",
     "since": "sejak {date}",
     "sinceList": "sejak {date}: {parts}",
     "showing": "menampilkan tangkapan {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Yang tidak dibagikan dulu",
       "notSharedMark": "Tidak dibagikan",
       "last": "terakhir {date}",
+      "inTrash": "{n} di sampah",
       "pick": "Pilih bagian untuk melihat apa yang dihapus.",
       "counting": "Menghitung…",
       "line": "Menghapus {part} dari {n} dari {total} snapshot, mengosongkan {size}.",

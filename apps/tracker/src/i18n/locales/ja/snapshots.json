@@ -167,6 +167,7 @@
       "characterExtras": "好感度と入手日時"
     },
     "notShared": "Capture で共有していません",
+    "notSharedShort": "共有していません",
     "since": "{date} から",
     "sinceList": "{date} から：{parts}",
     "showing": "{date} のスナップショットを表示中",
@@ -187,6 +188,7 @@
       "notSharedFirst": "共有していないものが先頭",
       "notSharedMark": "共有していません",
       "last": "最終 {date}",
+      "inTrash": "ゴミ箱に{n}件",
       "pick": "項目を選ぶと削除される内容が表示されます。",
       "counting": "集計中…",
       "line": "{total} 件中 {n} 件のスナップショットから{part}を削除し、{size} を空けます。",

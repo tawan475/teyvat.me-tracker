@@ -167,6 +167,7 @@
       "characterExtras": "Amistad y cuándo se obtuvo"
     },
     "notShared": "No compartido por Capture",
+    "notSharedShort": "No compartido",
     "since": "desde el {date}",
     "sinceList": "desde el {date}: {parts}",
     "showing": "se muestra la captura del {date}",
@@ -187,6 +188,7 @@
       "notSharedFirst": "Primero lo no compartido",
       "notSharedMark": "No compartido",
       "last": "última {date}",
+      "inTrash": "{n} en la papelera",
       "pick": "Elige una parte para ver qué quita.",
       "counting": "Contando…",
       "line": "Quita {part} de {n} de {total} instantáneas y libera {size}.",

@@ -94,14 +94,49 @@ export function summaryDelta(current: SnapshotSummary, previous: SnapshotSummary
   return delta
 }
 
+/** The section each summary figure is counted from (SECTION_FIGURES, the other way). */
+export const FIGURE_SECTION = Object.fromEntries(
+  OFF_SECTIONS.flatMap((section) => SECTION_FIGURES[section].map((key) => [key, section])),
+) as Readonly<Record<SummaryKey, OffSection>>
+
+/** Whether a snapshot with this `off` shared the section a summary figure is counted from. */
+export const sharesFigure = (off: readonly string[] | undefined, key: SummaryKey): boolean =>
+  sharesSection(off, FIGURE_SECTION[key])
+
+/**
+ * Change of snapshot `index` (`snapshots` newest first) against the one
+ * before it, figure by figure. A figure whose section the snapshot left out
+ * on purpose (Capture's gi_off, issue 12) has no change (null: it says
+ * nothing about it, so never "-85 characters"); one it shared is measured
+ * against the newest older snapshot that shared it too (never "+85" after a
+ * not-shared stretch), null when none did. Mora and primogems are null when
+ * either side misses them (currencyMissing). Null: no snapshot before it.
+ */
+export function sharedDelta(
+  snapshots: readonly SnapshotResponse[],
+  index: number,
+): SummaryDelta | null {
+  const current = snapshots[index]
+  if (!current || index + 1 >= snapshots.length) return null
+  const delta = {} as SummaryDelta
+  for (const key of SUMMARY_KEYS) {
+    delta[key] = null
+    if (!sharesFigure(current.off, key)) continue
+    const since = snapshots.slice(index + 1).find((s) => sharesFigure(s.off, key))
+    if (!since) continue
+    const unknown = currencyMissing(current.summary) || currencyMissing(since.summary)
+    if (unknown && CURRENCY_KEYS.has(key)) continue
+    delta[key] = current.summary[key] - since.summary[key]
+  }
+  return delta
+}
+
 /**
  * Change of the newest snapshot against the one before it. `snapshots` is
  * newest first (as loadSnapshots returns it); null when there is no pair.
  */
 export function latestDelta(snapshots: readonly SnapshotResponse[]): SummaryDelta | null {
-  return snapshots.length > 1
-    ? summaryDelta(sharedSummary(snapshots, 0), sharedSummary(snapshots, 1))
-    : null
+  return sharedDelta(snapshots, 0)
 }
 
 /**
@@ -148,11 +183,37 @@ export function withSharedFigures(
  */
 export interface Capture {
   at: number
-  /** As captured, except missing currency carried over from the capture before. */
+  /**
+   * As captured, except missing currency carried over from the capture
+   * before, and the figures of a section it did not share (`unshared`),
+   * which are the last shared ones (0 before any): never this capture's.
+   */
   summary: SnapshotSummary
   /** The snapshot shown (a re-sighting shows its own); none for a live sync point. */
   snapshot?: number
+  /**
+   * When the server stored the snapshot shown (its `createdAt`, the
+   * server's clock, like a live sync point's time; `at` is the capture's own).
+   */
+  storedAt?: number
+  /**
+   * The build sections this capture did not share (Capture's gi_off, issue
+   * 12; a live sync point: its journal's base snapshot's). The charts break
+   * their line there and count no change. Absent when it shared them all.
+   */
+  unshared?: readonly OffSection[]
 }
+
+/** Whether a capture's summary figure is its own (its section was shared). */
+export const figureShared = (capture: Pick<Capture, 'unshared'>, key: SummaryKey): boolean =>
+  !capture.unshared?.includes(FIGURE_SECTION[key])
+
+/**
+ * A capture that should have had mora and primogems but read neither (see
+ * currencyMissing). One that left the materials out on purpose is not that.
+ */
+export const currencyLost = (capture: Pick<Capture, 'summary' | 'unshared'>): boolean =>
+  currencyMissing(capture.summary) && !capture.unshared?.includes('materials')
 
 export interface History {
   /** Oldest first. */
@@ -185,9 +246,14 @@ export function buildHistory(snapshots: readonly SnapshotResponse[]): History {
   const offById = new Map(snapshots.map((s) => [s.id, s.off]))
   const captures: Capture[] = []
   for (const s of snapshots) {
-    captures.push({ at: s.takenAt, summary: s.summary, snapshot: s.id })
+    captures.push({ at: s.takenAt, summary: s.summary, snapshot: s.id, storedAt: s.createdAt })
     if (s.lastSeenAt > s.takenAt) {
-      captures.push({ at: s.lastSeenAt, summary: s.summary, snapshot: s.id })
+      captures.push({
+        at: s.lastSeenAt,
+        summary: s.summary,
+        snapshot: s.id,
+        storedAt: s.createdAt,
+      })
     }
   }
   captures.sort((a, b) => a.at - b.at)
@@ -195,21 +261,25 @@ export function buildHistory(snapshots: readonly SnapshotResponse[]): History {
   // A capture without currency keeps the previous known mora and primogems,
   // so charts and daily changes don't plunge to 0 and back. A section
   // Capture left out on purpose (its gi_off, issue 12) does the same with its
-  // figures: no step on those captures, the last shared value held.
+  // figures, so no change is counted on those captures, and the capture is
+  // marked (`unshared`): the charts break their line there.
   let known: SnapshotSummary | null = null
   const shared = new Map<OffSection, SnapshotSummary>()
   for (const capture of captures) {
     const off = offById.get(capture.snapshot ?? -1)
+    const unshared: OffSection[] = []
     for (const section of OFF_SECTIONS) {
       if (sharesSection(off, section)) {
         shared.set(section, capture.summary)
         continue
       }
+      unshared.push(section)
       const last = shared.get(section)
       const next = { ...capture.summary }
       for (const field of SECTION_FIGURES[section]) next[field] = last?.[field] ?? 0
       capture.summary = next
     }
+    if (unshared.length > 0) capture.unshared = unshared
     if (!currencyMissing(capture.summary)) known = capture.summary
     else if (known) {
       capture.summary = { ...capture.summary, mora: known.mora, primogem: known.primogem }
@@ -238,6 +308,15 @@ export const POINT_NEAR_CAPTURE_MS = 60_000
  * Captures with live sync's chart points (real samples between snapshots,
  * no interpolation) merged in, oldest first. A point within a minute of a
  * capture is dropped; points without currency are left out.
+ *
+ * A point's figures are Capture's journal sums, counted from the export it
+ * uploads: a section its switches leave out (gi_off, issue 12) counts 0
+ * there. The journal's base is the newest snapshot at the point's time, so a
+ * point after a capture that did not share a section is not-shared for it
+ * too: marked like that capture, with its last shared figures, never 0.
+ * "At the point's time" is by the server's clock, which stamps the points
+ * and `storedAt`: a capture's own time may run ahead of it, and a point
+ * right after a switch was flipped must not fall to the snapshot before.
  */
 export function withPoints(
   captures: readonly Capture[],
@@ -249,9 +328,34 @@ export function withPoints(
     const capture = captures[i]
     return capture !== undefined && capture.at <= at + POINT_NEAR_CAPTURE_MS
   }
-  const extra = points
-    .filter((p) => !currencyMissing(p.figures) && !near(p.at))
-    .map((p) => ({ at: p.at, summary: p.figures }))
+  // The capture each point's journal follows: of those stored by then, the
+  // newest (a file imported later with an older capture time is not it).
+  const byStored = captures
+    .filter((capture) => capture.snapshot !== undefined)
+    .sort((a, b) => (a.storedAt ?? a.at) - (b.storedAt ?? b.at))
+  const ordered = [...points].sort((a, b) => a.at - b.at)
+  let stored = 0
+  let base: Capture | undefined
+  const extra: Capture[] = []
+  for (const point of ordered) {
+    for (; stored < byStored.length; stored++) {
+      const capture = byStored[stored]!
+      if ((capture.storedAt ?? capture.at) > point.at) break
+      if (!base || capture.at >= base.at) base = capture
+    }
+    if (near(point.at)) continue
+    const unshared = base?.unshared
+    if (!base || !unshared?.length) {
+      if (!currencyMissing(point.figures)) extra.push({ at: point.at, summary: point.figures })
+      continue
+    }
+    const summary = { ...point.figures }
+    for (const section of unshared) {
+      for (const field of SECTION_FIGURES[section]) summary[field] = base.summary[field]
+    }
+    const capture: Capture = { at: point.at, summary, unshared }
+    if (!currencyLost({ summary: point.figures, unshared })) extra.push(capture)
+  }
   return [...captures, ...extra].sort((a, b) => a.at - b.at)
 }
 
@@ -397,8 +501,9 @@ export function recentSnapshots(
   return snapshots.slice(0, count).map((s, i) => {
     const previous = snapshots[i + 1]
     const changes: RecentSnapshot['changes'] = []
-    if (previous) {
-      const delta = summaryDelta(s.summary, previous.summary)
+    // A figure the capture did not share (Capture's gi_off) is no change.
+    const delta = sharedDelta(snapshots, i)
+    if (delta) {
       for (const key of CHANGE_KEYS) {
         const value = delta[key]
         if (value !== null && value !== 0) {
@@ -416,7 +521,8 @@ export function recentSnapshots(
       summary: s.summary,
       changes,
       hasPrevious: !!previous,
-      currencyMissing: currencyMissing(s.summary),
+      // Left out on purpose is not a missed packet.
+      currencyMissing: currencyMissing(s.summary) && sharesSection(s.off, 'materials'),
     }
   })
 }

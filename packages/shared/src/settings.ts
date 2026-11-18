@@ -109,8 +109,10 @@ export interface UserSettings {
   /** The site's language: `system` follows the browser (the default). */
   language: 'system' | SiteLanguage
   /**
-   * The phone tab bar's pages (`shell.nav` keys of an account's sections, at
-   * most TAB_BAR_MAX), shown in the sidebar's order; "More" holds the rest.
+   * The phone tab bar's pages (`shell.nav` keys of an account's sections,
+   * TAB_BAR_MIN to TAB_BAR_MAX), shown in the user's order (Settings ›
+   * Appearance, dragged); "More" holds the rest. A bar saved empty (allowed
+   * until 2026-11) reads as the defaults (`tabBarPages`).
    */
   tabBar: string[]
   /**
@@ -122,6 +124,16 @@ export interface UserSettings {
 
 /** Pages the phone tab bar holds besides "More". */
 export const TAB_BAR_MAX = 4
+/** The bar keeps at least this many pages (a save of fewer is refused). */
+export const TAB_BAR_MIN = 1
+
+/**
+ * The bar's pages as saved, in their order; nothing saved, or a bar saved
+ * empty before TAB_BAR_MIN existed, reads as the defaults.
+ */
+export function tabBarPages(saved: readonly string[] | null | undefined): string[] {
+  return saved && saved.length ? [...saved] : [...USER_SETTINGS_DEFAULTS.tabBar]
+}
 
 /**
  * One graph on the Overview's progression card: the figure it shows (a

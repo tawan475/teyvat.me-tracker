@@ -111,14 +111,24 @@ describe('auth', () => {
     expect((await patch({ language: 'ja' })).status).toBe(200)
     expect((await patch({ language: 'xx' })).status).toBe(400)
 
-    // The phone tab bar: up to four pages, each once; an empty bar is allowed.
-    const bar = await patch({ tabBar: ['overview', 'collections', 'wishes'] })
+    // The phone tab bar: one to four pages in the user's order, each once.
+    const bar = await patch({ tabBar: ['wishes', 'overview', 'collections'] })
     expect(((await bar.json()) as { settings: { tabBar: string[] } }).settings.tabBar).toEqual([
+      'wishes',
       'overview',
       'collections',
-      'wishes',
     ])
-    expect((await patch({ tabBar: [] })).status).toBe(200)
+    expect((await patch({ tabBar: [] })).status).toBe(400)
+    // A bar saved empty before the minimum existed reads as the defaults.
+    const db = getDb(env.DB)
+    const [row] = await db.select().from(users).where(eq(users.id, me.id))
+    await db
+      .update(users)
+      .set({ settings: { ...row!.settings, tabBar: [] } })
+      .where(eq(users.id, me.id))
+    expect(
+      (await client.json<{ settings: { tabBar: string[] } }>('/api/auth/me')).settings.tabBar,
+    ).toEqual(['overview', 'characters', 'materials', 'planner'])
     expect((await patch({ tabBar: ['a', 'b', 'c', 'd', 'e'] })).status).toBe(400)
     expect((await patch({ tabBar: ['overview', 'overview'] })).status).toBe(400)
 

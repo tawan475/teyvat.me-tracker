@@ -11,6 +11,7 @@ import {
   MAX_PROGRESSION_GRAPHS,
   SITE_LANGUAGES,
   TAB_BAR_MAX,
+  TAB_BAR_MIN,
 } from './settings'
 import type { OAuthProvider } from './oauth'
 import type {
@@ -226,6 +227,7 @@ export const userSettingsPatch = z
     language: z.enum(['system', ...SITE_LANGUAGES]),
     tabBar: z
       .array(z.string().regex(/^[a-z][a-zA-Z]{0,23}$/))
+      .min(TAB_BAR_MIN)
       .max(TAB_BAR_MAX)
       .refine((pages) => new Set(pages).size === pages.length, 'Each page once'),
     progressionGraphs: z

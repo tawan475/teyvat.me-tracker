@@ -6,6 +6,7 @@ import {
   deleteSelfRequest,
   loginRequest,
   readDeviceAlerts,
+  tabBarPages,
   registerRequest,
   sessionPatchRequest,
   setPasswordRequest,
@@ -15,6 +16,7 @@ import {
   type MeResponse,
   type SessionResponse,
   type SessionUpload,
+  type UserSettings,
 } from '@gdt/shared'
 import { and, desc, eq, gt, isNull, or, sql } from 'drizzle-orm'
 import { Hono, type Context } from 'hono'
@@ -110,13 +112,18 @@ export function pepper(c: Context<AppEnv>): string {
   return secret
 }
 
+/** A bar saved empty (allowed until TAB_BAR_MIN) is read as the default pages. */
+function withTabBar(settings: UserSettings): UserSettings {
+  return { ...settings, tabBar: tabBarPages(settings.tabBar) }
+}
+
 export function toMe(user: MeSource, env: Env, permissions: string[] = []): MeResponse {
   return {
     id: user.id,
     username: user.username,
     email: user.email,
     emailVerified: user.emailVerified,
-    settings: deepMerge(USER_SETTINGS_DEFAULTS, user.settings),
+    settings: withTabBar(deepMerge(USER_SETTINGS_DEFAULTS, user.settings)),
     hasImportKey: user.importKeyHash !== null,
     emailEnabled: emailEnabled(env),
     emailFeatures: emailFeatures(env),

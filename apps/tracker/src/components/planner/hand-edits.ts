@@ -82,6 +82,26 @@ export function replacedAdjustments(
 }
 
 /**
+ * The counts set by hand that differ from the capture's, as the bag shows
+ * them: an edit that still applies at `bagBase` (the bag's capture, see
+ * `bagSighting`) whose count in `bag` is not `capture`'s.
+ */
+export function editedCounts(
+  adjustments: readonly InventoryAdjustment[],
+  bag: Bag,
+  capture: Bag,
+  bagBase: number,
+): Map<string, number> {
+  const map = new Map<string, number>()
+  for (const edit of adjustments) {
+    if (!adjustmentApplies(edit, bagBase)) continue
+    const count = bag[edit.key] ?? 0
+    if (count !== (capture[edit.key] ?? 0)) map.set(edit.key, count)
+  }
+  return map
+}
+
+/**
  * Two changes to one material as one (the page sends one per material): a
  * `set` replaces what came before it; adds add up, on top of an earlier set.
  */

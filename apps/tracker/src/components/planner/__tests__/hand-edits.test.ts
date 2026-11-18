@@ -6,6 +6,7 @@ import {
   bagSighting,
   characterNow,
   countChange,
+  editedCounts,
   effectiveInventory,
   mergeChange,
   replacedAdjustments,
@@ -111,6 +112,11 @@ describe('material counts on top of the newest capture', () => {
     expect(bag).toBe(10)
     expect(effectiveInventory(capture, spent, bag)).toMatchObject({ Mora: 70 })
     expect(replacedAdjustments(spent, bag)).toEqual([])
+    // The Materials page still marks the spent count as set by hand.
+    const shown = effectiveInventory(capture, spent, bag)
+    expect(editedCounts(spent, shown, capture, bag)).toEqual(new Map([['Mora', 70]]))
+    // Measured against the newest capture instead, the mark (and the count) would be lost.
+    expect(editedCounts(spent, shown, capture, 20)).toEqual(new Map())
     // An edit made on the newer one adds to it, and both are kept.
     expect(applyChanges(spent, [{ key: 'HerosWit', add: 1 }], 20, 21, bag)).toEqual([
       { key: 'HerosWit', delta: 1, set: null, base: 20, updatedAt: 21 },

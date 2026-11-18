@@ -310,6 +310,8 @@ export function usePlannerModel(
   return {
     accountId,
     base,
+    /** The sighting the bag and its hand edits are measured against (`base` unless the newest capture left materials out). */
+    bagBase,
     resource,
     data,
     planner,

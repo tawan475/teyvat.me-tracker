@@ -36,6 +36,7 @@ export async function listSnapshots(
       storedSize: r.stored_size as number,
       summary: meta.summary,
       ...(meta.capture ? { capture: meta.capture } : {}),
+      ...(meta.off ? { off: meta.off } : {}),
     }
   })
 }

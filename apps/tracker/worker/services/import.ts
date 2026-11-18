@@ -464,6 +464,7 @@ async function importOnce(
         summary: prepared.summary,
         playerVars: plan.playerVars,
         ...(prepared.good.capture ? { capture: prepared.good.capture } : {}),
+        ...(prepared.good.off ? { off: prepared.good.off } : {}),
       }),
     }),
   )

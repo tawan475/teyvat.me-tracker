@@ -205,6 +205,9 @@ describe('account sharing: what each role may do', () => {
     ['DELETE', '/live', undefined],
     ['DELETE', '/wishes', undefined],
     ['POST', '/members', { username: 'anyone', role: 'viewer' }],
+    ['GET', '/parts', undefined],
+    ['POST', '/parts/remove', { part: 'achievements', confirm: 'REMOVE', guard: '1:1' }],
+    ['POST', '/parts/hide', { key: 'achievements' }],
     ['DELETE', '', undefined],
   ]
   const call = (client: Client, id: number, method: string, path: string, json?: unknown) =>

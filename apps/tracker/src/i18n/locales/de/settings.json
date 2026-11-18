@@ -113,7 +113,8 @@
     "iosAdd": "dann {icon} {add}.",
     "iosAddLabel": "Zum Home-Bildschirm",
     "browser": "Nutze die Installieren-Option deines Browsers",
-    "browserTitle": "Chrome oder Edge: Installieren-Symbol in der Adressleiste"
+    "browserTitle": "Chrome oder Edge: Installieren-Symbol in der Adressleiste",
+    "privacyOpen": "Öffnen"
   },
   "build": {
     "title": "Server-Build",
@@ -234,7 +235,8 @@
     "title": "Benutzer löschen",
     "body": "Alle Konten, Snapshots und Anmeldungen",
     "dialogTitle": "Meinen Benutzer löschen",
-    "deleted": "Dein Benutzer wurde gelöscht"
+    "deleted": "Dein Benutzer wurde gelöscht",
+    "privacy": "Was gespeichert wird und wie lange"
   },
   "sections": {
     "account": "Wer du bist und wie du dich anmeldest",

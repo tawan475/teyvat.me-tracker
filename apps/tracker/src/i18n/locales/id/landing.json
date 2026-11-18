@@ -138,7 +138,8 @@
     "export": "Ekspor kapan saja",
     "exportNote": "Format Leyline · bisa dipakai di Genshin Optimizer",
     "delete": "Hapus kapan saja",
-    "deleteNote": "Akunmu dan datanya"
+    "deleteNote": "Akunmu dan datanya",
+    "details": "Detail: apa yang disimpan dan berapa lama"
   },
   "faq": {
     "overline": "Tanya jawab",
@@ -151,6 +152,7 @@
     "modifyA": "Tidak. Aplikasi hanya membaca lalu lintas jaringan di PC atau ponselmu. Tidak pernah menyentuh file atau memori game dan tidak butuh mod.",
     "readsQ": "Apa yang dibaca aplikasi?",
     "readsA": "Apa yang dikirim game tentang akunmu: karakter, senjata, artefak, material, achievement, dan permohonan.",
+    "readsMore": "Apa yang disimpan situs",
     "adminQ": "Kenapa perlu hak administrator di Windows?",
     "adminA": "Windows hanya mengizinkan administrator menangkap paket jaringan.",
     "needQ": "Apakah aplikasinya wajib?",
@@ -170,5 +172,98 @@
     "lead": "Format catatan Teyvat: GOOD, ditambah semua hal lain di akunmu.",
     "english": "Referensi di bawah berbahasa Inggris, sama seperti nama kolom yang dijelaskannya.",
     "contents": "Daftar isi"
+  },
+  "privacyPage": {
+    "title": "Datamu di Teyvat.me",
+    "lead": "Apa yang disimpan, berapa lama, siapa yang bisa melihatnya, dan cara menghapusnya.",
+    "show": "Tampilkan",
+    "groups": {
+      "all": "Semua",
+      "data": "Data Genshin",
+      "signIn": "Masuk",
+      "browser": "Browser ini"
+    },
+    "columns": {
+      "data": "Data",
+      "kept": "Disimpan",
+      "who": "Siapa yang melihat",
+      "delete": "Hapus"
+    },
+    "names": {
+      "planner": "Perencana dan tanda",
+      "account": "Akunmu",
+      "devices": "Perangkat yang masuk",
+      "keys": "Kunci dan token",
+      "local": "Hanya di perangkatmu"
+    },
+    "what": {
+      "snapshots": "Karakter, senjata, artefak, material, achievement, profil (nama, UID, AR, signature, ulang tahun, kartu nama, foto profil), tugas, rekor endgame",
+      "wishes": "Setiap pull: item, banner, waktu",
+      "live": "Perubahan sejak snapshot terakhirmu, titik grafik harian",
+      "planner": "Target, centang, edit manual, resin, pengaturan akun",
+      "account": "Nama pengguna, email (opsional), kata sandi, Discord atau Google yang ditautkan, kunci sandi",
+      "devices": "Nama browser atau aplikasi, alamat IP, negara dan kota, terakhir terlihat",
+      "keys": "Kunci impor, token API: disimpan sebagai hash",
+      "alerts": "Alamat push dan kunci browser ini",
+      "local": "Mode tamu, gambar kartu yang kamu tambahkan, halaman tersimpan, preferensi"
+    },
+    "kept": {
+      "forever": "Sampai kamu hapus",
+      "nextSnapshot": "Sampai snapshot berikutnya",
+      "afterSignOut": "7 hari setelah keluar",
+      "alertsOff": "Sampai peringatan dimatikan",
+      "local": "Tidak pernah dikirim ke kami"
+    },
+    "who": {
+      "shared": "Kamu dan orang yang kamu bagikan akunnya",
+      "you": "Hanya kamu",
+      "youOnce": "Hanya kamu, ditampilkan sekali",
+      "browser": "Hanya browser ini"
+    },
+    "paths": {
+      "editInPlace": "Edit langsung",
+      "alertsOff": "Matikan peringatan",
+      "browser": "Browser",
+      "clearSiteData": "Hapus data situs",
+      "orDeleteAccount": "atau hapus akun Genshin"
+    },
+    "notes": {
+      "purged": {
+        "label": "Dihapus: dibersihkan setelah 30 hari",
+        "title": "Snapshot yang dihapus",
+        "body": "Snapshot yang dihapus dibersihkan sepenuhnya {days} kemudian. {compact} langsung menghapus.",
+        "days": "30 hari"
+      },
+      "wishLink": {
+        "label": "Link permohonan: tidak pernah disimpan",
+        "title": "Link permohonan",
+        "body": "Link riwayat permohonan hanya dipakai untuk membaca halaman permohonanmu. Link itu tidak pernah disimpan atau dicatat."
+      },
+      "points": {
+        "label": "Titik grafik: bersama akun",
+        "title": "Titik grafik",
+        "body": "Titik grafik harian dari sinkronisasi live disimpan bersama akun Genshin."
+      },
+      "idle": {
+        "label": "Keluar saat tidak aktif: 30 hari",
+        "body": "Perangkat yang tidak dipakai selama 30 hari akan dikeluarkan. Barisnya, termasuk alamat IP, dihapus 7 hari setelah keluar."
+      },
+      "revoked": {
+        "label": "Token yang dicabut: 30 hari",
+        "body": "Token API yang dicabut dan kedaluwarsa dihapus 30 hari kemudian."
+      }
+    },
+    "boxes": {
+      "encrypted": "Terenkripsi saat disimpan",
+      "encryptedBody": "Cloudflare mengenkripsi database di disknya. Setiap koneksi memakai HTTPS.",
+      "export": "Ekspor datamu",
+      "exportBody": "{download} menyimpan zip berisi file Leyline (GOOD). {wishes} menyimpan permohonanmu sebagai UIGF.",
+      "openSnapshots": "Buka Snapshot",
+      "deleteAll": "Hapus semuanya",
+      "deleteBody": "{path} menghapus semua akun Genshin, snapshot, permohonan, rencana, perangkat, dan kunci sekaligus.",
+      "openSettings": "Buka Pengaturan"
+    },
+    "contact": "Ada pertanyaan tentang datamu?",
+    "contactLink": "Tanya di Discord"
   }
 }

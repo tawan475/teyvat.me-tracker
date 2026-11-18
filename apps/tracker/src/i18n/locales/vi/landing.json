@@ -138,7 +138,8 @@
     "export": "Xuất bất cứ lúc nào",
     "exportNote": "Định dạng Leyline · dùng được với Genshin Optimizer",
     "delete": "Xóa bất cứ lúc nào",
-    "deleteNote": "Tài khoản của bạn và dữ liệu của nó"
+    "deleteNote": "Tài khoản của bạn và dữ liệu của nó",
+    "details": "Chi tiết: lưu gì và trong bao lâu"
   },
   "faq": {
     "overline": "Hỏi đáp",
@@ -151,6 +152,7 @@
     "modifyA": "Không. Ứng dụng chỉ đọc lưu lượng mạng trên PC hoặc điện thoại của bạn. Nó không bao giờ đụng đến tệp hay bộ nhớ của game và không cần mod.",
     "readsQ": "Ứng dụng đọc những gì?",
     "readsA": "Những gì game gửi về tài khoản của bạn: nhân vật, vũ khí, thánh di vật, nguyên liệu, thành tựu và cầu nguyện.",
+    "readsMore": "Trang web lưu những gì",
     "adminQ": "Vì sao cần quyền quản trị trên Windows?",
     "adminA": "Windows chỉ cho phép quản trị viên bắt gói tin mạng.",
     "needQ": "Có bắt buộc dùng ứng dụng không?",
@@ -170,5 +172,98 @@
     "lead": "Định dạng ghi chép Teyvat: GOOD, cùng mọi thứ khác trong tài khoản của bạn.",
     "english": "Phần tham khảo bên dưới bằng tiếng Anh, giống tên các trường mà nó mô tả.",
     "contents": "Mục lục"
+  },
+  "privacyPage": {
+    "title": "Dữ liệu của bạn trên Teyvat.me",
+    "lead": "Lưu gì, trong bao lâu, ai có thể xem và cách xóa.",
+    "show": "Hiện",
+    "groups": {
+      "all": "Tất cả",
+      "data": "Dữ liệu Genshin",
+      "signIn": "Đăng nhập",
+      "browser": "Trình duyệt này"
+    },
+    "columns": {
+      "data": "Dữ liệu",
+      "kept": "Thời gian lưu",
+      "who": "Ai xem được",
+      "delete": "Xóa"
+    },
+    "names": {
+      "planner": "Kế hoạch và đánh dấu",
+      "account": "Tài khoản của bạn",
+      "devices": "Thiết bị đã đăng nhập",
+      "keys": "Khóa và token",
+      "local": "Chỉ trên thiết bị của bạn"
+    },
+    "what": {
+      "snapshots": "Nhân Vật, Vũ Khí, Thánh Di Vật, Nguyên Liệu, Thành Tựu, hồ sơ (tên, UID, AR, ký tên, sinh nhật, danh thiếp, ảnh đại diện), nhiệm vụ, kỷ lục nội dung cuối",
+      "wishes": "Mỗi lượt cầu nguyện: vật phẩm, banner, thời gian",
+      "live": "Thay đổi kể từ bản chụp gần nhất, các điểm biểu đồ hằng ngày",
+      "planner": "Mục tiêu, dấu tích, chỉnh tay, nhựa, thiết lập tài khoản",
+      "account": "Tên đăng nhập, email (tùy chọn), mật khẩu, Discord hoặc Google đã liên kết, khóa truy cập",
+      "devices": "Tên trình duyệt hoặc ứng dụng, địa chỉ IP, quốc gia và thành phố, lần dùng cuối",
+      "keys": "Khóa nhập, token API: lưu dưới dạng hash",
+      "alerts": "Địa chỉ đẩy và khóa của trình duyệt này",
+      "local": "Chế độ khách, ảnh thẻ bạn thêm, trang đã lưu đệm, tùy chọn"
+    },
+    "kept": {
+      "forever": "Đến khi bạn xóa",
+      "nextSnapshot": "Đến bản chụp tiếp theo",
+      "afterSignOut": "7 ngày sau khi đăng xuất",
+      "alertsOff": "Đến khi tắt thông báo",
+      "local": "Không bao giờ gửi cho chúng tôi"
+    },
+    "who": {
+      "shared": "Bạn và người bạn chia sẻ tài khoản",
+      "you": "Chỉ bạn",
+      "youOnce": "Chỉ bạn, chỉ hiện một lần",
+      "browser": "Chỉ trình duyệt này"
+    },
+    "paths": {
+      "editInPlace": "Sửa tại chỗ",
+      "alertsOff": "Tắt thông báo",
+      "browser": "Trình duyệt",
+      "clearSiteData": "Xóa dữ liệu trang",
+      "orDeleteAccount": "hoặc xóa tài khoản Genshin"
+    },
+    "notes": {
+      "purged": {
+        "label": "Đã xóa: dọn hẳn sau 30 ngày",
+        "title": "Bản chụp đã xóa",
+        "body": "Bản chụp đã xóa được dọn hẳn sau {days}. {compact} xóa ngay.",
+        "days": "30 ngày"
+      },
+      "wishLink": {
+        "label": "Liên kết cầu nguyện: không bao giờ lưu",
+        "title": "Liên kết cầu nguyện",
+        "body": "Liên kết lịch sử cầu nguyện chỉ dùng để đọc các trang cầu nguyện của bạn. Nó không bao giờ được lưu hay ghi nhật ký."
+      },
+      "points": {
+        "label": "Điểm biểu đồ: theo tài khoản",
+        "title": "Điểm biểu đồ",
+        "body": "Các điểm biểu đồ hằng ngày của đồng bộ trực tiếp được lưu cùng tài khoản Genshin."
+      },
+      "idle": {
+        "label": "Đăng xuất khi không dùng: 30 ngày",
+        "body": "Thiết bị không dùng trong 30 ngày sẽ bị đăng xuất. Bản ghi của nó, kể cả địa chỉ IP, bị xóa 7 ngày sau khi đăng xuất."
+      },
+      "revoked": {
+        "label": "Token đã thu hồi: 30 ngày",
+        "body": "Token API đã thu hồi và hết hạn bị xóa sau 30 ngày."
+      }
+    },
+    "boxes": {
+      "encrypted": "Mã hóa khi lưu trữ",
+      "encryptedBody": "Cloudflare mã hóa cơ sở dữ liệu trên ổ đĩa của họ. Mọi kết nối đều dùng HTTPS.",
+      "export": "Xuất dữ liệu của bạn",
+      "exportBody": "{download} lưu một tệp zip gồm các tệp Leyline (GOOD). {wishes} lưu các lượt cầu nguyện của bạn dưới dạng UIGF.",
+      "openSnapshots": "Mở Bản chụp",
+      "deleteAll": "Xóa tất cả",
+      "deleteBody": "{path} xóa cùng lúc mọi tài khoản Genshin, bản chụp, lượt cầu nguyện, kế hoạch, thiết bị và khóa.",
+      "openSettings": "Mở Thiết Lập"
+    },
+    "contact": "Có câu hỏi về dữ liệu của bạn?",
+    "contactLink": "Hỏi trên Discord"
   }
 }

@@ -87,7 +87,8 @@
     "developers": "Desarrolladores",
     "leyline": "Leyline",
     "endgame": "Contenido final",
-    "developersApi": "API"
+    "developersApi": "API",
+    "privacy": "Privacidad"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -192,7 +193,8 @@
     "developers": "Para desarrolladores: el formato de exportación Leyline y la API de subida de Teyvat.me.",
     "leyline": "El formato Leyline, lo que exporta Teyvat.me Capture: GOOD más todo lo demás que guarda tu cuenta de Genshin Impact, y la API de subida de Teyvat.me.",
     "endgame": "Espiral del Abismo, Teatro Fantasía y Conflagración estigia: los enemigos de cada temporada y tus propios récords.",
-    "developersApi": "La API de Teyvat.me: lee y cambia tus cuentas de Genshin, capturas, deseos y planes con un token personal."
+    "developersApi": "La API de Teyvat.me: lee y cambia tus cuentas de Genshin, capturas, deseos y planes con un token personal.",
+    "privacy": "Qué guarda Teyvat.me sobre ti, durante cuánto tiempo, quién puede verlo y cómo exportarlo o borrarlo."
   },
   "support": "Apoya a Teyvat.me en Ko-fi",
   "timeTravel": {

@@ -113,7 +113,8 @@
     "iosAdd": "poi {icon} {add}.",
     "iosAddLabel": "Aggiungi alla schermata Home",
     "browser": "Usa l'opzione di installazione del browser",
-    "browserTitle": "Chrome o Edge: icona di installazione nella barra degli indirizzi"
+    "browserTitle": "Chrome o Edge: icona di installazione nella barra degli indirizzi",
+    "privacyOpen": "Apri"
   },
   "build": {
     "title": "Build del server",
@@ -234,7 +235,8 @@
     "title": "Elimina utente",
     "body": "Tutti gli account, le istantanee e gli accessi",
     "dialogTitle": "Elimina il mio utente",
-    "deleted": "Il tuo utente è stato eliminato"
+    "deleted": "Il tuo utente è stato eliminato",
+    "privacy": "Cosa viene conservato e per quanto"
   },
   "sections": {
     "account": "Chi sei e come accedi",

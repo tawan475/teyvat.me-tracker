@@ -113,7 +113,8 @@
     "iosAdd": "y luego {icon} {add}.",
     "iosAddLabel": "Añadir a pantalla de inicio",
     "browser": "Usa la opción de instalar de tu navegador",
-    "browserTitle": "Chrome o Edge: icono de instalar en la barra de direcciones"
+    "browserTitle": "Chrome o Edge: icono de instalar en la barra de direcciones",
+    "privacyOpen": "Abrir"
   },
   "build": {
     "title": "Versión del servidor",
@@ -234,7 +235,8 @@
     "title": "Borrar usuario",
     "body": "Todas las cuentas, capturas e inicios de sesión",
     "dialogTitle": "Borrar mi usuario",
-    "deleted": "Tu usuario se ha borrado"
+    "deleted": "Tu usuario se ha borrado",
+    "privacy": "Qué se guarda y durante cuánto tiempo"
   },
   "sections": {
     "account": "Quién eres y cómo inicias sesión",

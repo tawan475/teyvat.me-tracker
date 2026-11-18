@@ -87,7 +87,8 @@
     "developers": "Разработчикам",
     "leyline": "Leyline",
     "endgame": "Эндгейм",
-    "developersApi": "API"
+    "developersApi": "API",
+    "privacy": "Приватность"
   },
   "notFound": {
     "title": "Страница не найдена",
@@ -192,7 +193,8 @@
     "developers": "Для разработчиков: формат экспорта Leyline и API загрузки Teyvat.me.",
     "leyline": "Формат Leyline, который экспортирует Teyvat.me Capture: GOOD плюс всё остальное в вашем аккаунте Genshin Impact, и API загрузки Teyvat.me.",
     "endgame": "Витая Бездна, Театр «Воображариум» и Мрачный натиск: враги каждого сезона и ваши рекорды.",
-    "developersApi": "API Teyvat.me: читайте и изменяйте свои аккаунты Genshin, снимки, молитвы и планы с личным токеном."
+    "developersApi": "API Teyvat.me: читайте и изменяйте свои аккаунты Genshin, снимки, молитвы и планы с личным токеном.",
+    "privacy": "Что Teyvat.me хранит о вас, как долго, кто это видит и как это выгрузить или удалить."
   },
   "support": "Поддержать Teyvat.me на Ko-fi",
   "timeTravel": {

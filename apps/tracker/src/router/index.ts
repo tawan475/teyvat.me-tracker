@@ -25,6 +25,8 @@ declare module 'vue-router' {
     guest?: boolean
     /** A public page (landing, AuthFrame): the whole document is dark while it shows. */
     public?: boolean
+    /** A public page that follows the site's theme instead of being held dark (/privacy). */
+    themed?: true
     /** The page's title: a key of the `shell.page` messages (top bar and tab title). */
     title?: PageKey
     /** A staff node the page needs: without it the page is Not found (the Worker 404s too). */
@@ -158,6 +160,13 @@ const router = createRouter({
       name: 'developers-api',
       component: () => import('@/views/DevelopersApiView.vue'),
       meta: { public: true, title: 'developersApi' },
+    },
+    // What the site keeps, for how long, who sees it and how to delete it (public, follows the theme).
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('@/views/PrivacyView.vue'),
+      meta: { public: true, themed: true, title: 'privacy' },
     },
     {
       path: '/login',
@@ -735,7 +744,7 @@ router.afterEach((to) => {
     // The new page renders on the next tick; the fade starts from there.
     void nextTick().then(finish)
   }
-  setPublicPage(to.meta.public === true)
+  setPublicPage(to.meta.public === true && !to.meta.themed)
   // The tab title, description and preview tags follow the route from here on.
   installDocumentMeta(router)
 })

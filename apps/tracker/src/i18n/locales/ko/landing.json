@@ -138,7 +138,8 @@
     "export": "언제든 내보내기",
     "exportNote": "Leyline 형식 · Genshin Optimizer 호환",
     "delete": "언제든 삭제",
-    "deleteNote": "계정과 그 데이터"
+    "deleteNote": "계정과 그 데이터",
+    "details": "자세히: 무엇을 얼마나 오래 보관하나요"
   },
   "faq": {
     "overline": "FAQ",
@@ -151,6 +152,7 @@
     "modifyA": "아니요. 앱은 PC나 휴대폰의 네트워크 트래픽만 읽습니다. 게임 파일이나 메모리를 건드리지 않으며 모드도 필요 없습니다.",
     "readsQ": "앱은 무엇을 읽나요?",
     "readsA": "게임이 계정에 대해 보내는 정보: 캐릭터, 무기, 성유물, 재료, 업적, 기원.",
+    "readsMore": "사이트가 보관하는 것",
     "adminQ": "Windows에서 왜 관리자 권한이 필요한가요?",
     "adminA": "Windows는 관리자만 네트워크 패킷을 캡처할 수 있게 합니다.",
     "needQ": "앱이 꼭 필요한가요?",
@@ -170,5 +172,98 @@
     "lead": "테이바트 기록 형식: GOOD에 계정의 나머지 모든 것을 더했습니다.",
     "english": "아래 레퍼런스는 설명하는 필드 이름처럼 영어로 되어 있습니다.",
     "contents": "목차"
+  },
+  "privacyPage": {
+    "title": "Teyvat.me에 있는 당신의 데이터",
+    "lead": "무엇을 얼마나 오래 보관하는지, 누가 볼 수 있는지, 어떻게 삭제하는지.",
+    "show": "보기",
+    "groups": {
+      "all": "전체",
+      "data": "원신 데이터",
+      "signIn": "로그인",
+      "browser": "이 브라우저"
+    },
+    "columns": {
+      "data": "데이터",
+      "kept": "보관 기간",
+      "who": "볼 수 있는 사람",
+      "delete": "삭제"
+    },
+    "names": {
+      "planner": "플래너와 표시",
+      "account": "내 계정",
+      "devices": "로그인한 기기",
+      "keys": "키와 토큰",
+      "local": "내 기기에만"
+    },
+    "what": {
+      "snapshots": "캐릭터, 무기, 성유물, 재료, 업적, 프로필(이름, UID, 모험 등급, 자기 소개, 생일, 명함, 프로필 사진), 할 일, 엔드 콘텐츠 기록",
+      "wishes": "모든 기원: 아이템, 배너, 시각",
+      "live": "마지막 스냅샷 이후의 변경, 일별 차트 점",
+      "planner": "목표, 체크, 직접 수정, 레진, 계정 설정",
+      "account": "사용자 이름, 이메일(선택), 비밀번호, 연결된 Discord 또는 Google, 패스키",
+      "devices": "브라우저 또는 앱 이름, IP 주소, 국가와 도시, 마지막 사용",
+      "keys": "가져오기 키, API 토큰: 해시로 저장",
+      "alerts": "이 브라우저의 푸시 주소와 키",
+      "local": "게스트 모드, 추가한 카드 그림, 캐시된 페이지, 환경설정"
+    },
+    "kept": {
+      "forever": "삭제할 때까지",
+      "nextSnapshot": "다음 스냅샷까지",
+      "afterSignOut": "로그아웃 후 7일",
+      "alertsOff": "알림을 끌 때까지",
+      "local": "서버로 보내지 않음"
+    },
+    "who": {
+      "shared": "나와 계정을 공유한 사람",
+      "you": "나만",
+      "youOnce": "나만, 한 번만 표시",
+      "browser": "이 브라우저만"
+    },
+    "paths": {
+      "editInPlace": "그 자리에서 수정",
+      "alertsOff": "알림 끄기",
+      "browser": "브라우저",
+      "clearSiteData": "사이트 데이터 삭제",
+      "orDeleteAccount": "또는 원신 계정 삭제"
+    },
+    "notes": {
+      "purged": {
+        "label": "삭제됨: 30일 후 완전 삭제",
+        "title": "삭제한 스냅샷",
+        "body": "삭제한 스냅샷은 {days} 후에 완전히 지워집니다. {compact}은 바로 삭제합니다.",
+        "days": "30일"
+      },
+      "wishLink": {
+        "label": "기원 링크: 저장 안 함",
+        "title": "기원 링크",
+        "body": "기원 기록 링크는 기원 페이지를 읽는 데만 쓰이며, 저장하거나 기록하지 않습니다."
+      },
+      "points": {
+        "label": "차트 점: 계정과 함께",
+        "title": "차트 점",
+        "body": "실시간 동기화의 일별 차트 점은 원신 계정과 함께 보관됩니다."
+      },
+      "idle": {
+        "label": "미사용 로그아웃: 30일",
+        "body": "30일 동안 쓰지 않은 기기는 로그아웃됩니다. 그 기록은 IP 주소를 포함해 로그아웃 7일 후 삭제됩니다."
+      },
+      "revoked": {
+        "label": "취소한 토큰: 30일",
+        "body": "취소했거나 만료된 API 토큰은 30일 후 삭제됩니다."
+      }
+    },
+    "boxes": {
+      "encrypted": "저장 시 암호화",
+      "encryptedBody": "Cloudflare가 디스크의 데이터베이스를 암호화합니다. 모든 연결은 HTTPS입니다.",
+      "export": "데이터 내보내기",
+      "exportBody": "{download}로 Leyline(GOOD) 파일 zip을 저장합니다. {wishes}로 기원을 UIGF로 저장합니다.",
+      "openSnapshots": "스냅샷 열기",
+      "deleteAll": "모두 삭제",
+      "deleteBody": "{path}는 모든 원신 계정, 스냅샷, 기원, 계획, 기기, 키를 한 번에 삭제합니다.",
+      "openSettings": "설정 열기"
+    },
+    "contact": "데이터에 대해 궁금한 점이 있나요?",
+    "contactLink": "Discord에서 묻기"
   }
 }

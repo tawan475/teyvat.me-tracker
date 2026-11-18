@@ -113,7 +113,8 @@
     "iosAdd": "rồi {icon} {add}.",
     "iosAddLabel": "Thêm vào MH chính",
     "browser": "Dùng tùy chọn cài đặt của trình duyệt",
-    "browserTitle": "Chrome hoặc Edge: biểu tượng cài đặt trên thanh địa chỉ"
+    "browserTitle": "Chrome hoặc Edge: biểu tượng cài đặt trên thanh địa chỉ",
+    "privacyOpen": "Mở"
   },
   "build": {
     "title": "Bản dựng máy chủ",
@@ -234,7 +235,8 @@
     "title": "Xóa người dùng",
     "body": "Mọi tài khoản, bản chụp và cách đăng nhập",
     "dialogTitle": "Xóa người dùng của tôi",
-    "deleted": "Đã xóa người dùng của bạn"
+    "deleted": "Đã xóa người dùng của bạn",
+    "privacy": "Lưu gì và trong bao lâu"
   },
   "sections": {
     "account": "Bạn là ai và cách đăng nhập",

@@ -113,7 +113,8 @@
     "iosAdd": "然後點一下 {icon} {add}。",
     "iosAddLabel": "加入主畫面",
     "browser": "請使用瀏覽器的安裝選項",
-    "browserTitle": "Chrome 或 Edge：網址列中的安裝圖示"
+    "browserTitle": "Chrome 或 Edge：網址列中的安裝圖示",
+    "privacyOpen": "開啟"
   },
   "build": {
     "title": "伺服器版本",
@@ -234,7 +235,8 @@
     "title": "刪除使用者",
     "body": "所有帳號、快照和登入方式",
     "dialogTitle": "刪除我的使用者",
-    "deleted": "你的使用者已刪除"
+    "deleted": "你的使用者已刪除",
+    "privacy": "保存什麼、保存多久"
   },
   "sections": {
     "account": "你的身分和登入方式",

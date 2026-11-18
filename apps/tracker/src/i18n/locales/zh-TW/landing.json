@@ -138,7 +138,8 @@
     "export": "隨時匯出",
     "exportNote": "Leyline 格式 · 相容 Genshin Optimizer",
     "delete": "隨時刪除",
-    "deleteNote": "你的帳號及其資料"
+    "deleteNote": "你的帳號及其資料",
+    "details": "詳情：保存什麼、保存多久"
   },
   "faq": {
     "overline": "常見問題",
@@ -151,6 +152,7 @@
     "modifyA": "不會。應用程式只讀取你電腦或手機上的網路流量，從不碰觸遊戲檔案或記憶體，也不需要模組。",
     "readsQ": "應用程式會讀取什麼？",
     "readsA": "遊戲傳送的關於你帳號的資料：角色、武器、聖遺物、材料、成就與祈願。",
+    "readsMore": "網站會保存什麼",
     "adminQ": "為什麼在 Windows 上需要系統管理員權限？",
     "adminA": "Windows 只允許系統管理員擷取網路封包。",
     "needQ": "一定要用應用程式嗎？",
@@ -170,5 +172,98 @@
     "lead": "提瓦特紀錄格式：GOOD，再加上你帳號裡的其他一切。",
     "english": "以下參考內容為英文，與其中描述的欄位名稱一致。",
     "contents": "目錄"
+  },
+  "privacyPage": {
+    "title": "你在 Teyvat.me 上的資料",
+    "lead": "保存什麼、保存多久、誰能看到，以及如何刪除。",
+    "show": "顯示",
+    "groups": {
+      "all": "全部",
+      "data": "原神資料",
+      "signIn": "登入",
+      "browser": "此瀏覽器"
+    },
+    "columns": {
+      "data": "資料",
+      "kept": "保存期限",
+      "who": "誰能看到",
+      "delete": "刪除"
+    },
+    "names": {
+      "planner": "規劃與標記",
+      "account": "你的帳號",
+      "devices": "已登入的裝置",
+      "keys": "金鑰與權杖",
+      "local": "僅在你的裝置上"
+    },
+    "what": {
+      "snapshots": "角色、武器、聖遺物、素材、成就、個人資料（名稱、UID、冒險等階、簽名、生日、名片、頭像）、任務、終局挑戰紀錄",
+      "wishes": "每一抽：物品、卡池、時間",
+      "live": "上次快照以來的變化，每日圖表點",
+      "planner": "目標、勾選、手動修改、原粹樹脂、帳號設定",
+      "account": "使用者名稱、電子郵件（選填）、密碼、已連結的 Discord 或 Google、密碼金鑰",
+      "devices": "瀏覽器或應用程式名稱、IP 位址、國家和城市、最後活動時間",
+      "keys": "匯入金鑰、API 權杖：只保存雜湊值",
+      "alerts": "此瀏覽器的推播位址和金鑰",
+      "local": "訪客模式、你加入的卡片圖片、快取的頁面、偏好設定"
+    },
+    "kept": {
+      "forever": "直到你刪除",
+      "nextSnapshot": "直到下一個快照",
+      "afterSignOut": "登出後 7 天",
+      "alertsOff": "直到關閉提醒",
+      "local": "從不傳送給我們"
+    },
+    "who": {
+      "shared": "你和你共用此帳號的人",
+      "you": "只有你",
+      "youOnce": "只有你，只顯示一次",
+      "browser": "只有此瀏覽器"
+    },
+    "paths": {
+      "editInPlace": "直接編輯",
+      "alertsOff": "關閉提醒",
+      "browser": "瀏覽器",
+      "clearSiteData": "清除網站資料",
+      "orDeleteAccount": "或刪除原神帳號"
+    },
+    "notes": {
+      "purged": {
+        "label": "已刪除：30 天後徹底清除",
+        "title": "已刪除的快照",
+        "body": "已刪除的快照會在 {days}後徹底清除。{compact}會立即刪除。",
+        "days": "30 天"
+      },
+      "wishLink": {
+        "label": "祈願連結：從不保存",
+        "title": "祈願連結",
+        "body": "祈願紀錄連結只用來讀取你的祈願頁面，從不保存或記錄。"
+      },
+      "points": {
+        "label": "圖表點：隨帳號保存",
+        "title": "圖表點",
+        "body": "即時同步的每日圖表點隨原神帳號一起保存。"
+      },
+      "idle": {
+        "label": "閒置登出：30 天",
+        "body": "裝置 30 天未使用就會登出。它的紀錄（包括 IP 位址）會在登出 7 天後刪除。"
+      },
+      "revoked": {
+        "label": "已撤銷的權杖：30 天",
+        "body": "已撤銷和已過期的 API 權杖會在 30 天後刪除。"
+      }
+    },
+    "boxes": {
+      "encrypted": "靜態加密",
+      "encryptedBody": "Cloudflare 會在其磁碟上加密資料庫。每個連線都使用 HTTPS。",
+      "export": "匯出你的資料",
+      "exportBody": "{download}會儲存一個 Leyline（GOOD）檔案的 zip 壓縮檔。{wishes}會把你的祈願儲存為 UIGF。",
+      "openSnapshots": "開啟快照",
+      "deleteAll": "刪除全部",
+      "deleteBody": "{path}會一次刪除所有原神帳號、快照、祈願、規劃、裝置和金鑰。",
+      "openSettings": "開啟設定"
+    },
+    "contact": "對你的資料有疑問？",
+    "contactLink": "在 Discord 上提問"
   }
 }

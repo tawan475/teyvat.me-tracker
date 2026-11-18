@@ -177,12 +177,11 @@ export const TAB_ART: Readonly<Record<CollectionTab, CardArt>> = {
   'living-beings': { name: 'UI_ItemIcon_112007' },
   // Liam, the Fontaine Treasure Hoarder who stands for Local Legends (the user's pick).
   'local-legends': { name: 'UI_MonsterIcon_Male_Standard_Rocky_001' },
-  // The Lovers, VI: the card the game's Lunar Mode opens with in its art.
+  // I, The Magician, upright (the user's pick).
   'lunar-arcana': {
-    name: 'UI_RoleCombat_Tarot_06',
+    name: 'UI_RoleCombat_Tarot_01',
     cdn: true,
-    tall: { ratio: 373 / 958, height: 1.5, radius: 4 },
-    rotate: 10,
+    tall: { ratio: 373 / 958, height: 1.1 },
   },
   tcg: {
     name: 'UI_Gcg_CardBack_00',

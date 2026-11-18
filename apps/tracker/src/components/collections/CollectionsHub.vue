@@ -15,7 +15,8 @@ import { t } from '@/i18n'
  * The Collections hub: a card per collection, each with its figure and
  * capture time, opening the collection's page. Figures wait for the game
  * data; the cards don't. Achievements and Anecdotes count hand marks too,
- * as their pages do (`extras`, loaded by the page beside the captures).
+ * as their pages do, and Lunar Arcana counts from the captured endgame
+ * (`extras`, loaded by the page beside the captures).
  */
 const props = defineProps<{
   captured: CapturedCollections
@@ -38,7 +39,11 @@ const figures = computed(() =>
 )
 
 const extras = props.extras
-const EXTRA = { achievements: 'achievement', anecdotes: 'anecdote' } as const
+const EXTRA = {
+  achievements: 'achievement',
+  anecdotes: 'anecdote',
+  'lunar-arcana': 'arcana',
+} as const
 
 const cards = computed(() =>
   COLLECTION_TABS.map((tab) => {
@@ -50,13 +55,13 @@ const cards = computed(() =>
       art: TAB_ART[tab],
       to: to('account-collections', tab),
       figure:
-        tab === 'achievements' || tab === 'anecdotes'
+        tab === 'achievements' || tab === 'anecdotes' || tab === 'lunar-arcana'
           ? extras[EXTRA[tab]].value.figure
-          : tab === 'local-legends' || tab === 'lunar-arcana'
+          : tab === 'local-legends'
             ? undefined
             : figures.value[tab],
       takenAt:
-        tab === 'achievements' || tab === 'anecdotes'
+        tab === 'achievements' || tab === 'anecdotes' || tab === 'lunar-arcana'
           ? extras[EXTRA[tab]].value.takenAt
           : part
             ? (props.captured[part]?.takenAt ?? null)

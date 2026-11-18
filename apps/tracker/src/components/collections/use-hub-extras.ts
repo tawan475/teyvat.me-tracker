@@ -5,6 +5,9 @@ import { useAnecdoteMarks } from '@/components/anecdotes/use-anecdote-marks'
 import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achievement-capture'
 import { groupAchievements, summarizeAchievements } from '@/data/achievement-progress'
 import { loadCapturedAnecdotes } from '@/data/anecdote-capture'
+import { loadCapturedEndgame, NO_CAPTURED_ENDGAME } from '@/data/endgame-capture'
+import { loadEndgameData } from '@/data/endgame'
+import { arcanaSummary, arcanaViews } from '@/data/lunar-arcana'
 import { NO_CAPTURED_ANECDOTES, anecdoteProgress } from '@/data/anecdote-progress'
 import type { CollectionFigure } from '@/data/collection-summary'
 import { useResource } from '@/data/use-resource'
@@ -84,6 +87,29 @@ export function useHubExtras() {
     }
   })
 
+  // Lunar Arcana: different cards held of all, from the newest capture that sent them
+  // (Capture 1.17.31 on); no figure before one did. Not waited for (`ready`).
+  const arcanaData = useResource(
+    () => account.value,
+    async (a) => {
+      const [game, captured] = await Promise.all([
+        loadEndgameData('en'),
+        a.latest ? loadCapturedEndgame(a) : NO_CAPTURED_ENDGAME,
+      ])
+      return { accountId: a.id, cards: game.data.arcana, arcana: captured.arcana }
+    },
+  )
+  const arcana = computed<HubExtra>(() => {
+    const value = arcanaData.data.value
+    if (!value || value.accountId !== account.value.id || !value.arcana)
+      return { figure: null, takenAt: null }
+    const summary = arcanaSummary(arcanaViews(value.cards, value.arcana.held))
+    return {
+      figure: { have: summary.held ?? 0, total: summary.total },
+      takenAt: value.arcana.takenAt,
+    }
+  })
+
   const capped = ref(false)
   const timer = setTimeout(() => (capped.value = true), READY_CAP_MS)
   onBeforeUnmount(() => clearTimeout(timer))
@@ -91,7 +117,7 @@ export function useHubExtras() {
     () => capped.value || (achievement.value.figure !== null && anecdote.value.figure !== null),
   )
 
-  return { achievement, anecdote, ready }
+  return { achievement, anecdote, arcana, ready }
 }
 
 export type HubExtras = ReturnType<typeof useHubExtras>

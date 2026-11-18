@@ -22,7 +22,13 @@
 </p>
 
 > [!NOTE]
-> **Unofficial fan project.** Teyvat.me is not affiliated with or endorsed by HoYoverse. Genshin Impact is a trademark of HoYoverse.
+> **Unofficial fan project.** Teyvat.me is not affiliated with or endorsed by
+> HoYoverse. Genshin Impact, its names, text, data and art belong to HoYoverse
+> and are not covered by this repository's licence. That includes the official
+> banner titles in `apps/tracker/src/data/wish-banner-names.json`, the
+> character, weapon and banner names in the wish data files, and the game's
+> own terms in the translations. Game images are loaded from their hosts and
+> are not part of this repository.
 
 Tracks Genshin Impact inventory snapshots ([Leyline](https://teyvat.me/developers), the GOOD-compatible format) uploaded by
 [Teyvat.me Capture](https://github.com/tawan475/teyvat.me-capture) or imported by hand. One
@@ -1179,6 +1185,32 @@ as they are (always the primary). Capture apps send no bookmark: their writes
 start at the primary and their few reads may lag a replica by a moment.
 
 </details>
+
+## Licence
+
+The tracker is MIT licensed: see [`LICENSE`](LICENSE). The licence covers the
+whole public history of this repository, including the commits made before
+`LICENSE` was added.
+
+Pull requests are welcome as they are. A contribution is accepted under the
+same MIT licence as the rest of the repository; no sign-off is needed.
+
+The translations in `apps/tracker/src/i18n/locales/` are ours and covered by
+the licence, except the game's own terms in them (names and in-game wording
+taken from the game's text), which are HoYoverse's.
+
+Not covered by the licence:
+
+- HoYoverse's content: the official banner titles in
+  `apps/tracker/src/data/wish-banner-names.json` (from HoYoverse's HoYoLAB
+  posts), the character, weapon and banner names in the wish data files, the
+  game's terms in the translations, and the game data and images the site
+  loads from `@gdt/game-data`, static.nanoka.cc and gi-cdn.
+- `@gdt/game-data`, a separate private package with its own terms.
+
+Code and data from paimon.moe and Genshin Optimizer (both MIT), and the
+identifiers read from Seelie, are credited in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Credits
 

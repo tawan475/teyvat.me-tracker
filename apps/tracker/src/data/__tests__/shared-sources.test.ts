@@ -1,4 +1,4 @@
-import type { SnapshotResponse, SnapshotSummary } from '@gdt/shared'
+import type { LiveJournalResponse, SnapshotResponse, SnapshotSummary } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import {
   buildHistory,
@@ -9,7 +9,13 @@ import {
   withPoints,
   withSharedFigures,
 } from '../overview'
-import { sharedSightings, sharedSources } from '../shared-sources'
+import {
+  rosterJournal,
+  sharedSightings,
+  sharedSources,
+  takeSharedSections,
+  type SharedBuilds,
+} from '../shared-sources'
 
 // "Now" while Teyvat.me Capture leaves a build section out (gi_off, issue 12).
 
@@ -38,6 +44,97 @@ function snaps(...list: [id: number, s: SnapshotSummary, off?: string[]][]): Sna
     ...(off ? { off } : {}),
   }))
 }
+
+describe("the roster's extras (friendship, EXP) follow the characters", () => {
+  const character = (key: string, level: number) => ({
+    key,
+    level,
+    constellation: 0,
+    ascension: 6,
+    talent: { auto: 1, skill: 1, burst: 1 },
+  })
+  const capture = (keys: string[], friendship?: number): SharedBuilds => ({
+    characters: keys.map((key) => character(key, 90)),
+    weapons: [],
+    artifacts: [],
+    materials: {},
+    ...(friendship === undefined
+      ? {}
+      : { gi_characters: Object.fromEntries(keys.map((key) => [key, { friendship }])) }),
+  })
+
+  it('takes both from the newest capture that shared the characters', () => {
+    // The newest capture left the characters out: no roster, no extras.
+    const now = capture([])
+    takeSharedSections(now, { characters: 2 }, (id) => (id === 2 ? capture(['Furina'], 8) : null))
+    expect(now.characters.map((c) => c.key)).toEqual(['Furina'])
+    expect(now.gi_characters).toEqual({ Furina: { friendship: 8 } })
+  })
+
+  it("never shows a newer capture's extras on an older roster", () => {
+    // A build that still had a switch for the extras sent them without the roster.
+    const now = capture([], 0)
+    now.gi_characters = { Furina: { friendship: 10 }, Nahida: { friendship: 3 } }
+    takeSharedSections(now, { characters: 2 }, () => capture(['Furina'], 8))
+    expect(now.gi_characters).toEqual({ Furina: { friendship: 8 } })
+    // The stand-in has none (an older Capture): none are shown.
+    const bare = capture([])
+    bare.gi_characters = { Furina: { friendship: 10 } }
+    takeSharedSections(bare, { characters: 2 }, () => capture(['Furina']))
+    expect(bare.characters).toHaveLength(1)
+    expect(bare.gi_characters).toBeUndefined()
+  })
+
+  it('shows neither when no capture shared the characters', () => {
+    const now = capture([])
+    now.gi_characters = { Furina: { friendship: 10 } }
+    takeSharedSections(now, { characters: null }, () => null)
+    expect(now.characters).toEqual([])
+    expect(now.gi_characters).toBeUndefined()
+  })
+
+  it('keeps what the capture carries while it shares the characters', () => {
+    // Another section is left out: the roster and its extras are the capture's own.
+    const now = capture(['Furina', 'Nahida'], 9)
+    const older = { ...capture(['Furina'], 8), materials: { Mora: 500 } }
+    takeSharedSections(now, { materials: 2 }, () => older)
+    expect(now.characters).toHaveLength(2)
+    expect(now.gi_characters).toEqual({ Furina: { friendship: 9 }, Nahida: { friendship: 9 } })
+    expect(now.materials).toEqual({ Mora: 500 })
+    // A capture without extras (an older Capture) shows none: nothing is borrowed.
+    const plain = capture(['Furina'])
+    takeSharedSections(plain, { weapons: 2 }, () => capture(['Furina'], 8))
+    expect(plain.gi_characters).toBeUndefined()
+  })
+})
+
+describe('the live journal over a stood-in roster', () => {
+  const live = {
+    open: true,
+
+    seq: 3,
+    changes: [
+      ['set', ['gi_characters', 'Furina', 'friendship'], 10],
+      ['set', ['gi_tasks', 'welkin'], { days: 9 }],
+      ['set', ['materials', 'Mora'], 700],
+    ],
+  } as unknown as LiveJournalResponse
+
+  it("leaves the extras' changes out while the characters are another capture's", () => {
+    expect(rosterJournal(live, { characters: 2 }).changes).toEqual([
+      ['set', ['gi_tasks', 'welkin'], { days: 9 }],
+      ['set', ['materials', 'Mora'], 700],
+    ])
+    expect(rosterJournal(live, { characters: null }).changes).toHaveLength(2)
+  })
+
+  it('is the journal as it came while the capture shares its characters', () => {
+    expect(rosterJournal(live, null)).toBe(live)
+    expect(rosterJournal(live, { materials: 2 })).toBe(live)
+    const none = { open: false } as LiveJournalResponse
+    expect(rosterJournal(none, { characters: 2 })).toBe(none)
+  })
+})
 
 describe('the newest capture that shared a section', () => {
   it('stands in for each section the newest one left out', () => {

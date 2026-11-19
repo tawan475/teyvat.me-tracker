@@ -389,12 +389,8 @@ watch(
 <template>
   <div>
     <PageHeader :title="$t('game.characters')" />
-    <!-- The roster of the newest capture that shared it; its extras join the strip. -->
-    <NotSharedStrip
-      :sections="['characters']"
-      :parts="['characterExtras']"
-      :shown-at="inventory.data.value?.extrasShownAt ?? null"
-    />
+    <!-- The roster of the newest capture that shared it, friendship and EXP with it. -->
+    <NotSharedStrip :sections="['characters']" />
 
     <UiError
       v-if="inventory.error.value"

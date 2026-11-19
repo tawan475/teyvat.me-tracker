@@ -145,7 +145,6 @@
       "teapot": "Serenteiera",
       "events": "Eventi",
       "miliastra": "Miliastra Mirabilia",
-      "characterExtras": "Dati extra dei personaggi",
       "characters": "Personaggi",
       "weapons": "Armi",
       "artifacts": "Manufatti",
@@ -163,8 +162,7 @@
       "exploration": "Progressi per regione",
       "teapot": "Comfort di ogni regno",
       "events": "Progressi degli eventi",
-      "miliastra": "Cosmetici ottenuti",
-      "characterExtras": "Amicizia e data di ottenimento"
+      "miliastra": "Cosmetici ottenuti"
     },
     "notShared": "Non condiviso da Capture",
     "notSharedShort": "Non condiviso",

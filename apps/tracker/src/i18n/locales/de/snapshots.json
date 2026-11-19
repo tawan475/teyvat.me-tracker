@@ -145,7 +145,6 @@
       "teapot": "Kanne der Vergänglichkeit",
       "events": "Aktionen",
       "miliastra": "Miliastra Wonderland",
-      "characterExtras": "Figuren-Extras",
       "characters": "Figuren",
       "weapons": "Waffen",
       "artifacts": "Artefakte",
@@ -163,8 +162,7 @@
       "exploration": "Fortschritt je Region",
       "teapot": "Komfort jedes Reichs",
       "events": "Fortschritt der Aktionen",
-      "miliastra": "Besessene Kosmetik",
-      "characterExtras": "Freundschaft und Erhaltdatum"
+      "miliastra": "Besessene Kosmetik"
     },
     "notShared": "Nicht von Capture geteilt",
     "notSharedShort": "Nicht geteilt",

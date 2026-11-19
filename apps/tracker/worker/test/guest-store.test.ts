@@ -388,6 +388,22 @@ describe('guest store', () => {
       json: { key: 'materials' },
     })
     expect(section.settings.parts.hidden.materials).toEqual(expect.any(Number))
+    // The characters' extras (friendship, EXP) are no part of their own:
+    // not counted, and refused like on the server.
+    const counted = await localJson<PartsResponse>('/parts')
+    expect(counted.parts).toHaveLength(11)
+    const extras = { part: 'characterExtras', confirm: 'REMOVE', guard: counted.guard }
+    const [refusedHere, refusedThere] = [
+      await local('/parts/remove', { method: 'POST', json: extras }),
+      await client.fetch(`${base}/parts/remove`, { method: 'POST', json: extras }),
+    ]
+    expect(refusedHere.status).toBe(400)
+    expect(refusedHere.status).toBe(refusedThere.status)
+    const noNote = await local('/parts/hide', { method: 'POST', json: { key: 'characterExtras' } })
+    expect(noNote.status).toBe(400)
+    for (const text of (await localExports()).goods) {
+      expect((JSON.parse(text) as Good).gi_characters).toBeDefined()
+    }
   })
 
   it('leaves no stored base holding a removed part, and stores the next capture anew', async () => {

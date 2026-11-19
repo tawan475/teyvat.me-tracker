@@ -13,7 +13,9 @@
  * without it, their neighbours kept. The teapot also takes the realm currency
  * out of the Planner tasks section (Capture's Serenitea Pot switch leaves
  * `gi_tasks.realm` out too). Builds (characters, weapons, artifacts,
- * materials) are never removable.
+ * materials) are never removable, and neither are the characters' extras
+ * (`gi_characters`: friendship, EXP, when obtained), which Capture's
+ * Characters switch covers.
  *
  * Pure: the Worker (services/remove-part.ts) and guest mode (local/server.ts)
  * read their rows, plan here and write what the plan says.
@@ -80,7 +82,6 @@ export const PART_PLACES: Readonly<Record<RemovablePart, PartPlace>> = {
   },
   events: { own: [], shared: { slot: 'progress', keys: ['e'] } },
   miliastra: { own: [], shared: { slot: 'extras', keys: ['m'] } },
-  characterExtras: { own: ['characterExtras'] },
 }
 
 /** The parts stored in the same section as `part` (they stay when it goes). */
@@ -492,7 +493,6 @@ const LIVE_ROOTS: Readonly<Record<RemovablePart, readonly string[]>> = {
   teapot: ['gi_teapot'],
   events: ['gi_events'],
   miliastra: ['gi_miliastra'],
-  characterExtras: ['gi_characters'],
 }
 
 /**

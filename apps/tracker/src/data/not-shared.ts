@@ -14,7 +14,9 @@
  *   that started after the hide, a removal after it).
  * - A build section (characters, weapons, artifacts, materials) is never
  *   removable: its note only says since when it is not shared and which
- *   capture its page shows instead (the newest that shared it).
+ *   capture its page shows instead (the newest that shared it). Characters
+ *   covers the characters' extras (friendship, EXP): they have no note of
+ *   their own.
  */
 
 import {
@@ -103,40 +105,31 @@ export function sectionNote(
   return { section, since, shownAt: shown?.takenAt ?? null }
 }
 
-/** What one strip row says: one or more things Capture left out since the same day's capture. */
+/** What one strip row says: one or more builds Capture left out since the same day's capture. */
 export interface NoteRow {
-  /** The row's key: its first subject. */
+  /** The row's key: its first section. */
   key: string
-  /** What the × hides: every subject of the row. */
-  subjects: (RemovablePart | OffSection)[]
+  /** What the × hides: every section of the row. */
+  subjects: OffSection[]
   since: number
-  /** The capture the page shows instead (null: none, or the page shows nothing of it). */
+  /** The capture the page shows instead (null: none shared them). */
   shownAt: number | null
-  /** Whether a subject can be removed from history (the row offers the dialog). */
-  removable: boolean
 }
 
 /**
- * The rows of a page that shows builds: its sections' notes and its
- * not-shared parts' (`parts`, with the capture the page shows of each),
- * those that started with the same capture and show the same one as one row.
+ * The rows of a page that shows builds: its sections' notes, those that
+ * started with the same capture and show the same one as one row.
  */
-export function noteRows(
-  sections: readonly SectionNote[],
-  parts: readonly { part: RemovablePart; since: number; shownAt: number | null }[],
-): NoteRow[] {
+export function noteRows(sections: readonly SectionNote[]): NoteRow[] {
   const rows: NoteRow[] = []
-  const add = (subject: RemovablePart | OffSection, since: number, shownAt: number | null) => {
-    let row = rows.find((r) => r.since === since && r.shownAt === shownAt)
+  for (const note of sections) {
+    let row = rows.find((r) => r.since === note.since && r.shownAt === note.shownAt)
     if (!row) {
-      row = { key: subject, subjects: [], since, shownAt, removable: false }
+      row = { key: note.section, subjects: [], since: note.since, shownAt: note.shownAt }
       rows.push(row)
     }
-    row.subjects.push(subject)
-    return row
+    row.subjects.push(note.section)
   }
-  for (const note of sections) add(note.section, note.since, note.shownAt)
-  for (const note of parts) add(note.part, note.since, note.shownAt).removable = true
   return rows
 }
 
@@ -147,7 +140,11 @@ export interface AllPartsNote {
   since: number
 }
 
-/** Overview's note: every part Capture left out of the newest capture. */
+/**
+ * Overview's note: every part Capture left out of the newest capture. A name
+ * that is no switch (a newer Capture's, or the retired `gi_characters`) is
+ * not listed.
+ */
 export function allPartsNote(
   snapshots: readonly SnapshotResponse[],
   notes: PartNotes | null,

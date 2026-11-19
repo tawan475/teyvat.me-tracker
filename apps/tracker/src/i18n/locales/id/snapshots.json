@@ -145,7 +145,6 @@
       "teapot": "Serenitea Pot",
       "events": "Event",
       "miliastra": "Miliastra",
-      "characterExtras": "Data tambahan karakter",
       "characters": "Karakter",
       "weapons": "Senjata",
       "artifacts": "Artefak",
@@ -163,8 +162,7 @@
       "exploration": "Progres per wilayah",
       "teapot": "Kenyamanan tiap realm",
       "events": "Progres event",
-      "miliastra": "Kosmetik yang dimiliki",
-      "characterExtras": "Persahabatan dan kapan didapat"
+      "miliastra": "Kosmetik yang dimiliki"
     },
     "notShared": "Tidak dibagikan oleh Capture",
     "notSharedShort": "Tidak dibagikan",

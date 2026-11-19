@@ -145,7 +145,6 @@
       "teapot": "Dinginçay Çaydanlığı",
       "events": "Etkinlikler",
       "miliastra": "Bin Yıldız Diyarı",
-      "characterExtras": "Karakter ekleri",
       "characters": "Karakterler",
       "weapons": "Silahlar",
       "artifacts": "Yadigarlar",
@@ -163,8 +162,7 @@
       "exploration": "Bölge ilerlemesi",
       "teapot": "Her diyarın konforu",
       "events": "Etkinlik ilerlemesi",
-      "miliastra": "Sahip olunan kozmetikler",
-      "characterExtras": "Arkadaşlık ve elde edilme zamanı"
+      "miliastra": "Sahip olunan kozmetikler"
     },
     "notShared": "Capture paylaşmıyor",
     "notSharedShort": "Paylaşılmıyor",

@@ -145,7 +145,6 @@
       "teapot": "Sérénithéière",
       "events": "Événements",
       "miliastra": "Paradisia milliastral",
-      "characterExtras": "Infos de personnages en plus",
       "characters": "Personnages",
       "weapons": "Armes",
       "artifacts": "Artéfacts",
@@ -163,8 +162,7 @@
       "exploration": "Progression par région",
       "teapot": "Confort de chaque royaume",
       "events": "Progression des événements",
-      "miliastra": "Cosmétiques obtenus",
-      "characterExtras": "Affinité et date d’obtention"
+      "miliastra": "Cosmétiques obtenus"
     },
     "notShared": "Non partagé par Capture",
     "notSharedShort": "Non partagé",

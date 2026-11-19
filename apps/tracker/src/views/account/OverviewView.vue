@@ -46,6 +46,7 @@ import {
   serverLabel,
   withPoints,
 } from '@/data/overview'
+import { rosterJournal, sharedSources } from '@/data/shared-sources'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { travelerGender } from '@/data/traveler'
@@ -190,14 +191,27 @@ const latestParts = useResource(
   () => account.value,
   async (a) => {
     if (!a.latest) return null
-    const [bundle, live] = await Promise.all([
+    const [bundle, live, snapshots] = await Promise.all([
       loadBundle(a, { ids: [a.latest.id], sections: ['characterExtras', 'tasks'] }),
       // Friendship and the Abyss move between snapshots too (live sync).
       loadLive(a).catch(() => null),
+      // Already read by the page (cached): only each snapshot's `off`.
+      loadSnapshots(a).catch(() => [] as SnapshotResponse[]),
     ])
     const snapshot = bundle.snapshots.at(-1)
     const text = (key: string | null | undefined) => (key ? bundle.texts.get(key) : undefined)
-    const extras = text(snapshot?.characterExtras)
+    // Friendship follows the roster: while Capture leaves the characters out
+    // (gi_off), it is the newest capture's that shared them (none: unknown).
+    const roster = sharedSources(snapshots, a.latest.id)?.characters
+    let extras = text(snapshot?.characterExtras)
+    if (roster !== undefined) {
+      extras = undefined
+      if (roster !== null) {
+        const shared = await loadBundle(a, { ids: [roster], sections: ['characterExtras'] })
+        const key = shared.snapshots.at(-1)?.characterExtras
+        extras = key ? shared.texts.get(key) : undefined
+      }
+    }
     const tasks = text(snapshot?.tasks)
     const now = withLiveParts(
       {
@@ -212,7 +226,7 @@ const latestParts = useResource(
           ? {}
           : { gi_tasks: decodeTasks(JSON.parse(tasks) as TasksSection) }),
       },
-      live,
+      live && rosterJournal(live, roster === undefined ? null : { characters: roster }),
       a.latest.id,
       ['gi_characters', 'gi_tasks'],
     )

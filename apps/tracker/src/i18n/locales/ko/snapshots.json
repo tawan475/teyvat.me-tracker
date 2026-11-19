@@ -145,7 +145,6 @@
       "teapot": "속세의 주전자",
       "events": "이벤트",
       "miliastra": "별바다 세계",
-      "characterExtras": "캐릭터 추가 정보",
       "characters": "캐릭터",
       "weapons": "무기",
       "artifacts": "성유물",
@@ -163,8 +162,7 @@
       "exploration": "지역 탐사도",
       "teapot": "선계별 아늑함",
       "events": "이벤트 진행도",
-      "miliastra": "보유한 꾸미기 아이템",
-      "characterExtras": "호감도와 획득 시점"
+      "miliastra": "보유한 꾸미기 아이템"
     },
     "notShared": "Capture에서 공유하지 않음",
     "notSharedShort": "공유하지 않음",

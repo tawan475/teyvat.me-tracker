@@ -145,7 +145,6 @@
       "teapot": "Teapot",
       "events": "Events",
       "miliastra": "Miliastra",
-      "characterExtras": "Character extras",
       "characters": "Characters",
       "weapons": "Weapons",
       "artifacts": "Artifacts",
@@ -163,8 +162,7 @@
       "exploration": "Region progress",
       "teapot": "Serenitea Pot",
       "events": "Event progress",
-      "miliastra": "Miliastra Wonderland",
-      "characterExtras": "Friendship and when obtained"
+      "miliastra": "Miliastra Wonderland"
     },
     "notShared": "Not shared by Capture",
     "notSharedShort": "Not shared",

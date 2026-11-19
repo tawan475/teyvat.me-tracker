@@ -127,46 +127,37 @@ describe('a build section not shared by Capture', () => {
     expect(sectionNote('weapons', list, { removed: {}, hidden: { all: 99 } })).not.toBeNull()
   })
 
-  it('puts what was left out with the same capture in one row, a removable part too', () => {
+  it('puts what was left out with the same capture in one row', () => {
     const list = snaps(
-      [50, ['characters', 'weapons', 'materials', 'gi_characters']],
-      [40, ['characters', 'materials', 'gi_characters']],
+      [50, ['characters', 'weapons', 'materials']],
+      [40, ['characters', 'materials']],
       [30, ['materials']],
       [20, []],
     )
     const sections = (['characters', 'weapons', 'artifacts', 'materials'] as const).flatMap(
       (section) => sectionNote(section, list, NONE) ?? [],
     )
-    expect(noteRows(sections, [])).toEqual([
-      { key: 'characters', subjects: ['characters'], since: 40, shownAt: 30, removable: false },
-      { key: 'weapons', subjects: ['weapons'], since: 50, shownAt: 40, removable: false },
-      { key: 'materials', subjects: ['materials'], since: 30, shownAt: 20, removable: false },
+    expect(noteRows(sections)).toEqual([
+      { key: 'characters', subjects: ['characters'], since: 40, shownAt: 30 },
+      { key: 'weapons', subjects: ['weapons'], since: 50, shownAt: 40 },
+      { key: 'materials', subjects: ['materials'], since: 30, shownAt: 20 },
     ])
-    // The Characters page: the roster and its extras, shown from one capture.
-    const extras = partNote('characterExtras', list, NONE)!
+    const together = snaps([50, ['weapons', 'artifacts']], [40, []])
     expect(
       noteRows(
-        [sectionNote('characters', list, NONE)!],
-        [{ part: extras.part, since: extras.since!, shownAt: 30 }],
+        (['weapons', 'artifacts'] as const).flatMap((s) => sectionNote(s, together, NONE) ?? []),
       ),
-    ).toEqual([
-      {
-        key: 'characters',
-        subjects: ['characters', 'characterExtras'],
-        since: 40,
-        shownAt: 30,
-        removable: true,
-      },
+    ).toEqual([{ key: 'weapons', subjects: ['weapons', 'artifacts'], since: 50, shownAt: 40 }])
+  })
+
+  it("has no note for the characters' extras: Characters covers them", () => {
+    // A build from before the switches were folded named `gi_characters` too.
+    const list = snaps([50, ['characters', 'gi_characters']], [40, ['gi_characters']], [30, []])
+    expect(noteRows([sectionNote('characters', list, NONE)!])).toEqual([
+      { key: 'characters', subjects: ['characters'], since: 50, shownAt: 40 },
     ])
-    // Extras the page shows nothing of (the capture shown had none): a row of their own.
-    expect(
-      noteRows(
-        [sectionNote('characters', list, NONE)!],
-        [{ part: extras.part, since: extras.since!, shownAt: null }],
-      ).map((row) => [row.subjects, row.shownAt, row.removable]),
-    ).toEqual([
-      [['characters'], 30, false],
-      [['characterExtras'], null, true],
-    ])
+    // Overview lists the switches that exist; the retired name alone says nothing.
+    expect(allPartsNote(list, NONE)).toEqual({ names: ['characters'], since: 50 })
+    expect(allPartsNote(list.slice(1), NONE)).toBeNull()
   })
 })

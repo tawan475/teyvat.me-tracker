@@ -16,8 +16,10 @@
  * journal seq (uints). A meta without a capture is still written as format 1.
  * Format byte 3 (2026-11-18, issue 12): format 1's fields, then a flag (uint
  * 0/1) and format 2's capture fields when it is 1, then Teyvat.me Capture's
- * `gi_off`: a count, then each name as its index + 1 in OFF_SWITCHES, or 0
- * and the string. Written only when the upload had `gi_off`.
+ * `gi_off`: a count, then each name as its index + 1 in OFF_POSITIONS, or 0
+ * and the string. Written only when the upload had `gi_off`. A position is
+ * never reused: one whose name is no switch any more (off.ts
+ * RETIRED_SWITCHES) still reads back as that name.
  * `format` is "GOOD" (normalizeGood allows nothing else). Anything that does
  * not fit (a float count, another format) is stored as format byte 0 and the
  * JSON of the whole value.
@@ -28,7 +30,7 @@
 
 import type { GiPlayer } from '../good'
 import { CAPTURE_REASONS, type GiCapture } from '../live/capture'
-import { OFF_SWITCHES } from '../off'
+import { OFF_POSITIONS } from '../off'
 import { ByteReader, ByteWriter, CorruptDataError } from './bytes'
 import { PLAYER_KEY_ORDER } from './normalize'
 import type { SnapshotSummary } from './snapshot'
@@ -149,7 +151,7 @@ function binaryMeta(meta: SnapshotMeta): Uint8Array {
   if (meta.off) {
     w.uint(meta.off.length)
     for (const name of meta.off) {
-      const known = (OFF_SWITCHES as readonly string[]).indexOf(name)
+      const known = (OFF_POSITIONS as readonly string[]).indexOf(name)
       if (known >= 0) w.uint(known + 1)
       else w.uint(0).string(name)
     }
@@ -203,7 +205,7 @@ export function decodeSnapshotMeta(data: Uint8Array): SnapshotMeta {
       const code = r.uint()
       if (code === 0) off.push(r.string())
       else {
-        const known = OFF_SWITCHES[code - 1]
+        const known = OFF_POSITIONS[code - 1]
         if (known === undefined) throw new CorruptDataError(`Unknown switch ${code}`)
         off.push(known)
       }

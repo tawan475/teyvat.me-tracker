@@ -145,7 +145,6 @@
       "teapot": "Relajatetera",
       "events": "Eventos",
       "miliastra": "Edén Miliastra",
-      "characterExtras": "Datos extra de personajes",
       "characters": "Personajes",
       "weapons": "Armas",
       "artifacts": "Artefactos",
@@ -163,8 +162,7 @@
       "exploration": "Progreso por región",
       "teapot": "Confort de cada reino",
       "events": "Progreso de eventos",
-      "miliastra": "Cosméticos obtenidos",
-      "characterExtras": "Amistad y cuándo se obtuvo"
+      "miliastra": "Cosméticos obtenidos"
     },
     "notShared": "No compartido por Capture",
     "notSharedShort": "No compartido",

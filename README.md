@@ -413,18 +413,28 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   exists. The guest tests load `src/local` untyped (`worker/test/guest-modules.ts`):
   its types need the DOM, which the workerd project lacks.
 - **Parts Capture leaves out** (`gi_off`, `packages/shared/src/off.ts`,
-  `parts.ts`). Capture lists its upload switches that are off in `gi_off`;
-  the key of an off part is absent from the file. The list is kept in the
-  snapshot meta and on the snapshot list (`off`). Where the newest capture
-  leaves a part out, its page has the "Not shared by Capture since …" strip
-  (`components/not-shared/NotSharedStrip.vue`, rules in `data/not-shared.ts`):
+  `parts.ts`). Capture lists its upload switches that are off in `gi_off`
+  (16 names, `OFF_SWITCHES`; a name the tracker does not know is kept and
+  says nothing); the key of an off part is absent from the file. The list is
+  kept in the snapshot meta and on the snapshot list (`off`). The meta stores
+  a known name by its position in `OFF_POSITIONS`: append-only, and a
+  position is never reused (`gi_characters`, a switch of its own for a few
+  days before 1.18, keeps its position and reads back as an unknown name).
+  Where the newest capture leaves a part out, its page has the "Not shared
+  by Capture since …" strip (`components/not-shared/NotSharedStrip.vue`,
+  rules in `data/not-shared.ts`):
   everyone who sees the account sees it, the owner can hide it per account
   (`POST /api/accounts/:id/parts/hide`).
   - **Builds** (characters, weapons, artifacts, materials) are never
     removable. Characters, Weapons, Artifacts, Materials and the Planner keep
     showing the newest capture that shared the section
-    (`data/shared-sources.ts`), and their strip names its date. Character
-    extras join the Characters page's strip.
+    (`data/shared-sources.ts`), and their strip names its date. Capture's
+    Characters switch covers `gi_characters` (friendship, EXP, when obtained)
+    too, so those have no switch, strip or removal of their own: with
+    `characters` off the roster and its extras both come from the newest
+    capture that shared the characters (`takeSharedSections`; Overview's
+    friendship figure too), and with the characters shared the extras are
+    whatever that capture carries.
   - **Figures.** A capture that did not share a figure's section says
     nothing about it: the progression charts break their line there (a point
     without a value, "Not shared" in the tooltip; no drop to 0 and no value
@@ -434,7 +444,10 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     chart points after such a capture are treated the same way: Capture
     counts their sums from the stripped export, where an off section is 0.
     The Snapshots table says "Not shared" in those cells.
-  - **Remove a part from history** (twelve removable parts; `POST
+  - **Remove a part from history** (eleven removable parts,
+    `REMOVABLE_PARTS`: achievements, anecdotes, Planner tasks, endgame,
+    collections, profile, wardrobe, exploration, teapot, events, Miliastra;
+    never the builds or the characters' extras; `POST
     /api/accounts/:id/parts/remove`, plan in `parts.ts` `planPartRemoval`,
     Worker `services/remove-part.ts`, guest `local/local-parts.ts`): all or
     nothing, no trash. The counts and the removal include snapshots in the

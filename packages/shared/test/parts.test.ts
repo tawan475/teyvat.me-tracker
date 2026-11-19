@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   BlobDecoder,
+  OFF_POSITIONS,
   OFF_SWITCHES,
   PART_SWITCH,
   REMOVABLE_PARTS,
@@ -12,6 +13,7 @@ import {
   encodeSnapshotMeta,
   holdsPartKeys,
   isPartChange,
+  isRemovablePart,
   kindCode,
   lastRemoval,
   normalizeGood,
@@ -112,6 +114,46 @@ describe('gi_off', () => {
     for (const name of ['characters', 'weapons', 'artifacts', 'materials', 'gi_player.numbers']) {
       expect(partOfSwitch(name)).toBeNull()
     }
+  })
+
+  it('has sixteen switches and eleven removable parts: the characters cover their extras', () => {
+    expect(OFF_SWITCHES).toHaveLength(16)
+    expect(REMOVABLE_PARTS).toHaveLength(11)
+    // Friendship and EXP belong to Characters: no switch and no part of their own.
+    expect(OFF_SWITCHES).not.toContain('gi_characters')
+    expect(partOfSwitch('gi_characters')).toBeNull()
+    expect(isRemovablePart('characterExtras')).toBe(false)
+  })
+
+  it('keeps every stored position, the retired one too', () => {
+    // A meta stores a known name as its position: never reorder or reuse one.
+    expect(OFF_POSITIONS).toEqual([
+      'characters',
+      'weapons',
+      'artifacts',
+      'materials',
+      'gi_player.profile',
+      'gi_player.numbers',
+      'gi_characters',
+      'gi_achievements',
+      'gi_anecdotes',
+      'gi_tasks',
+      'gi_endgame',
+      'gi_exploration',
+      'gi_collections',
+      'gi_wardrobe',
+      'gi_teapot',
+      'gi_events',
+      'gi_miliastra',
+    ])
+    const tail = (off: string[]) => [...encodeSnapshotMeta({ ...META, off }).slice(-off.length)]
+    expect(tail(['gi_player.numbers', 'gi_achievements', 'gi_miliastra'])).toEqual([6, 8, 17])
+    // Written while `gi_characters` was a switch: position 7 still reads back
+    // as that name, which the tracker now treats like any name it does not know.
+    const old = encodeSnapshotMeta({ ...META, off: ['characters', 'gi_characters'] })
+    expect([...old.slice(-3)]).toEqual([2, 1, 7])
+    expect(decodeSnapshotMeta(old)).toEqual({ ...META, off: ['characters', 'gi_characters'] })
+    expect(readOff(['gi_characters', 'gi_tasks'])).toEqual(['gi_characters', 'gi_tasks'])
   })
 })
 

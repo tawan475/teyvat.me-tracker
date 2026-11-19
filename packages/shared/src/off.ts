@@ -5,11 +5,12 @@
  */
 
 /**
- * Capture's upload switches, as `gi_off` names them: the export keys, with
- * `gi_player` split into its profile and its numbers. Append-only: a meta
- * stores a known name by its position (snapshot-meta.ts).
+ * The names a snapshot meta stores by position (snapshot-meta.ts: a known
+ * name is its index + 1 here). Append-only: never reorder a name or reuse a
+ * position. `gi_characters` is retired (see RETIRED_SWITCHES); its position
+ * stays, so a meta written while it was a switch still decodes.
  */
-export const OFF_SWITCHES = [
+export const OFF_POSITIONS = [
   'characters',
   'weapons',
   'artifacts',
@@ -28,7 +29,28 @@ export const OFF_SWITCHES = [
   'gi_events',
   'gi_miliastra',
 ] as const
-export type OffSwitch = (typeof OFF_SWITCHES)[number]
+
+/**
+ * Names that were switches once and are none now. `gi_characters`
+ * (friendship, EXP, when obtained) was a switch of its own in Capture's 1.18
+ * builds before release; Capture's Characters switch covers it (2026-11-19).
+ * A stored one is read back like any name the tracker does not know: kept,
+ * and it says nothing.
+ */
+export const RETIRED_SWITCHES = ['gi_characters'] as const
+type RetiredSwitch = (typeof RETIRED_SWITCHES)[number]
+
+export type OffSwitch = Exclude<(typeof OFF_POSITIONS)[number], RetiredSwitch>
+
+/**
+ * Capture's upload switches, as `gi_off` names them (16): the export keys,
+ * with `gi_player` split into its profile and its numbers. `characters`
+ * covers `gi_characters` too: an upload without its characters has no
+ * friendship or EXP of them either.
+ */
+export const OFF_SWITCHES: readonly OffSwitch[] = OFF_POSITIONS.filter(
+  (name): name is OffSwitch => !(RETIRED_SWITCHES as readonly string[]).includes(name),
+)
 
 /** At most this many names are kept from one `gi_off` (a newer Capture may send more kinds). */
 export const MAX_OFF_NAMES = 32
@@ -84,7 +106,11 @@ export function lastRemoval(removed: Readonly<Record<string, number>> | undefine
   return newest
 }
 
-/** The parts that can be removed from history, in the remove dialog's order. */
+/**
+ * The parts that can be removed from history (eleven), in the remove dialog's
+ * order. Never the builds, and never the characters' extras (friendship, EXP):
+ * they belong to Characters.
+ */
 export const REMOVABLE_PARTS = [
   'achievements',
   'anecdotes',
@@ -97,7 +123,6 @@ export const REMOVABLE_PARTS = [
   'teapot',
   'events',
   'miliastra',
-  'characterExtras',
 ] as const
 export type RemovablePart = (typeof REMOVABLE_PARTS)[number]
 
@@ -117,7 +142,6 @@ export const PART_SWITCH: Readonly<Record<RemovablePart, OffSwitch>> = {
   teapot: 'gi_teapot',
   events: 'gi_events',
   miliastra: 'gi_miliastra',
-  characterExtras: 'gi_characters',
 }
 
 /** The removable part a switch name is, or null (builds, the account numbers, unknown names). */

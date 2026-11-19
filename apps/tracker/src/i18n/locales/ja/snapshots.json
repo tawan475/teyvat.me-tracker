@@ -145,7 +145,6 @@
       "teapot": "塵歌壺",
       "events": "イベント",
       "miliastra": "星々の幻境",
-      "characterExtras": "キャラの追加情報",
       "characters": "キャラクター",
       "weapons": "武器",
       "artifacts": "聖遺物",
@@ -163,8 +162,7 @@
       "exploration": "地域の探索度",
       "teapot": "各洞天の快適度",
       "events": "イベントの進捗",
-      "miliastra": "所持している外観",
-      "characterExtras": "好感度と入手日時"
+      "miliastra": "所持している外観"
     },
     "notShared": "Capture で共有していません",
     "notSharedShort": "共有していません",

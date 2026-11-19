@@ -3,7 +3,6 @@ import {
   ALL_PARTS_NOTE,
   PART_SWITCH,
   REMOVABLE_PARTS,
-  isRemovablePart,
   type OffSection,
   type RemovablePart,
   type SnapshotResponse,
@@ -42,10 +41,9 @@ import { partLabel, switchLabel } from './part-names'
  * `sections`: the builds a page shows (Characters, Weapons, Artifacts,
  * Materials, the Planner's four). They are never removable, so their row has
  * the × alone; it names the capture the page shows instead (the newest that
- * shared the section). On such a page the parts given with them join the
- * same strip: things left out since the same capture are one row, named
- * when the page has more than one subject, with "Remove from history…" when
- * one of them is removable.
+ * shared the section). Sections left out since the same capture are one
+ * row, named when the page shows more than one. Characters covers the
+ * roster's extras (friendship, EXP) too: no row of their own.
  */
 const props = defineProps<{
   parts?: readonly RemovablePart[]
@@ -72,7 +70,7 @@ const canAct = computed(
   () => access.value === 'owner' && !mode.readOnly && !mode.demo && !travel.value,
 )
 
-const allPartNotes = computed(() =>
+const partNotes = computed(() =>
   props.all || !list.data.value || !notes.value
     ? []
     : (props.parts ?? []).flatMap((part) => {
@@ -80,26 +78,19 @@ const allPartNotes = computed(() =>
         return note ? [note] : []
       }),
 )
-/** A page with builds lists what is not shared in rows of its own (`rows`). */
-const joins = (note: { removedAt: number | null; since: number | null }) =>
-  !!props.sections && note.removedAt === null && note.since !== null
-const partNotes = computed(() => allPartNotes.value.filter((note) => !joins(note)))
+/** A page with builds lists the sections not shared in rows of their own. */
 const rows = computed<NoteRow[]>(() => {
   if (props.all || !props.sections || !list.data.value || !notes.value) return []
-  const sections = props.sections.flatMap((section) => {
-    const note = sectionNote(section, snapshots.value, notes.value)
-    return note ? [note] : []
-  })
-  const parts = allPartNotes.value
-    .filter(joins)
-    .map((note) => ({ part: note.part, since: note.since!, shownAt: props.shownAt ?? null }))
-  return noteRows(sections, parts)
+  return noteRows(
+    props.sections.flatMap((section) => {
+      const note = sectionNote(section, snapshots.value, notes.value)
+      return note ? [note] : []
+    }),
+  )
 })
-/** Named when the page shows more than one thing (one alone needs no name). */
-const named = computed(() => (props.sections?.length ?? 0) + (props.parts?.length ?? 0) > 1)
-const subjectLabel = (subject: RemovablePart | OffSection) =>
-  isRemovablePart(subject) ? partLabel(subject) : switchLabel(subject)
-const rowNames = (row: NoteRow) => row.subjects.map(subjectLabel).join(', ')
+/** Named when the page shows more than one section (one alone needs no name). */
+const named = computed(() => (props.sections?.length ?? 0) > 1)
+const rowNames = (row: NoteRow) => row.subjects.map(switchLabel).join(', ')
 const overview = computed(() =>
   props.all && list.data.value && notes.value ? allPartsNote(snapshots.value, notes.value) : null,
 )
@@ -168,10 +159,6 @@ async function hide(...keys: (RemovablePart | OffSection | typeof ALL_PARTS_NOTE
         </template>
       </span>
       <span v-if="canAct" class="ml-auto flex items-center gap-1.5">
-        <UiButton v-if="row.removable" variant="ghost" size="sm" @click="dialogOpen = true">
-          <Trash2 class="size-4" aria-hidden="true" />
-          {{ $t('snapshots.parts.remove') }}
-        </UiButton>
         <UiIconButton
           :label="$t('snapshots.parts.hide')"
           :title="

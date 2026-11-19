@@ -145,7 +145,6 @@
       "teapot": "塵歌壺",
       "events": "活動",
       "miliastra": "千星奇域",
-      "characterExtras": "角色附加資訊",
       "characters": "角色",
       "weapons": "武器",
       "artifacts": "聖遺物",
@@ -163,8 +162,7 @@
       "exploration": "地區探索進度",
       "teapot": "各洞天的舒適度",
       "events": "活動進度",
-      "miliastra": "已擁有的裝扮",
-      "characterExtras": "好感度與獲得時間"
+      "miliastra": "已擁有的裝扮"
     },
     "notShared": "Capture 未分享",
     "notSharedShort": "未分享",

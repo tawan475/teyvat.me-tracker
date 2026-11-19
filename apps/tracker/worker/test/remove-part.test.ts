@@ -147,6 +147,25 @@ describe("Capture's gi_off", () => {
     expect(again.find((s) => s.id === later.snapshotId)!.off).toEqual(['gi_future'])
   })
 
+  it("takes the characters' switch as covering their extras, and keeps a retired name as sent", async () => {
+    const { client, account, importKey } = await setup()
+    await send(importKey, capture(1), 1_000)
+    // Capture's Characters switch: no roster and no gi_characters in the file.
+    const { gi_characters: _extras, ...rest } = capture(2)
+    const off = await send(importKey, { ...rest, characters: [], gi_off: ['characters'] }, 2_000)
+    expect(off.status).toBe('created')
+    const stored = await client.json<Good>(
+      `/api/accounts/${account.id}/snapshots/${off.snapshotId}/good`,
+    )
+    expect(stored.characters).toEqual([])
+    expect(stored.gi_characters).toBeUndefined()
+    // `gi_characters` was a switch of its own once: kept like any unknown name.
+    const old = await send(importKey, { ...rest, gi_off: ['gi_characters'] }, 3_000)
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list.find((s) => s.id === old.snapshotId)!.off).toEqual(['gi_characters'])
+    expect(list.find((s) => s.id === off.snapshotId)!.off).toEqual(['characters'])
+  })
+
   it('takes a capture with the characters left out on purpose', async () => {
     const { importKey } = await setup()
     const refused = await SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
@@ -171,6 +190,9 @@ describe('removing a part from history', () => {
     const counts = await client.json<PartsResponse>(`/api/accounts/${account.id}/parts`)
     expect(counts.total).toBe(3)
     expect(counts.parts.map((p) => p.part)).toEqual([...REMOVABLE_PARTS])
+    // Eleven: the characters' extras (friendship, EXP) are not one of them.
+    expect(counts.parts).toHaveLength(11)
+    expect(counts.parts.map((p) => p.part as string)).not.toContain('characterExtras')
     const of = (part: string) => counts.parts.find((p) => p.part === part)!
     expect(of('achievements')).toMatchObject({ snapshots: 2, lastAt: 2_000 })
     expect(of('achievements').bytes).toBeGreaterThan(0)
@@ -382,6 +404,8 @@ describe('removing a part from history', () => {
       { part: 'achievements', confirm: 'remove', guard: counts.guard },
       { part: 'characters', confirm: 'REMOVE', guard: counts.guard },
       { part: 'materials', confirm: 'REMOVE', guard: counts.guard },
+      // Friendship and EXP belong to Characters: not removable on their own.
+      { part: 'characterExtras', confirm: 'REMOVE', guard: counts.guard },
     ]) {
       const response = await client.fetch(`/api/accounts/${account.id}/parts/remove`, {
         method: 'POST',
@@ -405,11 +429,13 @@ describe('removing a part from history', () => {
     )
     expect(section.settings.parts.hidden.characters).toEqual(expect.any(Number))
     expect(section.settings.parts.hidden.all).toEqual(expect.any(Number))
-    const bad = await client.fetch(`/api/accounts/${account.id}/parts/hide`, {
-      method: 'POST',
-      json: { key: 'gi_player.numbers' },
-    })
-    expect(bad.status).toBe(400)
+    for (const key of ['gi_player.numbers', 'characterExtras']) {
+      const bad = await client.fetch(`/api/accounts/${account.id}/parts/hide`, {
+        method: 'POST',
+        json: { key },
+      })
+      expect(bad.status).toBe(400)
+    }
   })
 })
 

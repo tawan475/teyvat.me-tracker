@@ -145,7 +145,6 @@
       "teapot": "Ấm Trần Ca",
       "events": "Sự Kiện",
       "miliastra": "Thiên Tinh Kỳ Vực",
-      "characterExtras": "Thông tin thêm của nhân vật",
       "characters": "Nhân Vật",
       "weapons": "Vũ Khí",
       "artifacts": "Thánh Di Vật",
@@ -163,8 +162,7 @@
       "exploration": "Tiến độ từng khu vực",
       "teapot": "Độ thoải mái của từng động tiên",
       "events": "Tiến độ sự kiện",
-      "miliastra": "Vật phẩm trang trí đã có",
-      "characterExtras": "Độ yêu thích và thời điểm nhận"
+      "miliastra": "Vật phẩm trang trí đã có"
     },
     "notShared": "Capture không chia sẻ",
     "notSharedShort": "Không chia sẻ",

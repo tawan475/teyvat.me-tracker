@@ -145,7 +145,6 @@
       "teapot": "กาน้ำชา",
       "events": "กิจกรรม",
       "miliastra": "แดนอัศจรรย์พันดารา",
-      "characterExtras": "ข้อมูลเสริมของตัวละคร",
       "characters": "ตัวละคร",
       "weapons": "อาวุธ",
       "artifacts": "อาร์ติแฟกต์",
@@ -163,8 +162,7 @@
       "exploration": "ความคืบหน้าแต่ละภูมิภาค",
       "teapot": "ความสบายของแต่ละ Realm",
       "events": "ความคืบหน้ากิจกรรม",
-      "miliastra": "ไอเทมตกแต่งที่มี",
-      "characterExtras": "ความประทับใจและเวลาที่ได้รับ"
+      "miliastra": "ไอเทมตกแต่งที่มี"
     },
     "notShared": "Capture ไม่ได้แชร์",
     "notSharedShort": "ไม่ได้แชร์",

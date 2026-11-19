@@ -145,7 +145,6 @@
       "teapot": "Bule de Relachá",
       "events": "Eventos",
       "miliastra": "Miliastra Arcanum",
-      "characterExtras": "Dados extras de personagens",
       "characters": "Personagens",
       "weapons": "Armas",
       "artifacts": "Artefatos",
@@ -163,8 +162,7 @@
       "exploration": "Progresso por região",
       "teapot": "Conforto de cada paraíso",
       "events": "Progresso dos eventos",
-      "miliastra": "Cosméticos obtidos",
-      "characterExtras": "Amizade e quando foi obtido"
+      "miliastra": "Cosméticos obtidos"
     },
     "notShared": "Não compartilhado pelo Capture",
     "notSharedShort": "Não compartilhado",

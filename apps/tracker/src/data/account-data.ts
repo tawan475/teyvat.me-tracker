@@ -36,7 +36,13 @@ import { decodeBundleOffThread } from './decode'
 import { bundlePacks, mergeDecoded, packEpoch, packEpochOf } from './bundle-packs'
 import { prunePacks, readCached, readPack, writeCached, writePack } from './idb-cache'
 import { historyAt, type Travel } from './time-travel'
-import { sharedSightings, sharedSources, type SharedSources } from './shared-sources'
+import {
+  rosterJournal,
+  sharedSightings,
+  sharedSources,
+  takeSharedSections,
+  type SharedSources,
+} from './shared-sources'
 
 export interface AccountRef {
   id: number
@@ -294,14 +300,6 @@ export interface Inventory {
    * the section): the Planner measures its hand edits of materials against it.
    */
   sharedSeenAt?: Partial<Record<OffSection, number>>
-  /**
-   * When the capture `good.gi_characters` was taken from was taken: set while
-   * the newest capture left both the characters and their extras out
-   * (Capture's Characters and Character extras switches) and the characters'
-   * stand-in has extras, so the roster and its friendship and EXP are one
-   * capture's. Never an older capture's extras on newer characters.
-   */
-  extrasShownAt?: number
 }
 
 /** Catalog ids of a snapshot's artifacts, in `decodeArtifacts` order. */
@@ -320,6 +318,10 @@ function artifactIdsOf(snapshot: BundleSnapshot, bundle: DecodedBundle): number[
  * A build section the newest capture left out on purpose (Capture's
  * `gi_off`: characters, weapons, artifacts, materials) is the newest
  * snapshot's that shared it (issue 12), read in one more small bundle.
+ * The characters' extras (`gi_characters`: friendship, EXP, when obtained)
+ * follow the roster: Capture's Characters switch covers them, so with it off
+ * both are that one older capture's (none shared it: neither); with it on
+ * the extras are whatever the newest capture carries.
  */
 function loadSnapshotInventory(
   account: AccountRef & { latest: { id: number } },
@@ -344,15 +346,13 @@ function loadSnapshotInventory(
     await yieldToMain()
     const good = decodeBundleSnapshot(snapshot, bundle, catalog, materials)
     let artifactIds = artifactIdsOf(snapshot, bundle)
-    let extrasShownAt: number | undefined
-    const extrasOff = list.find((s) => s.id === latest.id)?.off?.includes('gi_characters') === true
-    if (from && donorBundle) {
+    if (from) {
       const decoded = new Map<number, { good: Good; snapshot: BundleSnapshot }>()
       const donor = (id: number) => {
         let entry = decoded.get(id)
         if (!entry) {
-          const shot = donorBundle.snapshots.find((s) => s.id === id)
-          if (!shot) return null
+          const shot = donorBundle?.snapshots.find((s) => s.id === id)
+          if (!shot || !donorBundle) return null
           entry = {
             snapshot: shot,
             good: decodeBundleSnapshot(shot, donorBundle, catalog, materials),
@@ -361,22 +361,10 @@ function loadSnapshotInventory(
         }
         return entry
       }
-      for (const [section, id] of Object.entries(from)) {
-        const entry = id === null ? null : donor(id)
-        if (!entry) continue
-        if (section === 'characters') {
-          good.characters = entry.good.characters
-          if (extrasOff && !good.gi_characters && entry.good.gi_characters) {
-            good.gi_characters = entry.good.gi_characters
-            extrasShownAt = entry.snapshot.takenAt
-          }
-        } else if (section === 'weapons') good.weapons = entry.good.weapons
-        else if (section === 'materials') good.materials = entry.good.materials
-        else if (section === 'artifacts') {
-          good.artifacts = entry.good.artifacts
-          artifactIds = artifactIdsOf(entry.snapshot, donorBundle)
-        }
-      }
+      // The roster's extras (friendship, EXP) come with it: shared-sources.ts.
+      takeSharedSections(good, from, (id) => donor(id)?.good ?? null)
+      const pieces = typeof from.artifacts === 'number' ? donor(from.artifacts) : null
+      if (pieces && donorBundle) artifactIds = artifactIdsOf(pieces.snapshot, donorBundle)
     }
     return {
       snapshot,
@@ -384,7 +372,6 @@ function loadSnapshotInventory(
       catalog,
       artifactIds,
       ...(from ? { sharedFrom: from, sharedSeenAt: sharedSightings(list, from) } : {}),
-      ...(extrasShownAt !== undefined ? { extrasShownAt } : {}),
     }
   })
 }
@@ -458,7 +445,9 @@ export function loadLatestInventory(
   if (!account.liveSync) return snapshot
   return cached(account, `now:${latest.id}:${liveVersion(account)}`, async () => {
     const [inventory, live] = await Promise.all([snapshot, loadLive(account)])
-    return inventory && live ? withJournal(inventory, live, latest.id) : inventory
+    return inventory && live
+      ? withJournal(inventory, rosterJournal(live, inventory.sharedFrom), latest.id)
+      : inventory
   })
 }
 

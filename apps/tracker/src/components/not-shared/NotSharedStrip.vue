@@ -36,7 +36,9 @@ import { partLabel, switchLabel } from './part-names'
  * once the owner removed it. The page keeps showing the last capture that had
  * it. Everyone who sees the account sees the strip (staff Inspect too); the
  * owner (and the guest) also gets "Remove from history…" and × (hides it
- * until the part is shared again). `all`: Overview's, naming every part left out.
+ * until the part is shared again). `all`: Overview's, naming every part left
+ * out; its "Remove from history…" shows only while one of them can be removed
+ * (never the builds or the account numbers).
  *
  * `sections`: the builds a page shows (Characters, Weapons, Artifacts,
  * Materials, the Planner's four). They are never removable, so their row has
@@ -124,7 +126,7 @@ async function hide(...keys: (RemovablePart | OffSection | typeof ALL_PARTS_NOTE
         }}
       </span>
       <span v-if="canAct" class="ml-auto flex items-center gap-1.5">
-        <UiButton variant="ghost" size="sm" @click="dialogOpen = true">
+        <UiButton v-if="overview.removable" variant="ghost" size="sm" @click="dialogOpen = true">
           <Trash2 class="size-4" aria-hidden="true" />
           {{ $t('snapshots.parts.remove') }}
         </UiButton>

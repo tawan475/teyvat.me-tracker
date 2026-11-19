@@ -1213,10 +1213,14 @@ tag `apps/tracker` pins, and that copy has no tags yet. Once it has:
    commented out): pushes to `main` that touch `wrangler.jsonc`, the
    migrations, `self-host/` or the lockfile.
 2. Set the repository variable `SELF_HOST_SMOKE` to `1` (Settings → Secrets and
-   variables → Actions → Variables). `game-data-bump.yml` calls the smoke test
-   after a bump it merged only while that variable is `1` (its merge is made
-   with the workflow's token, which starts no push workflow), beside the
-   deploy, never before it.
+   variables → Actions → Variables). `game-data-bump.yml` then starts the smoke
+   test after a bump it merged (its merge is made with the workflow's token,
+   which starts no push workflow): a run of its own (`gh workflow run`, from a
+   job whose token has `actions: write` and nothing else), beside the deploy,
+   never before it, so the bump's run stays green whatever the smoke test
+   finds. It starts one only while that variable is `1` **and** the public
+   copy has the tag the bump pinned (`git ls-remote`; the rule is
+   `self-host/public-game-data.mjs` `smokeGate`); otherwise it skips quietly.
 
 By hand, from a checkout:
 

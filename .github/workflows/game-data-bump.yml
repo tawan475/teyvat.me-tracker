@@ -8,9 +8,12 @@ name: Game data bump
 # check leaves the pull request open (label `needs-human`) for a human.
 #
 # The merge is made with the workflow's token, which starts no push workflow,
-# so this calls deploy.yml itself, and the self-host smoke test (self-host.yml)
-# beside it while the repository variable SELF_HOST_SMOKE is 1 (held back until
-# the public game data exists; self-host.yml says when to set it).
+# so this calls deploy.yml itself. Beside it, it starts the self-host smoke
+# test (self-host.yml) as a run of its own, only while the repository variable
+# SELF_HOST_SMOKE is 1 and the public game data, tawan475/teyvat.me-game-data,
+# has the tag just pinned (a self-host's image builds from it); otherwise that
+# is skipped quietly. The smoke test's outcome shows on its own run and in the
+# `self-host` issue, never on this run.
 on:
   repository_dispatch:
     types: [game-data-release]
@@ -39,6 +42,7 @@ jobs:
     outputs:
       merged: ${{ steps.merge.outputs.merged }}
       sha: ${{ steps.merge.outputs.sha }}
+      smoke: ${{ steps.smoke.outputs.run }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -151,6 +155,19 @@ jobs:
             echo "merged=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Whether the self-host job below starts the smoke test for this bump:
+      # the public game data must have the tag just pinned (`git ls-remote`,
+      # no token; the rule is self-host/public-game-data.mjs `smokeGate`). The
+      # script always exits 0 and the step may fail: neither fails the bump.
+      - name: Self-host smoke test wanted
+        id: smoke
+        if: steps.merge.outputs.merged == 'true' && vars.SELF_HOST_SMOKE == '1'
+        continue-on-error: true
+        env:
+          SELF_HOST_SMOKE: ${{ vars.SELF_HOST_SMOKE }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: node self-host/smoke-gate.mjs "$TAG"
+
   deploy:
     needs: bump
     if: needs.bump.outputs.merged == 'true'
@@ -159,15 +176,28 @@ jobs:
       ref: ${{ needs.bump.outputs.sha }}
     secrets: inherit
 
-  # A self-host's image builds from this bump's lockfile. Beside the deploy,
-  # never before it: a failure opens the `self-host` issue and holds nothing up
-  # (the run shows red). Off unless the repository variable SELF_HOST_SMOKE is 1.
+  # A self-host's image builds from this bump's lockfile and the public game
+  # data at the same tag. Beside the deploy, never before it, and as a run of
+  # its own (`gh workflow run`: a workflow_dispatch the workflow's token may
+  # send), so a failing smoke test opens the `self-host` issue from its own
+  # run and this run stays green. Skipped unless the repository variable
+  # SELF_HOST_SMOKE is 1 and the public game data has the tag (the bump job's
+  # last step). The token here can start workflows and nothing else.
   self-host:
     needs: bump
-    if: needs.bump.outputs.merged == 'true' && vars.SELF_HOST_SMOKE == '1'
+    if: needs.bump.outputs.merged == 'true' && vars.SELF_HOST_SMOKE == '1' && needs.bump.outputs.smoke == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
-      contents: read
-      issues: write
-    uses: ./.github/workflows/self-host.yml
-    with:
-      ref: ${{ needs.bump.outputs.sha }}
+      actions: write
+    steps:
+      - name: Start the smoke test on the merge commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.bump.outputs.sha }}
+        run: |
+          if gh workflow run self-host.yml --repo "$GITHUB_REPOSITORY" --ref main -f "ref=$SHA"; then
+            echo "Started: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/self-host.yml"
+          else
+            echo "::warning::Could not start the self-host smoke test for ${SHA}. Start it by hand: Actions > Self-host smoke test > Run workflow."
+          fi

@@ -1,9 +1,4 @@
-import {
-  deepMerge,
-  userSettingsPatch,
-  type ImportKeyResponse,
-  type UsageResponse,
-} from '@gdt/shared'
+import { userSettingsPatch, type ImportKeyResponse, type UsageResponse } from '@gdt/shared'
 import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { getDb } from '../db/client'
@@ -13,8 +8,10 @@ import { ApiError, parseJson } from '../lib/http'
 import { requireActiveSession, requireUser } from '../lib/session'
 import { newImportKey } from '../services/accounts'
 import { liveDb } from '../services/live-sync'
+import { meFromResults, patchUserSettingsStatement } from '../services/me'
+import { userRolesStatement } from '../services/roles'
 import { userUsage } from '../services/usage'
-import { meOf } from './auth'
+import { toMe } from './auth'
 
 export const me = new Hono<AppEnv>()
   .use(requireUser)
@@ -24,17 +21,21 @@ export const me = new Hono<AppEnv>()
     c.json<UsageResponse>(await userUsage(c.env.DB, liveDb(c.env), c.get('userId'))),
   )
 
+  /**
+   * Saves the keys sent over the settings as stored (merged in the UPDATE,
+   * services/me `patchUserSettingsStatement`): another tab's save of other
+   * keys meanwhile stays. One round trip, the answer is the row as written.
+   */
   .patch('/settings', async (c) => {
     const patch = await parseJson(c, userSettingsPatch)
-    const db = getDb(c.env.DB)
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, c.get('userId')))
-    if (!user) throw new ApiError(401, 'unauthenticated', 'Not signed in')
-    const settings = deepMerge(user.settings, patch)
-    await db.update(users).set({ settings }).where(eq(users.id, user.id))
-    return c.json(await meOf(c, { ...user, settings }))
+    const userId = c.get('userId')
+    const [written, roles] = await c.env.DB.batch([
+      patchUserSettingsStatement(c.env.DB, userId, patch),
+      userRolesStatement(c.env.DB, userId),
+    ])
+    const found = meFromResults(userId, written, roles)
+    if (!found) throw new ApiError(401, 'unauthenticated', 'Not signed in')
+    return c.json(toMe(found.user, c.env, found.permissions))
   })
 
   /**

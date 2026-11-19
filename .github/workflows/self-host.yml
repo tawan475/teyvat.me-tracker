@@ -9,22 +9,21 @@ name: Self-host smoke test
 # the tag apps/tracker pins), so this needs no secret.
 #
 # HELD BACK: by hand only (Actions > Self-host smoke test > Run workflow)
-# until tawan475/teyvat.me-game-data exists with the tag apps/tracker pins;
-# before that the image cannot build and every run would open the issue.
-# Once it does:
+# until tawan475/teyvat.me-game-data has the tag apps/tracker pins; before
+# that the image cannot build and every run would open the issue. Once it has:
 #   1. switch the push trigger below on (remove the leading `# ` of its lines):
 #      pushes to main that touch what a self-host runs on;
 #   2. set the repository variable SELF_HOST_SMOKE to 1 (Settings > Secrets and
-#      variables > Actions > Variables): game-data-bump.yml then calls this
-#      after a bump it merged (its merge starts no push workflow).
+#      variables > Actions > Variables): game-data-bump.yml then starts this
+#      (a run of its own, `gh workflow run`) after a bump it merged, when the
+#      public game data has the bump's tag (its merge starts no push workflow).
 on:
+  # By hand, and game-data-bump.yml (which passes its merge commit as `ref`).
   workflow_dispatch:
-  # game-data-bump.yml, only while the variable SELF_HOST_SMOKE is 1.
-  workflow_call:
     inputs:
       ref:
-        description: 'Commit to test (game-data-bump.yml passes its merge commit)'
-        type: string
+        description: 'Commit to test (default: the branch picked above)'
+        required: false
         default: ''
   # push:
   #   branches: [main]

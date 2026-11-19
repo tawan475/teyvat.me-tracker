@@ -23,6 +23,7 @@ import {
   ALL_PARTS_NOTE,
   OFF_SWITCHES,
   PART_SWITCH,
+  partOfSwitch,
   sharesSection,
   type OffSection,
   type OffSwitch,
@@ -138,6 +139,12 @@ export interface AllPartsNote {
   names: OffSwitch[]
   /** The earliest of their runs' starts. */
   since: number
+  /**
+   * Whether any of them can be removed from history. False when only the
+   * builds (characters, weapons, artifacts, materials) or the account numbers
+   * are off: the strip then has no "Remove from history…".
+   */
+  removable: boolean
 }
 
 /**
@@ -158,5 +165,9 @@ export function allPartsNote(
   const starts = names.map((name) => offSince(snapshots, name) ?? newest.takenAt)
   const hidden = notes?.hidden[ALL_PARTS_NOTE] ?? null
   if (hidden !== null && hidden >= Math.max(...starts)) return null
-  return { names, since: Math.min(...starts) }
+  return {
+    names,
+    since: Math.min(...starts),
+    removable: names.some((name) => partOfSwitch(name) !== null),
+  }
 }

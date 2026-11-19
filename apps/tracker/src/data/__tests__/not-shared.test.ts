@@ -1,4 +1,4 @@
-import type { PartNotes, SnapshotResponse } from '@gdt/shared'
+import { PART_SWITCH, REMOVABLE_PARTS, type PartNotes, type SnapshotResponse } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { allPartsNote, noteRows, offSince, partNote, sectionNote } from '../not-shared'
 
@@ -83,9 +83,30 @@ describe('not shared by Capture', () => {
     expect(allPartsNote(list, NONE)).toEqual({
       names: ['gi_player.profile', 'gi_achievements'],
       since: 20,
+      removable: true,
     })
     expect(allPartsNote(list, { removed: {}, hidden: { all: 30 } })).toBeNull()
     expect(allPartsNote(list, { removed: {}, hidden: { all: 25 } })).not.toBeNull()
+  })
+
+  it('offers no removal on Overview while only parts that are never removable are off', () => {
+    // The builds and the account numbers stay in history whatever Capture shares.
+    const builds = snaps([30, ['characters', 'weapons', 'artifacts', 'materials']], [20, []])
+    expect(allPartsNote(builds, NONE)).toMatchObject({ since: 30, removable: false })
+    for (const name of ['characters', 'weapons', 'artifacts', 'materials', 'gi_player.numbers'])
+      expect(allPartsNote(snaps([30, [name]]), NONE)).toMatchObject({ removable: false })
+    // A name this build does not know (or the retired gi_characters) is no part either.
+    expect(
+      allPartsNote(snaps([30, ['materials', 'gi_future', 'gi_characters']]), NONE),
+    ).toMatchObject({ names: ['materials'], removable: false })
+    // One removable part among them brings the button back; every removable part does.
+    expect(allPartsNote(snaps([30, ['characters', 'gi_teapot']]), NONE)).toMatchObject({
+      removable: true,
+    })
+    for (const part of REMOVABLE_PARTS)
+      expect(allPartsNote(snaps([30, [PART_SWITCH[part]]]), NONE)).toMatchObject({
+        removable: true,
+      })
   })
 })
 
@@ -157,7 +178,11 @@ describe('a build section not shared by Capture', () => {
       { key: 'characters', subjects: ['characters'], since: 50, shownAt: 40 },
     ])
     // Overview lists the switches that exist; the retired name alone says nothing.
-    expect(allPartsNote(list, NONE)).toEqual({ names: ['characters'], since: 50 })
+    expect(allPartsNote(list, NONE)).toEqual({
+      names: ['characters'],
+      since: 50,
+      removable: false,
+    })
     expect(allPartsNote(list.slice(1), NONE)).toBeNull()
   })
 })

@@ -450,6 +450,24 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     `gaps`, `framePoints` in `data/materials-history.ts`); the line ends where
     the count before it was last confirmed, and the counts and changes beside
     the charts still compare the captures that shared them.
+  - **The bag copies** (`BAG_COPIES` in `off.ts`). Original Resin and Realm
+    Currency are player properties that Capture also writes into the
+    materials bag. Account numbers off (`gi_player.numbers`) covers
+    `materials.OriginalResin`, Serenitea Pot off (`gi_teapot`) covers
+    `materials.RealmCurrency`; there is no `gi_off` name for them. Capture
+    leaves the key out, and the tracker reads a build that still sends it the
+    same way: `normalizeGood` drops the key before anything is counted, hashed
+    or stored (the Worker and the guest store alike; a file without `gi_off`,
+    or with the part shared, is untouched), and a live batch's change to it is
+    dropped before it is stored, counted or pushed. A batch knows what its
+    base snapshot left out from the journal row itself
+    (`live_journals.base_off`, `offMask` of the snapshot's `gi_off`, written
+    when the snapshot opens the journal; migrations-live 0002), so it reads
+    nothing more. While the newest capture has the part off, the Materials
+    wallet has no tile for the count, the bag lists it nowhere and "now" (the
+    Planner's bag too) holds none of it, whichever capture the bag is read
+    from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). Its
+    stored points stay in the materials history.
   - **Remove a part from history** (eleven removable parts,
     `REMOVABLE_PARTS`: achievements, anecdotes, Planner tasks, endgame,
     collections, profile, wardrobe, exploration, teapot, events, Miliastra;

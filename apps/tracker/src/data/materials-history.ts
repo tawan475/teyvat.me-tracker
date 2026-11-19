@@ -48,6 +48,13 @@ export interface MaterialsHistory {
    * framePoints). Absent when every capture shared them.
    */
   unshared?: UnsharedCaptures
+  /**
+   * Keys the newest capture's switches cover (the bag copies, bag-copies.ts:
+   * Original Resin with Account numbers off, Realm Currency with Serenitea
+   * Pot off). They are not in `latest`, and the page lists none of them as
+   * held now; `series` keeps their stored points. Absent when there is none.
+   */
+  hidden?: string[]
 }
 
 export interface UnsharedCaptures {
@@ -171,6 +178,20 @@ export function buildMaterialsHistory(
     }
   }
   return history
+}
+
+/**
+ * The history with `keys` marked not shared now (`hidden`) and out of
+ * `latest`; the same history when `keys` is empty.
+ */
+export function withHiddenKeys(
+  history: MaterialsHistory,
+  keys: readonly string[],
+): MaterialsHistory {
+  if (keys.length === 0) return history
+  const latest = new Map(history.latest)
+  for (const key of keys) latest.delete(key)
+  return { ...history, latest, hidden: [...keys] }
 }
 
 // ------------------------------------------------------------------ queries
@@ -415,6 +436,8 @@ export function withLiveMaterials(
   for (const [op, path, value] of live.changes ?? []) {
     if (path[0] !== 'materials' || path.length !== 2) continue
     const key = String(path[1])
+    // Not shared now: a journal from before the Worker dropped these keeps one.
+    if (history.hidden?.includes(key)) continue
     if (op === 'del') latest.delete(key)
     else if (op === 'set' && typeof value === 'number' && Number.isFinite(value)) {
       latest.set(key, value)
@@ -442,6 +465,7 @@ export function withLiveMaterials(
     lastSeenAt: Math.max(history.lastSeenAt, at),
     series,
     latest,
+    ...(history.hidden ? { hidden: history.hidden } : {}),
     ...(history.unshared
       ? { unshared: { at: history.unshared.at, seen: [...history.unshared.seen, at] } }
       : {}),

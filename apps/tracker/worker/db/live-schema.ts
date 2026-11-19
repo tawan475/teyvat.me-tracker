@@ -61,6 +61,13 @@ export const liveJournals = sqliteTable(
     pointsDay: text('points_day').notNull().default(''),
     /** Every chart point of `points_day` (encodePoints, as `live_points.data`). */
     points: bytes('points'),
+    /**
+     * The base snapshot's `gi_off` (offMask in @gdt/shared; 0: everything
+     * shared, none sent, or a journal opened before this column). A batch
+     * reads it with the row, so it needs no read of `gdt` to know what the
+     * upload switches left out (the bag copies, off.ts).
+     */
+    baseOff: integer('base_off').notNull().default(0),
   },
   (t) => [index('live_journals_user').on(t.userId)],
 )

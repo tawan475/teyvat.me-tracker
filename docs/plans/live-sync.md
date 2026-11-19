@@ -838,6 +838,15 @@ current UTC day's chart points; the tail moves to a `live_batches` row past 16 K
 (`SPILL_BYTES`, replacing the 10-minute merge window) and the points to `live_points`
 when the day turns or the row is deleted. Nothing above changes for irminsul.
 
+The bag copies (2026-11-19, issue 12): while the journal's base snapshot has Account
+numbers off in its `gi_off`, a change to `materials.OriginalResin` is dropped from the
+batch before it is stored, counted or pushed; the same for `materials.RealmCurrency`
+with Serenitea Pot off. Capture leaves them out itself; this covers a build that still
+sends them, and the batch is answered as stored either way. The journal row keeps the
+snapshot's `gi_off` as one number (`base_off`, `offMask`; migrations-live 0002), set
+when the snapshot opens the journal, so a batch reads nothing more for it. `sum` is
+taken as sent.
+
 **Item guids in the browser**: stored snapshots keep no guids. At each snapshot the
 tracker stores the file's guid → fingerprint index (`itemIndexOf`, ~10 B per item) on
 the journal row; `GET /live` returns `[kind, guid, fingerprint]` for the base items the

@@ -415,6 +415,22 @@ export function mergeChanges(
   return [...byPath.values()]
 }
 
+/**
+ * `changes` without those to `materials.<key>` for a key of `keys`: what a
+ * journal keeps while its base snapshot's `gi_off` covers those counts (the
+ * bag copies, off.ts `offBagKeys`). The same list when there is none to drop.
+ */
+export function dropMaterialChanges<C extends readonly [string, DeltaPath, ...unknown[]]>(
+  changes: readonly C[],
+  keys: readonly string[],
+): readonly C[] {
+  if (keys.length === 0) return changes
+  const kept = changes.filter(
+    ([, path]) => !(String(path[0]) === 'materials' && keys.includes(String(path[1]))),
+  )
+  return kept.length === changes.length ? changes : kept
+}
+
 /** Distinct paths in a list of changes. */
 export function distinctPaths(changes: readonly DeltaChange[]): number {
   return new Set(changes.map((change) => pathKey(change[1]))).size

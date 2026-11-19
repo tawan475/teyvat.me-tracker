@@ -41,12 +41,14 @@ export function materialItem(key: string, count: number): MaterialItem {
 
 /**
  * Every material in the history, minus the account stats older Irminsul
- * builds stored as materials (world level, stamina, Property ids).
+ * builds stored as materials (world level, stamina, Property ids) and the
+ * counts the newest capture's switches cover (`history.hidden`): those are
+ * not shared now, so the bag lists none of them, at 0 or as spent either.
  */
 export function buildItems(history: MaterialsHistory): MaterialItem[] {
   const items: MaterialItem[] = []
   for (const key of history.series.keys()) {
-    if (isPlayerProperty(key)) continue
+    if (isPlayerProperty(key) || history.hidden?.includes(key)) continue
     items.push(materialItem(key, history.latest.get(key) ?? 0))
   }
   return items

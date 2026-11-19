@@ -88,6 +88,46 @@ export function sameOff(
   return a.length === b.length && a.every((name) => b.includes(name))
 }
 
+/**
+ * The bag copies (2026-11-19): two counts that are player properties, not
+ * items, and that Capture also writes into the materials bag. Each belongs to
+ * a part with a switch of its own, and that switch covers the copy too: a
+ * capture with Account numbers off shares no Original Resin count, one with
+ * Serenitea Pot off no Realm Currency. Capture leaves the key out; builds
+ * that still send it are read as if they had (normalizeGood, the live
+ * journal's batches).
+ */
+export const BAG_COPIES: Readonly<Record<string, OffSwitch>> = {
+  OriginalResin: 'gi_player.numbers',
+  RealmCurrency: 'gi_teapot',
+}
+
+/** The material keys a `gi_off` covers (BAG_COPIES); none when it is absent or names neither switch. */
+export function offBagKeys(off: readonly string[] | null | undefined): string[] {
+  if (!off || off.length === 0) return []
+  return Object.keys(BAG_COPIES).filter((key) => off.includes(BAG_COPIES[key]!))
+}
+
+/**
+ * A `gi_off` as one number, a bit per known name by its place in
+ * OFF_POSITIONS (unknown names say nothing here): what the live journal's row
+ * keeps of its base snapshot's (`live_journals.base_off`). Stored: the
+ * positions never move.
+ */
+export function offMask(off: readonly string[] | null | undefined): number {
+  let mask = 0
+  OFF_POSITIONS.forEach((name, position) => {
+    if (off?.includes(name)) mask += 2 ** position
+  })
+  return mask
+}
+
+/** The names an `offMask` holds, in OFF_POSITIONS order. */
+export function offOfMask(mask: number): string[] {
+  if (!Number.isSafeInteger(mask) || mask <= 0) return []
+  return OFF_POSITIONS.filter((_, position) => Math.floor(mask / 2 ** position) % 2 === 1)
+}
+
 /** The GOOD sections Capture can leave out (the builds; never removable). */
 export const OFF_SECTIONS = ['characters', 'weapons', 'artifacts', 'materials'] as const
 export type OffSection = (typeof OFF_SECTIONS)[number]

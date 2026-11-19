@@ -47,7 +47,7 @@ import {
 } from '../good'
 import { GOOD_LIMITS } from '../import'
 import { readCapture, type GiCapture } from '../live/capture'
-import { readOff } from '../off'
+import { offBagKeys, readOff } from '../off'
 
 export interface ArtifactOccurrence {
   identity: ArtifactIdentity
@@ -210,7 +210,12 @@ export function normalizeGood(input: unknown, options: NormalizeOptions = {}): N
   if (itemGuids) good.itemGuids = itemGuids
   if (input.gi_capture !== undefined) good.capture = readCapture(input.gi_capture)
   const off = readOff(input.gi_off)
-  if (off) good.off = off
+  if (off) {
+    good.off = off
+    // The bag copies of a part that is off are not shared either (off.ts):
+    // dropped here, before anything is counted, hashed or stored.
+    for (const key of offBagKeys(off)) good.materials.delete(key)
+  }
   checkKeys(good, options)
   checkWholeCapture(input, good)
   return good

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BAG_COPIES,
   BlobDecoder,
   OFF_POSITIONS,
   OFF_SECTION_BITS,
@@ -9,8 +10,10 @@ import {
   countParts,
   decodeSectionBlob,
   decodeSnapshotMeta,
+  dropMaterialChanges,
   encodeSectionBlob,
   encodeSectionBlobVariants,
+  encodeSnapshot,
   encodeSnapshotMeta,
   holdsPartKeys,
   isPartChange,
@@ -18,10 +21,14 @@ import {
   kindCode,
   lastRemoval,
   normalizeGood,
+  offBagKeys,
+  offMask,
+  offOfMask,
   offSectionMask,
   partNeighbours,
   partOfSwitch,
   planPartRemoval,
+  prepareSnapshot,
   readOff,
   sameOff,
   sectionHashOf,
@@ -34,6 +41,7 @@ import {
   type PartBlobRow,
   type PartSnapshotRow,
 } from '../src'
+import { MATERIALS } from '../src/dictionary/materials'
 
 // Capture's gi_off and the parts a user can remove (issue 12, item 3).
 
@@ -260,6 +268,124 @@ describe('removable parts', () => {
     // It is one of the Planner tasks too: removing those takes it as well.
     expect(isPartChange('tasks', realm)).toBe(true)
     expect(withoutPartChanges('teapot', [realm, welkin, comfort]).changes).toEqual([welkin])
+  })
+})
+
+describe('the bag copies', () => {
+  // Two player properties Capture also writes into the materials bag: each is
+  // covered by the switch of the part it belongs to (2026-11-19).
+  const NUMBERS = 'gi_player.numbers'
+  const TEAPOT = 'gi_teapot'
+  const file = {
+    format: 'GOOD',
+    version: 2,
+    source: 'Teyvat.me',
+    characters: [
+      {
+        key: 'Furina',
+        level: 90,
+        constellation: 0,
+        ascension: 6,
+        talent: { auto: 1, skill: 9, burst: 9 },
+      },
+    ],
+    materials: { Mora: 10, OriginalResin: 160, RealmCurrency: 900, FragileResin: 3 },
+  }
+  const keys = (input: unknown) => [...normalizeGood(input).materials.keys()].sort()
+
+  it('belong to Account numbers and Serenitea Pot, which are switches', () => {
+    expect(BAG_COPIES).toEqual({ OriginalResin: NUMBERS, RealmCurrency: TEAPOT })
+    for (const name of Object.values(BAG_COPIES)) expect(OFF_SWITCHES).toContain(name)
+    expect(offBagKeys([NUMBERS])).toEqual(['OriginalResin'])
+    expect(offBagKeys([TEAPOT, 'gi_tasks'])).toEqual(['RealmCurrency'])
+    expect(offBagKeys([TEAPOT, NUMBERS])).toEqual(['OriginalResin', 'RealmCurrency'])
+    expect(offBagKeys(['gi_player.profile', 'materials', 'gi_future'])).toEqual([])
+    expect(offBagKeys([])).toEqual([])
+    expect(offBagKeys(undefined)).toEqual([])
+    expect(offBagKeys(null)).toEqual([])
+  })
+
+  it('are dropped from an upload whose gi_off names their part, and only then', () => {
+    const all = ['FragileResin', 'Mora', 'OriginalResin', 'RealmCurrency']
+    expect(keys({ ...file, gi_off: [NUMBERS] })).toEqual(['FragileResin', 'Mora', 'RealmCurrency'])
+    expect(keys({ ...file, gi_off: [TEAPOT] })).toEqual(['FragileResin', 'Mora', 'OriginalResin'])
+    expect(keys({ ...file, gi_off: [NUMBERS, TEAPOT] })).toEqual(['FragileResin', 'Mora'])
+    // The part is shared, the file has no gi_off, or it names other parts: untouched.
+    expect(keys({ ...file, gi_off: [] })).toEqual(all)
+    expect(keys(file)).toEqual(all)
+    expect(keys({ ...file, gi_off: ['gi_player.profile', 'gi_tasks', 'gi_future'] })).toEqual(all)
+    // Not a list: no gi_off.
+    expect(keys({ ...file, gi_off: NUMBERS })).toEqual(all)
+  })
+
+  it('are out before anything is counted or hashed', async () => {
+    const hashOf = async (input: unknown) => {
+      const prepared = await prepareSnapshot(input, { materials: MATERIALS })
+      const encoded = await encodeSnapshot(prepared, new Map(), MATERIALS)
+      return { hash: encoded.contentHash, materials: prepared.summary.materials }
+    }
+    const plain = await hashOf(file)
+    expect(plain.materials).toBe(4)
+    // gi_off is never part of a hash: the same bag hashes the same with it.
+    expect(await hashOf({ ...file, gi_off: [] })).toEqual(plain)
+    expect(await hashOf({ ...file, gi_off: ['gi_tasks'] })).toEqual(plain)
+
+    // A build that still sends the copy and one that leaves it out store the same.
+    const { OriginalResin: _resin, ...withoutResin } = file.materials
+    const sent = await hashOf({ ...file, gi_off: [NUMBERS] })
+    expect(sent.materials).toBe(3)
+    expect(sent.hash).not.toBe(plain.hash)
+    expect(await hashOf({ ...file, materials: withoutResin, gi_off: [NUMBERS] })).toEqual(sent)
+    // And as the same bag without the key from any other tool.
+    expect(await hashOf({ ...file, materials: withoutResin })).toEqual(sent)
+  })
+
+  it('keep the capture whole: a bag of nothing else is still a bag', () => {
+    const only = { ...file, materials: { OriginalResin: 160 }, gi_off: [NUMBERS] }
+    expect(normalizeGood(only).materials.size).toBe(0)
+    expect(normalizeGood(only).characters).toHaveLength(1)
+  })
+
+  it('are dropped from live changes by key, and nothing else is', () => {
+    const changes: DeltaChange[] = [
+      ['set', ['materials', 'Mora'], 20],
+      ['set', ['materials', 'OriginalResin'], 120],
+      ['del', ['materials', 'RealmCurrency']],
+      ['set', ['gi_tasks', 'realm'], { value: 900, limit: 2400 }],
+      ['set', ['gi_player', 'OriginalResin'], 1],
+    ]
+    expect(dropMaterialChanges(changes, offBagKeys([NUMBERS]))).toEqual([
+      changes[0],
+      changes[2],
+      changes[3],
+      changes[4],
+    ])
+    expect(dropMaterialChanges(changes, offBagKeys([NUMBERS, TEAPOT]))).toEqual([
+      changes[0],
+      changes[3],
+      changes[4],
+    ])
+    // Nothing to drop: the same list, not a copy.
+    expect(dropMaterialChanges(changes, [])).toBe(changes)
+    expect(dropMaterialChanges([changes[0]!, changes[3]!], offBagKeys([TEAPOT]))).toHaveLength(2)
+    const mora = [changes[0]!]
+    expect(dropMaterialChanges(mora, offBagKeys([NUMBERS, TEAPOT]))).toBe(mora)
+  })
+
+  it('a gi_off is one number for the journal row, by stored position', () => {
+    expect(offMask(undefined)).toBe(0)
+    expect(offMask([])).toBe(0)
+    expect(offMask(['characters'])).toBe(1)
+    expect(offMask([NUMBERS])).toBe(32)
+    expect(offMask([TEAPOT])).toBe(16384)
+    expect(offMask([TEAPOT, NUMBERS, 'gi_future'])).toBe(16384 + 32)
+    expect(offOfMask(16384 + 32)).toEqual([NUMBERS, TEAPOT])
+    expect(offOfMask(0)).toEqual([])
+    expect(offOfMask(-1)).toEqual([])
+    expect(offOfMask(Number.NaN)).toEqual([])
+    // Every known name round-trips, in the stored order.
+    expect(offOfMask(offMask([...OFF_POSITIONS].reverse()))).toEqual([...OFF_POSITIONS])
+    for (const name of OFF_POSITIONS) expect(offOfMask(offMask([name]))).toEqual([name])
   })
 })
 

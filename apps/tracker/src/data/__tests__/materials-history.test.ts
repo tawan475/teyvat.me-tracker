@@ -1,7 +1,13 @@
 import { createDictionary, type MaterialsSection } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { withMaterialFigures } from '@/components/progression/progression-series'
-import { buildMaterialsHistory, valueAt, type MaterialsSnapshotRef } from '../materials-history'
+import {
+  buildMaterialsHistory,
+  valueAt,
+  withHiddenKeys,
+  withLiveMaterials,
+  type MaterialsSnapshotRef,
+} from '../materials-history'
 
 const dictionary = createDictionary([])
 const DAY = 86_400_000
@@ -81,6 +87,49 @@ describe('materials history', () => {
     const h = history([{ Mora: 500, Primogem: 160 }, { Mora: 400 }])
     expect(valueAt(h.series.get('Primogem'), 1)).toBe(0)
     expect(valueAt(h.series.get('Mora'), 1)).toBe(400)
+  })
+
+  it("takes a count the newest capture's switches cover out of now, not out of the past", () => {
+    // Issue 12: Account numbers off covers Original Resin. An older capture
+    // (and a Capture build that still sends it) left the count in the bag.
+    const h = history([
+      { Mora: 500, OriginalResin: 160 },
+      { Mora: 600, OriginalResin: 200 },
+    ])
+    expect(withHiddenKeys(h, [])).toBe(h)
+    const hidden = withHiddenKeys(h, ['OriginalResin', 'RealmCurrency'])
+    expect(hidden.hidden).toEqual(['OriginalResin', 'RealmCurrency'])
+    expect([...hidden.latest]).toEqual([['Mora', 600]])
+    // The stored points stay (the charts), and the input is left alone.
+    expect(hidden.series).toBe(h.series)
+    expect(valueAt(hidden.series.get('OriginalResin'), 0)).toBe(160)
+    expect(h.latest.get('OriginalResin')).toBe(200)
+    expect(h.hidden).toBeUndefined()
+
+    // The live journal's changes to it are not applied either; the rest are.
+    const journal = (changes: [string, string[], unknown?][]) => ({
+      open: true,
+      base: { snapshotId: 2, takenAt: DAY },
+      updatedAt: DAY + HOUR,
+      changes,
+    })
+    const live = withLiveMaterials(
+      hidden,
+      journal([
+        ['set', ['materials', 'OriginalResin'], 120],
+        ['set', ['materials', 'Mora'], 700],
+      ]),
+    )
+    expect([...live.latest]).toEqual([['Mora', 700]])
+    expect(live.hidden).toEqual(['OriginalResin', 'RealmCurrency'])
+    expect(live.series.get('OriginalResin')).toBe(h.series.get('OriginalResin'))
+    // A journal of nothing else adds no point.
+    expect(withLiveMaterials(hidden, journal([['del', ['materials', 'OriginalResin']]]))).toBe(
+      hidden,
+    )
+    // While the count is shared the journal sets it as before.
+    const shared = withLiveMaterials(h, journal([['set', ['materials', 'OriginalResin'], 120]]))
+    expect(shared.latest.get('OriginalResin')).toBe(120)
   })
 
   it('keeps the captures that did not share the materials as times only', () => {

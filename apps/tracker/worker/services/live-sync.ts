@@ -33,11 +33,15 @@ import {
   decodeItemIndex,
   decodePoints,
   distinctPaths,
+  dropMaterialChanges,
   encodeChangesNative,
   encodeFigures,
   encodeItemIndex,
   encodePoints,
   mergeChanges,
+  offBagKeys,
+  offMask,
+  offOfMask,
   pointDay,
   touchedBaseItems,
   type DeltaChange,
@@ -87,6 +91,8 @@ export interface JournalStart {
   session: string
   summary: SnapshotSummary
   items: ItemIndex | null
+  /** The snapshot's `gi_off` (absent: it had none): the journal row keeps it for its batches. */
+  off?: readonly string[]
 }
 
 /**
@@ -102,13 +108,14 @@ export async function openJournal(live: D1Database, start: JournalStart): Promis
     live
       .prepare(
         `INSERT INTO live_journals (account_id, user_id, base_key, base_snapshot_id, session,
-           last_seq, opened_at, updated_at, changes, bytes, figures, items)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9)
+           last_seq, opened_at, updated_at, changes, bytes, figures, items, base_off)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9, ?10)
          ON CONFLICT (account_id) DO UPDATE SET user_id = excluded.user_id,
            base_key = excluded.base_key, base_snapshot_id = excluded.base_snapshot_id,
            session = excluded.session, last_seq = 0, opened_at = excluded.opened_at,
            updated_at = excluded.updated_at, changes = 0, bytes = 0,
            figures = excluded.figures, items = excluded.items,
+           base_off = excluded.base_off,
            tail_from = 0, tail_at = 0, tail_changes = 0, tail = NULL`,
       )
       .bind(
@@ -121,6 +128,7 @@ export async function openJournal(live: D1Database, start: JournalStart): Promis
         now,
         encodeFigures(start.summary),
         start.items ? encodeItemIndex(start.items) : null,
+        offMask(start.off),
       ),
   ])
   return base
@@ -148,13 +156,15 @@ interface JournalRow {
   tail: unknown
   points_day: string
   points: unknown
+  /** The base snapshot's `gi_off` as offMask (0: none, or a journal from before the column). */
+  base_off: number | null
 }
 
 /** The journal row as a batch reads it: the item index only when `?2` is true. */
 const JOURNAL_FOR_BATCH_SQL = `SELECT account_id, user_id, base_key, base_snapshot_id, session,
     last_seq, opened_at, updated_at, changes, bytes, figures,
     CASE WHEN ?2 THEN items END AS items, day, day_batches,
-    tail_from, tail_at, tail_changes, tail, points_day, points
+    tail_from, tail_at, tail_changes, tail, points_day, points, base_off
   FROM live_journals WHERE account_id = ?1`
 
 /**
@@ -200,6 +210,11 @@ export const PUSH_MAX_BYTES = 32_000
  *
  * Writes one row (the journal's), plus a `live_batches` row when the tail
  * spills and a `live_points` row when the UTC day turns.
+ *
+ * A change to a bag copy (materials.OriginalResin, materials.RealmCurrency)
+ * is left out while the base snapshot's `gi_off` covers it (off.ts; the row's
+ * `base_off`, read with the row): nothing of it is stored, counted or pushed.
+ * Capture leaves them out itself; this is for builds that still send them.
  */
 export async function storeBatch(
   live: D1Database,
@@ -227,6 +242,10 @@ export async function storeBatch(
   ) {
     throw new ApiError(409, 'resync', 'This batch does not follow the journal: send a snapshot')
   }
+  const sent = dropMaterialChanges(
+    delta.changes,
+    offBagKeys(offOfMask(Number(journal.base_off ?? 0))),
+  )
   const dayBatches = journal.day === today ? journal.day_batches : 0
   if (dayBatches >= DAILY_BATCHES) {
     throw new ApiError(
@@ -241,11 +260,11 @@ export async function storeBatch(
   // The tail: this batch merged into it, unless that would pass SPILL_BYTES;
   // then the old tail becomes a `live_batches` row and this batch starts anew.
   const oldTail = journal.tail_from > 0 && journal.tail ? toBytes(journal.tail) : null
-  let changes = oldTail ? mergeChanges(decodeChanges(oldTail), delta.changes) : [...delta.changes]
+  let changes = oldTail ? mergeChanges(decodeChanges(oldTail), sent) : [...sent]
   let tail = await encodeChangesNative(changes)
   const spill = oldTail !== null && tail.length > SPILL_BYTES
   if (spill) {
-    changes = [...delta.changes]
+    changes = [...sent]
     tail = await encodeChangesNative(changes)
   }
   const merged = oldTail !== null && !spill
@@ -255,7 +274,7 @@ export async function storeBatch(
 
   const figures = applyFigures(
     journal.figures ? decodeFigures(toBytes(journal.figures)) : emptyFigures(),
-    delta.changes,
+    sent,
     delta.sum,
   )
   // Today's points: the row's own while they are today's. On a new day the
@@ -346,14 +365,14 @@ export async function storeBatch(
     seq: delta.seq,
     collapse,
     duplicate: false,
-    batch: pushOf(journal, delta, touched, figures, now, journalBytes),
+    batch: pushOf(journal, sent, touched, figures, now, journalBytes),
   }
 }
 
 /** The batch as tabs apply it (LiveBatchPush), or undefined when too big. */
 function pushOf(
   journal: JournalRow,
-  delta: GoodDelta,
+  changes: readonly DeltaChange[],
   touched: ReturnType<typeof touchedBaseItems>,
   figures: Figures,
   now: number,
@@ -372,7 +391,7 @@ function pushOf(
   const batch: LiveBatchPush = {
     base: journal.base_key,
     prev: journal.last_seq,
-    changes: [...delta.changes],
+    changes: [...changes],
     items,
     figures,
     updatedAt: now,

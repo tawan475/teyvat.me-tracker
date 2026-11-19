@@ -10,6 +10,7 @@
  */
 
 import { accountPlayer, lastProfile, type AccountPlayer } from '@/data/account-player'
+import { bagJournal, hiddenBagKeys, withoutBagKeys } from '@/data/bag-copies'
 import { withJournal, type LiveApplied } from '@/data/live-now'
 import { heldJournal, heldPoints, holdJournal, holdPoints, liveEventsSeen } from '@/data/live-known'
 import { liveVersions } from '@/live/journal'
@@ -366,6 +367,9 @@ function loadSnapshotInventory(
       const pieces = typeof from.artifacts === 'number' ? donor(from.artifacts) : null
       if (pieces && donorBundle) artifactIds = artifactIdsOf(pieces.snapshot, donorBundle)
     }
+    // A count this capture's switches cover is not shared (bag-copies.ts),
+    // whichever capture the bag is read from.
+    good.materials = withoutBagKeys(good.materials, hiddenBagKeys(list, latest.id))
     return {
       snapshot,
       good,
@@ -444,9 +448,19 @@ export function loadLatestInventory(
   const snapshot = loadSnapshotInventory({ ...account, latest })
   if (!account.liveSync) return snapshot
   return cached(account, `now:${latest.id}:${liveVersion(account)}`, async () => {
-    const [inventory, live] = await Promise.all([snapshot, loadLive(account)])
+    const [inventory, live, list] = await Promise.all([
+      snapshot,
+      loadLive(account),
+      // Read for the snapshot already (cached): only its `off`.
+      loadSnapshots(account).catch(() => [] as SnapshotResponse[]),
+    ])
+    // Without the changes to a count the capture's switches cover (bag-copies.ts).
     return inventory && live
-      ? withJournal(inventory, rosterJournal(live, inventory.sharedFrom), latest.id)
+      ? withJournal(
+          inventory,
+          rosterJournal(bagJournal(live, list), inventory.sharedFrom),
+          latest.id,
+        )
       : inventory
   })
 }

@@ -4,8 +4,9 @@ import materialsJson from '@gdt/game-data/data/materials.json'
 import type { BagFile, MaterialIndexFile } from '@gdt/game-data/format'
 import { entryId } from '@gdt/game-data/icons'
 import { describe, expect, it } from 'vitest'
-import { materialItem } from '../material-items'
+import { buildItems, materialItem } from '../material-items'
 import {
+  WALLET_KEYS,
   bagTabs,
   collectedElsewhere,
   compareInGame,
@@ -14,6 +15,7 @@ import {
   materialMeta,
   metaFor,
   tabsHolding,
+  walletKeys,
   type MaterialMeta,
   type TabKey,
 } from '../material-meta'
@@ -186,6 +188,64 @@ describe('the page loader', () => {
     expect(ore).toMatchObject({ tab: 'weapon', count: 12, wallet: false })
     expect(materialItem('IntertwinedFate', 3)).toMatchObject({ tab: 'precious', wallet: true })
     expect(materialItem('Mora', 1)).toMatchObject({ tab: 'other', wallet: true })
+  })
+})
+
+describe('the wallet strip', () => {
+  // Issue 12: Original Resin is covered by Capture's Account numbers switch,
+  // Realm Currency by its Serenitea Pot switch (the history's `hidden`).
+  it('has a tile per currency, at 0 too, while every count is shared', () => {
+    expect(walletKeys()).toEqual(WALLET_KEYS)
+    expect(walletKeys([])).toEqual(WALLET_KEYS)
+    expect(walletKeys()).toHaveLength(11)
+    expect(walletKeys()).toContain('OriginalResin')
+    expect(walletKeys()).toContain('RealmCurrency')
+  })
+
+  it("leaves out the tile of a count the newest capture's switches cover", () => {
+    const without = (keys: string[]) => WALLET_KEYS.filter((key) => !keys.includes(key))
+    expect(walletKeys(['OriginalResin'])).toEqual(without(['OriginalResin']))
+    expect(walletKeys(['RealmCurrency'])).toEqual(without(['RealmCurrency']))
+    expect(walletKeys(['OriginalResin', 'RealmCurrency'])).toEqual(
+      without(['OriginalResin', 'RealmCurrency']),
+    )
+    // The order of the rest stays, and the other resin tiles with it.
+    expect(walletKeys(['OriginalResin']).slice(-3)).toEqual([
+      'FragileResin',
+      'CondensedResin',
+      'RealmCurrency',
+    ])
+    expect(WALLET_KEYS).toHaveLength(11)
+  })
+
+  it('and the bag lists none of them, held, at 0 or as spent', () => {
+    const series = (value: number[]) => ({ at: value.map((_, i) => i), value })
+    const history = {
+      times: [0, 1],
+      ids: [1, 2],
+      lastSeenAt: 1,
+      series: new Map([
+        ['Mora', series([5, 6])],
+        ['OriginalResin', series([160, 0])],
+        ['RealmCurrency', series([900, 950])],
+      ]),
+      latest: new Map([
+        ['Mora', 6],
+        ['RealmCurrency', 950],
+      ]),
+    }
+    const keys = (hidden?: string[]) =>
+      buildItems({ ...history, ...(hidden ? { hidden } : {}) }).map((i) => [i.key, i.count])
+    expect(keys()).toEqual([
+      ['Mora', 6],
+      ['OriginalResin', 0],
+      ['RealmCurrency', 950],
+    ])
+    expect(keys(['OriginalResin'])).toEqual([
+      ['Mora', 6],
+      ['RealmCurrency', 950],
+    ])
+    expect(keys(['OriginalResin', 'RealmCurrency'])).toEqual([['Mora', 6]])
   })
 })
 

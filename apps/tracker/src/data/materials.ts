@@ -7,7 +7,7 @@
  * measured at 8 ms for 151 snapshots and 22 ms for 1,208, so no worker.
  */
 
-import { sharesSection } from '@gdt/shared/off'
+import { offBagKeys, sharesSection } from '@gdt/shared/off'
 import {
   accountCacheKey,
   loadBundle,
@@ -15,7 +15,7 @@ import {
   loadSnapshots,
   type AccountRef,
 } from './account-data'
-import { buildMaterialsHistory, type MaterialsHistory } from './materials-history'
+import { buildMaterialsHistory, withHiddenKeys, type MaterialsHistory } from './materials-history'
 
 export * from './materials-history'
 
@@ -40,7 +40,12 @@ export function loadMaterialsHistory(account: AccountRef): Promise<MaterialsHist
       const snapshots = bundle.snapshots
         .filter((s) => !left.has(s.id))
         .sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
-      return buildMaterialsHistory(snapshots, bundle.texts, dictionary, unshared)
+      // The newest capture's switches (the list is newest first) may cover a
+      // count the bag holds a copy of: not shared now (bag-copies.ts).
+      return withHiddenKeys(
+        buildMaterialsHistory(snapshots, bundle.texts, dictionary, unshared),
+        offBagKeys(list[0]?.off),
+      )
     })()
     entry.catch(() => cache.delete(key))
     cache.set(key, entry)

@@ -50,7 +50,7 @@ import {
   bagTabs,
   loadCatalogKeys,
   loadMaterialMeta,
-  WALLET_KEYS,
+  walletKeys,
   walletLabel,
 } from '@/components/materials-page/material-meta'
 import {
@@ -161,7 +161,8 @@ const missing = computed(() => {
 
 const wallet = computed<WalletItem[]>(() => {
   const list: WalletItem[] = []
-  for (const key of WALLET_KEYS) {
+  // A count the newest capture's switches cover has no tile (issue 12).
+  for (const key of walletKeys(history.value?.hidden)) {
     // Every currency, at 0 too (the user's call): a capture may leave a 0 out entirely.
     const item = byKey.value.get(key) ?? materialItem(key, 0)
     list.push({

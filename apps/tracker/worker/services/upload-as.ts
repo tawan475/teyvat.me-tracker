@@ -95,6 +95,7 @@ export async function uploadAs(
         session: result.prepared.good.capture?.session ?? '',
         summary: result.prepared.summary,
         items: preparedItemIndex(result.prepared.good),
+        off: result.prepared.good.off,
       })
       response.live = { base, watching: anyListening(listener) }
     } catch (error) {

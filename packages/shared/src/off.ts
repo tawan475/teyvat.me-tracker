@@ -4,6 +4,8 @@
  * snapshot meta can read it without the storage planner.
  */
 
+import type { SnapshotSummary } from './codec/snapshot'
+
 /**
  * The names a snapshot meta stores by position (snapshot-meta.ts: a known
  * name is its index + 1 here). Append-only: never reorder a name or reuse a
@@ -93,6 +95,70 @@ export type OffSection = (typeof OFF_SECTIONS)[number]
 /** Whether a snapshot with this `off` shared the section (absent `off`: it did). */
 export const sharesSection = (off: readonly string[] | undefined, section: OffSection): boolean =>
   !off?.includes(section)
+
+/**
+ * Each build section's bit in `snapshots.off_sections` (migration 0040), so
+ * SQL can find the newest capture that shared one. Stored: never renumber.
+ */
+export const OFF_SECTION_BITS: Readonly<Record<OffSection, number>> = {
+  characters: 1,
+  weapons: 2,
+  artifacts: 4,
+  materials: 8,
+}
+
+/** The build sections `off` names, as OFF_SECTION_BITS (0: all shared, or no `off`). */
+export function offSectionMask(off: readonly string[] | undefined): number {
+  let mask = 0
+  for (const section of OFF_SECTIONS)
+    if (!sharesSection(off, section)) mask |= OFF_SECTION_BITS[section]
+  return mask
+}
+
+/** The summary figures each build section is counted from. */
+export const SECTION_FIGURES: Readonly<Record<OffSection, readonly (keyof SnapshotSummary)[]>> = {
+  characters: ['characters'],
+  weapons: ['weapons'],
+  artifacts: ['artifacts', 'artifact3', 'artifact4'],
+  materials: ['materials', 'mora', 'primogem'],
+}
+
+/**
+ * A capture's figures as the pages show "now" (issue 12): those of each
+ * section in `left` (the build sections it left out) from `donor(section)`,
+ * the newest earlier capture that shared it, 0 when none did. `summary`
+ * itself when it left none out.
+ */
+export function standInSummary(
+  summary: SnapshotSummary,
+  left: readonly OffSection[],
+  donor: (section: OffSection) => SnapshotSummary | null | undefined,
+): SnapshotSummary {
+  if (left.length === 0) return summary
+  const out = { ...summary }
+  for (const section of left) {
+    const from = donor(section)
+    for (const field of SECTION_FIGURES[section]) out[field] = from?.[field] ?? 0
+  }
+  return out
+}
+
+/**
+ * Capture `index`'s figures (`list` newest first) with those of a section it
+ * left out from the newest older capture that shared it (standInSummary).
+ */
+export function sharedSummaryOf(
+  list: readonly { summary: SnapshotSummary; off?: readonly string[] }[],
+  index: number,
+): SnapshotSummary {
+  const capture = list[index]!
+  const left = OFF_SECTIONS.filter((section) => !sharesSection(capture.off, section))
+  return standInSummary(
+    capture.summary,
+    left,
+    (section) => list.slice(index + 1).find((s) => sharesSection(s.off, section))?.summary,
+  )
+}
 
 /**
  * The newest time a part was removed from history (settings `parts.removed`),

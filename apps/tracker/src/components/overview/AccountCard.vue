@@ -21,30 +21,33 @@ const accounts = useAccounts()
 const view = computed(() => {
   const a = props.account
   const latest = a.latest
+  // A section Capture left out (gi_off): its figures from the newest capture
+  // that shared it, as the account's pages show them (no strip here).
+  const summary = latest ? (latest.sharedSummary ?? latest.summary) : null
   const ratio = compressionRatio(a.rawBytes, a.storedBytes)
   return {
     name: accounts.displayName(a),
     uid: a.uid,
     server: serverLabel(a.server),
-    figures: latest
+    figures: summary
       ? [
           {
             label: t('overview.figure.characters'),
-            value: formatNumber(latest.summary.characters),
+            value: formatNumber(summary.characters),
           },
           {
             label: t('overview.figure.artifacts'),
-            value: formatNumber(latest.summary.artifacts),
+            value: formatNumber(summary.artifacts),
           },
           {
             label: t('overview.figure.mora'),
-            value: formatCompact(latest.summary.mora),
-            title: formatNumber(latest.summary.mora),
+            value: formatCompact(summary.mora),
+            title: formatNumber(summary.mora),
           },
           {
             label: t('overview.figure.primogem'),
-            value: formatCompact(latest.summary.primogem),
-            title: formatNumber(latest.summary.primogem),
+            value: formatCompact(summary.primogem),
+            title: formatNumber(summary.primogem),
           },
         ]
       : null,

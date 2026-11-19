@@ -5,7 +5,13 @@
  */
 
 import type { AccountResponse, GenshinServer, SnapshotResponse, SnapshotSummary } from '@gdt/shared'
-import { OFF_SECTIONS, sharesSection, type OffSection } from '@gdt/shared/off'
+import {
+  OFF_SECTIONS,
+  SECTION_FIGURES,
+  sharedSummaryOf,
+  sharesSection,
+  type OffSection,
+} from '@gdt/shared/off'
 import { t } from '@/i18n'
 import { dateLocale, formatNumber } from '@/lib/format'
 import { rangeStart, type ChartRange } from './chart-range'
@@ -69,12 +75,7 @@ const SUMMARY_KEYS: SummaryKey[] = [
 const CURRENCY_KEYS: ReadonlySet<SummaryKey> = new Set(['mora', 'primogem'])
 
 /** The summary figures each section Capture can leave out is counted from. */
-export const SECTION_FIGURES: Readonly<Record<OffSection, readonly (keyof SnapshotSummary)[]>> = {
-  characters: ['characters'],
-  weapons: ['weapons'],
-  artifacts: ['artifacts', 'artifact3', 'artifact4'],
-  materials: ['materials', 'mora', 'primogem'],
-}
+export { SECTION_FIGURES }
 
 /**
  * Irminsul sometimes misses the packet that carries mora and primogems: the
@@ -148,15 +149,7 @@ export function sharedSummary(
   snapshots: readonly SnapshotResponse[],
   index: number,
 ): SnapshotSummary {
-  const snapshot = snapshots[index]!
-  let summary = snapshot.summary
-  for (const section of OFF_SECTIONS) {
-    if (sharesSection(snapshot.off, section)) continue
-    const donor = snapshots.slice(index + 1).find((s) => sharesSection(s.off, section))
-    summary = { ...summary }
-    for (const field of SECTION_FIGURES[section]) summary[field] = donor?.summary[field] ?? 0
-  }
-  return summary
+  return sharedSummaryOf(snapshots, index)
 }
 
 /** `figures` with those of the sections `off` names taken from `from` (live figures over a base that left them out). */

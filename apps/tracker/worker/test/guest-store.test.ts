@@ -466,6 +466,39 @@ describe('guest store', () => {
     expect((await upload(full(3), 4_000)).status).toBe('created')
   })
 
+  it("answers the account's figures from the captures that shared them, as the list does", async () => {
+    const { client, account, upload } = await serverAccount()
+    const [big] = sequence()[0]!
+    const { characters: _c, gi_characters: _x, ...noRoster } = big
+    const { materials: _m, ...noBag } = big
+    const shots: [unknown, number][] = [
+      [big, 1_000],
+      [
+        {
+          ...noRoster,
+          characters: [],
+          materials: { ...big.materials, Mora: 77 },
+          gi_off: ['characters'],
+        },
+        2_000,
+      ],
+      [{ ...noBag, characters: [], materials: {}, gi_off: ['characters', 'materials'] }, 3_000],
+    ]
+    for (const [good, at] of shots) {
+      await upload(good, at)
+      await importLocal(good, at)
+    }
+    const here = (await localJson<AccountResponse>('')).latest!
+    const list = await client.json<AccountResponse[]>('/api/accounts')
+    const there = list.find((a) => a.id === account.id)!.latest!
+    expect(here.sharedSummary).toEqual(there.sharedSummary)
+    expect(here.sharedSummary).toMatchObject({
+      characters: big.characters.length,
+      mora: 77,
+    })
+    expect(here.summary).toMatchObject({ characters: 0, mora: 0 })
+  })
+
   it('keeps marks, the plan and settings as the server routes do', async () => {
     const [big, at] = sequence()[0]!
     await importLocal(big, at)

@@ -289,7 +289,7 @@ const newestSummary = computed(() => {
   const latest = account.value.latest
   const loaded = list.value
   if (latest && loaded && loaded[0]?.id === latest.id) return sharedSummary(loaded, 0)
-  return latest?.summary
+  return latest ? (latest.sharedSummary ?? latest.summary) : undefined
 })
 
 const tiles = computed(() => {

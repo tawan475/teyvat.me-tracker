@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BlobDecoder,
   OFF_POSITIONS,
+  OFF_SECTION_BITS,
   OFF_SWITCHES,
   PART_SWITCH,
   REMOVABLE_PARTS,
@@ -17,13 +18,16 @@ import {
   kindCode,
   lastRemoval,
   normalizeGood,
+  offSectionMask,
   partNeighbours,
   partOfSwitch,
   planPartRemoval,
   readOff,
   sameOff,
   sectionHashOf,
+  sharedSummaryOf,
   shortHashHex,
+  standInSummary,
   withoutPartChanges,
   withoutPartKeys,
   type DeltaChange,
@@ -154,6 +158,67 @@ describe('gi_off', () => {
     expect([...old.slice(-3)]).toEqual([2, 1, 7])
     expect(decodeSnapshotMeta(old)).toEqual({ ...META, off: ['characters', 'gi_characters'] })
     expect(readOff(['gi_characters', 'gi_tasks'])).toEqual(['gi_characters', 'gi_tasks'])
+  })
+})
+
+describe('figures of the sections a capture left out', () => {
+  const sum = (n: number) => ({
+    characters: n,
+    weapons: n + 1,
+    artifacts: n + 2,
+    materials: n + 3,
+    mora: n + 4,
+    primogem: n + 5,
+    artifact3: n + 6,
+    artifact4: n + 7,
+  })
+
+  it('stores the build sections as fixed bits', () => {
+    expect(OFF_SECTION_BITS).toEqual({ characters: 1, weapons: 2, artifacts: 4, materials: 8 })
+    expect(offSectionMask(undefined)).toBe(0)
+    expect(offSectionMask([])).toBe(0)
+    // Parts other than the builds, and names it does not know, are no bits.
+    expect(offSectionMask(['gi_achievements', 'gi_future'])).toBe(0)
+    expect(offSectionMask(['materials', 'gi_tasks', 'characters'])).toBe(9)
+    expect(offSectionMask(['characters', 'weapons', 'artifacts', 'materials'])).toBe(15)
+  })
+
+  it("takes each left-out section's figures from its own stand-in, 0 without one", () => {
+    const donors: Record<string, ReturnType<typeof sum> | null> = {
+      characters: sum(100),
+      materials: null,
+    }
+    const out = standInSummary(sum(0), ['characters', 'materials'], (s) => donors[s])
+    // Characters from the stand-in; the bag's three figures 0 (none shared it);
+    // weapons and artifacts as captured.
+    expect(out).toEqual({ ...sum(0), characters: 100, materials: 0, mora: 0, primogem: 0 })
+    const same = sum(1)
+    expect(standInSummary(same, [], () => sum(9))).toBe(same)
+  })
+
+  it('reads, per section, the newest older capture that shared it', () => {
+    const list = [
+      { summary: sum(0), off: ['characters', 'artifacts'] },
+      { summary: sum(10), off: ['artifacts'] },
+      { summary: sum(20), off: [] },
+      { summary: sum(30) },
+    ]
+    expect(sharedSummaryOf(list, 0)).toEqual({
+      ...sum(0),
+      characters: 10,
+      artifacts: 22,
+      artifact3: 26,
+      artifact4: 27,
+    })
+    expect(sharedSummaryOf(list, 1)).toEqual({
+      ...sum(10),
+      artifacts: 22,
+      artifact3: 26,
+      artifact4: 27,
+    })
+    expect(sharedSummaryOf(list, 2)).toBe(list[2]!.summary)
+    // Nothing older shared it: 0, never the capture's own empty count.
+    expect(sharedSummaryOf([{ summary: sum(5), off: ['weapons'] }], 0).weapons).toBe(0)
   })
 })
 

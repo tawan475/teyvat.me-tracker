@@ -1,8 +1,13 @@
 import {
+  OFF_SECTIONS,
+  OFF_SECTION_BITS,
   serverFromUid,
+  standInSummary,
   type AccountAccess,
   type AccountResponse,
   type GenshinServer,
+  type OffSection,
+  type SnapshotSummary,
 } from '@gdt/shared'
 import { and, eq, isNotNull, or } from 'drizzle-orm'
 import type { Db } from '../db/client'
@@ -135,6 +140,13 @@ export interface AccountListRow {
   meta: unknown
   /** The newest time a part was removed from the account's history (settings `parts.removed`). */
   parts_removed?: number | null
+  /** The latest snapshot's build sections left out (snapshots.off_sections; NULL without one). */
+  off_sections?: number | null
+  /** Per section it left out: the meta of the newest earlier snapshot that shared it. */
+  shared_characters?: unknown
+  shared_weapons?: unknown
+  shared_artifacts?: unknown
+  shared_materials?: unknown
   role: AccountAccess
   owner_name: string | null
 }
@@ -146,6 +158,38 @@ export interface AccountListRow {
  */
 const PARTS_REMOVED_SQL = `(SELECT max(value) FROM json_each(
   CASE WHEN json_valid(a.settings) THEN a.settings ELSE '{}' END, '$.parts.removed'))`
+
+/**
+ * Per build section the latest snapshot left out (Capture's gi_off, issue
+ * 12), the meta of the newest earlier snapshot that shared it, as
+ * `shared_<section>`: what its figures are shown from (the pages' "now").
+ * Only run for a latest snapshot that left the section out (CASE evaluates
+ * the subquery lazily), reading the account's snapshots newest first by its
+ * live index until one shared it, so an account sharing everything reads no
+ * more rows than before.
+ */
+const SHARED_FROM_SQL = OFF_SECTIONS.map((section) => {
+  const bit = OFF_SECTION_BITS[section]
+  return `CASE WHEN (s.off_sections & ${bit}) != 0 THEN (SELECT d.meta FROM snapshots AS d
+      WHERE d.account_id = a.id AND d.deleted_at IS NULL AND d.taken_at < s.taken_at
+        AND (d.off_sections & ${bit}) = 0
+      ORDER BY d.taken_at DESC LIMIT 1) END AS shared_${section}`
+}).join(', ')
+
+/**
+ * The latest snapshot's summary with the figures of each build section it
+ * left out from the newest earlier snapshot that shared it (undefined when
+ * it left none out).
+ */
+function standInOf(row: AccountListRow, summary: SnapshotSummary): SnapshotSummary | undefined {
+  const mask = row.off_sections ?? 0
+  if (!mask) return undefined
+  const left = OFF_SECTIONS.filter((section) => (mask & OFF_SECTION_BITS[section]) !== 0)
+  return standInSummary(summary, left, (section: OffSection) => {
+    const meta = row[`shared_${section}`]
+    return meta === null || meta === undefined ? null : metaOf({ meta }).summary
+  })
+}
 
 /**
  * `genshin_accounts.settings` with a JSON merge patch (the bound parameter
@@ -194,7 +238,8 @@ export function accountListStatement(
       accessibleAccountsSql(
         `a.id, a.name, a.uid, a.server, a.created_at, a.data_version, a.snapshot_count,
          a.raw_bytes, a.stored_bytes, s.id AS latest_id, s.taken_at, s.last_seen_at,
-         ${legacy ? 's.summary, ' : ''}s.meta, ${PARTS_REMOVED_SQL} AS parts_removed`,
+         ${legacy ? 's.summary, ' : ''}s.meta, ${PARTS_REMOVED_SQL} AS parts_removed,
+         s.off_sections, ${SHARED_FROM_SQL}`,
         {
           join: 'LEFT JOIN snapshots AS s ON s.id = a.latest_snapshot_id',
           where: '?2 IS NULL OR a.id = ?2',
@@ -221,11 +266,13 @@ export function accountsFromRows(rows: readonly AccountListRow[]): AccountRespon
         ? null
         : (() => {
             const meta = metaOf(row)
+            const shared = standInOf(row, meta.summary)
             return {
               id: row.latest_id,
               takenAt: row.taken_at!,
               lastSeenAt: row.last_seen_at!,
               summary: meta.summary,
+              ...(shared ? { sharedSummary: shared } : {}),
               source: meta.source,
             }
           })(),

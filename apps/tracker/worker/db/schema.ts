@@ -243,6 +243,13 @@ export const snapshots = sqliteTable(
     extrasRef: integer('extras_ref'),
     /** Summary, GOOD header and per-login player values (codec/snapshot-meta.ts). */
     meta: bytes('meta'),
+    /**
+     * The build sections Teyvat.me Capture's `gi_off` left out of this
+     * capture, as bits (@gdt/shared OFF_SECTION_BITS; 0: all shared), so the
+     * account list finds in SQL the newest capture that shared each one
+     * (added in 0040, issue 12). The meta keeps the full list.
+     */
+    offSections: integer('off_sections').notNull().default(0),
   },
   // Every per-account read is of live rows, which this index serves; the
   // trash is only read by maintenance, in whole-table passes (migration 0017

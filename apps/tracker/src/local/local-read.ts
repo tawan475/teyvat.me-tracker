@@ -14,6 +14,8 @@ import {
   asLeyline,
   decodeSnapshot,
   decodeSnapshotMeta,
+  offSectionMask,
+  sharedSummaryOf,
   storedSnapshotOf,
   v1SnapshotOf,
   writeBundleV2,
@@ -45,6 +47,10 @@ export function accountResponse(store: LocalStore): AccountResponse {
     storedBytes += row.storedSize
   }
   const meta = latest ? decodeSnapshotMeta(latest.meta) : null
+  // As the Worker's list answers it: a build section the newest capture left
+  // out (Capture's gi_off) has its figures from the newest that shared it.
+  const sharedSummary =
+    meta && offSectionMask(meta.off) !== 0 ? sharedSummaryOf(listSnapshots(store), 0) : undefined
   return {
     id: GUEST_ACCOUNT_ID,
     name: account?.name ?? null,
@@ -62,6 +68,7 @@ export function accountResponse(store: LocalStore): AccountResponse {
             takenAt: latest.takenAt,
             lastSeenAt: latest.lastSeenAt,
             summary: meta.summary,
+            ...(sharedSummary ? { sharedSummary } : {}),
             source: meta.source,
           }
         : null,

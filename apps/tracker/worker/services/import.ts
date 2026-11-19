@@ -42,6 +42,7 @@ import {
   planSnapshotV2,
   prepareSnapshot,
   resolveImportTimestamp,
+  offSectionMask,
   sameOff,
   shortHashHex,
   storedPlayer,
@@ -485,6 +486,7 @@ async function importOnce(
         ...(prepared.good.capture ? { capture: prepared.good.capture } : {}),
         ...(prepared.good.off ? { off: prepared.good.off } : {}),
       }),
+      offSections: offSectionMask(prepared.good.off),
     }),
   )
   const snapshotIndex = statements.length - 1
@@ -846,6 +848,8 @@ export interface SnapshotRowV2 {
   contentKey: number
   plan: Pick<SnapshotPlan, 'refs' | 'storedSize'>
   meta: Uint8Array
+  /** The build sections the upload's gi_off left out (offSectionMask). */
+  offSections: number
 }
 
 /**
@@ -859,7 +863,7 @@ function insertSnapshotStatement(
   row: SnapshotRowV2,
 ): D1PreparedStatement {
   const params: unknown[] = [accountId, row.takenAt, Date.now(), row.rawSize, row.plan.storedSize]
-  params.push(row.contentKey, row.meta)
+  params.push(row.contentKey, row.meta, row.offSections)
   const selects: string[] = []
   const guards: string[] = []
   for (const slot of SLOTS) {
@@ -882,8 +886,8 @@ function insertSnapshotStatement(
   return d1
     .prepare(
       `INSERT INTO snapshots (account_id, taken_at, last_seen_at, created_at, raw_size,
-         stored_size, ${v1Columns}content_key, meta, ${REFS_SQL})
-       SELECT ?1, ?2, ?2, ?3, ?4, ?5, ${v1Values}?6, ?7,
+         stored_size, ${v1Columns}content_key, meta, off_sections, ${REFS_SQL})
+       SELECT ?1, ?2, ?2, ?3, ?4, ?5, ${v1Values}?6, ?7, ?8,
          ${SLOTS.map((slot) => `r.${REF_COLUMNS[slot]}`).join(', ')}
        FROM (SELECT ${selects.join(', ')}) AS r
        WHERE ${guards.join(' AND ')}

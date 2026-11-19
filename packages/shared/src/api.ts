@@ -973,6 +973,13 @@ export interface AccountResponse {
     takenAt: number
     lastSeenAt: number
     summary: SnapshotSummary
+    /**
+     * Present only when this capture left a build section out (Teyvat.me
+     * Capture's gi_off, issue 12): `summary` with that section's figures from
+     * the newest earlier capture that shared it (0 when none did), as the
+     * account's pages show "now".
+     */
+    sharedSummary?: SnapshotSummary
     /** The GOOD file's `source` ("Irminsul": Teyvat.me Capture or irminsul); absent before 2026-10-28. */
     source?: string
   } | null

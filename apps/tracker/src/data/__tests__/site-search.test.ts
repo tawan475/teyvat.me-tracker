@@ -7,8 +7,10 @@ import {
   searchNeedle,
   searchSite,
   searchWords,
+  withoutItems,
   type SearchEntry,
 } from '../site-search'
+import { offBagKeys } from '@gdt/shared/off'
 
 const entry = (kind: SearchEntry['kind'], name: string, english?: string): SearchEntry => ({
   kind,
@@ -75,5 +77,77 @@ describe('site search', () => {
     expect(readRecent([{ kind: 'nope', key: 'x' }, { kind: 'page', key: 'home' }, 4])).toEqual([
       { kind: 'page', key: 'home' },
     ])
+  })
+})
+
+// Issue 12: Original Resin is covered by Capture's Account numbers switch,
+// Realm Currency by its Serenitea Pot switch. While the account's newest
+// capture has the switch off, the count is not shared.
+describe('counts the newest capture did not share', () => {
+  const keyed = (kind: SearchEntry['kind'], key: string, name: string): SearchEntry => ({
+    ...entry(kind, name),
+    key,
+  })
+  const entries = [
+    keyed('item', 'OriginalResin', 'Original Resin'),
+    keyed('item', 'FragileResin', 'Fragile Resin'),
+    keyed('item', 'RealmCurrency', 'Realm Currency'),
+    // Another kind under the same key is no count.
+    keyed('achievement', 'OriginalResin', 'Original Resin'),
+    keyed('page', 'account-planner', 'Planner'),
+  ]
+  const ids = (list: readonly SearchEntry[]) => list.map((e) => `${e.kind}:${e.key}`)
+  const found = (list: readonly SearchEntry[], query: string) =>
+    searchSite(list, query).flatMap((g) => ids(g.entries))
+
+  it('are every item while all is shared, the same list', () => {
+    expect(withoutItems(entries, [])).toBe(entries)
+    expect(withoutItems(entries, offBagKeys(undefined))).toBe(entries)
+    expect(withoutItems(entries, offBagKeys([]))).toBe(entries)
+    // Switches that cover no bag count leave every item.
+    expect(ids(withoutItems(entries, offBagKeys(['materials', 'gi_player.profile'])))).toEqual(
+      ids(entries),
+    )
+    expect(found(entries, 'resin')).toEqual([
+      'item:FragileResin',
+      'item:OriginalResin',
+      'achievement:OriginalResin',
+    ])
+  })
+
+  it('are not offered: no match for Original Resin with Account numbers off', () => {
+    const left = withoutItems(entries, offBagKeys(['gi_player.numbers']))
+    expect(found(left, 'resin')).toEqual(['item:FragileResin', 'achievement:OriginalResin'])
+    expect(found(left, 'original resin')).toEqual(['achievement:OriginalResin'])
+    // The other count is shared and stays.
+    expect(found(left, 'realm')).toEqual(['item:RealmCurrency'])
+    expect(entries).toHaveLength(5)
+  })
+
+  it('nor Realm Currency with Serenitea Pot off, nor either with both off', () => {
+    const teapot = withoutItems(entries, offBagKeys(['gi_teapot']))
+    expect(found(teapot, 'realm')).toEqual([])
+    expect(found(teapot, 'original')).toEqual(['item:OriginalResin', 'achievement:OriginalResin'])
+    const both = withoutItems(entries, offBagKeys(['gi_teapot', 'gi_player.numbers']))
+    expect(ids(both)).toEqual([
+      'item:FragileResin',
+      'achievement:OriginalResin',
+      'page:account-planner',
+    ])
+  })
+
+  it('nor as a recent pick, which is looked up among the entries left', () => {
+    const recent = addRecent([{ kind: 'page', key: 'account-planner' }], {
+      kind: 'item',
+      key: 'OriginalResin',
+    })
+    const picks = (list: readonly SearchEntry[]) => {
+      const byId = new Map(list.map((e) => [`${e.kind}:${e.key}`, e]))
+      return recent.flatMap((pick) => byId.get(`${pick.kind}:${pick.key}`)?.name ?? [])
+    }
+    expect(picks(entries)).toEqual(['Original Resin', 'Planner'])
+    expect(picks(withoutItems(entries, ['OriginalResin']))).toEqual(['Planner'])
+    // Shared again by a newer capture: the pick is back, it was never dropped.
+    expect(picks(withoutItems(entries, offBagKeys([])))).toEqual(['Original Resin', 'Planner'])
   })
 })

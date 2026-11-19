@@ -46,6 +46,21 @@ export function searchWords(...names: readonly (string | undefined)[]): string {
   ).replace(/\s+/g, ' ')
 }
 
+/**
+ * `entries` without the items whose keys are in `keys`: the counts the
+ * account's newest capture did not share (the bag copies, bag-copies.ts).
+ * The Materials page lists none of them and opens no detail for one, so the
+ * search offers none either, as a match or as a recent pick. The same list
+ * when `keys` is empty.
+ */
+export function withoutItems(
+  entries: readonly SearchEntry[],
+  keys: readonly string[],
+): readonly SearchEntry[] {
+  if (keys.length === 0) return entries
+  return entries.filter((entry) => entry.kind !== 'item' || !keys.includes(entry.key))
+}
+
 export interface SearchGroup {
   kind: SearchKind
   entries: SearchEntry[]

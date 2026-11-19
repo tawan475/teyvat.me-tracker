@@ -53,3 +53,40 @@ export function buildItems(history: MaterialsHistory): MaterialItem[] {
   }
   return items
 }
+
+type Hides = Pick<MaterialsHistory, 'hidden'> | null | undefined
+
+/**
+ * Whether the newest capture's switches cover `key` (`history.hidden`): the
+ * count is not shared now, so the page offers it nowhere.
+ */
+export function notSharedNow(history: Hides, key: string): boolean {
+  return !!history?.hidden?.includes(key)
+}
+
+/**
+ * `keys` as the page lists them (the tracked charts, "Don't have"): without
+ * the counts that are not shared now, like the bag's own lists. The same
+ * array when it holds none of them, so nothing recomputes; the keys left out
+ * stay where they are saved and are listed again once a capture shares them.
+ */
+export function listedKeys<T extends readonly string[]>(keys: T, history: Hides): T | string[] {
+  const hidden = history?.hidden
+  if (!hidden?.length || !keys.some((key) => hidden.includes(key))) return keys
+  return keys.filter((key) => !hidden.includes(key))
+}
+
+/**
+ * The material the detail dialog shows for `key` (a tile, a tracked chart,
+ * the site search's `?m=`): the bag's item, or the key at 0 for one this
+ * account never held. Null opens nothing: no key, or a count that is not
+ * shared now, whichever way it was asked for.
+ */
+export function detailItemFor(
+  key: string | null,
+  byKey: ReadonlyMap<string, MaterialItem>,
+  history: Hides,
+): MaterialItem | null {
+  if (!key || notSharedNow(history, key)) return null
+  return byKey.get(key) ?? materialItem(key, 0)
+}

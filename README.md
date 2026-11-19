@@ -466,8 +466,14 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     nothing more. While the newest capture has the part off, the Materials
     wallet has no tile for the count, the bag lists it nowhere and "now" (the
     Planner's bag too) holds none of it, whichever capture the bag is read
-    from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). Its
-    stored points stay in the materials history, which goes by each capture's
+    from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). The
+    same holds for every other way to the count: the site search does not
+    offer it, as a match or as a recent pick (`withoutItems` over the
+    account's `latest.off`), a chart pinned on it is left out of Tracked
+    while its pin stays saved (`listedKeys`), and its detail dialog opens
+    from nowhere, a `?m=` link included (`detailItemFor`). Nothing on the
+    page says so; all of it is back with the next capture that shares the
+    part. Its stored points stay in the materials history, by each capture's
     own `gi_off`: a capture whose switches cover the count is no point of its
     series (`MaterialSeries.off` lists those snapshots), so the count's line
     breaks there like a capture without the materials breaks every line

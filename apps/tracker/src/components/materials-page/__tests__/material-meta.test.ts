@@ -4,7 +4,13 @@ import materialsJson from '@gdt/game-data/data/materials.json'
 import type { BagFile, MaterialIndexFile } from '@gdt/game-data/format'
 import { entryId } from '@gdt/game-data/icons'
 import { describe, expect, it } from 'vitest'
-import { buildItems, materialItem } from '../material-items'
+import {
+  buildItems,
+  detailItemFor,
+  listedKeys,
+  materialItem,
+  notSharedNow,
+} from '../material-items'
 import {
   WALLET_KEYS,
   bagTabs,
@@ -246,6 +252,74 @@ describe('the wallet strip', () => {
       ['RealmCurrency', 950],
     ])
     expect(keys(['OriginalResin', 'RealmCurrency'])).toEqual([['Mora', 6]])
+  })
+})
+
+describe('a count the newest capture did not share', () => {
+  const HIDDEN = { hidden: ['OriginalResin'] }
+  const BOTH = { hidden: ['OriginalResin', 'RealmCurrency'] }
+  const byKey = new Map([
+    ['Mora', materialItem('Mora', 6)],
+    ['RealmCurrency', materialItem('RealmCurrency', 950)],
+  ])
+
+  it('is told from the history, and only while it is not shared', () => {
+    expect(notSharedNow(HIDDEN, 'OriginalResin')).toBe(true)
+    expect(notSharedNow(HIDDEN, 'RealmCurrency')).toBe(false)
+    expect(notSharedNow(HIDDEN, 'FragileResin')).toBe(false)
+    expect(notSharedNow(BOTH, 'RealmCurrency')).toBe(true)
+    // Everything shared (no `hidden`), or the history not loaded yet.
+    expect(notSharedNow({}, 'OriginalResin')).toBe(false)
+    expect(notSharedNow({ hidden: [] }, 'OriginalResin')).toBe(false)
+    expect(notSharedNow(null, 'OriginalResin')).toBe(false)
+    expect(notSharedNow(undefined, 'OriginalResin')).toBe(false)
+  })
+
+  it('has no tracked chart while it is pinned, and the pin stays', () => {
+    const pinned = ['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency']
+    expect(listedKeys(pinned, HIDDEN)).toEqual(['Mora', 'Primogem', 'RealmCurrency'])
+    expect(listedKeys(pinned, BOTH)).toEqual(['Mora', 'Primogem'])
+    // The saved list is not touched: the chart is back in its place once a
+    // newer capture shares the count.
+    expect(pinned).toEqual(['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency'])
+    expect(listedKeys(pinned, {})).toBe(pinned)
+    expect(listedKeys(pinned, null)).toBe(pinned)
+    expect(listedKeys(pinned, { hidden: [] })).toBe(pinned)
+    // Nothing of it pinned: the same list.
+    const others = ['Mora', 'Primogem']
+    expect(listedKeys(others, BOTH)).toBe(others)
+    expect(listedKeys(['OriginalResin'], HIDDEN)).toEqual([])
+  })
+
+  it('opens no detail, whichever way it is asked for', () => {
+    expect(detailItemFor('OriginalResin', byKey, HIDDEN)).toBeNull()
+    expect(detailItemFor('RealmCurrency', byKey, BOTH)).toBeNull()
+    expect(detailItemFor(null, byKey, HIDDEN)).toBeNull()
+    expect(detailItemFor('', byKey, HIDDEN)).toBeNull()
+  })
+
+  it('while every other key opens as before: held, or at 0 when never held', () => {
+    expect(detailItemFor('Mora', byKey, HIDDEN)).toBe(byKey.get('Mora'))
+    expect(detailItemFor('RealmCurrency', byKey, HIDDEN)).toMatchObject({
+      key: 'RealmCurrency',
+      count: 950,
+    })
+    expect(detailItemFor('FragileResin', byKey, BOTH)).toMatchObject({
+      key: 'FragileResin',
+      count: 0,
+      wallet: true,
+    })
+    // Before the history is in nothing is known to be left out.
+    expect(detailItemFor('OriginalResin', byKey, undefined)).toMatchObject({
+      key: 'OriginalResin',
+      count: 0,
+    })
+  })
+
+  it('and opens again once a newer capture shares it', () => {
+    const held = new Map([...byKey, ['OriginalResin', materialItem('OriginalResin', 160)]])
+    expect(detailItemFor('OriginalResin', held, HIDDEN)).toBeNull()
+    expect(detailItemFor('OriginalResin', held, {})).toMatchObject({ count: 160 })
   })
 })
 

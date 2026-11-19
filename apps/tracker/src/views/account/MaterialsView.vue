@@ -43,7 +43,10 @@ import TrackPicker from '@/components/materials-page/TrackPicker.vue'
 import WalletStrip, { type WalletItem } from '@/components/materials-page/WalletStrip.vue'
 import {
   buildItems,
+  detailItemFor,
+  listedKeys,
   materialItem,
+  notSharedNow,
   type MaterialItem,
 } from '@/components/materials-page/material-items'
 import {
@@ -156,7 +159,9 @@ const missing = computed(() => {
   const keys = catalogKeys.value
   if (!keys || !history.value) return null
   const held = history.value.series
-  return keys.filter((key) => !held.has(key)).map((key) => materialItem(key, 0))
+  return listedKeys(keys, history.value)
+    .filter((key) => !held.has(key))
+    .map((key) => materialItem(key, 0))
 })
 
 const wallet = computed<WalletItem[]>(() => {
@@ -216,13 +221,22 @@ function showHistory(key: string) {
 const range = useChartRange('materials:range')
 const frame = computed(() => (history.value ? rangeFrame(history.value, range.value) : null))
 const canTrack = computed(() => graph.selectedKeys.value.length < MAX_SERIES)
+// A pinned count the newest capture did not share has no chart, like it has
+// no tile (issue 12). Its pin stays saved: the chart is back once a capture
+// shares the count again.
+const trackedKeys = computed(() => listedKeys(graph.selectedKeys.value, history.value))
 
 const detailKey = shallowRef<string | null>(null)
-// A tracked key this account never held still opens (at 0).
-const detailItem = computed<MaterialItem | null>(() => {
-  const key = detailKey.value
-  if (!key) return null
-  return byKey.value.get(key) ?? materialItem(key, 0)
+// A tracked key this account never held still opens (at 0); a count that is
+// not shared now opens nothing.
+const detailItem = computed<MaterialItem | null>(() =>
+  detailItemFor(detailKey.value, byKey.value, history.value),
+)
+// Asked for before the history was in (`?m=`), or left out by a capture that
+// arrived while its dialog was open: forgotten, so the dialog does not open
+// by itself when a later capture shares the count again.
+watch([detailKey, history], ([key, loaded]) => {
+  if (key && notSharedNow(loaded, key)) detailKey.value = null
 })
 const pickerOpen = ref(false)
 
@@ -298,7 +312,7 @@ const importTo = computed(() => accountLink('account-import'))
       v-model:range="range"
       :history="history"
       :frame="frame"
-      :keys="graph.selectedKeys.value"
+      :keys="trackedKeys"
       :ready="graph.ready.value"
       :icon="icon"
       @open="detailKey = $event"

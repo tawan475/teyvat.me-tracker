@@ -33,14 +33,14 @@ export function loadMaterialsHistory(account: AccountRef): Promise<MaterialsHist
         loadSnapshots(account),
       ])
       // A capture whose Materials switch was off (Capture's gi_off, issue 12)
-      // holds no bag: it is left out, so every count holds the last shared one.
-      const unshared = new Set(
-        list.filter((s) => !sharesSection(s.off, 'materials')).map((s) => s.id),
-      )
+      // holds no bag: it is left out, so every count holds the last shared
+      // one, and the charts break their lines where it was taken.
+      const unshared = list.filter((s) => !sharesSection(s.off, 'materials'))
+      const left = new Set(unshared.map((s) => s.id))
       const snapshots = bundle.snapshots
-        .filter((s) => !unshared.has(s.id))
+        .filter((s) => !left.has(s.id))
         .sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
-      return buildMaterialsHistory(snapshots, bundle.texts, dictionary)
+      return buildMaterialsHistory(snapshots, bundle.texts, dictionary, unshared)
     })()
     entry.catch(() => cache.delete(key))
     cache.set(key, entry)

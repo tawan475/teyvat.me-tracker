@@ -5,6 +5,7 @@ import { buildMaterialsHistory, valueAt, type MaterialsSnapshotRef } from '../ma
 
 const dictionary = createDictionary([])
 const DAY = 86_400_000
+const HOUR = 3_600_000
 
 /** One keyframe snapshot per entry of `bags` (raw-key refs), a day apart. */
 function history(
@@ -80,5 +81,40 @@ describe('materials history', () => {
     const h = history([{ Mora: 500, Primogem: 160 }, { Mora: 400 }])
     expect(valueAt(h.series.get('Primogem'), 1)).toBe(0)
     expect(valueAt(h.series.get('Mora'), 1)).toBe(400)
+  })
+
+  it('keeps the captures that did not share the materials as times only', () => {
+    const shared = history([{ Mora: 500 }, { Mora: 600 }])
+    expect(shared).not.toHaveProperty('unshared')
+
+    const texts = new Map([
+      ['k0', JSON.stringify({ m: [['Mora', 500]] } satisfies MaterialsSection)],
+      ['k1', JSON.stringify({ m: [['Mora', 600]] } satisfies MaterialsSection)],
+    ])
+    const ref = (id: number, takenAt: number, lastSeenAt: number): MaterialsSnapshotRef => ({
+      id,
+      takenAt,
+      lastSeenAt,
+      materials: `k${id - 1}`,
+      materialsKeyframe: `k${id - 1}`,
+    })
+    const h = buildMaterialsHistory(
+      [ref(1, 0, 2 * HOUR), ref(2, 3 * DAY, 3 * DAY)],
+      texts,
+      dictionary,
+      // In any order; one was seen again later, which is a capture too.
+      [
+        { takenAt: 2 * DAY, lastSeenAt: 2 * DAY },
+        { takenAt: DAY, lastSeenAt: DAY + HOUR },
+      ],
+    )
+    // They hold no bag: the counts and their snapshots are the shared ones.
+    expect(h.times).toEqual([0, 3 * DAY])
+    expect(h.ids).toEqual([1, 2])
+    expect([0, 1].map((i) => valueAt(h.series.get('Mora'), i))).toEqual([500, 600])
+    expect(h.unshared).toEqual({
+      at: [DAY, DAY + HOUR, 2 * DAY],
+      seen: [2 * HOUR, 3 * DAY],
+    })
   })
 })

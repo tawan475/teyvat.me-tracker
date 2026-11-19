@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { DAY, HOUR } from '@/data/chart-range'
-import type { MaterialsHistory } from '@/data/materials-history'
+import {
+  chartFrame,
+  seriesPoints,
+  withLiveMaterials,
+  type MaterialsHistory,
+} from '@/data/materials-history'
 import {
   chartPoints,
   flowBetween,
@@ -108,5 +113,157 @@ describe('change since', () => {
     for (const value of ['last', '7d', '30d', '1h', '14d', 'all'])
       expect(isChangePeriod(value)).toBe(true)
     for (const value of ['90d', '', null, 7]) expect(isChangePeriod(value)).toBe(false)
+  })
+})
+
+describe('captures that did not share the materials', () => {
+  const end = at(2026, 10, 5, 14, 20)
+  const MIN = 60_000
+  const ago = (minutes: number) => end - minutes * MIN
+
+  /**
+   * As `history`, with the captures that left the materials out (Capture's
+   * gi_off): `seen` is each snapshot's last sighting, `unshared` their times.
+   */
+  function gapped(
+    times: number[],
+    counts: number[],
+    seen: number[],
+    unshared: number[],
+  ): MaterialsHistory {
+    return { ...history(times, counts, seen.at(-1)!), unshared: { at: unshared, seen } }
+  }
+
+  it('breaks the line there: no 0, no count held across', () => {
+    // Shared 50 minutes ago (seen again 5 minutes later), two captures with
+    // the switch off, then shared again 10 minutes ago and seen until now.
+    const h = gapped([ago(50), ago(10)], [100, 120], [ago(45), end], [ago(30), ago(20)])
+    const frame = rangeFrame(h, '1h')
+    expect(frame.indices).toEqual([0, 1])
+    expect(frame.gaps).toEqual([ago(30), ago(20)])
+    expect(frame.opensUnshared).toBeUndefined()
+    const points = [
+      { x: ago(50), y: 100 },
+      // The line ends where the count was last confirmed.
+      { x: ago(45), y: 100 },
+      { x: ago(30), y: null },
+      { x: ago(20), y: null },
+      { x: ago(10), y: 120 },
+      { x: end, y: 120 },
+    ]
+    expect(chartPoints(h, 'Mora', frame)).toEqual(points)
+    expect(seriesPoints(h, 'Mora', frame)).toEqual(points)
+    // The figures beside the chart still compare the captures that shared them.
+    expect(frameChange(h, 'Mora', frame)).toBe(20)
+  })
+
+  it('holds nothing to the end after one', () => {
+    const h = gapped([ago(50)], [100], [ago(40)], [ago(30), ago(5)])
+    const frame = rangeFrame(h, '1h')
+    expect(frame.end).toBe(ago(40))
+    expect(chartPoints(h, 'Mora', frame)).toEqual([
+      { x: ago(50), y: 100 },
+      { x: ago(40), y: 100 },
+      { x: ago(30), y: null },
+      { x: ago(5), y: null },
+    ])
+    // A snapshot never seen again ends on its own point.
+    const once = gapped([ago(50)], [100], [ago(50)], [ago(30)])
+    expect(chartPoints(once, 'Mora', rangeFrame(once, '1h'))).toEqual([
+      { x: ago(50), y: 100 },
+      { x: ago(30), y: null },
+    ])
+  })
+
+  it('carries no count into a range that opens after one', () => {
+    // Shared 5 hours ago, switched off 3 hours ago, shared again 30 minutes ago.
+    const times = [end - 5 * HOUR, ago(30)]
+    const off = gapped(times, [100, 120], [end - 5 * HOUR, end], [end - 3 * HOUR])
+    const frame = rangeFrame(off, '1h')
+    expect(frame.carryIn).toBe(0)
+    expect(frame.opensUnshared).toBe(true)
+    expect(frame.gaps).toBeUndefined()
+    expect(chartPoints(off, 'Mora', frame)).toEqual([
+      { x: end - HOUR, y: null },
+      { x: ago(30), y: 120 },
+      { x: end, y: 120 },
+    ])
+    // One before the snapshot carried in says nothing about the range.
+    const earlier = gapped(times, [100, 120], [end - 5 * HOUR, end], [end - 6 * HOUR])
+    const shared = rangeFrame(earlier, '1h')
+    expect(shared.opensUnshared).toBeUndefined()
+    expect(chartPoints(earlier, 'Mora', shared)[0]).toEqual({ x: end - HOUR, y: 100 })
+    // No snapshot before the range at all, only a capture that shared nothing.
+    const first = gapped([ago(30)], [120], [end], [end - 3 * HOUR])
+    const opening = rangeFrame(first, '1h')
+    expect(opening.carryIn).toBe(-1)
+    expect(chartPoints(first, 'Mora', opening)).toEqual([
+      { x: end - HOUR, y: null },
+      { x: ago(30), y: 120 },
+      { x: end, y: 120 },
+    ])
+  })
+
+  it('keeps one per period, and none in a period a snapshot closes', () => {
+    const day = (d: number, h: number) => at(2026, 3, d, h)
+    // Day 1: shared, then off (the day closes on the shared one). Day 2: off
+    // twice. Day 3: off, then shared again. Day 4 on: shared until today.
+    const times = [day(1, 10), day(3, 18), day(4, 9), end]
+    const off = [day(1, 12), day(2, 9), day(2, 15), day(3, 8)]
+    const h = gapped(times, [100, 130, 140, 150], [day(1, 11), day(3, 18), day(4, 9), end], off)
+    const frame = chartFrame(h, -Infinity, 'day')
+    expect(frame.indices).toEqual([0, 1, 2, 3])
+    expect(frame.gaps).toEqual([day(2, 15)])
+    expect(chartPoints(h, 'Mora', frame)).toEqual([
+      { x: day(1, 10), y: 100 },
+      { x: day(1, 11), y: 100 },
+      { x: day(2, 15), y: null },
+      { x: day(3, 18), y: 130 },
+      { x: day(4, 9), y: 140 },
+      { x: end, y: 150 },
+    ])
+    // Every capture is kept when the range plots every snapshot.
+    expect(chartFrame(h, -Infinity, 'raw').gaps).toEqual(off)
+    // The year range buckets by day: the same single break.
+    expect(rangeFrame(h, '1y').gaps).toEqual([day(2, 15)])
+  })
+
+  it('lets a snapshot stamped the same instant stand', () => {
+    const h = gapped([ago(50), ago(10)], [100, 120], [ago(50), end], [ago(10)])
+    expect(chartPoints(h, 'Mora', rangeFrame(h, '1h'))).toEqual([
+      { x: ago(50), y: 100 },
+      { x: ago(10), y: 120 },
+      { x: end, y: 120 },
+    ])
+  })
+
+  it('leaves a history where every capture shared them as it was', () => {
+    const h = history([ago(50), ago(10)], [100, 120], end)
+    const frame = rangeFrame(h, '1h')
+    expect(frame).not.toHaveProperty('gaps')
+    expect(frame).not.toHaveProperty('opensUnshared')
+    expect(chartPoints(h, 'Mora', frame)).toEqual([
+      { x: ago(50), y: 100 },
+      { x: ago(10), y: 120 },
+      { x: end, y: 120 },
+    ])
+  })
+
+  it("keeps the breaks under live sync's point", () => {
+    const h = gapped([ago(50), ago(10)], [100, 120], [ago(45), ago(10)], [ago(30)])
+    const live = withLiveMaterials(h, {
+      open: true,
+      base: { snapshotId: 2, takenAt: ago(10) },
+      updatedAt: ago(2),
+      changes: [['set', ['materials', 'Mora'], 125]],
+    })
+    expect(live.unshared).toEqual({ at: [ago(30)], seen: [ago(45), ago(10), ago(2)] })
+    expect(chartPoints(live, 'Mora', rangeFrame(live, '1h'))).toEqual([
+      { x: ago(50), y: 100 },
+      { x: ago(45), y: 100 },
+      { x: ago(30), y: null },
+      { x: ago(10), y: 120 },
+      { x: ago(2), y: 125 },
+    ])
   })
 })

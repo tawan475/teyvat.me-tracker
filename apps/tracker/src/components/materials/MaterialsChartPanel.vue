@@ -49,7 +49,7 @@ const rows = computed(() =>
       name,
       color: ((index % 6) + 1) as TimelineSeries['color'],
       points,
-      peak: points.reduce((max, p) => Math.max(max, p.y), 0),
+      peak: points.reduce((max, p) => Math.max(max, p.y ?? 0), 0),
       latest,
       change,
       detail: `${name}: ${formatNumber(latest)} (${formatSigned(change)} in range)`,

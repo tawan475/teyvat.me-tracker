@@ -41,6 +41,20 @@ export interface MaterialsHistory {
   series: Map<string, MaterialSeries>
   /** The newest snapshot's materials, exactly as its GOOD file lists them. */
   latest: Map<string, number>
+  /**
+   * Captures that did not share the materials (Capture's gi_off, issue 12).
+   * Their snapshots are not in `times`: every count holds the last shared
+   * one over them, and the charts break their lines there (chartFrame,
+   * framePoints). Absent when every capture shared them.
+   */
+  unshared?: UnsharedCaptures
+}
+
+export interface UnsharedCaptures {
+  /** When each was taken, and last seen again; oldest first (epoch ms). */
+  at: number[]
+  /** For each entry of `times`: when that snapshot's counts were last confirmed (its lastSeenAt). */
+  seen: number[]
 }
 
 /** In a stored delta, this count means "the key is gone" (see @gdt/shared). */
@@ -54,10 +68,16 @@ const REMOVED = -1
  */
 const CURRENCY: ReadonlySet<string> = new Set(['Mora', 'Primogem'])
 
+/**
+ * `snapshots`: the captures that shared the materials, oldest first.
+ * `unshared`: those that did not (Capture's gi_off), in any order; they hold
+ * no bag and only mark where the charts break their lines.
+ */
 export function buildMaterialsHistory(
   snapshots: readonly MaterialsSnapshotRef[],
   texts: ReadonlyMap<string, string>,
   dictionary: KeyDictionary,
+  unshared: readonly Pick<MaterialsSnapshotRef, 'takenAt' | 'lastSeenAt'>[] = [],
 ): MaterialsHistory {
   const parse = (hash: string): MaterialsSection => {
     const text = texts.get(hash)
@@ -133,7 +153,24 @@ export function buildMaterialsHistory(
     previousDelta = delta
   })
 
-  return { times, ids, lastSeenAt: snapshots.at(-1)?.lastSeenAt ?? 0, series, latest: state }
+  const history: MaterialsHistory = {
+    times,
+    ids,
+    lastSeenAt: snapshots.at(-1)?.lastSeenAt ?? 0,
+    series,
+    latest: state,
+  }
+  if (unshared.length > 0) {
+    // A later sighting of the same upload is a capture too.
+    const at = unshared.flatMap((s) =>
+      s.lastSeenAt > s.takenAt ? [s.takenAt, s.lastSeenAt] : [s.takenAt],
+    )
+    history.unshared = {
+      at: at.sort((a, b) => a - b),
+      seen: snapshots.map((s) => Math.max(s.lastSeenAt, s.takenAt)),
+    }
+  }
+  return history
 }
 
 // ------------------------------------------------------------------ queries
@@ -201,6 +238,15 @@ export interface ChartFrame {
   count: number
   /** Where the newest counts stop being confirmed (its lastSeenAt). */
   end: number
+  /**
+   * Captures after `from` that did not share the materials, oldest first:
+   * every line breaks there. Kept like `indices`: a period keeps its last
+   * one, and none when a snapshot of the period is plotted (the period
+   * closes on a capture that shared them). Absent when there is none.
+   */
+  gaps?: number[]
+  /** The range opens after a capture that did not share them: no count is carried in. */
+  opensUnshared?: boolean
 }
 
 /**
@@ -228,7 +274,7 @@ export function chartFrame(
     else indices.push(i)
     period = p
   }
-  return {
+  const frame: ChartFrame = {
     from,
     indices,
     carryIn,
@@ -236,24 +282,103 @@ export function chartFrame(
     count: times.length - start,
     end: Math.max(history.lastSeenAt, times.at(-1) ?? 0),
   }
+
+  const unshared = history.unshared?.at ?? []
+  if (unshared.length > 0 && times.length > 0) {
+    const plotted = new Set(
+      bucket === 'raw' ? [] : indices.map((i) => periodStart(times[i]!, bucket)),
+    )
+    const gaps: number[] = []
+    /** The newest one at or before `from`. */
+    let before: number | undefined
+    period = Number.NaN
+    for (const at of unshared) {
+      if (at <= from) {
+        before = at
+        continue
+      }
+      if (bucket === 'raw') {
+        gaps.push(at)
+        continue
+      }
+      const p = periodStart(at, bucket)
+      if (plotted.has(p)) continue
+      if (p === period) gaps[gaps.length - 1] = at
+      else gaps.push(at)
+      period = p
+    }
+    if (gaps.length > 0) frame.gaps = gaps
+    if (before !== undefined && (carryIn < 0 || before > times[carryIn]!)) {
+      frame.opensUnshared = true
+    }
+  }
+  return frame
 }
 
-/** Chart points for one key: last count in each period, held to the end. */
+/** A chart line's point: `y` null where a capture did not share the materials (the line breaks). */
+export interface MaterialPoint {
+  x: number
+  y: number | null
+}
+
+/**
+ * A line over `frame` from each plotted snapshot's count (`read`), held to
+ * the end. A capture that did not share the materials (frame.gaps) is a
+ * point without a value: the line ends where the count before it was last
+ * confirmed and starts again at the next snapshot, with no 0 and no count
+ * held across, as on the progression charts. Nothing is held to the end
+ * after one.
+ */
+export function framePoints(
+  history: MaterialsHistory,
+  frame: ChartFrame,
+  read: (index: number) => number,
+): MaterialPoint[] {
+  const { times } = history
+  const seen = history.unshared?.seen
+  const gaps = frame.gaps ?? []
+  const points: MaterialPoint[] = []
+  /** The snapshot the last point shows; -1 at the start and after a break. */
+  let shown = -1
+  let g = 0
+  const breaksBefore = (limit: number) => {
+    for (; g < gaps.length && gaps[g]! < limit; g++) {
+      const gap = gaps[g]!
+      const held = points[points.length - 1]
+      const until = shown >= 0 ? (seen?.[shown] ?? 0) : 0
+      if (held && until > held.x && until < gap) points.push({ x: until, y: held.y })
+      points.push({ x: gap, y: null })
+      shown = -1
+    }
+  }
+
+  if (frame.opensUnshared) points.push({ x: frame.from, y: null })
+  else if (frame.carryIn >= 0) {
+    points.push({ x: frame.from, y: read(frame.carryIn) })
+    shown = frame.carryIn
+  }
+  for (const index of frame.indices) {
+    const x = times[index]!
+    breaksBefore(x)
+    points.push({ x, y: read(index) })
+    shown = index
+    // One stamped the same instant as a snapshot: the snapshot's count stands.
+    while (g < gaps.length && gaps[g]! <= x) g++
+  }
+  breaksBefore(Infinity)
+  const last = times.length - 1
+  if (shown >= 0 && frame.end > times[last]!) points.push({ x: frame.end, y: read(last) })
+  return points
+}
+
+/** Chart points for one key: last count in each period, held to the end (see framePoints). */
 export function seriesPoints(
   history: MaterialsHistory,
   key: string,
   frame: ChartFrame,
-): { x: number; y: number }[] {
+): MaterialPoint[] {
   const series = history.series.get(key)
-  const points: { x: number; y: number }[] = []
-  if (frame.carryIn >= 0) points.push({ x: frame.from, y: valueAt(series, frame.carryIn) })
-  for (const index of frame.indices)
-    points.push({ x: history.times[index]!, y: valueAt(series, index) })
-  const last = history.times.length - 1
-  if (last >= 0 && frame.end > history.times[last]!) {
-    points.push({ x: frame.end, y: valueAt(series, last) })
-  }
-  return points
+  return framePoints(history, frame, (index) => valueAt(series, index))
 }
 
 /** Count change of `key` across the range (newest minus the baseline snapshot). */
@@ -317,5 +442,8 @@ export function withLiveMaterials(
     lastSeenAt: Math.max(history.lastSeenAt, at),
     series,
     latest,
+    ...(history.unshared
+      ? { unshared: { at: history.unshared.at, seen: [...history.unshared.seen, at] } }
+      : {}),
   }
 }

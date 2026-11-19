@@ -443,7 +443,13 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     `buildHistory` / `sharedDelta`, `progression-series.ts`). Live sync's
     chart points after such a capture are treated the same way: Capture
     counts their sums from the stripped export, where an off section is 0.
-    The Snapshots table says "Not shared" in those cells.
+    The Snapshots table says "Not shared" in those cells. The Materials
+    page's charts (Tracked, a material's detail) break the same way where a
+    capture left the materials out: its snapshot is not in the materials
+    history, only its time is (`MaterialsHistory.unshared`, `chartFrame`
+    `gaps`, `framePoints` in `data/materials-history.ts`); the line ends where
+    the count before it was last confirmed, and the counts and changes beside
+    the charts still compare the captures that shared them.
   - **Remove a part from history** (eleven removable parts,
     `REMOVABLE_PARTS`: achievements, anecdotes, Planner tasks, endgame,
     collections, profile, wardrobe, exploration, teapot, events, Miliastra;

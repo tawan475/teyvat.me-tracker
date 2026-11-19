@@ -21,8 +21,10 @@ import {
 } from '@/data/chart-range'
 import {
   chartFrame,
+  framePoints,
   indexAtOrBefore,
   type ChartFrame,
+  type MaterialPoint,
   type MaterialSeries,
   type MaterialsHistory,
 } from '@/data/materials-history'
@@ -90,22 +92,18 @@ export function countAt(series: MaterialSeries | undefined, index: number): numb
   return isGap(series, i) ? series.value[i - 1]! : series.value[i]!
 }
 
-/** Chart points for one key over `frame` (as seriesPoints in @/data/materials, gaps bridged). */
+/**
+ * Chart points for one key over `frame` (as seriesPoints in @/data/materials,
+ * capture gaps bridged). A capture that did not share the materials is a
+ * point without a value: the line breaks there (see framePoints).
+ */
 export function chartPoints(
   history: MaterialsHistory,
   key: string,
   frame: ChartFrame,
-): { x: number; y: number }[] {
+): MaterialPoint[] {
   const series = history.series.get(key)
-  const points: { x: number; y: number }[] = []
-  if (frame.carryIn >= 0) points.push({ x: frame.from, y: countAt(series, frame.carryIn) })
-  for (const index of frame.indices)
-    points.push({ x: history.times[index]!, y: countAt(series, index) })
-  const last = history.times.length - 1
-  if (last >= 0 && frame.end > history.times[last]!) {
-    points.push({ x: frame.end, y: countAt(series, last) })
-  }
-  return points
+  return framePoints(history, frame, (index) => countAt(series, index))
 }
 
 /** Count change of `key` over the frame (newest minus its baseline snapshot). */

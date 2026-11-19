@@ -459,7 +459,8 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     same way: `normalizeGood` drops the key before anything is counted, hashed
     or stored (the Worker and the guest store alike; a file without `gi_off`,
     or with the part shared, is untouched), and a live batch's change to it is
-    dropped before it is stored, counted or pushed. A batch knows what its
+    dropped before it is stored or pushed (the batch's own `sum` is taken as
+    sent, never corrected). A batch knows what its
     base snapshot left out from the journal row itself
     (`live_journals.base_off`, `offMask` of the snapshot's `gi_off`, written
     when the snapshot opens the journal; migrations-live 0002), so it reads

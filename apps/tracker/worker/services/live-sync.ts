@@ -213,8 +213,14 @@ export const PUSH_MAX_BYTES = 32_000
  *
  * A change to a bag copy (materials.OriginalResin, materials.RealmCurrency)
  * is left out while the base snapshot's `gi_off` covers it (off.ts; the row's
- * `base_off`, read with the row): nothing of it is stored, counted or pushed.
- * Capture leaves them out itself; this is for builds that still send them.
+ * `base_off`, read with the row): the change is not stored or pushed, and
+ * the figures read from the changes do not see it. Capture leaves them out
+ * itself; this is for builds that still send them.
+ *
+ * The batch's `sum` (Capture's own count of the figures) is taken as sent,
+ * never corrected: a build that still counts a bag copy there (Capture
+ * before dc38307, none released) shows a materials count 1-2 high until its
+ * next snapshot. Accepted (the user, 2026-11-19).
  */
 export async function storeBatch(
   live: D1Database,

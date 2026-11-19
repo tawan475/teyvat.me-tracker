@@ -170,6 +170,14 @@ const exporter = useCardExport({
   <UiModal :open="open" :title="title" size="detail" @close="$emit('close')">
     <template #heading>
       <h2 class="mr-auto min-w-0 flex-1 truncate text-lg font-semibold">{{ title }}</h2>
+      <!-- Wide screens: the card's shape in the header, where the theme switch sits on other cards. -->
+      <UiSegmented
+        v-if="wide"
+        v-model="layout"
+        :options="layouts"
+        :label="$t('collections.arcana.layout')"
+        class="shrink-0"
+      />
       <ShareActions
         v-if="wide"
         v-model:theme="theme"
@@ -191,6 +199,7 @@ const exporter = useCardExport({
 
     <div class="flex flex-col gap-3">
       <UiSegmented
+        v-if="!wide"
         v-model="layout"
         :options="layouts"
         :label="$t('collections.arcana.layout')"

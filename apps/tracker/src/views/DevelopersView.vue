@@ -51,11 +51,13 @@ const IMPORT_ANSWER = showJson({
 })
 
 /**
- * Every field typed (public/developers/leyline.d.ts, served as plain text;
- * the same bytes as Capture's docs/leyline.d.ts).
+ * Every field typed: Capture's docs/leyline.d.ts on GitHub (the user's call,
+ * 2026-11-19: link to the repo, not a copy on the site). The button opens the
+ * file's page, the curl line fetches the raw file from main.
  */
-const TYPES_PATH = '/developers/leyline.d.ts'
-const TYPES_CURL = `curl -O https://teyvat.me${TYPES_PATH}`
+const TYPES_REPO = 'tawan475/teyvat.me-capture'
+const TYPES_URL = `https://github.com/${TYPES_REPO}/blob/main/docs/leyline.d.ts`
+const TYPES_CURL = `curl -O https://raw.githubusercontent.com/${TYPES_REPO}/main/docs/leyline.d.ts`
 
 /** A key's anchor: `/developers#gi_tasks` opens that key (README links point here). */
 const anchorOf = (key: string) => key.split(', ')[0]!
@@ -99,7 +101,7 @@ const languageOpen = ref(false)
               <h1 id="dv-title" class="h1 dv-name">{{ FORMAT_NAME }}</h1>
               <p class="lead">{{ $t('landing.dev.lead') }}</p>
               <div class="acts dv-acts">
-                <a class="btn btn-p" :href="TYPES_PATH" download>
+                <a class="btn btn-p" :href="TYPES_URL" target="_blank" rel="noopener">
                   <FileCode class="ic" aria-hidden="true" />leyline.d.ts
                 </a>
                 <code class="dv-curl">{{ TYPES_CURL }}</code>
@@ -148,7 +150,7 @@ const languageOpen = ref(false)
                   </li>
                 </ul>
                 <div class="tile-g dv-types">
-                  <a class="btn btn-sm btn-g" :href="TYPES_PATH" download>
+                  <a class="btn btn-sm btn-g" :href="TYPES_URL" target="_blank" rel="noopener">
                     <FileCode class="ic" aria-hidden="true" />leyline.d.ts
                   </a>
                   <span>

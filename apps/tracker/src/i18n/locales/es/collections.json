@@ -28,7 +28,7 @@
     "region": "Región",
     "search": "Número o canción",
     "default": "Predeterminada",
-    "defaultTip": "Toda Tetera Caelestis empieza con esta canción"
+    "defaultTip": "Toda Relajatetera empieza con esta canción"
   },
   "tabsLabel": "Colección",
   "summary": "Resumen",
@@ -49,7 +49,7 @@
     "wardrobe": "Armario",
     "aranara": "Escrituras Araniaka: Álbum misterioso",
     "hangouts": "Eventos de encuentro",
-    "blueprints": "Tetera Caelestis",
+    "blueprints": "Relajatetera",
     "crafting": "Fabricación",
     "music": "Juego musical"
   },

@@ -28,7 +28,7 @@
     "region": "지역",
     "search": "번호 또는 곡명",
     "default": "기본",
-    "defaultTip": "모든 주전자에 처음부터 있는 곡"
+    "defaultTip": "모든 속세의 주전자에 처음부터 있는 곡"
   },
   "tabsLabel": "컬렉션",
   "summary": "요약",
@@ -49,7 +49,7 @@
     "wardrobe": "옷장",
     "aranara": "숲의 책: 신비한 스크랩북",
     "hangouts": "데이트 이벤트",
-    "blueprints": "주전자",
+    "blueprints": "속세의 주전자",
     "crafting": "합성",
     "music": "음악 게임"
   },

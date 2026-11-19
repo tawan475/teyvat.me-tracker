@@ -28,7 +28,7 @@
     "region": "Région",
     "search": "Numéro ou morceau",
     "default": "Par défaut",
-    "defaultTip": "Chaque Théière commence avec ce morceau"
+    "defaultTip": "Chaque Sérénithéière commence avec ce morceau"
   },
   "tabsLabel": "Collection",
   "summary": "Résumé",
@@ -49,7 +49,7 @@
     "wardrobe": "Armoire",
     "aranara": "Aranyaka: Presse-papiers mystérieux",
     "hangouts": "Événements Rendez-vous",
-    "blueprints": "Théière",
+    "blueprints": "Sérénithéière",
     "crafting": "Fabrication",
     "music": "Jeu musical"
   },

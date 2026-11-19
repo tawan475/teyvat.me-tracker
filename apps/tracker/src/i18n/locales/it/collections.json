@@ -28,7 +28,7 @@
     "region": "Regione",
     "search": "Numero o brano",
     "default": "Predefinito",
-    "defaultTip": "Ogni Teiera della serenità parte con questo brano"
+    "defaultTip": "Ogni Serenteiera parte con questo brano"
   },
   "tabsLabel": "Collezione",
   "summary": "Riepilogo",
@@ -49,7 +49,7 @@
     "wardrobe": "Guardaroba",
     "aranara": "Aranyaka: Album misterioso",
     "hangouts": "Eventi Appuntamento",
-    "blueprints": "Teiera della serenità",
+    "blueprints": "Serenteiera",
     "crafting": "Creazione",
     "music": "Gioco musicale"
   },

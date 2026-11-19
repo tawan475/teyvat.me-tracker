@@ -16,8 +16,8 @@
  *   access token still reads data for at most 15 minutes. Bumping the version
  *   (sign out everywhere, a password change) ends every session at once,
  *   devices without a row included.
- * - Tokens from before rows existed (no `sid`) get one `legacy` row at their
- *   next refresh; see LEGACY_CUTOFF_S.
+ * - A refresh token without a `sid` (from before session rows, 2026-10-20;
+ *   all of them expired by 2026-11-19) is refused like a revoked one.
  *
  * Both cookies are HttpOnly: page scripts never see a token. Cookie-authed
  * requests that change state must also send `x-gdt-csrf: 1`; a cross-site page
@@ -53,16 +53,6 @@ export const REFRESH_TTL_S = 30 * 24 * 60 * 60
 export const MAX_SESSIONS = 30
 /** A refresh writes `users.last_active_at` at most this often. */
 const ACTIVE_STAMP_MS = 60 * 60 * 1000
-
-/**
- * Refresh tokens without a `sid` were issued before session rows existed
- * (every device signed in when this shipped). One gets a `legacy` row at its
- * next refresh, unless issued after this moment: by then the Worker only
- * issues tokens with a `sid`, so a newer one without is refused. Every token
- * the old Worker issued has expired 30 days after this; delete
- * `adoptLegacySession` and this constant after 2026-11-20.
- */
-export const LEGACY_CUTOFF_S = Date.UTC(2026, 9, 20) / 1000
 
 export const CSRF_HEADER = 'x-gdt-csrf'
 
@@ -352,19 +342,17 @@ export async function refreshSession(c: Context<AppEnv>): Promise<void> {
     origin.city,
   ]
   let row: Slid | null = null
-  if (ver !== null && Number.isSafeInteger(userId)) {
-    row =
-      sid === null
-        ? await adoptLegacySession(c, userId, ver, payload.iat, binds)
-        : await c.env.DB.prepare(
-            `UPDATE user_sessions SET ${SLIDE_SET}
-             WHERE id = ?1 AND user_id = ?2 AND revoked_at IS NULL AND expires_at > ?4
-               AND (SELECT token_version FROM users WHERE id = ?2) = ?3
-             RETURNING id, (SELECT last_active_at FROM users WHERE id = ?2) AS last_active_at,
-               (SELECT suspended_at FROM users WHERE id = ?2) AS suspended_at`,
-          )
-            .bind(sid, userId, ver, ...binds)
-            .first<Slid>()
+  // A token without a session row (sid) is from before rows existed: refused.
+  if (ver !== null && sid !== null && Number.isSafeInteger(userId)) {
+    row = await c.env.DB.prepare(
+      `UPDATE user_sessions SET ${SLIDE_SET}
+       WHERE id = ?1 AND user_id = ?2 AND revoked_at IS NULL AND expires_at > ?4
+         AND (SELECT token_version FROM users WHERE id = ?2) = ?3
+       RETURNING id, (SELECT last_active_at FROM users WHERE id = ?2) AS last_active_at,
+         (SELECT suspended_at FROM users WHERE id = ?2) AS suspended_at`,
+    )
+      .bind(sid, userId, ver, ...binds)
+      .first<Slid>()
   }
   if (!row) {
     clearSessionCookies(c)
@@ -387,48 +375,6 @@ export async function refreshSession(c: Context<AppEnv>): Promise<void> {
     }
   }
   await mint(c, { id: userId, tokenVersion: ver! }, row.id, now)
-}
-
-/**
- * A refresh token from before session rows: one `legacy` row for it, the
- * same one for every tab that refreshes it (keyed by user, user agent and
- * the token's issue time), then a refresh like any other. Legacy path:
- * delete after 2026-11-20 (see LEGACY_CUTOFF_S).
- */
-async function adoptLegacySession(
-  c: Context<AppEnv>,
-  userId: number,
-  ver: number,
-  iat: unknown,
-  binds: unknown[],
-): Promise<Slid | null> {
-  if (typeof iat !== 'number' || !(iat <= LEGACY_CUTOFF_S)) return null
-  const d1 = c.env.DB
-  const createdAt = iat * 1000
-  // ?1 created_at, ?2 user, ?3 version, ?4… as SLIDE_SET.
-  const [, slid] = await d1.batch<Slid>([
-    d1
-      .prepare(
-        `INSERT INTO user_sessions (user_id, method, user_agent, ip, created_ip, country, city,
-           created_at, last_seen_at, expires_at)
-         SELECT ?2, 'legacy', ?7, ?6, ?6, ?8, ?9, ?1, ?4, ?5
-         WHERE (SELECT token_version FROM users WHERE id = ?2) = ?3
-           AND NOT EXISTS (SELECT 1 FROM user_sessions WHERE user_id = ?2 AND method = 'legacy'
-             AND user_agent IS ?7 AND created_at = ?1)`,
-      )
-      .bind(createdAt, userId, ver, ...binds),
-    d1
-      .prepare(
-        `UPDATE user_sessions SET ${SLIDE_SET}
-         WHERE user_id = ?2 AND method = 'legacy' AND user_agent IS ?7 AND created_at = ?1
-           AND revoked_at IS NULL AND expires_at > ?4
-           AND (SELECT token_version FROM users WHERE id = ?2) = ?3
-         RETURNING id, (SELECT last_active_at FROM users WHERE id = ?2) AS last_active_at,
-           (SELECT suspended_at FROM users WHERE id = ?2) AS suspended_at`,
-      )
-      .bind(createdAt, userId, ver, ...binds),
-  ])
-  return slid?.results[0] ?? null
 }
 
 /**

@@ -343,10 +343,10 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   profile, sessions, identities, OAuth link, import-key creation; the staff
   routes) check the row in D1; everything else stays JWT-only, so a
   signed-out device can still read data until its access token runs out
-  (≤15 minutes) — but its live socket closes at once. A token without `sid`
-  (signed in before rows existed) gets one deduped `legacy` row at its next
-  refresh, unless issued after `LEGACY_CUTOFF_S`; that path is deleted after
-  2026-11-20. `users` also keeps `signup_ip`, `signup_country` and
+  (≤15 minutes) — but its live socket closes at once. A refresh token without
+  `sid` (from before rows existed; the last expired 2026-11-19) is refused; the
+  path that gave them a `legacy` row was deleted on 2026-11-19 (existing
+  `legacy` rows stay ordinary sessions). `users` also keeps `signup_ip`, `signup_country` and
   `last_active_at` (written at most hourly). Cookie-authed writes need
   `x-gdt-csrf: 1`.
 - **Passkeys** (WebAuthn; `worker/lib/webauthn.ts`, `worker/routes/passkeys.ts`,

@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getDb } from '../db/client'
 import { authTokens, userSessions, users } from '../db/schema'
 import { randomToken, sha256Hex } from '../lib/crypto'
-import { LEGACY_CUTOFF_S, MAX_SESSIONS } from '../lib/session'
+import { MAX_SESSIONS } from '../lib/session'
 import { SESSION_KEEP_DAYS, SIGNUP_IP_DAYS, runMaintenance } from '../services/maintenance'
 import { Client, ORIGIN, signUp, withEnv } from './client'
 
@@ -57,24 +57,6 @@ function token(
 ) {
   const exp = claims.exp ?? claims.iat + (typ === 'access' ? 900 : 30 * 86_400)
   return sign({ ...claims, sub: String(claims.sub), typ, exp }, env.JWT_SECRET, 'HS256')
-}
-
-/**
- * A browser holding only a refresh token from before session rows. Real ones
- * lasted 30 days, so the last ran out on 2026-11-19 (the cutoff + 30 days);
- * the path stays until it is deleted (lib/session `adoptLegacySession`), so
- * this one is given an expiry of its own: still valid, issued before the cutoff.
- */
-async function legacyBrowser(userId: number, ver = 0, iat?: number) {
-  const now = Math.floor(Date.now() / 1000)
-  const client = new Client()
-  const issued = iat ?? Math.min(now, LEGACY_CUTOFF_S) - 60
-  client.setCookie(
-    'gdt_rt',
-    await token('refresh', { sub: userId, ver, iat: issued, exp: now + 3600 }),
-    '/api/auth',
-  )
-  return client
 }
 
 describe('session list', () => {
@@ -161,16 +143,14 @@ describe('session list', () => {
     expect(client.cookie('gdt_s')).toBeUndefined()
   })
 
-  it('signs every other device out, legacy ones included, and keeps this one', async () => {
-    const { client, username, password, me } = await signUp()
+  it('signs every other device out and keeps this one', async () => {
+    const { client, username, password } = await signUp()
     const phone = await device(username, password)
-    const old = await legacyBrowser(me.id)
     const [mine] = (await list(client)).filter((s) => s.current)
 
     const response = await client.fetch('/api/auth/sessions/revoke-others', { method: 'POST' })
     expect(response.status).toBe(204)
     expect(await refresh(phone)).toMatchObject({ status: 401, code: 'session_revoked' })
-    expect(await refresh(old)).toMatchObject({ status: 401, code: 'session_revoked' })
     // The same session goes on, with new tokens.
     expect((await list(client)).map((s) => s.id)).toEqual([mine!.id])
     expect(await refresh(client)).toMatchObject({ status: 204 })
@@ -291,50 +271,18 @@ describe('refresh', () => {
 })
 
 describe('tokens from before session rows', () => {
-  it('get one legacy row, however many tabs refresh at once', async () => {
+  it('a refresh token without a session row is refused', async () => {
     const { me } = await signUp()
-    const old = await legacyBrowser(me.id)
-    const twin = new Client()
-    twin.setCookie('gdt_rt', old.cookie('gdt_rt')!, '/api/auth')
-    const results = await Promise.all([refresh(old), refresh(twin)])
-    expect(results.map((r) => r.status)).toEqual([204, 204])
-    const legacy = (await rowsOf(me.id)).filter((row) => row.method === 'legacy')
-    expect(legacy).toHaveLength(1)
-    // Both now hold tokens of that session, which the list shows.
-    expect((await list(old)).find((s) => s.current)).toMatchObject({
-      id: legacy[0]!.id,
-      method: 'legacy',
-    })
-    expect((await list(twin)).find((s) => s.current)!.id).toBe(legacy[0]!.id)
-  })
-
-  it('are refused after the version moved on', async () => {
-    const { client, me } = await signUp()
-    const old = await legacyBrowser(me.id)
-    expect((await client.fetch('/api/auth/logout-all', { method: 'POST' })).status).toBe(204)
+    const now = Math.floor(Date.now() / 1000)
+    const old = new Client()
+    old.setCookie(
+      'gdt_rt',
+      await token('refresh', { sub: me.id, ver: 0, iat: now - 60 }),
+      '/api/auth',
+    )
     expect(await refresh(old)).toEqual({ status: 401, code: 'session_revoked' })
+    expect(old.cookie('gdt_rt')).toBeUndefined()
     expect((await rowsOf(me.id)).filter((row) => row.method === 'legacy')).toEqual([])
-  })
-
-  it('are refused when issued after the cutoff', async () => {
-    const { me } = await signUp()
-    const transport = withEnv({})
-    vi.useFakeTimers({ toFake: ['Date'] })
-    vi.setSystemTime((LEGACY_CUTOFF_S + 3600) * 1000)
-    const late = new Client(transport)
-    late.setCookie(
-      'gdt_rt',
-      await token('refresh', { sub: me.id, ver: 0, iat: LEGACY_CUTOFF_S + 60 }),
-      '/api/auth',
-    )
-    expect(await refresh(late)).toEqual({ status: 401, code: 'session_revoked' })
-    const early = new Client(transport)
-    early.setCookie(
-      'gdt_rt',
-      await token('refresh', { sub: me.id, ver: 0, iat: LEGACY_CUTOFF_S - 60 }),
-      '/api/auth',
-    )
-    expect(await refresh(early)).toMatchObject({ status: 204 })
   })
 
   it('an access token without a session reads data, but must refresh for sensitive routes', async () => {

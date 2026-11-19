@@ -91,6 +91,41 @@ export function capturedResin(
   return login
 }
 
+/**
+ * The capture's resin reading, for `resinNow`'s `login`: what live sync last
+ * saw, else the login's clock and count (`capturedResin`). While the newest
+ * capture left the account numbers out (Capture's `gi_off` names
+ * `gi_player.numbers`, issue 12) its journal and clock say nothing about
+ * resin: the reading is the newest capture's that shared them (`player`, at
+ * its own time), or none.
+ */
+export function captureLogin(input: {
+  numbersOff: boolean
+  live: LoginResin | null
+  clock: { value: number; nextAt: number } | null | undefined
+  player: LoginResin | null
+}): LoginResin | null {
+  if (input.numbersOff) return input.player
+  return input.live ?? capturedResin(input.clock, input.player)
+}
+
+/**
+ * The bag `resinNow` counts from. Its Original Resin count is the capture's
+ * reading when nothing better came; one whose capture left the account
+ * numbers out is not shared (the switch covers resin), so it is left out
+ * there: never a count the user chose not to share, and never a guess.
+ */
+export function resinBag(
+  bag: Readonly<Record<string, number>>,
+  original: string,
+  numbersOff: boolean,
+): Readonly<Record<string, number>> {
+  if (!numbersOff || !original || !(original in bag)) return bag
+  const rest = { ...bag }
+  delete rest[original]
+  return rest
+}
+
 /** Whether a hand-set value was replaced by a capture read after it. */
 export function manualReplaced(
   captured: Pick<ResinNow, 'known' | 'at'> | null,

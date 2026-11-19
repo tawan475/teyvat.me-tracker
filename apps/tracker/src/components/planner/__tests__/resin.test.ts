@@ -1,9 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { PlannerData } from '@gdt/game-data'
+import { resinNow } from '@gdt/game-data/planner-estimate'
 import {
   RESIN_STEP_MS,
   clockReading,
   liveReading,
   capturedResin,
+  captureLogin,
+  resinBag,
   alertAt,
   fullAt,
   manualReplaced,
@@ -53,6 +57,58 @@ describe('resin spent in game (live sync)', () => {
     })
     expect(capturedResin(null, { value: 40, at: T })).toEqual({ value: 40, at: T })
     expect(capturedResin(clock, null)).toEqual(clockReading(clock))
+  })
+})
+
+describe('with the account numbers left out (gi_off, issue 12)', () => {
+  const clock = { value: 160, nextAt: (T + 3 * MIN) / 1000 }
+  const shared = { value: 90, at: T - 600 * MIN }
+
+  it('counts from the newest capture that shared them, at its own time', () => {
+    // The newest capture's journal and clock say nothing; the older reading stands.
+    expect(
+      captureLogin({ numbersOff: true, live: { value: 5, at: T }, clock, player: shared }),
+    ).toEqual(shared)
+    // Ten hours on from 90: full by the game's own clock, a true reading.
+    expect(resinAt(shared, T)).toBe(165)
+    expect(resinAt(shared, T + 10 * 60 * MIN)).toBe(200)
+  })
+
+  it('has no reading when no capture shared them', () => {
+    expect(captureLogin({ numbersOff: true, live: null, clock: null, player: null })).toBeNull()
+  })
+
+  it('reads as before while they are shared', () => {
+    const live = { value: 20, at: T }
+    expect(captureLogin({ numbersOff: false, live, clock, player: shared })).toBe(live)
+    expect(captureLogin({ numbersOff: false, live: null, clock, player: null })).toEqual(
+      clockReading(clock),
+    )
+    expect(captureLogin({ numbersOff: false, live: null, clock: null, player: shared })).toBe(
+      shared,
+    )
+  })
+
+  it("leaves the bag's Original Resin count out (the switch covers resin)", () => {
+    const bag = { OriginalResin: 200, FragileResin: 2 }
+    expect(resinBag(bag, 'OriginalResin', true)).toEqual({ FragileResin: 2 })
+    expect(bag).toEqual({ OriginalResin: 200, FragileResin: 2 })
+    expect(resinBag(bag, 'OriginalResin', false)).toBe(bag)
+    expect(resinBag({ FragileResin: 2 }, 'OriginalResin', true)).toEqual({ FragileResin: 2 })
+  })
+
+  it('never shows a full jar nobody read', () => {
+    const planner = { resin: { original: 'OriginalResin', items: [] } } as unknown as PlannerData
+    const bag = resinBag({ OriginalResin: 200 }, 'OriginalResin', true)
+    const login = captureLogin({ numbersOff: true, live: null, clock: null, player: null })
+    const now = resinNow(planner, bag, T, T + MIN, login)
+    expect(now.known).toBe(false)
+    expect(resinReading(now, null)).toBeNull()
+    // A value set by hand still counts.
+    expect(resinReading(now, { value: 30, at: T })).toMatchObject({ value: 30, source: 'manual' })
+    // With a shared reading: that one, at its time.
+    const shared = resinNow(planner, bag, T, T + MIN, { value: 90, at: T - 60 * MIN })
+    expect(resinReading(shared, null)).toEqual({ value: 90, at: T - 60 * MIN, source: 'player' })
   })
 })
 

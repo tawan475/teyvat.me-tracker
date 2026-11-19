@@ -130,7 +130,7 @@ import {
 } from '@/components/planner/model'
 import type { GoalNeeds } from '@/components/planner/needs'
 import { PRESETS, applyPreset, presetById, type PresetId } from '@/components/planner/presets'
-import { capturedResin, resinAt, resinReading } from '@/components/planner/resin'
+import { captureLogin, resinAt, resinBag, resinReading } from '@/components/planner/resin'
 import type { SeelieWrites } from '@/components/planner/seelie-plan'
 import { farmsNoWeekly, partReadiness, type PartReady } from '@/components/planner/upgrade'
 import { upsertTask } from '@/components/planner/use-planner-tasks'
@@ -274,14 +274,26 @@ const day = computed(() =>
 /**
  * The capture's resin: what live sync last saw (spent or refilled since the
  * login), else on the game's own clock when the newest capture has it, else
- * irminsul's at login, else the snapshot's count.
+ * irminsul's at login, else the snapshot's count. With the account numbers
+ * left out (Capture's `gi_off`), the newest capture's that shared them.
  */
 const resin = computed(() => {
   const at = account.value.latest?.takenAt
-  const clock = capturedTasks.value?.tasks.resin
-  const login = liveResin.value ?? capturedResin(clock, player.value.resin)
+  const numbersOff = player.value.numbersOff
+  const login = captureLogin({
+    numbersOff,
+    live: liveResin.value,
+    clock: capturedTasks.value?.tasks.resin,
+    player: player.value.resin,
+  })
   return planner.value && bag.value && at !== undefined && hasCapture.value
-    ? resinNow(planner.value, bag.value, at, now.value, login)
+    ? resinNow(
+        planner.value,
+        resinBag(bag.value, planner.value.resin.original, numbersOff),
+        at,
+        now.value,
+        login,
+      )
     : null
 })
 /** The resin to count from: the capture's, or one set by hand after it. */

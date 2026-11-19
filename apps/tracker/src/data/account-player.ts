@@ -6,6 +6,10 @@
  * while the game runs, so every snapshot of one session carries the same
  * section (stored once, same hash). Resin therefore counts from the first
  * snapshot of that run, the one closest to the login, not from the newest.
+ *
+ * Teyvat.me Capture's Account numbers switch (`gi_off` names
+ * `gi_player.numbers`, issue 12) leaves resin out: "now" is then the newest
+ * capture that shared the numbers, at its own time.
  */
 
 import type { LoginResin } from '@gdt/game-data/planner-estimate'
@@ -19,22 +23,41 @@ export interface PlayerSection {
   takenAt: number
   /** The section's hash; null or absent when the snapshot has none. */
   key?: string | null
+  /** The snapshot's `gi_off` (Teyvat.me Capture's switches that were off); absent: all shared. */
+  off?: readonly string[]
 }
+
+/** The `gi_off` name of the account numbers (UID, AR, WL, resin…). */
+export const NUMBERS_SWITCH = 'gi_player.numbers'
+
+const sharesNumbers = (s: PlayerSection) => !s.off?.includes(NUMBERS_SWITCH)
 
 export interface AccountPlayer {
   /** From the newest snapshot that has each; null when none does. */
   ar: number | null
   wl: number | null
   /**
-   * Original Resin, only when the newest snapshot has it (an older count
-   * would be stale), with the time of the first snapshot of its session.
+   * Original Resin, only when the newest snapshot that shared the account
+   * numbers has it (an older count would be stale), with the time of the
+   * first snapshot of its session.
    */
   resin: LoginResin | null
+  /**
+   * The newest snapshot left the account numbers out (`gi_off`): its resin
+   * figures (the bag's Original Resin count included) are not a reading.
+   */
+  numbersOff: boolean
   /** The newest snapshot's whole section (Overview's Traveler panel); null when it has none. */
   profile: GiPlayer | null
 }
 
-export const NO_PLAYER: AccountPlayer = { ar: null, wl: null, resin: null, profile: null }
+export const NO_PLAYER: AccountPlayer = {
+  ar: null,
+  wl: null,
+  resin: null,
+  numbersOff: false,
+  profile: null,
+}
 
 /** Each distinct section is decoded once. */
 export function accountPlayer(
@@ -61,17 +84,25 @@ export function accountPlayer(
 
   let resin: LoginResin | null = null
   const newest = newestFirst[0]
-  const value = newest?.key ? values(newest.key).resin : undefined
-  if (newest?.key && value !== undefined) {
-    let at = newest.takenAt
-    for (const s of newestFirst) {
-      if (s.key !== newest.key) break
+  const from = newestFirst.findIndex(sharesNumbers)
+  const shared = newestFirst[from]
+  const value = shared?.key ? values(shared.key).resin : undefined
+  if (shared?.key && value !== undefined) {
+    let at = shared.takenAt
+    for (const s of newestFirst.slice(from)) {
+      if (s.key !== shared.key) break
       at = s.takenAt
     }
     resin = { value, at }
   }
 
-  return { ar, wl, resin, profile: newest?.key ? values(newest.key) : null }
+  return {
+    ar,
+    wl,
+    resin,
+    numbersOff: !!newest && !sharesNumbers(newest),
+    profile: newest?.key ? values(newest.key) : null,
+  }
 }
 
 /**

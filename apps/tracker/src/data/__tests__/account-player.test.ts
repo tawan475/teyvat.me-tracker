@@ -54,7 +54,13 @@ describe('accountPlayer', () => {
       ],
       decode,
     )
-    expect(player).toEqual({ ar: 58, wl: 8, resin: null, profile: { ar: 58, wl: 8 } })
+    expect(player).toEqual({
+      ar: 58,
+      wl: 8,
+      resin: null,
+      numbersOff: false,
+      profile: { ar: 58, wl: 8 },
+    })
   })
 
   it("keeps the newest snapshot's whole section as the profile", () => {
@@ -69,6 +75,43 @@ describe('accountPlayer', () => {
     expect(
       accountPlayer([{ takenAt: 1, key: 'login1' }, { takenAt: 2 }], decode).profile,
     ).toBeNull()
+  })
+
+  it('counts resin from the newest capture that shared the account numbers (gi_off)', () => {
+    const numbers = ['gi_player.numbers']
+    const player = accountPlayer(
+      [
+        { takenAt: 100, key: 'login1', off: [] },
+        { takenAt: 200, key: 'login2', off: [] },
+        { takenAt: 300, key: 'login2' },
+        // Account numbers off: no resin in these, whatever else they hold.
+        { takenAt: 400, key: 'noResin', off: numbers },
+        { takenAt: 500, key: null, off: ['materials', ...numbers] },
+      ],
+      decode,
+    )
+    // The shared one's own session start, not the newest capture's time.
+    expect(player.resin).toEqual({ value: 120, at: 200 })
+    expect(player.numbersOff).toBe(true)
+    expect(player.profile).toBeNull()
+  })
+
+  it('has no resin when no capture shared the account numbers', () => {
+    const player = accountPlayer(
+      [
+        { takenAt: 100, key: 'noResin', off: ['gi_player.numbers'] },
+        { takenAt: 200, key: 'noResin', off: ['gi_player.numbers'] },
+      ],
+      decode,
+    )
+    expect(player.resin).toBeNull()
+    expect(player.numbersOff).toBe(true)
+  })
+
+  it('says the numbers are shared when only other parts are off', () => {
+    const player = accountPlayer([{ takenAt: 100, key: 'login1', off: ['materials'] }], decode)
+    expect(player.resin).toEqual({ value: 40, at: 100 })
+    expect(player.numbersOff).toBe(false)
   })
 
   it('knows nothing without player sections', () => {

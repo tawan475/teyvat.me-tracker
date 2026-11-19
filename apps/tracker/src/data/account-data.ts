@@ -497,9 +497,14 @@ export function loadLastProfile(account: AccountRef): Promise<ReturnType<typeof 
 
 export function loadAccountPlayer(account: AccountRef): Promise<AccountPlayer> {
   return cached(account, 'player', async () => {
-    const bundle = await loadBundle(account, { sections: ['player'] })
+    const [bundle, list] = await Promise.all([
+      loadBundle(account, { sections: ['player'] }),
+      // Already read by the page in most cases (cached): only its `off`.
+      loadSnapshots(account).catch(() => [] as SnapshotResponse[]),
+    ])
+    const off = new Map(list.map((s) => [s.id, s.off]))
     return accountPlayer(
-      bundle.snapshots.map((s) => ({ takenAt: s.takenAt, key: s.player })),
+      bundle.snapshots.map((s) => ({ takenAt: s.takenAt, key: s.player, off: off.get(s.id) })),
       (key) => {
         const text = bundle.texts.get(key)
         return text === undefined ? {} : decodePlayer(JSON.parse(text))

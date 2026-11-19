@@ -8,6 +8,11 @@
  * back to the same count. Counting that as spending everything and getting
  * it back would swamp every figure (Mora: 70M "spent" in one hop), so these
  * functions read such a dip as the count it interrupts.
+ *
+ * A capture whose own switches covered a count (MaterialSeries.off: Original
+ * Resin, Realm Currency) is no change point at all: every figure here
+ * compares the captures that shared the count, the last one before such a
+ * capture against the next one after it.
  */
 
 import type { SelectGroup, SelectOption } from '@/components/ui/UiSelect.vue'
@@ -21,6 +26,7 @@ import {
 } from '@/data/chart-range'
 import {
   chartFrame,
+  firstShared,
   framePoints,
   indexAtOrBefore,
   type ChartFrame,
@@ -84,18 +90,22 @@ function pointAt(series: MaterialSeries, index: number): number {
   return found
 }
 
-/** The count at snapshot `index`, reading a capture gap as the count around it. */
+/**
+ * The count at snapshot `index`, reading a capture gap as the count around
+ * it. Over a capture that did not share the count it is the last shared one
+ * (the first shared one's before any was), as valueAt in @/data/materials.
+ */
 export function countAt(series: MaterialSeries | undefined, index: number): number {
   if (!series || index < 0) return 0
-  const i = pointAt(series, index)
+  const i = pointAt(series, series.off ? Math.max(index, firstShared(series)) : index)
   if (i === -1) return 0
   return isGap(series, i) ? series.value[i - 1]! : series.value[i]!
 }
 
 /**
  * Chart points for one key over `frame` (as seriesPoints in @/data/materials,
- * capture gaps bridged). A capture that did not share the materials is a
- * point without a value: the line breaks there (see framePoints).
+ * capture gaps bridged). A capture that did not share the materials, or this
+ * count, is a point without a value: the line breaks there (see framePoints).
  */
 export function chartPoints(
   history: MaterialsHistory,
@@ -103,7 +113,7 @@ export function chartPoints(
   frame: ChartFrame,
 ): MaterialPoint[] {
   const series = history.series.get(key)
-  return framePoints(history, frame, (index) => countAt(series, index))
+  return framePoints(history, frame, (index) => countAt(series, index), series)
 }
 
 /** Count change of `key` over the frame (newest minus its baseline snapshot). */

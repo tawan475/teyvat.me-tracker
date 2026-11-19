@@ -467,7 +467,14 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     wallet has no tile for the count, the bag lists it nowhere and "now" (the
     Planner's bag too) holds none of it, whichever capture the bag is read
     from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). Its
-    stored points stay in the materials history.
+    stored points stay in the materials history, which goes by each capture's
+    own `gi_off`: a capture whose switches cover the count is no point of its
+    series (`MaterialSeries.off` lists those snapshots), so the count's line
+    breaks there like a capture without the materials breaks every line
+    (`framePoints`, the same "Not shared" mark), the last shared count stands
+    over it (the first shared one before any), and gained, spent and the
+    range changes compare the captures that shared it (`valueAt`, `countAt`).
+    A snapshot stored before `gi_off` existed has none and is read as it was.
   - **Exports write it back.** A rebuilt file carries the stored `gi_off`
     when it names something, as its last key (`decodeSnapshot`,
     `exportedOff`), so the file imports as the same snapshot: without it a

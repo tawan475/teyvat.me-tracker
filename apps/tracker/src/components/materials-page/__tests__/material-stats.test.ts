@@ -7,7 +7,10 @@ import {
   type MaterialsHistory,
 } from '@/data/materials-history'
 import {
+  changesSince,
   chartPoints,
+  countAt,
+  firstSeen,
   flowBetween,
   frameChange,
   frameStart,
@@ -265,5 +268,211 @@ describe('captures that did not share the materials', () => {
       { x: ago(10), y: 120 },
       { x: ago(2), y: 125 },
     ])
+  })
+})
+
+describe('a count a capture did not share (the bag copies)', () => {
+  // Issue 12: the capture shared the bag, but its own switches covered this
+  // count (Original Resin with Account numbers off).
+  const end = at(2026, 10, 5, 14, 20)
+  const MIN = 60_000
+  const ago = (minutes: number) => end - minutes * MIN
+  const KEY = 'OriginalResin'
+
+  /**
+   * Mora at every snapshot, and Original Resin as its change points say;
+   * `off`: the snapshots that did not share the resin, `seen`: each
+   * snapshot's last sighting.
+   */
+  function covered(
+    times: number[],
+    resin: { at: number[]; value: number[] },
+    off: number[],
+    seen: number[] = times,
+  ): MaterialsHistory {
+    const mora = times.map((_, i) => 1_000 + i)
+    const shared = !off.includes(times.length - 1)
+    return {
+      ...history(times, mora, seen.at(-1)!),
+      series: new Map([
+        ['Mora', { at: mora.map((_, i) => i), value: mora }],
+        [KEY, { ...resin, off }],
+      ]),
+      latest: new Map([
+        ['Mora', mora.at(-1)!],
+        ...(shared ? [[KEY, resin.value.at(-1)!] as const] : []),
+      ]),
+      unshared: { at: [], seen },
+    }
+  }
+
+  it('breaks that line there: no 0, no count held across', () => {
+    // Shared 50 minutes ago (seen again 5 minutes later), two captures with
+    // Account numbers off, then shared again 10 minutes ago and seen until now.
+    const times = [ago(50), ago(30), ago(20), ago(10)]
+    const h = covered(
+      times,
+      { at: [0, 3], value: [160, 40] },
+      [1, 2],
+      [ago(45), ago(30), ago(20), end],
+    )
+    const frame = rangeFrame(h, '1h')
+    expect(frame.indices).toEqual([0, 1, 2, 3])
+    expect(frame).not.toHaveProperty('gaps')
+    const points = [
+      { x: ago(50), y: 160 },
+      // The line ends where the count was last confirmed.
+      { x: ago(45), y: 160 },
+      { x: ago(30), y: null },
+      { x: ago(20), y: null },
+      { x: ago(10), y: 40 },
+      { x: end, y: 40 },
+    ]
+    expect(chartPoints(h, KEY, frame)).toEqual(points)
+    expect(seriesPoints(h, KEY, frame)).toEqual(points)
+    // Every other line of the chart runs through.
+    expect(chartPoints(h, 'Mora', frame).map((p) => p.y)).toEqual([1000, 1001, 1002, 1003, 1003])
+  })
+
+  it('compares only the captures that shared it: no false spent, no false gained', () => {
+    const times = [ago(50), ago(30), ago(20), ago(10)]
+    const h = covered(times, { at: [0, 3], value: [160, 40] }, [1, 2])
+    const series = h.series.get(KEY)
+    // The last shared count before the gap against the next shared one.
+    expect([0, 1, 2, 3].map((i) => countAt(series, i))).toEqual([160, 160, 160, 40])
+    expect(flowBetween(series, 0, 3)).toEqual({ gained: 0, spent: 120, peak: 160 })
+    // Measured from inside the gap: still from the last shared count.
+    expect(flowBetween(series, 1, 3)).toEqual({ gained: 0, spent: 120, peak: 160 })
+    expect(frameChange(h, KEY, rangeFrame(h, '1h'))).toBe(-120)
+    expect(changesSince(h, { index: 2, takenAt: times[2]! }).get(KEY)).toBe(-120)
+    // Shared again with the count it had: nothing came in or went out.
+    const same = covered(times, { at: [0], value: [160] }, [1, 2])
+    expect(flowBetween(same.series.get(KEY), 0, 3)).toEqual({ gained: 0, spent: 0, peak: 160 })
+    expect(changesSince(same, { index: 0, takenAt: times[0]! }).has(KEY)).toBe(false)
+    // What the first captures gave before: a 0 point, all of it spent and 40 gained.
+    const zero = { at: [0, 1, 3], value: [160, 0, 40] }
+    expect(flowBetween(zero, 0, 3)).toEqual({ gained: 40, spent: 160, peak: 160 })
+  })
+
+  it('counts no gain when the count is first shared', () => {
+    // Account numbers off from the first capture on, then switched on.
+    const times = [ago(50), ago(30), ago(20), ago(10)]
+    const h = covered(times, { at: [2, 3], value: [120, 80] }, [0, 1])
+    const series = h.series.get(KEY)
+    expect([0, 1, 2, 3].map((i) => countAt(series, i))).toEqual([120, 120, 120, 80])
+    expect(flowBetween(series, 0, 3)).toEqual({ gained: 0, spent: 40, peak: 120 })
+    const frame = rangeFrame(h, '1h')
+    expect(frameChange(h, KEY, frame)).toBe(-40)
+    expect(changesSince(h, referenceFor(h, '1h')).get(KEY)).toBe(-40)
+    expect(firstSeen(h, KEY)).toBe(ago(20))
+    expect(chartPoints(h, KEY, frame)).toEqual([
+      { x: ago(50), y: null },
+      { x: ago(30), y: null },
+      { x: ago(20), y: 120 },
+      { x: ago(10), y: 80 },
+    ])
+  })
+
+  it('holds nothing to the end after one', () => {
+    const times = [ago(50), ago(30), ago(5)]
+    const h = covered(times, { at: [0], value: [160] }, [1, 2], [ago(40), ago(30), end])
+    const frame = rangeFrame(h, '1h')
+    expect(frame.end).toBe(end)
+    expect(chartPoints(h, KEY, frame)).toEqual([
+      { x: ago(50), y: 160 },
+      { x: ago(40), y: 160 },
+      { x: ago(30), y: null },
+      { x: ago(5), y: null },
+    ])
+    // The bag itself was shared to the end.
+    expect(chartPoints(h, 'Mora', frame).at(-1)).toEqual({ x: end, y: 1002 })
+  })
+
+  it('carries no count into a range that opens after one', () => {
+    // Shared 5 hours ago, not 3 hours ago, shared again 30 minutes ago.
+    const times = [end - 5 * HOUR, end - 3 * HOUR, ago(30)]
+    const h = covered(times, { at: [0, 2], value: [160, 40] }, [1], [times[0]!, times[1]!, end])
+    const frame = rangeFrame(h, '1h')
+    expect(frame.carryIn).toBe(1)
+    expect(frame).not.toHaveProperty('opensUnshared')
+    expect(chartPoints(h, KEY, frame)).toEqual([
+      { x: end - HOUR, y: null },
+      { x: ago(30), y: 40 },
+      { x: end, y: 40 },
+    ])
+    // The figure beside it compares the last shared count with the newest.
+    expect(frameChange(h, KEY, frame)).toBe(-120)
+    expect(chartPoints(h, 'Mora', frame)[0]).toEqual({ x: end - HOUR, y: 1001 })
+  })
+
+  it('keeps one per period, and none in a period where a capture shared it', () => {
+    const day = (d: number, h: number) => at(2026, 3, d, h)
+    // Day 1: shared, then not (the day shows the shared one). Day 2: not,
+    // twice. Day 3: not, then shared again. Day 4: shared, then not, to the end.
+    const times = [
+      day(1, 10),
+      day(1, 12),
+      day(2, 9),
+      day(2, 15),
+      day(3, 8),
+      day(3, 18),
+      day(4, 9),
+      day(4, 20),
+    ]
+    const seen = [day(1, 11), ...times.slice(1, 6), day(4, 15), day(4, 22)]
+    const h = covered(times, { at: [0, 5, 6], value: [160, 130, 90] }, [1, 2, 3, 4, 7], seen)
+    const frame = chartFrame(h, -Infinity, 'day')
+    expect(frame.indices).toEqual([1, 3, 5, 7])
+    expect(chartPoints(h, KEY, frame)).toEqual([
+      { x: day(1, 10), y: 160 },
+      { x: day(1, 11), y: 160 },
+      { x: day(2, 15), y: null },
+      { x: day(3, 18), y: 130 },
+      { x: day(4, 9), y: 90 },
+      // As far as the last shared count was confirmed, and no further.
+      { x: day(4, 15), y: 90 },
+    ])
+    // Every capture is kept when the range plots every snapshot.
+    expect(chartPoints(h, KEY, chartFrame(h, -Infinity, 'raw')).map((p) => p.y)).toEqual([
+      160,
+      160,
+      null,
+      null,
+      null,
+      null,
+      130,
+      90,
+      90,
+      null,
+    ])
+  })
+
+  it('leaves a count every capture shared as it was', () => {
+    const times = [ago(50), ago(10)]
+    const h = covered(times, { at: [0, 1], value: [160, 40] }, [], [ago(50), end])
+    h.series.set(KEY, { at: [0, 1], value: [160, 40] })
+    expect(chartPoints(h, KEY, rangeFrame(h, '1h'))).toEqual([
+      { x: ago(50), y: 160 },
+      { x: ago(10), y: 40 },
+      { x: end, y: 40 },
+    ])
+  })
+
+  it('breaks beside a capture that shared no materials at all', () => {
+    // Shared; a capture without the materials; one with the bag but not the
+    // resin; shared again.
+    const times = [ago(50), ago(20), ago(10)]
+    const h = covered(times, { at: [0, 2], value: [160, 40] }, [1], [ago(50), ago(20), end])
+    h.unshared = { at: [ago(30)], seen: h.unshared!.seen }
+    const frame = rangeFrame(h, '1h')
+    expect(frame.gaps).toEqual([ago(30)])
+    expect(chartPoints(h, KEY, frame)).toEqual([
+      { x: ago(50), y: 160 },
+      { x: ago(30), y: null },
+      { x: ago(20), y: null },
+      { x: ago(10), y: 40 },
+      { x: end, y: 40 },
+    ])
+    expect(chartPoints(h, 'Mora', frame).map((p) => p.y)).toEqual([1000, null, 1001, 1002, 1002])
   })
 })

@@ -1,4 +1,11 @@
-import { applyDelta, GOOD_LIMITS, goodDeltaSchema, normalizeGood, type LiveGood } from '@gdt/shared'
+import {
+  applyDelta,
+  GOOD_LIMITS,
+  goodDeltaSchema,
+  normalizeGood,
+  OFF_SWITCHES,
+  type LiveGood,
+} from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
 import { FORMAT_NAME } from '../format-name'
 import {
@@ -34,6 +41,7 @@ describe('the developer page', () => {
       'gi_exploration',
       'gi_guid',
       'gi_miliastra',
+      'gi_off',
       'gi_player',
       'gi_tasks',
       'gi_teapot',
@@ -42,8 +50,12 @@ describe('the developer page', () => {
   })
 
   it('shows examples the tracker keeps whole', () => {
+    // gi_off has its own test below: it says what a file leaves out.
     const top = Object.fromEntries(
-      KEY_DOCS.filter((d) => !d.key.includes(',')).map((d) => [d.key, d.example]),
+      KEY_DOCS.filter((d) => !d.key.includes(',') && d.key !== 'gi_off').map((d) => [
+        d.key,
+        d.example,
+      ]),
     )
     const good = normalizeGood({ ...FILE_EXAMPLE, ...top, weapons: [doc('gi_guid, gi_exp')] })
     expect(good.player).toEqual(doc('gi_player'))
@@ -63,6 +75,25 @@ describe('the developer page', () => {
     expect(good.miliastra).toEqual(doc('gi_miliastra'))
     expect(good.capture).toEqual(doc('gi_capture'))
     expect(good.itemGuids).toEqual({ artifacts: [], weapons: ['3488998120056947072'] })
+  })
+
+  it('names gi_off as the tracker reads it', () => {
+    // The shape lists Capture's switches, all of them, in their fixed order.
+    const shape = KEY_DOCS.find((d) => d.key === 'gi_off')!.shape
+    const named = [...shape.matchAll(/^\s*\| '([^']+)'/gm)].map((match) => match[1])
+    expect(named).toEqual([...OFF_SWITCHES])
+    // The example is kept as sent, and takes the bag copies of its parts along.
+    const off = doc('gi_off') as string[]
+    for (const name of off) expect(OFF_SWITCHES).toContain(name)
+    const good = normalizeGood({
+      ...FILE_EXAMPLE,
+      materials: { Mora: 1, OriginalResin: 160, RealmCurrency: 1800 },
+      gi_off: off,
+    })
+    expect(good.off).toEqual(off)
+    expect([...good.materials.keys()]).toEqual(['Mora'])
+    // A file without the key has none: an older Capture.
+    expect(normalizeGood(FILE_EXAMPLE).off).toBeUndefined()
   })
 
   it('quotes the file limits the tracker enforces', () => {

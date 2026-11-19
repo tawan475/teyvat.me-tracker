@@ -294,6 +294,32 @@ Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Reco
     note: 'Read, never stored with the snapshot.',
   },
   {
+    key: 'gi_off',
+    uploadsOnly: true,
+    what: 'The parts this capture did not share. [] = everything shared; absent = an older Capture.',
+    shape: `GiOffPart[]               // the names, always in this order
+GiOffPart =
+  | 'characters'          // with gi_characters, which is not a name of its own
+  | 'weapons'
+  | 'artifacts'
+  | 'materials'
+  | 'gi_player.profile'   // nickname, signature, birthday, nameCard, profilePicture
+  | 'gi_player.numbers'   // the rest of gi_player; also gi_tasks.resin, gi_tasks.resinSpent
+                          // and the bag count materials.OriginalResin
+  | 'gi_achievements'     // with gi_achievement_times and gi_achievement_progress
+  | 'gi_anecdotes'
+  | 'gi_tasks'
+  | 'gi_endgame'
+  | 'gi_exploration'
+  | 'gi_collections'
+  | 'gi_wardrobe'
+  | 'gi_teapot'           // also gi_tasks.realm and the bag count materials.RealmCurrency
+  | 'gi_events'
+  | 'gi_miliastra'`,
+    example: ['gi_player.numbers', 'gi_teapot'] satisfies NonNullable<Leyline['gi_off']>,
+    note: 'Capture leaves the key of a part named here out of its upload, so an absent key is "not shared", not "empty". On tracker uploads and on files exported from the tracker (which keep an empty characters, weapons, artifacts or materials beside it); never in Capture’s local files or live batches.',
+  },
+  {
     key: 'gi_guid, gi_exp',
     uploadsOnly: true,
     what: 'On each weapon and artifact: the game’s item id (a decimal string) and EXP toward the next level.',

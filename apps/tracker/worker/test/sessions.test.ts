@@ -59,12 +59,21 @@ function token(
   return sign({ ...claims, sub: String(claims.sub), typ, exp }, env.JWT_SECRET, 'HS256')
 }
 
-/** A browser holding only a refresh token from before session rows. */
+/**
+ * A browser holding only a refresh token from before session rows. Real ones
+ * lasted 30 days, so the last ran out on 2026-11-19 (the cutoff + 30 days);
+ * the path stays until it is deleted (lib/session `adoptLegacySession`), so
+ * this one is given an expiry of its own: still valid, issued before the cutoff.
+ */
 async function legacyBrowser(userId: number, ver = 0, iat?: number) {
   const now = Math.floor(Date.now() / 1000)
   const client = new Client()
   const issued = iat ?? Math.min(now, LEGACY_CUTOFF_S) - 60
-  client.setCookie('gdt_rt', await token('refresh', { sub: userId, ver, iat: issued }), '/api/auth')
+  client.setCookie(
+    'gdt_rt',
+    await token('refresh', { sub: userId, ver, iat: issued, exp: now + 3600 }),
+    '/api/auth',
+  )
   return client
 }
 

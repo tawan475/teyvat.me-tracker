@@ -98,10 +98,28 @@ const hasSomething = computed(
 )
 const canRemove = computed(() => !busy.value && hasSomething.value && matches.value)
 
-/** A part's second line: what it holds (the Teapot's realm currency is stored with the tasks). */
+/**
+ * A part's second line: what it holds (the Teapot's realm currency is stored
+ * with the tasks). A sub-label that only repeats the part's name (the game's
+ * name in both places, as in many languages) is left out.
+ */
 function partSub(part: RemovablePart): string {
-  const sub = t(`snapshots.parts.subs.${part}`)
-  return part === 'teapot' ? `${sub}, ${t('planner.task.builtin.realm')}` : sub
+  const name = t(`snapshots.parts.names.${part}`)
+  const raw = t(`snapshots.parts.subs.${part}`)
+  const sub = raw.trim() === name.trim() ? '' : raw
+  if (part !== 'teapot') return sub
+  const realm = t('planner.task.builtin.realm')
+  return sub ? `${sub}, ${realm}` : realm
+}
+
+/** After "Not shared": when the part was last shared, else what it holds ('' when nothing to add). */
+function offDetail(row: {
+  part: RemovablePart
+  count?: { lastAt?: number | null } | null
+}): string {
+  return row.count?.lastAt
+    ? t('snapshots.parts.dialog.last', { date: formatMonthDay(row.count.lastAt) })
+    : partSub(row.part)
 }
 
 /** Parts with hand marks of their own, which stay. */
@@ -238,12 +256,7 @@ function close() {
                   <EyeOff class="size-3.5 shrink-0" aria-hidden="true" />
                   {{ $t('snapshots.parts.dialog.notSharedMark') }}
                 </span>
-                ·
-                {{
-                  row.count?.lastAt
-                    ? $t('snapshots.parts.dialog.last', { date: formatMonthDay(row.count.lastAt) })
-                    : partSub(row.part)
-                }}
+                <template v-if="offDetail(row)"> · {{ offDetail(row) }}</template>
               </template>
               <template v-else>{{ partSub(row.part) }}</template>
               <template v-if="row.count?.trashed">

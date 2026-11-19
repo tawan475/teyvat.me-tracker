@@ -156,6 +156,8 @@ describe('bringing guest data into an account', () => {
     await guest('/settings', { method: 'PATCH', json: { traveler: 'M' } })
     await guest('/achievement-marks', { method: 'PATCH', json: { done: [84500] } })
     await guest('/parts/hide', { method: 'POST', json: { key: 'all' } })
+    // A build section's hidden strip carries over too.
+    await guest('/parts/hide', { method: 'POST', json: { key: 'weapons' } })
     const counts = (await guest('/parts')) as PartsResponse
     await guest('/parts/remove', {
       method: 'POST',
@@ -171,6 +173,7 @@ describe('bringing guest data into an account', () => {
     const { settings } = await client.json<AccountSettingsResponse>(`${base}/settings`)
     expect(settings.traveler).toBe('M')
     expect(settings.parts.hidden.all).toEqual(expect.any(Number))
+    expect(settings.parts.hidden.weapons).toEqual(expect.any(Number))
     // The steps after the settings ran.
     expect((await client.json<AchievementMarksResponse>(`${base}/achievement-marks`)).done).toEqual(
       [84500],

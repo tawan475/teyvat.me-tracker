@@ -23,6 +23,7 @@ import {
   type UigfGachaType,
   type WishPull,
 } from '@gdt/shared'
+import { OFF_SECTIONS, type OffSection } from '@gdt/shared/off'
 import { watch } from 'vue'
 import { api } from '@/api'
 import { addFiles, clearFinished, start, summarize, useImportQueue } from '@/data/import-queue'
@@ -31,6 +32,10 @@ import { GUEST_ACCOUNT_ID } from './guest-id'
 import { buildGood } from './local-read'
 import { guestStore, type LocalStore } from './local-store'
 import { storedPulls } from './local-wishes'
+
+/** A build section Capture can leave out (its strip's × is replayed too). */
+const isOffSection = (key: string): key is OffSection =>
+  (OFF_SECTIONS as readonly string[]).includes(key)
 
 /** The answer, kept per browser: asked once. */
 export const CONVERT_KEY = 'guest:convert'
@@ -178,7 +183,9 @@ export async function convertGuest(
     await api.updateAccountSettings(accountId, ownSettings as never)
   }
   for (const key of Object.keys(parts?.hidden ?? {})) {
-    if (isRemovablePart(key) || key === ALL_PARTS_NOTE) await api.hidePartNote(accountId, key)
+    if (isRemovablePart(key) || isOffSection(key) || key === ALL_PARTS_NOTE) {
+      await api.hidePartNote(accountId, key)
+    }
   }
   if (achievements.done.length > 0) {
     await api.updateAchievementMarks(accountId, { done: achievements.done })

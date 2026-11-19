@@ -18,6 +18,7 @@ import {
   decodeSnapshot,
   deflateRaw,
   expandSubstats,
+  exportedOff,
   leylineFileStem,
   storedSnapshotOf,
   v1SnapshotOf,
@@ -274,7 +275,8 @@ function toBundleSnapshotV2(
     if (id === null) throw new Error(`Snapshot ${row.id} has no ${slot}`)
     return id
   }
-  const { format, version, source, playerVars } = metaOf(row)
+  const { format, version, source, playerVars, off } = metaOf(row)
+  const exported = exportedOff(off)
   return {
     id: row.id,
     takenAt: row.taken_at,
@@ -302,6 +304,7 @@ function toBundleSnapshotV2(
     progress: ref('progress'),
     extras: ref('extras'),
     ...(playerVars.resin !== undefined || playerVars.arExp !== undefined ? { playerVars } : {}),
+    ...(exported ? { off: exported } : {}),
   }
 }
 

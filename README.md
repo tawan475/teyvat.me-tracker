@@ -468,6 +468,18 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     Planner's bag too) holds none of it, whichever capture the bag is read
     from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). Its
     stored points stay in the materials history.
+  - **Exports write it back.** A rebuilt file carries the stored `gi_off`
+    when it names something, as its last key (`decodeSnapshot`,
+    `exportedOff`), so the file imports as the same snapshot: without it a
+    roster left out read as a capture taken halfway through a login (refused)
+    and a bag left out as an empty one. The list travels in the bundle's
+    manifest (`off` on a snapshot entry, only when not empty), which is where
+    the browser's zip export and the raw download's script read it; the
+    Worker's GOOD route and the guest store read the meta. All of them write
+    the same file (`worker/test/export-off.test.ts`). A capture that shared
+    everything, with `gi_off: []` or none, exports as it did before: no key
+    in the file, no field in the manifest. The keys of the parts left out
+    stay as the export always wrote them (`"characters": []`).
   - **Remove a part from history** (eleven removable parts,
     `REMOVABLE_PARTS`: achievements, anecdotes, Planner tasks, endgame,
     collections, profile, wardrobe, exploration, teapot, events, Miliastra;

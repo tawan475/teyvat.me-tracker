@@ -2,6 +2,7 @@ import { hashArtifactIdentity, type ArtifactIdentity } from '../artifact'
 import type { KeyDictionary } from '../dictionary'
 import type { GiCollections, GiEndgame, GiExploration, GiTasks, Good } from '../good'
 import { sha256Hex128 } from '../hash'
+import { exportedOff } from '../off'
 import { deflateRaw } from './compress'
 import { normalizeGood, type NormalizedGood, type NormalizeOptions } from './normalize'
 import {
@@ -763,6 +764,11 @@ export interface StoredSnapshot {
   exploration?: string | null
   progress?: string | null
   extras?: string | null
+  /**
+   * The snapshot's `gi_off` (its meta's; not a section): written back when it
+   * names something, so the rebuilt file imports as the same snapshot.
+   */
+  off?: readonly string[] | null
 }
 
 const parseOrNull = <T>(text: string | null | undefined): T | null =>
@@ -834,5 +840,10 @@ export function decodeSnapshot(
     if (parts.miliastra) good.gi_miliastra = parts.miliastra
     if (parts.endgame) good.gi_endgame = parts.endgame
   }
+  // Last, where Capture writes it. Without it a roster left out reads as a
+  // capture taken halfway through a login (refused), and a bag left out as
+  // an empty one.
+  const off = exportedOff(stored.off)
+  if (off) good.gi_off = off
   return good
 }

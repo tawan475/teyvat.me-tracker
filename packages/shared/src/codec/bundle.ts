@@ -66,6 +66,11 @@ export interface BundleSnapshot {
   // they could be deltas).
   artifactsBase?: string | null
   achievementTimesBase?: string | null
+  /**
+   * The snapshot's `gi_off` (Capture's upload switches that were off), present
+   * only when it names something: exports write it back (decodeSnapshot).
+   */
+  off?: string[]
 }
 
 export interface BundleManifest {
@@ -113,6 +118,8 @@ export interface BundleSnapshotV2 {
   extras?: BundleKey | null
   /** The player values a v2 player section leaves out (absent: none). */
   playerVars?: PlayerVars
+  /** The snapshot's `gi_off`, present only when it names something (BundleSnapshot.off). */
+  off?: string[]
 }
 
 /** A v1 blob by hash, or a v2 blob as [id, kind code, base id]. */
@@ -311,6 +318,7 @@ export function v1SnapshotOf(snapshot: BundleSnapshotV2): {
       exploration: optionalKey(snapshot.exploration),
       progress: optionalKey(snapshot.progress),
       extras: optionalKey(snapshot.extras),
+      ...(snapshot.off ? { off: snapshot.off } : {}),
     },
     player:
       merged !== null && merged !== player ? [merged, player!, snapshot.playerVars ?? {}] : null,
@@ -469,6 +477,7 @@ export function storedSnapshotOf(
     exploration: optional(snapshot.exploration),
     progress: optional(snapshot.progress),
     extras: optional(snapshot.extras),
+    off: snapshot.off ?? null,
   }
 }
 

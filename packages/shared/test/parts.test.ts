@@ -15,6 +15,7 @@ import {
   encodeSectionBlobVariants,
   encodeSnapshot,
   encodeSnapshotMeta,
+  exportedOff,
   holdsPartKeys,
   isPartChange,
   isRemovablePart,
@@ -386,6 +387,17 @@ describe('the bag copies', () => {
     // Every known name round-trips, in the stored order.
     expect(offOfMask(offMask([...OFF_POSITIONS].reverse()))).toEqual([...OFF_POSITIONS])
     for (const name of OFF_POSITIONS) expect(offOfMask(offMask([name]))).toEqual([name])
+  })
+})
+
+describe('an export', () => {
+  it('carries a gi_off that names something, and none for a capture that shared everything', () => {
+    expect(exportedOff(['characters', 'gi_tasks'])).toEqual(['characters', 'gi_tasks'])
+    // A name the tracker does not know (a retired switch, a newer Capture's) goes back out.
+    expect(exportedOff(['gi_characters', 'gi_new'])).toEqual(['gi_characters', 'gi_new'])
+    expect(exportedOff([])).toBeUndefined()
+    expect(exportedOff(undefined)).toBeUndefined()
+    expect(exportedOff(null)).toBeUndefined()
   })
 })
 

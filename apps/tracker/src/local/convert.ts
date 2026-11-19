@@ -96,11 +96,10 @@ export async function guestFiles(store: LocalStore = guestStore()): Promise<File
     })
   for (const row of rows) {
     const built = (await buildGood(store, row.id, materials)).good
-    // The rebuilt file has no `gi_off` (the GOOD route writes none back):
-    // the capture's not-shared marks go with it, or a roster left out is
-    // refused as a partial capture and the rest stored as real zeros.
-    const off = offOf(row)
-    const good = off ? { ...built, gi_off: off } : built
+    // The rebuilt file carries the capture's `gi_off` when it names a part
+    // (buildGood). An empty list is left out of an export, yet the account's
+    // snapshot should say what the guest's says: sent here.
+    const good = offOf(row)?.length === 0 ? { ...built, gi_off: [] } : built
     files.push(file(good, row.takenAt))
     if (row === rows.at(-1) && row.lastSeenAt > row.takenAt) files.push(file(good, row.lastSeenAt))
   }

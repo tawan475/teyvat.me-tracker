@@ -89,6 +89,15 @@ export function sameOff(
 }
 
 /**
+ * A stored `gi_off` as an export carries it (the bundle's manifest, and from
+ * there every rebuilt file): the list when it names something, else nothing.
+ * A capture that shared everything exports as it did before `gi_off`
+ * existed, whether its upload said `[]` or had no list.
+ */
+export const exportedOff = (off: readonly string[] | null | undefined): string[] | undefined =>
+  off && off.length > 0 ? [...off] : undefined
+
+/**
  * The bag copies (2026-11-19): two counts that are player properties, not
  * items, and that Capture also writes into the materials bag. Each belongs to
  * a part with a switch of its own, and that switch covers the copy too: a

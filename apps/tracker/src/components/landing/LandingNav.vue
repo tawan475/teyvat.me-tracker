@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Globe } from 'lucide-vue-next'
+import { Globe, Heart } from 'lucide-vue-next'
 import { LANGUAGE_NAMES } from '@/i18n/language-names'
 import { locale } from '@/i18n/locale'
+import { DISCORD_URL, KOFI_URL } from '@/lib/links'
 import { useSession } from '@/stores/session'
+import DiscordMark from './DiscordMark.vue'
 import { DOWNLOAD_URL } from './links'
 
 /**
  * The landing page's top bar; the language button opens the appearance dialog
- * (LandingView). Another public page passes its own in-page `links`.
+ * (LandingView). Another public page passes its own in-page `links`. Discord
+ * and Ko-fi sit left of the language button (the user's pick, 2026-11-19, row E
+ * of https://claude.ai/artifact/FGBTwZdsTvrucA1F9gsJGD); landing.css says how
+ * the bar gives way as it narrows.
  */
 defineProps<{ links?: { href: string; label: string }[] }>()
 defineEmits<{ language: [] }>()
 const session = useSession()
 const languageName = computed(() => LANGUAGE_NAMES[locale.value])
-const short = computed(() => locale.value.split('-')[0]!.toUpperCase())
 </script>
 
 <template>
@@ -33,6 +37,28 @@ const short = computed(() => locale.value.split('-')[0]!.toUpperCase())
         <a href="#faq">{{ $t('landing.nav.faq') }}</a>
       </div>
       <div class="nav-r">
+        <div class="nav-socs">
+          <a
+            class="btn btn-sm btn-g nav-soc"
+            :href="DISCORD_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Discord"
+            title="Discord"
+          >
+            <DiscordMark /><span class="lbl">Discord</span>
+          </a>
+          <a
+            class="btn btn-sm btn-g nav-soc"
+            :href="KOFI_URL"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="$t('landing.footer.support')"
+            :title="$t('landing.footer.support')"
+          >
+            <Heart class="ic" aria-hidden="true" /><span class="lbl">Ko-fi</span>
+          </a>
+        </div>
         <button
           class="lang"
           type="button"
@@ -43,7 +69,6 @@ const short = computed(() => locale.value.split('-')[0]!.toUpperCase())
         >
           <Globe class="ic" aria-hidden="true" />
           <span class="long">{{ languageName }}</span>
-          <span class="short">{{ short }}</span>
         </button>
         <RouterLink
           v-if="session.status === 'signed-in'"

@@ -158,6 +158,15 @@
     "serversQ": "Welche Server?",
     "serversA": "Alle: Amerika, Europa, Asien und TW/HK/MO."
   },
+  "community": {
+    "overline": "Community",
+    "title": "Tritt unserer Community bei",
+    "card": "Fragen, Feedback und Neuigkeiten zu Versionen auf Discord.",
+    "join": "Discord beitreten",
+    "discord": "Fragen, Feedback und Neuigkeiten zu Versionen, mit anderen Spielern.",
+    "github": "Quellcode, Versionen und Issues.",
+    "kofi": "Hilf bei den laufenden Kosten."
+  },
   "footer": {
     "label": "Fußzeile",
     "disclaimer": "Teyvat.me ist ein inoffizielles Fanprojekt und steht in keiner Verbindung zu HoYoverse und wird nicht von HoYoverse unterstützt. Genshin Impact ist eine Marke von HoYoverse.",

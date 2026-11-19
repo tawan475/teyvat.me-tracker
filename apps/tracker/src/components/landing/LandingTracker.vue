@@ -13,6 +13,8 @@ import {
 } from 'lucide-vue-next'
 import { t } from '@/i18n'
 import { formatCompact, formatNumber } from '@/lib/format'
+import { DISCORD_URL } from '@/lib/links'
+import DiscordMark from './DiscordMark.vue'
 
 /**
  * The tracker's section: a sample overview (figures, a Mora and Primogem
@@ -98,10 +100,21 @@ const extras = computed(() => [
 <template>
   <section id="tracker" class="sec" aria-labelledby="trk-t">
     <div class="wrap">
-      <div class="sec-h">
-        <div class="ov">{{ $t('landing.tracker.overline') }}</div>
-        <h2 id="trk-t" class="h2">{{ $t('landing.tracker.title') }}</h2>
-        <p class="lead">{{ $t('landing.tracker.lead') }}</p>
+      <!-- The community card beside the heading (the user's drawn spot, 2026-11-19); under it below 1200px. -->
+      <div class="head-row">
+        <div class="sec-h">
+          <div class="ov">{{ $t('landing.tracker.overline') }}</div>
+          <h2 id="trk-t" class="h2">{{ $t('landing.tracker.title') }}</h2>
+          <p class="lead">{{ $t('landing.tracker.lead') }}</p>
+        </div>
+        <a class="tile-g join" :href="DISCORD_URL" target="_blank" rel="noopener noreferrer">
+          <span class="disc"><DiscordMark /></span>
+          <span class="join-t">
+            <b>{{ $t('landing.community.title') }}</b>
+            <span>{{ $t('landing.community.card') }}</span>
+          </span>
+          <span class="btn btn-sm btn-p">{{ $t('landing.community.join') }}</span>
+        </a>
       </div>
 
       <div class="glass dash" role="group" :aria-label="$t('landing.tracker.sample')">

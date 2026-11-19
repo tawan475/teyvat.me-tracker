@@ -158,6 +158,15 @@
     "serversQ": "Hangi sunucular?",
     "serversA": "Hepsi: Amerika, Avrupa, Asya ve TW/HK/MO."
   },
+  "community": {
+    "overline": "Topluluk",
+    "title": "Topluluğumuza katıl",
+    "card": "Sorular, geri bildirim ve sürüm haberleri Discord'da.",
+    "join": "Discord'a katıl",
+    "discord": "Diğer oyuncularla sorular, geri bildirim ve sürüm haberleri.",
+    "github": "Kaynak kodu, sürümler ve sorun kayıtları.",
+    "kofi": "İşletme maliyetlerine destek ol."
+  },
   "footer": {
     "label": "Alt bilgi",
     "disclaimer": "Teyvat.me resmî olmayan bir hayran projesidir; HoYoverse ile bağlantılı değildir ve HoYoverse tarafından onaylanmamıştır. Genshin Impact, HoYoverse'ün ticari markasıdır.",

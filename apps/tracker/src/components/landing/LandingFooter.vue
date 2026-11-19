@@ -6,7 +6,7 @@ import { LANGUAGE_NAMES } from '@/i18n/language-names'
 import { isLocale, locale, LOCALES } from '@/i18n/locale'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
-import { KOFI_URL } from '@/lib/links'
+import { DISCORD_URL, KOFI_URL } from '@/lib/links'
 import { DOWNLOAD_URL, GITHUB_URL } from './links'
 
 /**
@@ -46,6 +46,7 @@ async function pickLanguage(event: Event) {
           <RouterLink :to="{ name: 'developers' }">{{
             $t('landing.footer.developers')
           }}</RouterLink>
+          <a :href="DISCORD_URL" target="_blank" rel="noopener noreferrer">Discord</a>
           <a :href="GITHUB_URL">GitHub</a>
           <a :href="KOFI_URL" target="_blank" rel="noopener noreferrer">{{
             $t('landing.footer.support')

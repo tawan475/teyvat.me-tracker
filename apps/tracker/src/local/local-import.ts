@@ -89,7 +89,7 @@ function newWorld(capture: GiCapture | null | undefined, latest: SnapshotRow): b
 }
 
 /** A stored snapshot's `gi_off` (undefined: none, or a meta that does not decode). */
-function offOf(row: SnapshotRow): string[] | undefined {
+export function offOf(row: SnapshotRow): string[] | undefined {
   try {
     return decodeSnapshotMeta(row.meta).off
   } catch {

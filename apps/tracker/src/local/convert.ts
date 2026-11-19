@@ -30,6 +30,7 @@ import { addFiles, clearFinished, start, summarize, useImportQueue } from '@/dat
 import { readStorage, writeStorage } from '@/lib/storage'
 import { GUEST_ACCOUNT_ID } from './guest-id'
 import { buildGood } from './local-read'
+import { offOf } from './local-import'
 import { guestStore, type LocalStore } from './local-store'
 import { storedPulls } from './local-wishes'
 
@@ -94,7 +95,12 @@ export async function guestFiles(store: LocalStore = guestStore()): Promise<File
       lastModified: at,
     })
   for (const row of rows) {
-    const { good } = await buildGood(store, row.id, materials)
+    const built = (await buildGood(store, row.id, materials)).good
+    // The rebuilt file has no `gi_off` (the GOOD route writes none back):
+    // the capture's not-shared marks go with it, or a roster left out is
+    // refused as a partial capture and the rest stored as real zeros.
+    const off = offOf(row)
+    const good = off ? { ...built, gi_off: off } : built
     files.push(file(good, row.takenAt))
     if (row === rows.at(-1) && row.lastSeenAt > row.takenAt) files.push(file(good, row.lastSeenAt))
   }

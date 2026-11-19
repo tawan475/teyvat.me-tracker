@@ -179,4 +179,50 @@ describe('bringing guest data into an account', () => {
       [84500],
     )
   })
+
+  it("carries each capture's not-shared marks, so the account answers as the guest's (issue 12)", async () => {
+    const big = bigGood()
+    const { characters: _c, gi_characters: _x, ...noRoster } = big
+    const { materials: _m, ...noBag } = big
+    const shots: [unknown, number][] = [
+      [big, 1000],
+      // Capture's Characters switch off: no roster, which alone is refused.
+      [
+        {
+          ...noRoster,
+          characters: [],
+          materials: { ...big.materials, Mora: 77 },
+          gi_off: ['characters'],
+        },
+        2000,
+      ],
+      [{ ...noBag, characters: [], materials: {}, gi_off: ['characters', 'materials'] }, 3000],
+    ]
+    for (const [good, at] of shots) {
+      await guest(`/import?timestamp=${at}`, { method: 'POST', body: JSON.stringify(good) })
+    }
+    const { account } = await client.json<{ account: AccountResponse }>('/api/accounts', {
+      method: 'POST',
+      json: { name: 'Main' },
+    })
+    const result = await convertGuest(account.id, () => {}, store)
+    expect(result).toMatchObject({ snapshots: { created: 3, failed: 0 } })
+    const base = `/api/accounts/${account.id}`
+    const there = await client.json<SnapshotResponse[]>(`${base}/snapshots`)
+    const here = (await guest('/snapshots')) as SnapshotResponse[]
+    expect(there.map((s) => s.off)).toEqual(here.map((s) => s.off))
+    expect(there.map((s) => s.off)).toEqual([
+      ['characters', 'materials'],
+      ['characters'],
+      undefined,
+    ])
+    const list = await client.json<AccountResponse[]>('/api/accounts')
+    const serverLatest = list.find((a) => a.id === account.id)!.latest!
+    const guestLatest = ((await guest('')) as AccountResponse).latest!
+    expect(serverLatest.sharedSummary).toEqual(guestLatest.sharedSummary)
+    expect(serverLatest.sharedSummary).toMatchObject({
+      characters: big.characters.length,
+      mora: 77,
+    })
+  })
 })

@@ -69,6 +69,8 @@ describe("the account list's figures with sections left out", () => {
     const latest = await latestOf(client, accountId)
     expect(latest.sharedSummary).toBeUndefined()
     expect(latest.summary.mora).toBe(5)
+    // gi_off [] (everything shared) names nothing: no `off` in the list.
+    expect('off' in latest).toBe(false)
   })
 
   it('takes each figure from the newest capture that shared its section', async () => {
@@ -84,6 +86,8 @@ describe("the account list's figures with sections left out", () => {
     expect(latest.summary.characters).toBe(0)
     expect(latest.sharedSummary).toMatchObject({ characters: 2, mora: 200, primogem: 8 })
     expect(latest.sharedSummary!.artifacts).toBe(latest.summary.artifacts)
+    // What it left out, by name (the public API's `off`).
+    expect(latest.off).toEqual(['characters'])
 
     // Characters and the bag off: each from its own newest sharer.
     await send(importKey, without(sampleGood(), ['characters', 'materials']), 3_000)

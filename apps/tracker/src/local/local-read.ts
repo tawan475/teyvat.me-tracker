@@ -69,6 +69,7 @@ export function accountResponse(store: LocalStore): AccountResponse {
             lastSeenAt: latest.lastSeenAt,
             summary: meta.summary,
             ...(sharedSummary ? { sharedSummary } : {}),
+            ...(meta.off?.length ? { off: meta.off } : {}),
             source: meta.source,
           }
         : null,

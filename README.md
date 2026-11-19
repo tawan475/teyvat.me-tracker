@@ -613,6 +613,7 @@ A new v1 route goes in `worker/api/v1/routes.ts`: the registry, with its scope, 
 - An error is RFC 9457 problem+json (`core.ts` `problem`).
 - Times are ISO 8601. Wish ids are strings.
 - Raw data first: only the wish summary (`src/data/wish-history.ts`, the page's own logic) and the farm plan (`farm.ts`, `@gdt/game-data` Planner math over every active goal) are computed.
+- Parts a capture did not share: a snapshot and an account's `latest` carry `off`, the stored `gi_off` names, only when the list is not empty (`schemas.ts` `off`; the account list answers `latest.off` from the meta it already reads, the guest's account the same). The figures stay as stored, 0 for a left-out build section: the app's stand-in figures (`sharedSummary`) are not part of v1.
 
 **Limits**, after Discord's design (`@gdt/shared` `API_LIMITS`):
 - Every request passes a global limit per user, then its route's bucket, counted per user and account.

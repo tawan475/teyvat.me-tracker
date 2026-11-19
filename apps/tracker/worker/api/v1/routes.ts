@@ -52,6 +52,14 @@ import * as s from './schemas'
 
 const notModified = (etag: string | null): V1Result => ({ notModified: true, etag })
 
+/**
+ * A capture's `off`: the stored `gi_off` names, only when it left something
+ * out. The figures beside it stay as stored (0 for a part it left out); the
+ * app's stand-in figures (`sharedSummary`) are not part of v1.
+ */
+const notShared = (off: readonly string[] | undefined) =>
+  off && off.length > 0 ? { off: [...off] } : {}
+
 function v1Account(a: AccountResponse) {
   return {
     id: a.id,
@@ -72,6 +80,7 @@ function v1Account(a: AccountResponse) {
           lastSeenAt: iso(a.latest.lastSeenAt)!,
           source: a.latest.source ?? null,
           summary: a.latest.summary as unknown as Record<string, number>,
+          ...notShared(a.latest.off),
         }
       : null,
   }
@@ -88,6 +97,7 @@ function v1Snapshot(snap: SnapshotResponse) {
     storedBytes: snap.storedSize,
     summary: snap.summary as unknown as Record<string, number>,
     capture: (snap.capture as unknown as Record<string, unknown> | undefined) ?? null,
+    ...notShared(snap.off),
   }
 }
 

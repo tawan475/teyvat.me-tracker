@@ -492,6 +492,8 @@ describe('guest store', () => {
     const list = await client.json<AccountResponse[]>('/api/accounts')
     const there = list.find((a) => a.id === account.id)!.latest!
     expect(here.sharedSummary).toEqual(there.sharedSummary)
+    expect(here.off).toEqual(there.off)
+    expect(here.off).toEqual(['characters', 'materials'])
     expect(here.sharedSummary).toMatchObject({
       characters: big.characters.length,
       mora: 77,

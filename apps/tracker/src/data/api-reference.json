@@ -432,6 +432,13 @@
                                       "type": "number"
                                     },
                                     "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+                                  },
+                                  "off": {
+                                    "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
                                   }
                                 },
                                 "required": [
@@ -687,6 +694,13 @@
                                     "type": "number"
                                   },
                                   "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+                                },
+                                "off": {
+                                  "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 }
                               },
                               "required": [
@@ -873,6 +887,13 @@
                                     "type": "number"
                                   },
                                   "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+                                },
+                                "off": {
+                                  "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 }
                               },
                               "required": [
@@ -1102,6 +1123,13 @@
                                     "type": "number"
                                   },
                                   "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+                                },
+                                "off": {
+                                  "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 }
                               },
                               "required": [
@@ -1568,6 +1596,13 @@
                               }
                             ],
                             "description": "Capture's `gi_capture`, when it took it"
+                          },
+                          "off": {
+                            "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
                           }
                         },
                         "required": [
@@ -1845,6 +1880,13 @@
                             }
                           ],
                           "description": "Capture's `gi_capture`, when it took it"
+                        },
+                        "off": {
+                          "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         }
                       },
                       "required": [

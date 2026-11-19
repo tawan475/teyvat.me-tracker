@@ -5,7 +5,7 @@
  * the docs describe. Times are ISO 8601 UTC; wish ids are strings.
  */
 
-import { API_AREAS, API_BUCKETS, API_TIERS } from '@gdt/shared'
+import { API_AREAS, API_BUCKETS, API_TIERS, OFF_SWITCHES } from '@gdt/shared'
 import { z } from 'zod'
 
 const time = z.iso.datetime().describe('ISO 8601, UTC')
@@ -25,6 +25,19 @@ export const summary = z
   .record(z.string(), z.number())
   .describe(
     'Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…',
+  )
+
+/**
+ * Teyvat.me Capture's `gi_off` as stored (packages/shared/src/off.ts): the
+ * names of its upload switches that were off for a capture. Left out of an
+ * answer when the capture shared everything, or said nothing (an older
+ * Capture, a file imported on the website).
+ */
+export const off = z
+  .array(z.string())
+  .optional()
+  .describe(
+    `Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: ${OFF_SWITCHES.map((name) => `\`${name}\``).join(', ')}. A newer Capture may send other names. A part named here is missing from this capture, not empty: \`summary\` counts a left-out \`characters\`, \`weapons\`, \`artifacts\` or \`materials\` (Mora and Primogems with it) as 0.`,
   )
 
 export const limits = z.object({
@@ -68,6 +81,7 @@ export const account = z.object({
       lastSeenAt: time,
       source: z.string().nullable(),
       summary,
+      off,
     })
     .nullable(),
 })
@@ -99,6 +113,7 @@ export const snapshot = z.object({
     .record(z.string(), z.unknown())
     .nullable()
     .describe("Capture's `gi_capture`, when it took it"),
+  off,
 })
 
 export const importResult = z.object({

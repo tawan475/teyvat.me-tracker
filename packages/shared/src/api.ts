@@ -980,6 +980,12 @@ export interface AccountResponse {
      * account's pages show "now".
      */
     sharedSummary?: SnapshotSummary
+    /**
+     * The upload switches that were off for this capture (its `gi_off`, as
+     * SnapshotResponse.off), present only when not empty: what the public
+     * API's account answer names as not shared.
+     */
+    off?: string[]
     /** The GOOD file's `source` ("Irminsul": Teyvat.me Capture or irminsul); absent before 2026-10-28. */
     source?: string
   } | null

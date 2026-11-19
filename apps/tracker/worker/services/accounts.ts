@@ -273,6 +273,7 @@ export function accountsFromRows(rows: readonly AccountListRow[]): AccountRespon
               lastSeenAt: row.last_seen_at!,
               summary: meta.summary,
               ...(shared ? { sharedSummary: shared } : {}),
+              ...(meta.off?.length ? { off: meta.off } : {}),
               source: meta.source,
             }
           })(),

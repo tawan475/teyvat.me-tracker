@@ -38,6 +38,7 @@ Every success is an object with `data`; lists add `meta`. Fields are camelCase a
 ```
 
 - Raw first: answers are the data as stored. Only the wish summary and the farm plan are computed.
+- One field can be absent: `off` on a snapshot and on an account’s `latest`. It is there only when Teyvat.me Capture left parts out of that capture, and names them (`characters`, `materials`, `gi_achievements`…). The counts beside it stay as stored: 0 for a part named in `off` means not shared, not none.
 - Every answer has `X-Request-Id`; quote it in a bug report.
 - `ETag` on reads: send it back as `If-None-Match` and an unchanged account answers 304 at once.
 
@@ -471,6 +472,13 @@ Answer `data`:
          "type": "number"
         },
         "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+       },
+       "off": {
+        "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
        }
       },
       "required": [
@@ -703,6 +711,13 @@ Answer `data`:
         "type": "number"
        },
        "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+      },
+      "off": {
+       "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
       }
      },
      "required": [
@@ -862,6 +877,13 @@ Answer `data`:
         "type": "number"
        },
        "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+      },
+      "off": {
+       "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
       }
      },
      "required": [
@@ -1062,6 +1084,13 @@ Answer `data`:
         "type": "number"
        },
        "description": "Counts at the capture: characters, weapons, artifacts, materials, mora, primogem, artifact3, artifact4…"
+      },
+      "off": {
+       "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
       }
      },
      "required": [
@@ -1429,6 +1458,13 @@ Answer `data`:
      }
     ],
     "description": "Capture's `gi_capture`, when it took it"
+   },
+   "off": {
+    "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+    "type": "array",
+    "items": {
+     "type": "string"
+    }
    }
   },
   "required": [
@@ -1527,6 +1563,13 @@ Answer `data`:
     }
    ],
    "description": "Capture's `gi_capture`, when it took it"
+  },
+  "off": {
+   "description": "Present only when the capture left parts out: the parts Teyvat.me Capture did not share (its upload switches that were off), by name: `characters`, `weapons`, `artifacts`, `materials`, `gi_player.profile`, `gi_player.numbers`, `gi_achievements`, `gi_anecdotes`, `gi_tasks`, `gi_endgame`, `gi_exploration`, `gi_collections`, `gi_wardrobe`, `gi_teapot`, `gi_events`, `gi_miliastra`. A newer Capture may send other names. A part named here is missing from this capture, not empty: `summary` counts a left-out `characters`, `weapons`, `artifacts` or `materials` (Mora and Primogems with it) as 0.",
+   "type": "array",
+   "items": {
+    "type": "string"
+   }
   }
  },
  "required": [

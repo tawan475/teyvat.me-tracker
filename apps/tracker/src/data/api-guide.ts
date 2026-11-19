@@ -95,6 +95,7 @@ export const API_GUIDE: GuideSection[] = [
       {
         list: [
           'Raw first: answers are the data as stored. Only the wish summary and the farm plan are computed.',
+          'One field can be absent: `off` on a snapshot and on an account’s `latest`. It is there only when Teyvat.me Capture left parts out of that capture, and names them (`characters`, `materials`, `gi_achievements`…). The counts beside it stay as stored: 0 for a part named in `off` means not shared, not none.',
           'Every answer has `X-Request-Id`; quote it in a bug report.',
           '`ETag` on reads: send it back as `If-None-Match` and an unchanged account answers 304 at once.',
         ],

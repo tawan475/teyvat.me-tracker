@@ -457,6 +457,79 @@ describe('/api/v1', () => {
     expect(after.mora).toEqual(before.mora)
   })
 
+  it('names the parts a capture did not share as `off`, only when there are any', async () => {
+    const { client } = await signUp(unlimited)
+    const { account } = await createAccount(client)
+    const { secret } = await makeToken(client, { write: ['snapshots'] })
+    const send = (good: Good, at: number) =>
+      bearer(
+        secret,
+        `/accounts/${account.id}/snapshots?timestamp=${at}`,
+        { method: 'POST', json: good },
+        unlimited,
+      )
+    type Latest = { snapshotId: number; summary: Record<string, number>; off?: string[] }
+    type Snap = { id: number; summary: Record<string, number>; off?: string[] }
+    const latestOf = async (path: string) =>
+      ((await (await bearer(secret, path, {}, unlimited)).json()) as { data: { latest: Latest } })
+        .data.latest
+    const listed = async () =>
+      (
+        (await (await bearer(secret, '/accounts', {}, unlimited)).json()) as {
+          data: { latest: Latest }[]
+        }
+      ).data[0]!.latest
+    const snapshots = async () =>
+      (
+        (await (
+          await bearer(secret, `/accounts/${account.id}/snapshots`, {}, unlimited)
+        ).json()) as { data: Snap[] }
+      ).data
+
+    // A file that says nothing (an older Capture, another tool): no `off`.
+    const full = sampleGood({ ...sampleExtras(812345678) })
+    expect((await send(full, 1_760_000_000_000)).status).toBe(201)
+    expect('off' in (await listed())).toBe(false)
+    // Everything shared ([]): none either.
+    expect((await send({ ...full, gi_off: [] } as Good, 1_760_000_100_000)).status).toBe(201)
+    expect('off' in (await listed())).toBe(false)
+    expect((await snapshots()).every((snap) => !('off' in snap))).toBe(true)
+
+    // Characters and achievements off, and a switch this tracker has no name for.
+    const { characters: _c, gi_characters: _x, gi_achievement_times: _t, ...rest } = full
+    const names = ['characters', 'gi_achievements', 'gi_from_a_newer_capture']
+    expect((await send({ ...rest, gi_off: names } as Good, 1_760_000_200_000)).status).toBe(201)
+
+    const latest = await listed()
+    expect(latest.off).toEqual(names)
+    // The figures stay as stored: no stand-in from the capture that shared them.
+    expect(latest.summary.characters).toBe(0)
+    expect('sharedSummary' in latest).toBe(false)
+    expect(await latestOf(`/accounts/${account.id}`)).toEqual(latest)
+
+    const list = await snapshots()
+    expect(list).toHaveLength(3)
+    expect(list[0]!.id).toBe(latest.snapshotId)
+    expect(list[0]!.off).toEqual(names)
+    expect(list[0]!.summary.characters).toBe(0)
+    expect(list.slice(1).every((snap) => !('off' in snap))).toBe(true)
+    expect(list[2]!.summary.characters).toBe(full.characters.length)
+    const one = await bearer(
+      secret,
+      `/accounts/${account.id}/snapshots/${list[0]!.id}`,
+      {},
+      unlimited,
+    )
+    expect(((await one.json()) as { data: Snap }).data.off).toEqual(names)
+    const older = await bearer(
+      secret,
+      `/accounts/${account.id}/snapshots/${list[1]!.id}`,
+      {},
+      unlimited,
+    )
+    expect('off' in ((await older.json()) as { data: Snap }).data).toBe(false)
+  })
+
   it('works with the website session (the docs’ Try it)', async () => {
     const { client } = await signUp()
     const response = await client.fetch('/api/v1/me')

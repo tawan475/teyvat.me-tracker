@@ -122,6 +122,46 @@ export function frameChange(history: MaterialsHistory, key: string, frame: Chart
   return countAt(series, history.times.length - 1) - countAt(series, frame.baseline)
 }
 
+// ------------------------------------------------------------------ tracked
+
+/** One tracked chart as the Tracked panel shows it. */
+export interface TrackedTile {
+  key: string
+  /** The chart's colour (--chart-1…6): the key's place among the saved pins. */
+  color: 1 | 2 | 3 | 4 | 5 | 6
+  /**
+   * The newest count. Null while the count is not shared now (the newest
+   * capture's switches cover it, `history.hidden`): the tile says so where
+   * the count stands, never 0, and opens no detail.
+   */
+  count: number | null
+  /** Change over the frame, between the captures that shared the count (frameChange). */
+  change: number
+  /** The chart's line, broken where a capture did not share the count (chartPoints). */
+  points: MaterialPoint[]
+}
+
+/**
+ * The Tracked panel's tiles: one per saved pin, in the saved order. A pin on
+ * a count that is not shared now keeps its tile, its place and its colour
+ * (issue 12): slots, the counter and the colours go by the saved pins alone,
+ * so nothing shifts while a part is off and the tile's own remove still
+ * unpins it.
+ */
+export function trackedTiles(
+  history: MaterialsHistory,
+  keys: readonly string[],
+  frame: ChartFrame,
+): TrackedTile[] {
+  return keys.map((key, index) => ({
+    key,
+    color: ((index % 6) + 1) as TrackedTile['color'],
+    count: history.hidden?.includes(key) ? null : (history.latest.get(key) ?? 0),
+    change: frameChange(history, key, frame),
+    points: chartPoints(history, key, frame),
+  }))
+}
+
 // ------------------------------------------------------------------ periods
 
 export interface Reference {

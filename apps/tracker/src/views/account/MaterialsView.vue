@@ -220,11 +220,11 @@ function showHistory(key: string) {
 
 const range = useChartRange('materials:range')
 const frame = computed(() => (history.value ? rangeFrame(history.value, range.value) : null))
+// Slots, the counters and the Track buttons go by the saved pins alone: a pin
+// on a count that is not shared now keeps its tile in Tracked (it reads "Not
+// shared" and its remove works, see trackedTiles), so it holds its slot there
+// as it does in the picker's count (issue 12).
 const canTrack = computed(() => graph.selectedKeys.value.length < MAX_SERIES)
-// A pinned count the newest capture did not share has no chart, like it has
-// no tile (issue 12). Its pin stays saved: the chart is back once a capture
-// shares the count again.
-const trackedKeys = computed(() => listedKeys(graph.selectedKeys.value, history.value))
 
 const detailKey = shallowRef<string | null>(null)
 // A tracked key this account never held still opens (at 0); a count that is
@@ -312,7 +312,7 @@ const importTo = computed(() => accountLink('account-import'))
       v-model:range="range"
       :history="history"
       :frame="frame"
-      :keys="trackedKeys"
+      :keys="graph.selectedKeys.value"
       :ready="graph.ready.value"
       :icon="icon"
       @open="detailKey = $event"

@@ -3,6 +3,7 @@ import { DAY, HOUR } from '@/data/chart-range'
 import {
   chartFrame,
   seriesPoints,
+  withHiddenKeys,
   withLiveMaterials,
   type MaterialsHistory,
 } from '@/data/materials-history'
@@ -17,6 +18,7 @@ import {
   isChangePeriod,
   rangeFrame,
   referenceFor,
+  trackedTiles,
 } from '../material-stats'
 
 const at = (y: number, m: number, d: number, h = 0, min = 0) =>
@@ -474,5 +476,107 @@ describe('a count a capture did not share (the bag copies)', () => {
       { x: end, y: 40 },
     ])
     expect(chartPoints(h, 'Mora', frame).map((p) => p.y)).toEqual([1000, null, 1001, 1002, 1002])
+  })
+})
+
+describe('the Tracked panel', () => {
+  // Issue 12: a chart pinned on a count the newest capture did not share
+  // (Original Resin with Account numbers off) keeps its tile.
+  const end = at(2026, 10, 5, 14, 20)
+  const MIN = 60_000
+  const ago = (minutes: number) => end - minutes * MIN
+  const KEY = 'OriginalResin'
+  const times = [ago(50), ago(30), ago(10)]
+  const mora = [1_000, 1_001, 1_002]
+
+  /** Mora at every capture; the resin shared by those not in `off`. */
+  function pinned(resin: { at: number[]; value: number[] }, off: number[]): MaterialsHistory {
+    const shared: MaterialsHistory = {
+      times,
+      ids: [1, 2, 3],
+      lastSeenAt: end,
+      series: new Map([
+        ['Mora', { at: [0, 1, 2], value: mora }],
+        [KEY, off.length ? { ...resin, off } : resin],
+      ]),
+      latest: new Map([
+        ['Mora', mora.at(-1)!],
+        [KEY, resin.value.at(-1)!],
+      ]),
+      unshared: { at: [], seen: [ago(45), ago(30), end] },
+    }
+    // As the page's loader marks it: hidden, and out of `latest`.
+    return off.includes(times.length - 1) ? withHiddenKeys(shared, [KEY]) : shared
+  }
+
+  // Shared at 160, then two captures with Account numbers off, to now.
+  const off = pinned({ at: [0], value: [160] }, [1, 2])
+  const PINS = ['Mora', KEY, 'Primogem']
+
+  it('gets a tile for every saved pin, in the saved order', () => {
+    const frame = rangeFrame(off, '1h')
+    const tiles = trackedTiles(off, PINS, frame)
+    expect(tiles.map((tile) => tile.key)).toEqual(PINS)
+    // The colours go by the place among the pins: nothing shifts while a
+    // count is not shared.
+    expect(tiles.map((tile) => tile.color)).toEqual([1, 2, 3])
+    const all = pinned({ at: [0], value: [160] }, [])
+    expect(trackedTiles(all, PINS, frame).map((tile) => tile.color)).toEqual([1, 2, 3])
+    expect(PINS).toEqual(['Mora', KEY, 'Primogem'])
+  })
+
+  it('says "not shared" where the count stands, never 0', () => {
+    const [moraTile, resin, primogem] = trackedTiles(off, PINS, rangeFrame(off, '1h'))
+    expect(resin!.count).toBeNull()
+    // The others are as ever: the newest count, 0 for a key never held.
+    expect(moraTile!.count).toBe(1_002)
+    expect(primogem!.count).toBe(0)
+  })
+
+  it('keeps the line with its breaks, and the change between the captures that shared it', () => {
+    const frame = rangeFrame(off, '1h')
+    const resin = trackedTiles(off, PINS, frame)[1]!
+    expect(resin.points).toEqual([
+      { x: ago(50), y: 160 },
+      { x: ago(45), y: 160 },
+      { x: ago(30), y: null },
+      { x: ago(10), y: null },
+    ])
+    expect(resin.points).toEqual(chartPoints(off, KEY, frame))
+    expect(resin.change).toBe(frameChange(off, KEY, frame))
+    expect(resin.change).toBe(0)
+    // Spent between two captures that shared it, then not shared: the figure
+    // is that change, not the fall to nothing.
+    const spent = pinned({ at: [0, 1], value: [160, 40] }, [2])
+    const tile = trackedTiles(spent, PINS, rangeFrame(spent, '1h'))[1]!
+    expect(tile.count).toBeNull()
+    expect(tile.change).toBe(-120)
+  })
+
+  it('holds its slot: six pins are six tiles', () => {
+    const six = ['Mora', 'Primogem', KEY, 'FragileResin', 'Acquaint', 'Intertwined']
+    const tiles = trackedTiles(off, six, rangeFrame(off, '1h'))
+    expect(tiles).toHaveLength(6)
+    expect(tiles.map((tile) => tile.color)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(tiles.map((tile) => tile.count)).toEqual([1_002, 0, null, 0, 0, 0])
+  })
+
+  it('goes with its remove like any other pin', () => {
+    const left = PINS.filter((key) => key !== KEY)
+    const tiles = trackedTiles(off, left, rangeFrame(off, '1h'))
+    expect(tiles.map((tile) => [tile.key, tile.color, tile.count])).toEqual([
+      ['Mora', 1, 1_002],
+      ['Primogem', 2, 0],
+    ])
+  })
+
+  it('shows the count again once a capture shares it', () => {
+    const again = pinned({ at: [0, 2], value: [160, 40] }, [1])
+    const frame = rangeFrame(again, '1h')
+    const resin = trackedTiles(again, PINS, frame)[1]!
+    expect(resin.count).toBe(40)
+    expect(resin.color).toBe(2)
+    expect(resin.change).toBe(-120)
+    expect(resin.points.map((p) => p.y)).toEqual([160, 160, null, 40, 40])
   })
 })

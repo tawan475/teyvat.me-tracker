@@ -275,20 +275,44 @@ describe('a count the newest capture did not share', () => {
     expect(notSharedNow(undefined, 'OriginalResin')).toBe(false)
   })
 
-  it('has no tracked chart while it is pinned, and the pin stays', () => {
-    const pinned = ['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency']
-    expect(listedKeys(pinned, HIDDEN)).toEqual(['Mora', 'Primogem', 'RealmCurrency'])
-    expect(listedKeys(pinned, BOTH)).toEqual(['Mora', 'Primogem'])
-    // The saved list is not touched: the chart is back in its place once a
-    // newer capture shares the count.
-    expect(pinned).toEqual(['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency'])
-    expect(listedKeys(pinned, {})).toBe(pinned)
-    expect(listedKeys(pinned, null)).toBe(pinned)
-    expect(listedKeys(pinned, { hidden: [] })).toBe(pinned)
-    // Nothing of it pinned: the same list.
+  it('is in no list of the bag, and the list given is not touched', () => {
+    // ("Don't have". A chart pinned on it keeps its tile: trackedTiles,
+    // material-stats.test.)
+    const keys = ['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency']
+    expect(listedKeys(keys, HIDDEN)).toEqual(['Mora', 'Primogem', 'RealmCurrency'])
+    expect(listedKeys(keys, BOTH)).toEqual(['Mora', 'Primogem'])
+    expect(keys).toEqual(['Mora', 'OriginalResin', 'Primogem', 'RealmCurrency'])
+    expect(listedKeys(keys, {})).toBe(keys)
+    expect(listedKeys(keys, null)).toBe(keys)
+    expect(listedKeys(keys, { hidden: [] })).toBe(keys)
+    // None of them in it: the same list.
     const others = ['Mora', 'Primogem']
     expect(listedKeys(others, BOTH)).toBe(others)
     expect(listedKeys(['OriginalResin'], HIDDEN)).toEqual([])
+  })
+
+  it('is not offered by the Track picker, whose list is the bag', () => {
+    // The picker lists `buildItems`: a count that is not shared now cannot
+    // be newly pinned. One pinned before keeps its tile and its slot.
+    const history = {
+      times: [1],
+      ids: [1],
+      lastSeenAt: 1,
+      series: new Map([
+        ['Mora', { at: [0], value: [6] }],
+        ['OriginalResin', { at: [0], value: [160] }],
+        ['RealmCurrency', { at: [0], value: [950] }],
+      ]),
+      latest: new Map([
+        ['Mora', 6],
+        ['RealmCurrency', 950],
+      ]),
+    }
+    expect(buildItems({ ...history, ...HIDDEN }).map((item) => item.key)).toEqual([
+      'Mora',
+      'RealmCurrency',
+    ])
+    expect(buildItems({ ...history, ...BOTH }).map((item) => item.key)).toEqual(['Mora'])
   })
 
   it('opens no detail, whichever way it is asked for', () => {

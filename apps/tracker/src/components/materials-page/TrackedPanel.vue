@@ -15,11 +15,16 @@ import { clock24, formatNumber } from '@/lib/format'
 import { materialName, materialRarity } from '@/utils/materials'
 import DeltaText from './DeltaText.vue'
 import MaterialIcon from './MaterialIcon.vue'
-import { chartPoints, frameChange, frameStart } from './material-stats'
+import { frameStart, trackedTiles } from './material-stats'
 
 /**
  * Tracked materials as small multiples: one stepped chart each, so Mora and
  * Primogems never squash each other on a shared axis.
+ *
+ * `keys` are the saved pins, all of them: a pin on a count that is not shared
+ * now (issue 12) keeps its tile in its place. It says "Not shared" where the
+ * count stands, its line has the history's breaks, it opens no detail (there
+ * is none to open for such a count) and its remove unpins it like any other.
  */
 const props = defineProps<{
   history: MaterialsHistory
@@ -40,23 +45,16 @@ const rangeHint = computed(() =>
 const rangeDetail = computed(() => formatWindow(from.value, props.frame.end, !clock24()))
 
 const rows = computed(() =>
-  props.keys.map((key, index) => {
-    const name = materialName(key)
-    const series: TimelineSeries = {
-      label: name,
-      color: ((index % 6) + 1) as TimelineSeries['color'],
-      points: chartPoints(props.history, key, props.frame),
-    }
-    return {
-      key,
-      name,
-      rarity: materialRarity(key),
-      series: [series],
-      count: props.history.latest.get(key) ?? 0,
-      change: frameChange(props.history, key, props.frame),
-    }
+  trackedTiles(props.history, props.keys, props.frame).map((tile) => {
+    const name = materialName(tile.key)
+    const series: TimelineSeries = { label: name, color: tile.color, points: tile.points }
+    return { ...tile, name, rarity: materialRarity(tile.key), series: [series] }
   }),
 )
+
+function open(key: string, count: number | null) {
+  if (count !== null) emit('open', key)
+}
 </script>
 
 <template>
@@ -104,11 +102,13 @@ const rows = computed(() =>
         class="flex min-w-0 flex-col gap-2 rounded-xl border border-border-default p-3"
       >
         <div class="flex items-start gap-1">
-          <button
-            type="button"
-            class="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 text-left transition-colors hover:bg-surface-overlay"
+          <component
+            :is="row.count === null ? 'div' : 'button'"
+            :type="row.count === null ? undefined : 'button'"
+            class="-m-1 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 text-left"
+            :class="row.count === null ? '' : 'transition-colors hover:bg-surface-overlay'"
             :title="row.name"
-            @click="emit('open', row.key)"
+            @click="open(row.key, row.count)"
           >
             <span
               class="relative size-10 shrink-0 overflow-hidden rounded-lg bg-surface-overlay p-0.5 text-xs"
@@ -119,13 +119,19 @@ const rows = computed(() =>
             <span class="flex min-w-0 flex-col">
               <span class="truncate text-sm text-text-secondary">{{ row.name }}</span>
               <span class="flex flex-wrap items-baseline gap-x-2">
-                <span class="tabular font-mono text-lg leading-6 font-semibold">{{
+                <span
+                  v-if="row.count === null"
+                  class="text-sm leading-6 font-medium whitespace-nowrap text-text-muted"
+                  :title="$t('snapshots.parts.notShared')"
+                  >{{ $t('snapshots.parts.notSharedShort') }}</span
+                >
+                <span v-else class="tabular font-mono text-lg leading-6 font-semibold">{{
                   formatNumber(row.count)
                 }}</span>
                 <DeltaText :value="row.change" :hint="rangeHint" dash class="text-sm" />
               </span>
             </span>
-          </button>
+          </component>
           <button
             type="button"
             class="-mt-1 -mr-1 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-overlay hover:text-text-primary"

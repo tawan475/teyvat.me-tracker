@@ -65,10 +65,11 @@ export function notSharedNow(history: Hides, key: string): boolean {
 }
 
 /**
- * `keys` as the page lists them (the tracked charts, "Don't have"): without
- * the counts that are not shared now, like the bag's own lists. The same
- * array when it holds none of them, so nothing recomputes; the keys left out
- * stay where they are saved and are listed again once a capture shares them.
+ * `keys` as the bag lists them ("Don't have"): without the counts that are
+ * not shared now, like the bag's own lists. The same array when it holds
+ * none of them, so nothing recomputes; the keys left out are listed again
+ * once a capture shares them. Not for the tracked charts: a pin on such a
+ * count keeps its tile (trackedTiles in material-stats).
  */
 export function listedKeys<T extends readonly string[]>(keys: T, history: Hides): T | string[] {
   const hidden = history?.hidden

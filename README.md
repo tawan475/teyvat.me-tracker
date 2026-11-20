@@ -470,11 +470,16 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). The
     same holds for every other way to the count: the site search does not
     offer it, as a match or as a recent pick (`withoutItems` over the
-    account's `latest.off`), a chart pinned on it is left out of Tracked
-    while its pin stays saved (`listedKeys`), and its detail dialog opens
-    from nowhere, a `?m=` link included (`detailItemFor`). Nothing on the
-    page says so; all of it is back with the next capture that shares the
-    part. Its stored points stay in the materials history, by each capture's
+    account's `latest.off`), the Track picker does not list it, and its
+    detail dialog opens from nowhere, a `?m=` link included
+    (`detailItemFor`). Nothing on the page says so; all of it is back with
+    the next capture that shares the part. One thing stays: a chart already
+    pinned on the count in Tracked keeps its tile in its place
+    (`trackedTiles`), with "Not shared" where the count stands (never 0),
+    its line with the breaks below, no detail behind a click and a working
+    remove, so slots, the n/6 counters, the Track buttons and the chart
+    colours go by the saved pins alone. Its stored points stay in the
+    materials history, by each capture's
     own `gi_off`: a capture whose switches cover the count is no point of its
     series (`MaterialSeries.off` lists those snapshots), so the count's line
     breaks there like a capture without the materials breaks every line

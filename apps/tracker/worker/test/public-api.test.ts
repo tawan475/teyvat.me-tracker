@@ -1,5 +1,6 @@
 import type {
   AccountCreatedResponse,
+  AccountResponse,
   ApiTokenCreatedResponse,
   ApiTokensResponse,
   Good,
@@ -528,6 +529,23 @@ describe('/api/v1', () => {
       unlimited,
     )
     expect('off' in ((await older.json()) as { data: Snap }).data).toBe(false)
+
+    // The Materials off over a capture taken with Account numbers off: the app's
+    // account answer names that capture's switches (`bagOff`); v1 stays raw.
+    const numbersOff = { ...full, gi_off: ['gi_player.numbers'] } as Good
+    expect((await send(numbersOff, 1_760_000_300_000)).status).toBe(201)
+    const { materials: _m, ...noBag } = full
+    expect(
+      (await send({ ...noBag, gi_off: ['materials'] } as Good, 1_760_000_400_000)).status,
+    ).toBe(201)
+    const raw = await listed()
+    expect(raw.off).toEqual(['materials'])
+    expect('bagOff' in raw).toBe(false)
+    expect('bagOff' in (await latestOf(`/accounts/${account.id}`))).toBe(false)
+    const app = (await client.json<AccountResponse[]>('/api/accounts')).find(
+      (a) => a.id === account.id,
+    )!.latest!
+    expect(app.bagOff).toEqual(['gi_player.numbers'])
   })
 
   it('works with the website session (the docs’ Try it)', async () => {

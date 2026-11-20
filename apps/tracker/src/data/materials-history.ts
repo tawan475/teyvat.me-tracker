@@ -13,7 +13,7 @@
  */
 
 import { decodeMaterials, fromRef, type KeyDictionary, type MaterialsSection } from '@gdt/shared'
-import { offBagKeys } from '@gdt/shared/off'
+import { notSharedBagKeysAt, offBagKeys, sharesSection } from '@gdt/shared/off'
 
 export interface MaterialsSnapshotRef {
   id: number
@@ -68,10 +68,12 @@ export interface MaterialsHistory {
    */
   unshared?: UnsharedCaptures
   /**
-   * Keys the newest capture's switches cover (the bag copies, bag-copies.ts:
-   * Original Resin with Account numbers off, Realm Currency with Serenitea
-   * Pot off). They are not in `latest`, and the page lists none of them as
-   * held now; `series` keeps their stored points. Absent when there is none.
+   * Keys that are not shared now (the bag copies, bag-copies.ts: Original
+   * Resin with Account numbers off, Realm Currency with Serenitea Pot off):
+   * the newest capture's switches cover them, or those of the capture this
+   * bag is read from do (the newest left the Materials out). They are not in
+   * `latest`, and the page lists none of them as held now; `series` keeps
+   * their stored points. Absent when there is none.
    */
   hidden?: string[]
 }
@@ -250,6 +252,41 @@ export function withHiddenKeys(
   const latest = new Map(history.latest)
   for (const key of keys) latest.delete(key)
   return { ...history, latest, hidden: [...keys] }
+}
+
+/**
+ * The history of an account's captures: `stored` holds the materials section
+ * of every snapshot (in any order), `list` is the snapshot list, newest
+ * first, with each capture's `gi_off` (issue 12).
+ *
+ * A capture whose Materials switch was off holds no bag: it is left out, so
+ * every count holds the last shared one, and the charts break their lines
+ * where it was taken. Each capture's own switches may cover a count the bag
+ * holds a copy of (bag-copies.ts): that capture did not share it, and the
+ * count's line breaks there too. And the counts that are not shared now
+ * (`hidden`) go by the newest capture's switches and, when it left the
+ * Materials out, by those of the capture the bag is read from: an older bag
+ * taken without the count holds none, which would read as a current 0.
+ */
+export function historyOfCaptures(
+  stored: readonly Omit<MaterialsSnapshotRef, 'off'>[],
+  texts: ReadonlyMap<string, string>,
+  dictionary: KeyDictionary,
+  list: readonly (Pick<MaterialsSnapshotRef, 'id' | 'takenAt' | 'lastSeenAt'> & {
+    off?: readonly string[]
+  })[],
+): MaterialsHistory {
+  const unshared = list.filter((s) => !sharesSection(s.off, 'materials'))
+  const left = new Set(unshared.map((s) => s.id))
+  const off = new Map(list.map((s) => [s.id, s.off]))
+  const snapshots = stored
+    .filter((s) => !left.has(s.id))
+    .map((s) => ({ ...s, off: off.get(s.id) }))
+    .sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
+  return withHiddenKeys(
+    buildMaterialsHistory(snapshots, texts, dictionary, unshared),
+    notSharedBagKeysAt(list, 0),
+  )
 }
 
 // ------------------------------------------------------------------ queries

@@ -1,3 +1,4 @@
+import { notSharedBagKeys } from '@gdt/shared/off'
 import { normalizeSearch } from '@/lib/search'
 
 /**
@@ -47,8 +48,22 @@ export function searchWords(...names: readonly (string | undefined)[]): string {
 }
 
 /**
- * `entries` without the items whose keys are in `keys`: the counts the
- * account's newest capture did not share (the bag copies, bag-copies.ts).
+ * The counts that are not shared now, from the account's own answer (no
+ * request): those the newest capture's switches cover (`latest.off`) and,
+ * when it left the Materials out, those the switches of the capture its bag
+ * is read from cover (`latest.bagOff`). The Materials page goes by the same
+ * rule from the snapshot list (notSharedBagKeys in @gdt/shared).
+ */
+export function notSharedCounts(
+  latest: { off?: readonly string[]; bagOff?: readonly string[] } | null | undefined,
+): string[] {
+  return notSharedBagKeys(latest?.off, latest?.bagOff)
+}
+
+/**
+ * `entries` without the items whose keys are in `keys`: the counts that
+ * are not shared now (the bag copies, bag-copies.ts: by the newest capture's
+ * switches, or by those of the capture its bag is read from).
  * The Materials page lists none of them and opens no detail for one, so the
  * search offers none either, as a match or as a recent pick. The same list
  * when `keys` is empty.

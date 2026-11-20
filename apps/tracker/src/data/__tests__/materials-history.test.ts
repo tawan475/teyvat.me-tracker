@@ -7,6 +7,7 @@ import {
   changeOver,
   chartFrame,
   firstShared,
+  historyOfCaptures,
   lastSharedIn,
   seriesPoints,
   sharedAt,
@@ -337,6 +338,50 @@ describe('a count a capture did not share (the bag copies)', () => {
       { x: 2 * DAY, y: 40 },
     ])
     expect(seriesPoints(h, 'Mora', frame).map((p) => p.y)).toEqual([500, 600, 700])
+  })
+
+  it('is not shared now while the capture the bag is read from left it out', () => {
+    // 2026-11-20: the newest capture has the Materials off (Account numbers
+    // on), so the bag shown is capture 2's, taken with Account numbers off.
+    const texts = new Map<string, string>()
+    const bags: Record<string, number>[] = [{ OriginalResin: 160, Mora: 500 }, { Mora: 600 }, {}]
+    const stored = bags.map((bag, i) => {
+      const hash = `k${i}`
+      texts.set(hash, JSON.stringify({ m: Object.entries(bag) } satisfies MaterialsSection))
+      const at = i * DAY
+      return { id: i + 1, takenAt: at, lastSeenAt: at, materials: hash, materialsKeyframe: hash }
+    })
+    /** The snapshot list, newest first, with each capture's gi_off (oldest first here). */
+    const listed = (offs: (string[] | undefined)[]) =>
+      stored.map((s, i) => ({ ...s, ...(offs[i] ? { off: offs[i] } : {}) })).reverse()
+    const build = (offs: (string[] | undefined)[]) =>
+      historyOfCaptures(stored, texts, dictionary, listed(offs))
+
+    const h = build([[], NUMBERS, ['materials']])
+    // The newest capture holds no bag: the history ends on capture 2.
+    expect(h.ids).toEqual([1, 2])
+    expect(h.hidden).toEqual(['OriginalResin'])
+    expect(h.latest.has('OriginalResin')).toBe(false)
+    expect(h.latest.get('Mora')).toBe(600)
+    // The count's line still breaks where capture 2 was taken, and holds no 0.
+    expect(h.series.get('OriginalResin')).toEqual({ at: [0], value: [160], off: [1] })
+
+    // The newest capture's own switches count as before, with the bag capture's.
+    expect(build([[], NUMBERS, ['materials', 'gi_teapot']]).hidden).toEqual([
+      'OriginalResin',
+      'RealmCurrency',
+    ])
+    // The bag capture shared the count, or was stored before gi_off: shown.
+    for (const second of [[], undefined]) {
+      const shown = build([[], second, ['materials']])
+      expect(shown.hidden).toBeUndefined()
+      expect(shown.ids).toEqual([1, 2])
+    }
+    // The newest capture shares the Materials: only its own switches say.
+    const own = build([NUMBERS, NUMBERS, []])
+    expect(own.hidden).toBeUndefined()
+    expect(own.ids).toEqual([1, 2, 3])
+    expect(build([[], [], NUMBERS]).hidden).toEqual(['OriginalResin'])
   })
 
   it("keeps the break under live sync's point while the count is not shared now", () => {

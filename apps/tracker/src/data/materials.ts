@@ -7,7 +7,6 @@
  * measured at 8 ms for 151 snapshots and 22 ms for 1,208, so no worker.
  */
 
-import { offBagKeys, sharesSection } from '@gdt/shared/off'
 import {
   accountCacheKey,
   loadBundle,
@@ -15,7 +14,7 @@ import {
   loadSnapshots,
   type AccountRef,
 } from './account-data'
-import { buildMaterialsHistory, withHiddenKeys, type MaterialsHistory } from './materials-history'
+import { historyOfCaptures, type MaterialsHistory } from './materials-history'
 
 export * from './materials-history'
 
@@ -32,25 +31,9 @@ export function loadMaterialsHistory(account: AccountRef): Promise<MaterialsHist
         loadMaterialsDictionary(),
         loadSnapshots(account),
       ])
-      // A capture whose Materials switch was off (Capture's gi_off, issue 12)
-      // holds no bag: it is left out, so every count holds the last shared
-      // one, and the charts break their lines where it was taken.
-      const unshared = list.filter((s) => !sharesSection(s.off, 'materials'))
-      const left = new Set(unshared.map((s) => s.id))
-      // Each capture's own switches may cover a count the bag holds a copy
-      // of (bag-copies.ts): that capture did not share it, and the count's
-      // line breaks there too.
-      const off = new Map(list.map((s) => [s.id, s.off]))
-      const snapshots = bundle.snapshots
-        .filter((s) => !left.has(s.id))
-        .map((s) => ({ ...s, off: off.get(s.id) }))
-        .sort((a, b) => a.takenAt - b.takenAt || a.id - b.id)
-      // The newest capture's switches (the list is newest first): not shared
-      // now, so no page shows the count as a current figure.
-      return withHiddenKeys(
-        buildMaterialsHistory(snapshots, bundle.texts, dictionary, unshared),
-        offBagKeys(list[0]?.off),
-      )
+      // Which captures shared the bag, and which counts are shared now, by
+      // each capture's gi_off (issue 12): historyOfCaptures.
+      return historyOfCaptures(bundle.snapshots, bundle.texts, dictionary, list)
     })()
     entry.catch(() => cache.delete(key))
     cache.set(key, entry)

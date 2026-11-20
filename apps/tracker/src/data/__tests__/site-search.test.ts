@@ -3,6 +3,7 @@ import {
   RECENT_MAX,
   addRecent,
   matchScore,
+  notSharedCounts,
   readRecent,
   searchNeedle,
   searchSite,
@@ -134,6 +135,28 @@ describe('counts the newest capture did not share', () => {
       'achievement:OriginalResin',
       'page:account-planner',
     ])
+  })
+
+  it("nor while the capture the bag is read from left the count out (the account's answer)", () => {
+    // 2026-11-20: the newest capture has the Materials off, so the bag shown
+    // is an older capture's, taken with Account numbers off: no false 0.
+    const older = { off: ['materials'], bagOff: ['gi_player.numbers'] }
+    expect(notSharedCounts(older)).toEqual(['OriginalResin'])
+    const left = withoutItems(entries, notSharedCounts(older))
+    expect(found(left, 'resin')).toEqual(['item:FragileResin', 'achievement:OriginalResin'])
+    expect(found(left, 'realm')).toEqual(['item:RealmCurrency'])
+    // Either capture's switches.
+    expect(
+      notSharedCounts({ off: ['materials', 'gi_teapot'], bagOff: ['gi_player.numbers'] }),
+    ).toEqual(['OriginalResin', 'RealmCurrency'])
+    // As before: the newest capture's own switches, or nothing to leave out.
+    expect(notSharedCounts({ off: ['gi_teapot'] })).toEqual(['RealmCurrency'])
+    expect(notSharedCounts({ off: ['materials'], bagOff: ['gi_tasks'] })).toEqual([])
+    expect(notSharedCounts({ off: ['materials'] })).toEqual([])
+    expect(notSharedCounts({})).toEqual([])
+    expect(notSharedCounts(null)).toEqual([])
+    expect(notSharedCounts(undefined)).toEqual([])
+    expect(withoutItems(entries, notSharedCounts({}))).toBe(entries)
   })
 
   it('nor as a recent pick, which is looked up among the entries left', () => {

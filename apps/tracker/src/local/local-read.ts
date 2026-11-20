@@ -16,6 +16,7 @@ import {
   decodeSnapshotMeta,
   exportedOff,
   offSectionMask,
+  bagOffAt,
   sharedSummaryOf,
   storedSnapshotOf,
   v1SnapshotOf,
@@ -50,8 +51,11 @@ export function accountResponse(store: LocalStore): AccountResponse {
   const meta = latest ? decodeSnapshotMeta(latest.meta) : null
   // As the Worker's list answers it: a build section the newest capture left
   // out (Capture's gi_off) has its figures from the newest that shared it.
-  const sharedSummary =
-    meta && offSectionMask(meta.off) !== 0 ? sharedSummaryOf(listSnapshots(store), 0) : undefined
+  const list = meta && offSectionMask(meta.off) !== 0 ? listSnapshots(store) : null
+  const sharedSummary = list ? sharedSummaryOf(list, 0) : undefined
+  // And the switches of the capture its bag is read from, when it left the
+  // Materials out (the two bag counts those cover are not shared now).
+  const bagOff = list ? bagOffAt(list, 0) : undefined
   return {
     id: GUEST_ACCOUNT_ID,
     name: account?.name ?? null,
@@ -71,6 +75,7 @@ export function accountResponse(store: LocalStore): AccountResponse {
             summary: meta.summary,
             ...(sharedSummary ? { sharedSummary } : {}),
             ...(meta.off?.length ? { off: meta.off } : {}),
+            ...(bagOff?.length ? { bagOff: [...bagOff] } : {}),
             source: meta.source,
           }
         : null,

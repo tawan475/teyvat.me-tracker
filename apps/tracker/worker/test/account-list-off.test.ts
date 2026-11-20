@@ -122,6 +122,61 @@ describe("the account list's figures with sections left out", () => {
     expect((await latestOf(client, accountId)).sharedSummary!.mora).toBe(2)
   })
 
+  it('answers the switches of the capture the bag is read from (bagOff), in the same statement', async () => {
+    // 2026-11-20: a bag count is not shared now when the newest capture's
+    // switches cover it, or those of the capture its bag is read from do.
+    const NUMBERS = 'gi_player.numbers'
+    const { client, accountId, importKey } = await setup()
+    await send(importKey, sampleGood(), 1_000)
+    const second = await send(
+      importKey,
+      { ...sampleGood({ materials: { Mora: 5 } }), gi_off: [NUMBERS] },
+      2_000,
+    )
+    // The newest capture shares its Materials: its bag is its own, no bagOff.
+    let latest = await latestOf(client, accountId)
+    expect(latest.off).toEqual([NUMBERS])
+    expect('bagOff' in latest).toBe(false)
+
+    // Materials off, Account numbers on: the bag is the second capture's.
+    await send(importKey, without(sampleGood(), ['materials']), 3_000)
+    latest = await latestOf(client, accountId)
+    expect(latest.off).toEqual(['materials'])
+    expect(latest.bagOff).toEqual([NUMBERS])
+    expect(latest.sharedSummary).toMatchObject({ mora: 5 })
+    // One round trip still, for the list and for the bootstrap.
+    expect((await rowsRead(client)).trips).toBe(1)
+    const boot = await client.json<BootstrapResponse>('/api/bootstrap')
+    expect(boot.accounts.find((a) => a.id === accountId)!.latest).toEqual(latest)
+    const one = await client.json<AccountResponse>(`/api/accounts/${accountId}`)
+    expect(one.latest).toEqual(latest)
+
+    // A newer capture without Materials: still the newest one that shared them.
+    await send(
+      importKey,
+      { ...without(sampleGood(), ['materials']), gi_off: ['materials', 'gi_teapot'] },
+      4_000,
+    )
+    latest = await latestOf(client, accountId)
+    expect(latest.off).toEqual(['materials', 'gi_teapot'])
+    expect(latest.bagOff).toEqual([NUMBERS])
+
+    // That capture deleted: the bag is the first one's, stored without a gi_off.
+    const gone = await client.fetch(`/api/accounts/${accountId}/snapshots/${second.snapshotId}`, {
+      method: 'DELETE',
+    })
+    expect(gone.ok).toBe(true)
+    latest = await latestOf(client, accountId)
+    expect(latest.off).toEqual(['materials', 'gi_teapot'])
+    expect('bagOff' in latest).toBe(false)
+
+    // A capture that shares the Materials again: nothing to add.
+    await send(importKey, { ...sampleGood(), gi_off: ['gi_teapot'] }, 5_000)
+    latest = await latestOf(client, accountId)
+    expect(latest.off).toEqual(['gi_teapot'])
+    expect('bagOff' in latest).toBe(false)
+  })
+
   it('costs one round trip, and reads no more rows while everything is shared', async () => {
     const { client, importKey } = await setup()
     await send(importKey, sampleGood(), 1_000)

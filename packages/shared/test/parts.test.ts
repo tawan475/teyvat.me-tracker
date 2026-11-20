@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BAG_COPIES,
   BlobDecoder,
+  bagOffAt,
   OFF_POSITIONS,
   OFF_SECTION_BITS,
   OFF_SWITCHES,
@@ -22,6 +23,8 @@ import {
   kindCode,
   lastRemoval,
   normalizeGood,
+  notSharedBagKeys,
+  notSharedBagKeysAt,
   offBagKeys,
   offMask,
   offOfMask,
@@ -304,6 +307,77 @@ describe('the bag copies', () => {
     expect(offBagKeys([])).toEqual([])
     expect(offBagKeys(undefined)).toEqual([])
     expect(offBagKeys(null)).toEqual([])
+  })
+
+  describe('not shared now', () => {
+    // Decided 2026-11-20: by the newest capture's switches, or by those of
+    // the capture the bag is read from (the newest that shared the Materials).
+    const MATERIALS_OFF = 'materials'
+
+    it('when the newest capture covers the count', () => {
+      expect(notSharedBagKeys([NUMBERS])).toEqual(['OriginalResin'])
+      expect(notSharedBagKeys([NUMBERS], undefined)).toEqual(['OriginalResin'])
+      expect(notSharedBagKeys([TEAPOT, NUMBERS], [])).toEqual(['OriginalResin', 'RealmCurrency'])
+      // Newest first: it shares the Materials, so its bag is its own.
+      const list = [{ off: [NUMBERS] }, { off: [TEAPOT] }, { off: [] }]
+      expect(bagOffAt(list, 0)).toBeUndefined()
+      expect(notSharedBagKeysAt(list, 0)).toEqual(['OriginalResin'])
+      // An older capture's switches say nothing while the newest shares its bag.
+      expect(notSharedBagKeysAt(list, 1)).toEqual(['RealmCurrency'])
+      expect(notSharedBagKeysAt(list, 2)).toEqual([])
+    })
+
+    it('when the capture the bag is read from covers it', () => {
+      expect(notSharedBagKeys([MATERIALS_OFF], [NUMBERS])).toEqual(['OriginalResin'])
+      expect(notSharedBagKeys([], [TEAPOT])).toEqual(['RealmCurrency'])
+      // Either list: in BAG_COPIES order, each key once.
+      expect(notSharedBagKeys([MATERIALS_OFF, TEAPOT], [NUMBERS, TEAPOT])).toEqual([
+        'OriginalResin',
+        'RealmCurrency',
+      ])
+      // The newest left the Materials out: the bag is the newest older one's that shared them.
+      const list = [
+        { off: [MATERIALS_OFF] },
+        { off: [MATERIALS_OFF, TEAPOT] },
+        { off: [NUMBERS] },
+        { off: [TEAPOT] },
+      ]
+      expect(bagOffAt(list, 0)).toEqual([NUMBERS])
+      expect(notSharedBagKeysAt(list, 0)).toEqual(['OriginalResin'])
+      // Its own switches and the bag capture's together.
+      expect(bagOffAt(list, 1)).toEqual([NUMBERS])
+      expect(notSharedBagKeysAt(list, 1)).toEqual(['OriginalResin', 'RealmCurrency'])
+    })
+
+    it('never when neither covers it', () => {
+      expect(notSharedBagKeys([], [])).toEqual([])
+      expect(notSharedBagKeys([MATERIALS_OFF, 'gi_tasks'], ['gi_player.profile'])).toEqual([])
+      expect(notSharedBagKeys(undefined, undefined)).toEqual([])
+      expect(notSharedBagKeys(null, null)).toEqual([])
+      const list = [{ off: [MATERIALS_OFF] }, { off: ['gi_tasks'] }, { off: [NUMBERS] }]
+      // Only the capture the bag is read from counts, not one before it.
+      expect(bagOffAt(list, 0)).toEqual(['gi_tasks'])
+      expect(notSharedBagKeysAt(list, 0)).toEqual([])
+      // No capture shared the Materials: there is no bag, and nothing to cover.
+      const none = [{ off: [MATERIALS_OFF] }, { off: [MATERIALS_OFF, NUMBERS] }]
+      expect(bagOffAt(none, 0)).toBeUndefined()
+      expect(notSharedBagKeysAt(none, 0)).toEqual([])
+      // Not listed.
+      expect(bagOffAt(list, 7)).toBeUndefined()
+      expect(bagOffAt(list, -1)).toBeUndefined()
+      expect(notSharedBagKeysAt(list, -1)).toEqual([])
+      expect(notSharedBagKeysAt([], 0)).toEqual([])
+    })
+
+    it('a capture stored before gi_off shared everything, as the newest or as the bag', () => {
+      // The newest has no gi_off: its bag is its own, whatever came before.
+      expect(notSharedBagKeysAt([{}, { off: [NUMBERS, TEAPOT] }], 0)).toEqual([])
+      // The bag is read from one without a gi_off: only the newest's own switches count.
+      const list = [{ off: [MATERIALS_OFF, TEAPOT] }, {}, { off: [NUMBERS] }]
+      expect(bagOffAt(list, 0)).toBeUndefined()
+      expect(notSharedBagKeysAt(list, 0)).toEqual(['RealmCurrency'])
+      expect(notSharedBagKeysAt([{ off: [MATERIALS_OFF] }, {}], 0)).toEqual([])
+    })
   })
 
   it('are dropped from an upload whose gi_off names their part, and only then', () => {

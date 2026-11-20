@@ -468,9 +468,19 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     wallet has no tile for the count, the bag lists it nowhere and "now" (the
     Planner's bag too) holds none of it, whichever capture the bag is read
     from (`data/bag-copies.ts`, `MaterialsHistory.hidden`, `walletKeys`). The
+    count is not shared now either while the capture the bag is read from
+    had the part off (2026-11-20, `notSharedBagKeys` in `off.ts`): with the
+    Materials off the bag shown is the newest older capture's that shared
+    them, and one taken without the count holds none, which would read as a
+    current 0. The pages find that capture in the snapshot list
+    (`bagOffAt`); the account answer names its switches as `latest.bagOff`
+    (only then, and only when not empty), from the meta the list's one
+    statement already reads for the stand-in figures, the guest's account the
+    same; `/api/v1` does not carry it. The
     same holds for every other way to the count: the site search does not
     offer it, as a match or as a recent pick (`withoutItems` over the
-    account's `latest.off`), the Track picker does not list it, and its
+    account's `latest.off` and `latest.bagOff`, `notSharedCounts`: no
+    request), the Track picker does not list it, and its
     detail dialog opens from nowhere, a `?m=` link included
     (`detailItemFor`). Nothing on the page says so; all of it is back with
     the next capture that shares the part. One thing stays: a chart already

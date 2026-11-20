@@ -39,6 +39,36 @@ describe('the keys a capture does not share', () => {
     ).toEqual([])
   })
 
+  it('are also those the capture its bag is read from left out (the Materials off)', () => {
+    // 2026-11-20: with the Materials off the bag shown is the newest older
+    // capture's that shared them. Taken with Account numbers off, it holds no
+    // Original Resin: the count is not shared now, never a 0.
+    const older = [
+      { id: 6, off: ['materials'] },
+      { id: 5, off: ['materials', TEAPOT] },
+      { id: 4, off: [NUMBERS] },
+      { id: 3, off: [TEAPOT] },
+      { id: 2 },
+      { id: 1, off: [NUMBERS] },
+    ]
+    expect(hiddenBagKeys(older)).toEqual(['OriginalResin'])
+    expect(hiddenBagKeys(older, 6)).toEqual(['OriginalResin'])
+    // Its own switches and the bag capture's.
+    expect(hiddenBagKeys(older, 5)).toEqual(['OriginalResin', 'RealmCurrency'])
+    // A capture that shares its Materials goes by its own switches alone.
+    expect(hiddenBagKeys(older, 4)).toEqual(['OriginalResin'])
+    expect(hiddenBagKeys(older, 3)).toEqual(['RealmCurrency'])
+    // The bag is read from a capture stored before gi_off: it shared everything.
+    const before = [{ id: 3, off: ['materials'] }, { id: 2 }, { id: 1, off: [NUMBERS] }]
+    expect(hiddenBagKeys(before)).toEqual([])
+    // No capture shared the Materials: no bag to read a count from.
+    const none = [
+      { id: 2, off: ['materials'] },
+      { id: 1, off: ['materials', NUMBERS] },
+    ]
+    expect(hiddenBagKeys(none)).toEqual([])
+  })
+
   it('leave the bag without copying one that holds none of them', () => {
     const bag = { Mora: 5, OriginalResin: 160, RealmCurrency: 900 }
     expect(withoutBagKeys(bag, ['OriginalResin'])).toEqual({ Mora: 5, RealmCurrency: 900 })
@@ -70,6 +100,14 @@ describe('the live journal over a capture that left a count out', () => {
     expect(bagJournal(journal(3), list).changes).toEqual([changes[0], changes[1], changes[3]])
     // The rest of the journal is as it was.
     expect(bagJournal(journal(4), list)).toMatchObject({ open: true, seq: 3 })
+  })
+
+  it('drops them too when the base snapshot reads its bag from a capture that left it out', () => {
+    const older = [
+      { id: 9, off: ['materials'] },
+      { id: 8, off: [NUMBERS] },
+    ]
+    expect(bagJournal(journal(9), older).changes).toEqual([changes[0], changes[2], changes[3]])
   })
 
   it('is the same journal when there is nothing to drop', () => {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AccountResponse } from '@gdt/shared'
-import { offBagKeys } from '@gdt/shared/off'
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import { Clock, CornerDownLeft, FileText, Package, Search } from 'lucide-vue-next'
@@ -13,6 +12,7 @@ import { loadLatestInventory, type Inventory } from '@/data/account-data'
 import {
   SEARCH_KINDS,
   addRecent,
+  notSharedCounts,
   readRecent,
   searchSite,
   searchWords,
@@ -123,11 +123,13 @@ const pages = computed<SearchEntry[]>(() => {
 })
 
 /**
- * Counts the account's newest capture did not share (Capture's gi_off: Original
- * Resin with Account numbers off, Realm Currency with Serenitea Pot off). The
+ * Counts that are not shared now (Capture's gi_off: Original Resin with
+ * Account numbers off, Realm Currency with Serenitea Pot off): by the newest
+ * capture's switches, or by those of the capture its bag is read from when it
+ * left the Materials out (`bagOff`, in the account's own answer). The
  * Materials page has no tile and no detail for them, so they are not offered.
  */
-const notShared = computed(() => offBagKeys(account.value?.latest?.off))
+const notShared = computed(() => notSharedCounts(account.value?.latest))
 
 const entries = computed(() =>
   // Without an account only the pages: the rest opens inside one.

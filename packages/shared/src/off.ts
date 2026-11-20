@@ -118,6 +118,47 @@ export function offBagKeys(off: readonly string[] | null | undefined): string[] 
 }
 
 /**
+ * The bag counts that are not shared now (BAG_COPIES; decided 2026-11-20), in
+ * BAG_COPIES order. `newest`: the newest capture's `gi_off`. `bag`: that of
+ * the capture the bag is read from when it is another one (bagOffAt): the
+ * newest capture left the Materials out, so an older capture's bag stands in.
+ * A count either list covers is not shared: a bag taken with the count's own
+ * switch off holds none (it would read as 0), whatever the newest capture's
+ * switches say.
+ */
+export function notSharedBagKeys(
+  newest: readonly string[] | null | undefined,
+  bag?: readonly string[] | null,
+): string[] {
+  const own = offBagKeys(newest)
+  const older = offBagKeys(bag)
+  if (older.length === 0) return own
+  return Object.keys(BAG_COPIES).filter((key) => own.includes(key) || older.includes(key))
+}
+
+/**
+ * The `gi_off` of the capture whose bag stands in for capture `index`'s
+ * (`list` newest first, as the snapshot list comes): the newest older one
+ * that shared the Materials. Undefined when capture `index` shared them (its
+ * bag is its own), is not listed, no older capture shared them, or that one
+ * has no `gi_off` (stored before it existed).
+ */
+export function bagOffAt(
+  list: readonly { off?: readonly string[] }[],
+  index: number,
+): readonly string[] | undefined {
+  const capture = list[index]
+  if (!capture || sharesSection(capture.off, 'materials')) return undefined
+  return list.slice(index + 1).find((s) => sharesSection(s.off, 'materials'))?.off
+}
+
+/** The bag counts not shared at capture `index` of `list` (newest first): notSharedBagKeys over it and its bag's capture. */
+export const notSharedBagKeysAt = (
+  list: readonly { off?: readonly string[] }[],
+  index: number,
+): string[] => notSharedBagKeys(list[index]?.off, bagOffAt(list, index))
+
+/**
  * A `gi_off` as one number, a bit per known name by its place in
  * OFF_POSITIONS (unknown names say nothing here): what the live journal's row
  * keeps of its base snapshot's (`live_journals.base_off`). Stored: the

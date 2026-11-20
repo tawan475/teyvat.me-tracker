@@ -368,7 +368,8 @@ function loadSnapshotInventory(
       if (pieces && donorBundle) artifactIds = artifactIdsOf(pieces.snapshot, donorBundle)
     }
     // A count this capture's switches cover is not shared (bag-copies.ts),
-    // whichever capture the bag is read from.
+    // whichever capture the bag is read from; nor is one the switches of the
+    // capture the bag is read from cover (it holds none: no false 0).
     good.materials = withoutBagKeys(good.materials, hiddenBagKeys(list, latest.id))
     return {
       snapshot,
@@ -454,7 +455,7 @@ export function loadLatestInventory(
       // Read for the snapshot already (cached): only its `off`.
       loadSnapshots(account).catch(() => [] as SnapshotResponse[]),
     ])
-    // Without the changes to a count the capture's switches cover (bag-copies.ts).
+    // Without the changes to a count that is not shared there (bag-copies.ts).
     return inventory && live
       ? withJournal(
           inventory,

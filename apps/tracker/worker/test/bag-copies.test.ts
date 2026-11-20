@@ -2,6 +2,7 @@ import {
   applyLiveBatch,
   offMask,
   type AccountCreatedResponse,
+  type AccountResponse,
   type Good,
   type GoodDelta,
   type ImportResponse,
@@ -176,6 +177,58 @@ describe('the bag copies in the guest store', () => {
       [[NUMBERS], 3],
       [undefined, 4],
     ])
+  })
+})
+
+describe('the capture the bag is read from', () => {
+  // 2026-11-20: with the Materials off the bag shown is the newest older
+  // capture's that shared them; a count its switches cover is not shared now.
+  const guestModules = loadGuestModules()
+  beforeEach(async () => {
+    const { LocalStore, memoryBackend, setGuestStore } = await guestModules
+    setGuestStore(new LocalStore(memoryBackend()))
+  })
+  afterEach(async () => (await guestModules).setGuestStore(null))
+
+  it("is named by its switches in the account's answer, the guest's as the server's", async () => {
+    const { localFetch } = await guestModules
+    const { client, account, upload } = await setup()
+    const guestLatest = async () => {
+      const response = await localFetch(`/api/accounts/${GUEST_ACCOUNT_ID}`, {})
+      return ((await response.json()) as AccountResponse).latest!
+    }
+    const serverLatest = async () =>
+      (await client.json<AccountResponse[]>('/api/accounts')).find((a) => a.id === account.id)!
+        .latest!
+    const both = async (good: Good, at: number) => {
+      await upload(good, at)
+      const response = await localFetch(
+        `/api/accounts/${GUEST_ACCOUNT_ID}/import?timestamp=${at}`,
+        { method: 'POST', body: JSON.stringify(good) },
+      )
+      expect(response.ok, await response.clone().text()).toBe(true)
+      const [here, there] = [await guestLatest(), await serverLatest()]
+      expect(here.off).toEqual(there.off)
+      expect(here.bagOff).toEqual(there.bagOff)
+      expect('bagOff' in here).toBe('bagOff' in there)
+      expect(here.sharedSummary).toEqual(there.sharedSummary)
+      return here
+    }
+
+    // Account numbers off, the Materials shared: its bag is its own.
+    expect('bagOff' in (await both(capture([NUMBERS]), 1_000))).toBe(false)
+    // The Materials off, Account numbers on: the bag is the first capture's.
+    const off = await both(capture(['materials'], {}), 2_000)
+    expect(off.off).toEqual(['materials'])
+    expect(off.bagOff).toEqual([NUMBERS])
+    // Its own switches beside the bag capture's.
+    const more = await both(capture(['materials', TEAPOT], {}), 3_000)
+    expect(more.off).toEqual(['materials', TEAPOT])
+    expect(more.bagOff).toEqual([NUMBERS])
+    // The Materials shared again.
+    expect('bagOff' in (await both(capture([]), 4_000))).toBe(false)
+    // And off over a capture that shared everything: its empty list names nothing.
+    expect('bagOff' in (await both(capture(['materials'], {}), 5_000))).toBe(false)
   })
 })
 

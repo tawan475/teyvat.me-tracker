@@ -192,6 +192,20 @@ function standInOf(row: AccountListRow, summary: SnapshotSummary): SnapshotSumma
 }
 
 /**
+ * The `gi_off` of the capture the latest snapshot's bag is read from, when
+ * the latest left the Materials out and that capture had switches off
+ * (AccountResponse `latest.bagOff`). From the meta SHARED_FROM_SQL already
+ * read for the figures: no row more.
+ */
+function bagOffOf(row: AccountListRow): string[] | undefined {
+  if (((row.off_sections ?? 0) & OFF_SECTION_BITS.materials) === 0) return undefined
+  const meta = row.shared_materials
+  if (meta === null || meta === undefined) return undefined
+  const off = metaOf({ meta }).off
+  return off?.length ? off : undefined
+}
+
+/**
  * `genshin_accounts.settings` with a JSON merge patch (the bound parameter
  * `param`) laid over it, for `UPDATE genshin_accounts SET settings = …`. The
  * merge happens in the statement, on the row as stored at that moment, so
@@ -267,6 +281,7 @@ export function accountsFromRows(rows: readonly AccountListRow[]): AccountRespon
         : (() => {
             const meta = metaOf(row)
             const shared = standInOf(row, meta.summary)
+            const bagOff = bagOffOf(row)
             return {
               id: row.latest_id,
               takenAt: row.taken_at!,
@@ -274,6 +289,7 @@ export function accountsFromRows(rows: readonly AccountListRow[]): AccountRespon
               summary: meta.summary,
               ...(shared ? { sharedSummary: shared } : {}),
               ...(meta.off?.length ? { off: meta.off } : {}),
+              ...(bagOff ? { bagOff } : {}),
               source: meta.source,
             }
           })(),

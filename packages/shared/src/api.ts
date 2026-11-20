@@ -986,6 +986,14 @@ export interface AccountResponse {
      * API's account answer names as not shared.
      */
     off?: string[]
+    /**
+     * Present only when this capture left the Materials out and the capture
+     * its bag is read from (the newest earlier one that shared them) had
+     * switches off: that capture's `off`. A bag count either list covers is
+     * not shared now (notSharedBagKeys in off.ts): the site search reads it
+     * here, with no request of its own. Not part of the public API.
+     */
+    bagOff?: string[]
     /** The GOOD file's `source` ("Irminsul": Teyvat.me Capture or irminsul); absent before 2026-10-28. */
     source?: string
   } | null

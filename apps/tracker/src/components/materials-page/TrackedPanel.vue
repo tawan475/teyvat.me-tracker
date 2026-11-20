@@ -128,7 +128,13 @@ function open(key: string, count: number | null) {
                 <span v-else class="tabular font-mono text-lg leading-6 font-semibold">{{
                   formatNumber(row.count)
                 }}</span>
-                <DeltaText :value="row.change" :hint="rangeHint" dash class="text-sm" />
+                <DeltaText
+                  v-if="row.change !== null"
+                  :value="row.change"
+                  :hint="rangeHint"
+                  dash
+                  class="text-sm"
+                />
               </span>
             </span>
           </component>

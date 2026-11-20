@@ -485,7 +485,8 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
     (`detailItemFor`). Nothing on the page says so; all of it is back with
     the next capture that shares the part. One thing stays: a chart already
     pinned on the count in Tracked keeps its tile in its place
-    (`trackedTiles`), with "Not shared" where the count stands (never 0),
+    (`trackedTiles`), with "Not shared" where the count stands (never 0)
+    and no change figure beside it,
     its line with the breaks below, no detail behind a click and a working
     remove, so slots, the n/6 counters, the Track buttons and the chart
     colours go by the saved pins alone. Its stored points stay in the

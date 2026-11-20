@@ -533,7 +533,7 @@ describe('the Tracked panel', () => {
     expect(primogem!.count).toBe(0)
   })
 
-  it('keeps the line with its breaks, and the change between the captures that shared it', () => {
+  it('keeps the line with its breaks, and shows no change figure beside "not shared"', () => {
     const frame = rangeFrame(off, '1h')
     const resin = trackedTiles(off, PINS, frame)[1]!
     expect(resin.points).toEqual([
@@ -543,14 +543,18 @@ describe('the Tracked panel', () => {
       { x: ago(10), y: null },
     ])
     expect(resin.points).toEqual(chartPoints(off, KEY, frame))
-    expect(resin.change).toBe(frameChange(off, KEY, frame))
-    expect(resin.change).toBe(0)
-    // Spent between two captures that shared it, then not shared: the figure
-    // is that change, not the fall to nothing.
+    // No figure while the count is not shared: "Not shared 0" would read as
+    // a count of 0 (the range's change itself is still 0, not a fall).
+    expect(frameChange(off, KEY, frame)).toBe(0)
+    expect(resin.change).toBeNull()
+    // Spent between two captures that shared it, then not shared: none either.
     const spent = pinned({ at: [0, 1], value: [160, 40] }, [2])
     const tile = trackedTiles(spent, PINS, rangeFrame(spent, '1h'))[1]!
     expect(tile.count).toBeNull()
-    expect(tile.change).toBe(-120)
+    expect(frameChange(spent, KEY, rangeFrame(spent, '1h'))).toBe(-120)
+    expect(tile.change).toBeNull()
+    // The other tiles keep theirs.
+    expect(trackedTiles(spent, PINS, rangeFrame(spent, '1h'))[0]!.change).not.toBeNull()
   })
 
   it('holds its slot: six pins are six tiles', () => {

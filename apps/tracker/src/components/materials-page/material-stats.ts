@@ -135,8 +135,12 @@ export interface TrackedTile {
    * the count stands, never 0, and opens no detail.
    */
   count: number | null
-  /** Change over the frame, between the captures that shared the count (frameChange). */
-  change: number
+  /**
+   * Change over the frame, between the captures that shared the count
+   * (frameChange). Null while the count is not shared now: the tile shows no
+   * figure there, since "Not shared 0" would read as a count of 0.
+   */
+  change: number | null
   /** The chart's line, broken where a capture did not share the count (chartPoints). */
   points: MaterialPoint[]
 }
@@ -153,13 +157,16 @@ export function trackedTiles(
   keys: readonly string[],
   frame: ChartFrame,
 ): TrackedTile[] {
-  return keys.map((key, index) => ({
-    key,
-    color: ((index % 6) + 1) as TrackedTile['color'],
-    count: history.hidden?.includes(key) ? null : (history.latest.get(key) ?? 0),
-    change: frameChange(history, key, frame),
-    points: chartPoints(history, key, frame),
-  }))
+  return keys.map((key, index) => {
+    const hidden = history.hidden?.includes(key) ?? false
+    return {
+      key,
+      color: ((index % 6) + 1) as TrackedTile['color'],
+      count: hidden ? null : (history.latest.get(key) ?? 0),
+      change: hidden ? null : frameChange(history, key, frame),
+      points: chartPoints(history, key, frame),
+    }
+  })
 }
 
 // ------------------------------------------------------------------ periods

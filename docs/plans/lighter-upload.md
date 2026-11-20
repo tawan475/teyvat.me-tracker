@@ -68,6 +68,13 @@ As built (artifacts only; weapons would be the next part):
   when the list is stored (14 ms is the floor without any artifacts: what is left is parsing and
   hashing the 600 KB list). The production share is measured after deploy (`wrangler tail`).
 
+- Checked on real data, 2026-11-20: a real 1,839-artifact Capture export, then the same list
+  reordered with a count changed, then two pieces changed, then that list again, through this
+  path and through the ordinary one on two accounts: every exported snapshot, summary and
+  catalog equal. Capture's own replay of a login, logout, login day (gzip against plain, both
+  through this path) stored three equal snapshots and an equal journal; that recording changes
+  no artifact, so the journal's index after a kept list is covered by the test only.
+
 The design it was built from:
 
 The tracker fingerprints the big parts of an upload itself, before normalising them, and reuses
@@ -164,7 +171,11 @@ in production before step 2 is built: the import logs hit or miss per part.
   should have higher"): when this route ships, the full-file routes get a lower limit per key or
   session than today's 20 a minute and this route a higher one, so a Capture that can send parts
   has no reason to send the whole file. The numbers are set when it is built, from the real
-  spacing of logins and logouts.
+  spacing of logins and logouts. One heavy user's Capture logs (425 snapshots over 11 days,
+  much relogging and alt swapping): smallest gap 7 s, 145 gaps under a minute, at most 4
+  snapshots in any minute. So a full-file limit far under 20 a minute would not have touched
+  that user; keep headroom, it is one user. (A replay sends as fast as it decodes and does hit
+  the 20 a minute of `/irminsul/changes`: Capture retries.)
 - `/irminsul/attach` can become a call of this route later; it stays as it is in v1.
 
 Expected: the upload is 5-15% of today's bytes on a day without artifact changes (plus gzip, about

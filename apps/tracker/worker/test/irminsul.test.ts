@@ -226,6 +226,7 @@ describe('sign in, upload, refresh, sign out', () => {
       server: null,
       dashboardUrl: `${ORIGIN}/app`,
       configUrl: `${ORIGIN}/app/settings/devices?device=${row!.id}`,
+      upload: { gzip: true },
     }
     expect(tokens.whoami).toEqual(expected)
     expect((await whoami(tokens.access_token)).body).toEqual(expected)

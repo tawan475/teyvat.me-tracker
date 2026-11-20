@@ -1,6 +1,7 @@
 # Lighter snapshot uploads
 
-Status: **design, nothing built** (2026-11-20). Drafted by the tracker session with the Capture
+Status: **step 1 and the `upload.gzip` flag are built** on branch `cost-trims` (2026-11-20, not
+deployed); steps 2 and 3 are design. Drafted by the tracker session with the Capture
 session's own research (both read independently, then compared; the Capture session checked this
 contract against its code on both platforms and its points are folded in). The user decides the
 open points in §6 before anything is built.
@@ -38,12 +39,36 @@ So most of an import's work goes into parts that did not change.
   (staging was 74% of all rows the database wrote).
 - The v1 catalog probe no longer reads a row per artifact: an upload read 1,662 rows, now 162.
 - The hourly game-events sync writes a notice only when it changed.
+- Step 1 below, and the `upload: { gzip: true }` field in `verify-key`, `whoami` and the import
+  answer (Capture 1.18.2 gzips its multipart `file` part on that word; the routes took gzip
+  already).
 
 ## 3. The design in three steps
 
 Each step stands on its own; later ones build on the same store.
 
-### Step 1: the tracker skips parts it has seen (no Capture change)
+### Step 1: the tracker skips parts it has seen (no Capture change) — built
+
+As built (artifacts only; weapons would be the next part):
+
+- `parseUpload` sets the artifact list aside when every piece has a `gi_guid` and the list is
+  within GOOD_LIMITS (`prepareSnapshot`'s `deferArtifacts`, `deferrableArtifacts`); any other
+  file takes the old path untouched. Its fingerprint is `artifactsFingerprint` in
+  `packages/shared/src/codec/parts.ts`.
+- Table `part_marks` (migration 0043): one row per account, the newest list's fingerprint, the
+  blob the snapshot made from it points at, the section's full hash and the summary's three
+  artifact figures. The lookup batch joins it to `section_blobs`, so a blob the collection took
+  is a miss; the catalog chunks are read only on a miss. Same number of round trips either way.
+- `gdt-live` column `live_journals.items_key` (migration 0003): the journal keeps its item index
+  when the new base has the same artifact list and the same weapons; otherwise it is built from
+  the list after all.
+- Raise `ARTIFACTS_READING` (parts.ts) whenever `toArtifact` or `encodeArtifacts` reads a piece
+  differently; `worker/test/held-artifacts.test.ts` pins the reading and fails until it is.
+- Measured in local workerd (2,102 artifacts): a changed import 58 ms when a piece changed, 29 ms
+  when the list is stored (14 ms is the floor without any artifacts: what is left is parsing and
+  hashing the 600 KB list). The production share is measured after deploy (`wrangler tail`).
+
+The design it was built from:
 
 The tracker fingerprints the big parts of an upload itself, before normalising them, and reuses
 the stored section when this account already has one made from the same input.
@@ -135,6 +160,11 @@ in production before step 2 is built: the import logs hit or miss per part.
   the tracker today and could ship in Capture on its own.
 - Both platforms build the body in the shared Rust core (parts, hashes, header, gzip) and hand the
   finished bytes to the HTTP call, so desktop and Android cannot drift.
+- Rate limits (the user, 2026-11-20: "import should have lower rate limit while compact import
+  should have higher"): when this route ships, the full-file routes get a lower limit per key or
+  session than today's 20 a minute and this route a higher one, so a Capture that can send parts
+  has no reason to send the whole file. The numbers are set when it is built, from the real
+  spacing of logins and logouts.
 - `/irminsul/attach` can become a call of this route later; it stays as it is in v1.
 
 Expected: the upload is 5-15% of today's bytes on a day without artifact changes (plus gzip, about
@@ -176,8 +206,8 @@ plus the batches the tracker already holds. Two ways to stop paying for it:
 
 ## 6. For the user to decide
 
-1. Build step 1 now (tracker only)?
-2. The logout snapshot: keep (cheap) or drop for a final batch?
-3. Step 2 with Capture: after step 1's hit rate is measured, or straight away?
+1. Step 1: built on the user's "go for it dont ask me" (2026-11-20).
+2. The logout snapshot: kept for now (the default); drop it for a final batch?
+3. Step 2 with Capture: planned after step 1's hit rate is measured in production.
 4. gzip on today's uploads in the next Capture update (about 9 times fewer bytes, no CPU change
    on the tracker)? The Capture session asks the user this itself.

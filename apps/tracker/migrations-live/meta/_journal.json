@@ -22,6 +22,13 @@
       "when": 1795102286082,
       "tag": "0002_journal_base_off",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1795163849443,
+      "tag": "0003_journal_items_key",
+      "breakpoints": true
     }
   ]
 }

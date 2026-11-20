@@ -147,6 +147,8 @@ export interface PlanInput {
   existing: ReadonlyMap<string, { id: number; code: number }>
   /** The cost model's delta growth per snapshot (tests and measurements vary it). */
   growthBytes?: number
+  /** Slots whose section is a stored blob already (its id): pointed at, nothing planned. */
+  held?: Partial<Record<Slot, number>>
 }
 
 /**
@@ -201,6 +203,7 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
   let playerVars: PlayerVars = {}
   for (const slot of SLOTS) {
     const section = encoded[slot]
+    if (input.held?.[slot] !== undefined) continue
     if (slot === 'player') {
       if (!section || !prepared.good.player) continue
       const player = await storedPlayer(prepared.good.player)
@@ -221,6 +224,7 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
     existing: input.existing,
     materialsDictionary: input.materialsDictionary,
     growthBytes: input.growthBytes,
+    held: input.held,
   })
   return { ...plan, playerVars }
 }
@@ -246,6 +250,8 @@ export interface SectionPlanInput {
   existing: ReadonlyMap<string, { id: number; code: number }>
   materialsDictionary: KeyDictionary
   growthBytes?: number
+  /** Slots whose section is a stored blob already (its id). */
+  held?: Partial<Record<Slot, number>>
 }
 
 /** The root of a blob's chain of bases: the standalone blob it ends at. */
@@ -320,6 +326,11 @@ export async function planSections(
 
   for (const slot of SLOTS) {
     const latest = input.latest[slot] ?? null
+    const heldId = input.held?.[slot]
+    if (heldId !== undefined) {
+      refs[slot] = { id: heldId }
+      continue
+    }
     const section = values[slot]
     if (!section) {
       refs[slot] = null

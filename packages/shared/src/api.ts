@@ -1102,6 +1102,8 @@ export interface ImportResponse {
    * (docs/plans/live-sync.md §13). Absent: snapshots only.
    */
   live?: ImportLive
+  /** What the snapshot routes take (import-by-key and /irminsul/import). */
+  upload?: UploadSupport
 }
 
 export interface ImportLive {
@@ -1254,7 +1256,22 @@ export interface VerifyKeyResponse {
   /** This account's page in the web app; irminsul's "Open dashboard" button opens it. */
   dashboardUrl: string
   scope: ImportKeyScope
+  upload?: UploadSupport
 }
+
+/**
+ * What this tracker takes on its snapshot routes beyond the plain multipart
+ * file, in `verify-key`, `whoami` and the import answer (docs/plans/
+ * lighter-upload.md). Capture can be pointed at any tracker, so it sends
+ * nothing of this to one that does not say so; absent = plain only.
+ * - `gzip`: the multipart `file` part may be gzip (named `*.gz` or typed
+ *   application/gzip).
+ */
+export interface UploadSupport {
+  gzip: true
+}
+
+export const UPLOAD_SUPPORT: UploadSupport = { gzip: true }
 
 export type ImportKeyScope = 'account' | 'user'
 

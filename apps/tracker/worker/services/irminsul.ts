@@ -9,6 +9,7 @@
 
 import {
   CODE_VERIFIER,
+  UPLOAD_SUPPORT,
   clientName,
   toBase64Url,
   type GenshinServer,
@@ -128,6 +129,7 @@ export function whoamiOf(origin: string, sid: number, row: TargetRow): IrminsulW
   const base = {
     user: row.username,
     configUrl: configUrl(origin, sid),
+    upload: UPLOAD_SUPPORT,
   }
   if (row.upload_mode !== 'account') {
     return {

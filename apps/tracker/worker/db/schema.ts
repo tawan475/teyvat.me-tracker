@@ -1048,3 +1048,33 @@ export const accountToday = sqliteTable('account_today', {
   at: integer('at').notNull(),
   data: text('data').notNull(),
 })
+
+/**
+ * The last big part of each kind an account uploaded (today: its artifact
+ * list), by fingerprint, and the stored section made from it: an upload with
+ * the same list points at that section again without reading the list
+ * (docs/plans/lighter-upload.md, step 1; services/import). One row per
+ * account and part. `blob_id` is checked against `section_blobs` whenever it
+ * is read (no foreign key: the daily collection may take the blob, and the
+ * next upload then reads its list in full). Added in 0043.
+ */
+export const partMarks = sqliteTable(
+  'part_marks',
+  {
+    accountId: integer('account_id')
+      .notNull()
+      .references(() => genshinAccounts.id, { onDelete: 'cascade' }),
+    /** 'artifacts'. */
+    part: text('part').notNull(),
+    /** 16 bytes: `artifactsFingerprint` of the list. */
+    fingerprint: bytes('fingerprint').notNull(),
+    /** 16 bytes: the full section's content hash (what the snapshot's content hash is built from). */
+    sectionHash: bytes('section_hash').notNull(),
+    /** The `section_blobs` row a snapshot made from this list points at. */
+    blobId: integer('blob_id').notNull(),
+    /** JSON: what the import needs from the list besides its section (the summary's figures). */
+    info: text('info').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.part] })],
+)

@@ -18,7 +18,7 @@
  * owner's daily and storage quotas (429 / 413, services/upload-limits.ts).
  */
 
-import type { VerifyKeyResponse } from '@gdt/shared'
+import { UPLOAD_SUPPORT, type VerifyKeyResponse } from '@gdt/shared'
 import { Hono } from 'hono'
 import type { AppEnv } from '../env'
 import { pageOrigin } from '../lib/email'
@@ -38,6 +38,7 @@ export const publicImport = new Hono<AppEnv>()
         server: null,
         dashboardUrl: new URL('/app', pageOrigin(c.env, c.req.url)).href,
         scope: 'user',
+        upload: UPLOAD_SUPPORT,
       })
     }
     const { account } = owner
@@ -48,6 +49,7 @@ export const publicImport = new Hono<AppEnv>()
       server: account.server,
       dashboardUrl: new URL(`/app/a/${account.id}`, pageOrigin(c.env, c.req.url)).href,
       scope: 'account',
+      upload: UPLOAD_SUPPORT,
     })
   })
 

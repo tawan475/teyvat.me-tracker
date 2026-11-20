@@ -68,6 +68,14 @@ export const liveJournals = sqliteTable(
      * upload switches left out (the bag copies, off.ts).
      */
     baseOff: integer('base_off').notNull().default(0),
+    /**
+     * Names what `items` was made from (`itemIndexKey` in @gdt/shared: the
+     * base's artifact list by fingerprint, its weapons by their pairs), 16
+     * bytes; null when the base's items carried no guid per artifact. A
+     * snapshot whose key is the same keeps the stored index instead of
+     * building it again (migration 0003).
+     */
+    itemsKey: bytes('items_key'),
   },
   (t) => [index('live_journals_user').on(t.userId)],
 )

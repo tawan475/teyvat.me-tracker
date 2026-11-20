@@ -90,7 +90,15 @@ export interface JournalStart {
   /** The snapshot's `gi_capture.session` ('' without one). */
   session: string
   summary: SnapshotSummary
+  /** The base's item index; null with `itemsLater` when the stored one may stand (same key). */
   items: ItemIndex | null
+  /** `itemIndexKey` of the base's items (hex), when its artifacts came with a guid each. */
+  itemsKey?: string | null
+  /**
+   * Builds the index when `items` is null and the journal row holds none
+   * under `itemsKey` (no row yet, or one made from other items).
+   */
+  itemsLater?: () => Promise<ItemIndex | null>
   /** The snapshot's `gi_off` (absent: it had none): the journal row keeps it for its batches. */
   off?: readonly string[]
 }
@@ -103,20 +111,29 @@ export interface JournalStart {
 export async function openJournal(live: D1Database, start: JournalStart): Promise<string> {
   const base = baseKeyOf(start.contentKey)
   const now = Date.now()
-  await live.batch([
+  const itemsKey = start.itemsKey ?? null
+  // The stored index stands when the caller sent none and the row's was made
+  // from the same items (same key): an unchanged artifact list is then
+  // neither read nor indexed again.
+  const keep = start.items === null && itemsKey !== null && start.itemsLater !== undefined
+  const results = await live.batch<{ missing: number }>([
     live.prepare('DELETE FROM live_batches WHERE account_id = ?1').bind(start.accountId),
     live
       .prepare(
         `INSERT INTO live_journals (account_id, user_id, base_key, base_snapshot_id, session,
-           last_seq, opened_at, updated_at, changes, bytes, figures, items, base_off)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9, ?10)
+           last_seq, opened_at, updated_at, changes, bytes, figures, items, base_off, items_key)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9, ?10, unhex(?11))
          ON CONFLICT (account_id) DO UPDATE SET user_id = excluded.user_id,
            base_key = excluded.base_key, base_snapshot_id = excluded.base_snapshot_id,
            session = excluded.session, last_seq = 0, opened_at = excluded.opened_at,
            updated_at = excluded.updated_at, changes = 0, bytes = 0,
-           figures = excluded.figures, items = excluded.items,
+           figures = excluded.figures,
+           items = CASE WHEN ?12 AND live_journals.items_key = excluded.items_key
+             THEN live_journals.items ELSE excluded.items END,
+           items_key = excluded.items_key,
            base_off = excluded.base_off,
-           tail_from = 0, tail_at = 0, tail_changes = 0, tail = NULL`,
+           tail_from = 0, tail_at = 0, tail_changes = 0, tail = NULL
+         RETURNING items IS NULL AS missing`,
       )
       .bind(
         start.accountId,
@@ -129,8 +146,19 @@ export async function openJournal(live: D1Database, start: JournalStart): Promis
         encodeFigures(start.summary),
         start.items ? encodeItemIndex(start.items) : null,
         offMask(start.off),
+        itemsKey,
+        keep ? 1 : 0,
       ),
   ])
+  if (keep && results[1]!.results[0]?.missing) {
+    const items = await start.itemsLater!()
+    if (items) {
+      await live
+        .prepare('UPDATE live_journals SET items = ?3 WHERE account_id = ?1 AND base_key = ?2')
+        .bind(start.accountId, base, encodeItemIndex(items))
+        .run()
+    }
+  }
   return base
 }
 

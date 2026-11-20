@@ -38,14 +38,18 @@ import {
   encodeCatalogChunk,
   encodeSnapshotMeta,
   encodeStaticSections,
+  kindOfCode,
   planSnapshotV2,
   prepareSnapshot,
+  resolveDeferredArtifacts,
   resolveImportTimestamp,
+  withHeldArtifacts,
   offSectionMask,
   sameOff,
   shortHashHex,
   storedPlayer,
   BlobDecoder,
+  type ArtifactFigures,
   type ArtifactIdentity,
   type BlobRef,
   type GiCapture,
@@ -177,6 +181,14 @@ export interface ImportResult {
   newest: boolean
   /** Its content key (as this upload hashes). */
   contentKey: number
+  /**
+   * The upload's artifact list was not read: a stored section made from the
+   * same list stood in for it, so `prepared.good.artifacts` is empty (the
+   * summary is whole). `prepared.deferred` still holds the list.
+   */
+  heldArtifacts: boolean
+  /** The fingerprint of the upload's artifact list, when it came with a guid per piece. */
+  artifactsFingerprint?: string
 }
 
 /** A section another write removed between our read and our write: start over. */
@@ -215,10 +227,15 @@ async function importOnce(
   account: ImportTarget,
   upload: Upload,
   meter: D1Meter,
-  prepared: PreparedSnapshot,
+  parsed: PreparedSnapshot,
   legacy: boolean,
   extraStoredBytes?: Promise<number>,
 ): Promise<ImportResult> {
+  let prepared = parsed
+  // The artifact list is not read yet when it came with a guid per piece
+  // (parseUpload): step 1 asks whether a section made from the same list is
+  // stored, and only reads the list when none is.
+  const deferred = parsed.deferred
   const accountId = account.id
   const now = Date.now()
   const day = utcDay(now)
@@ -229,10 +246,13 @@ async function importOnce(
 
   // Catalog entry for each distinct artifact identity in this upload.
   const identities = new Map<string, ArtifactIdentity>()
-  prepared.artifactHashes.forEach((hash, i) => {
-    if (!identities.has(hash)) identities.set(hash, prepared.good.artifacts[i]!.identity)
-  })
-  const hashes = [...identities.keys()]
+  const readIdentities = () => {
+    prepared.artifactHashes.forEach((hash, i) => {
+      if (!identities.has(hash)) identities.set(hash, prepared.good.artifacts[i]!.identity)
+    })
+    return [...identities.keys()]
+  }
+  let hashes = deferred ? [] : readIdentities()
   // Sections whose hash needs no catalog ids: a server can ask which exist
   // in the first round trip.
   const staticHashes = [
@@ -265,12 +285,24 @@ async function importOnce(
     blobsResult,
     existingResult,
     usageResult,
+    markResult,
   ] = await meter.batch(d1, 'lookup', [
     d1.prepare(latestSql(legacy)).bind(accountId),
     d1.prepare(NEAREST_SQL).bind(accountId, takenAt),
     d1.prepare(sameTimeSql(legacy)).bind(accountId, takenAt),
-    selectArtifactIds(d1, accountId, hashes),
-    d1.prepare('SELECT id, data FROM artifact_chunks WHERE account_id = ?1').bind(accountId),
+    deferred
+      ? d1.prepare('SELECT id, hash FROM artifacts WHERE account_id = ?1').bind(accountId)
+      : selectArtifactIds(d1, accountId, hashes),
+    // The catalog is read only when the list will be: not while a section
+    // made from the same list is stored.
+    deferred
+      ? d1
+          .prepare(
+            `SELECT id, data FROM artifact_chunks
+             WHERE account_id = ?1 AND NOT EXISTS (${HELD_ARTIFACTS_SQL})`,
+          )
+          .bind(accountId, deferred.fingerprint)
+      : d1.prepare('SELECT id, data FROM artifact_chunks WHERE account_id = ?1').bind(accountId),
     d1.prepare(LATEST_BLOBS_SQL).bind(accountId, takenAt),
     d1
       .prepare(
@@ -279,7 +311,15 @@ async function importOnce(
       )
       .bind(accountId, JSON.stringify(staticHashes)),
     usageStatement(d1, accountId, day),
+    d1.prepare(HELD_ARTIFACTS_SQL).bind(accountId, deferred?.fingerprint ?? ''),
   ])
+  const held = deferred ? readHeldArtifacts(markResult!.results[0]) : null
+  if (deferred && !held) {
+    prepared = await resolveDeferredArtifacts(parsed)
+    hashes = readIdentities()
+  } else if (held) {
+    prepared = withHeldArtifacts(parsed, held.figures)
+  }
   const latest = (latestResult!.results[0] as LatestRow | undefined) ?? null
   const nearest = (nearestResult!.results[0] as NearestRow | undefined) ?? null
   const sameTime = sameTimeResult!.results[0] as SameTimeRow | undefined
@@ -329,7 +369,7 @@ async function importOnce(
     }
   }
 
-  const encoded = await completeSnapshot(sections, prepared, artifactIds)
+  const encoded = await completeSnapshot(sections, prepared, artifactIds, held?.sectionHash)
   const key = contentKey(encoded.contentHash)
   const legacyKey = contentKey(encoded.legacyContentHash)
   const preAnecdotesKey = contentKey(encoded.preAnecdotesContentHash)
@@ -367,6 +407,8 @@ async function importOnce(
     prepared,
     newest,
     contentKey: key,
+    heldArtifacts: held !== null,
+    ...(deferred ? { artifactsFingerprint: deferred.fingerprint } : {}),
   })
   // The same capture, also when it was stored before irminsul's extra keys
   // (or later its anecdotes, tasks, collections, Capture 1.4.0's keys, then
@@ -457,7 +499,9 @@ async function importOnce(
   // The nearest snapshot's sections (NEAREST_SQL) are what new ones are
   // deltas of or compressed against; a v1 row has none, so everything is
   // stored whole (once per account, until repack converts it).
-  const known = nearest?.characters_ref != null ? knownBlobs(blobsResult!.results) : null
+  // (A held artifacts section is pointed at as it is: the neighbour's is not decoded.)
+  const known =
+    nearest?.characters_ref != null ? knownBlobs(blobsResult!.results, held !== null) : null
   const plan = await planSnapshotV2({
     encoded,
     prepared,
@@ -471,6 +515,7 @@ async function importOnce(
         )
       : {},
     existing,
+    ...(held ? { held: { artifacts: held.blobId } } : {}),
   })
 
   // 3.
@@ -497,6 +542,19 @@ async function importOnce(
   const chunkBytes = { bytes: 0 }
   if (catalogGuard) {
     statements.push(...newChunkStatements(d1, accountId, staged, catalogGuard, chunkBytes))
+  }
+  // The list this snapshot's artifacts section was made from, for the next upload.
+  if (deferred && !held) {
+    statements.push(
+      markArtifactsStatement(d1, accountId, {
+        fingerprint: deferred.fingerprint,
+        sectionHash: encoded.artifacts.hash,
+        figures: prepared.summary,
+        takenAt,
+        contentKey: key,
+        now,
+      }),
+    )
   }
   statements.push(
     countUploadStatement(d1, accountId, day, plan.storedSize + chunkBytes.bytes, {
@@ -585,7 +643,7 @@ export async function parseUpload(text: string): Promise<PreparedSnapshot> {
     throw new ApiError(400, 'invalid_json', 'The file is not valid JSON')
   }
   try {
-    return await prepareSnapshot(input, { materials: MATERIALS })
+    return await prepareSnapshot(input, { materials: MATERIALS, deferArtifacts: true })
   } catch (error) {
     if (error instanceof GoodLimitError) throw new ApiError(422, error.code, error.message)
     if (error instanceof GoodPartialCaptureError) throw new ApiError(422, error.code, error.message)
@@ -659,6 +717,89 @@ function fillAccountStatements(
     )
   }
   return statements
+}
+
+/**
+ * The stored artifacts section made from the list with fingerprint `?2`, for
+ * account `?1`: its blob (which must still be there), its full hash and the
+ * figures the summary takes from the list. No row: the list has to be read.
+ */
+const HELD_ARTIFACTS_SQL = `SELECT m.blob_id AS blobId, hex(m.section_hash) AS sectionHash, m.info
+  FROM part_marks AS m JOIN section_blobs AS b ON b.id = m.blob_id AND b.account_id = m.account_id
+  WHERE m.account_id = ?1 AND m.part = 'artifacts' AND m.fingerprint = unhex(?2)`
+
+interface HeldArtifacts {
+  blobId: number
+  /** 32 hex digits: the full section's content hash. */
+  sectionHash: string
+  figures: ArtifactFigures
+}
+
+function readHeldArtifacts(row: Record<string, unknown> | undefined): HeldArtifacts | null {
+  if (!row) return null
+  try {
+    const info = JSON.parse(row.info as string) as {
+      v?: unknown
+      n?: unknown
+      a3?: unknown
+      a4?: unknown
+    }
+    const sectionHash = (row.sectionHash as string).toLowerCase()
+    const whole = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0
+    if (info.v !== 1 || !whole(info.n) || !whole(info.a3) || !whole(info.a4)) return null
+    if (!/^[0-9a-f]{32}$/.test(sectionHash)) return null
+    return {
+      blobId: row.blobId as number,
+      sectionHash,
+      figures: { artifacts: info.n, artifact3: info.a3, artifact4: info.a4 },
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Remembers which list the artifacts section of the snapshot this batch
+ * stores was made from (one row per account: the newest list), once that
+ * snapshot row is there.
+ */
+function markArtifactsStatement(
+  d1: D1Database,
+  accountId: number,
+  mark: {
+    fingerprint: string
+    sectionHash: string
+    figures: ArtifactFigures
+    takenAt: number
+    contentKey: number
+    now: number
+  },
+): D1PreparedStatement {
+  const info = JSON.stringify({
+    v: 1,
+    n: mark.figures.artifacts,
+    a3: mark.figures.artifact3,
+    a4: mark.figures.artifact4,
+  })
+  return d1
+    .prepare(
+      `INSERT INTO part_marks (account_id, part, fingerprint, section_hash, blob_id, info, updated_at)
+       SELECT ?1, 'artifacts', unhex(?2), unhex(?3), s.artifacts_ref, ?4, ?5 FROM snapshots AS s
+       WHERE s.account_id = ?1 AND s.taken_at = ?6 AND s.deleted_at IS NULL AND s.content_key = ?7
+         AND s.artifacts_ref IS NOT NULL
+       ON CONFLICT (account_id, part) DO UPDATE SET fingerprint = excluded.fingerprint,
+         section_hash = excluded.section_hash, blob_id = excluded.blob_id, info = excluded.info,
+         updated_at = excluded.updated_at`,
+    )
+    .bind(
+      accountId,
+      mark.fingerprint,
+      mark.sectionHash,
+      info,
+      mark.now,
+      mark.takenAt,
+      mark.contentKey,
+    )
 }
 
 /** v1 catalog rows (not repacked yet) by identity hash. */
@@ -845,9 +986,14 @@ export function catalogChunkStatements(
 }
 
 /** Rows of LATEST_BLOBS_SQL, decoded, by id. */
-function knownBlobs(rows: Record<string, unknown>[]): Map<number, KnownBlob> {
+function knownBlobs(
+  rows: Record<string, unknown>[],
+  /** Leaves the artifacts section's blobs out (and undecoded). */
+  withoutArtifacts = false,
+): Map<number, KnownBlob> {
   const raw = new Map<number, RawBlob & { hash: string }>()
   for (const row of rows) {
+    if (withoutArtifacts && kindOfCode(row.kind as number).kind === 'artifacts') continue
     raw.set(row.id as number, {
       id: row.id as number,
       code: row.kind as number,

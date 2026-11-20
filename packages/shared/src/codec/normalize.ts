@@ -400,6 +400,40 @@ function toArtifact(raw: Json): ArtifactOccurrence {
 
 const GUID = /^\d{1,20}$/
 
+/**
+ * An upload's artifact list when it can be set aside and read later
+ * (prepareSnapshot's `deferArtifacts`), else null: every entry an object with
+ * its own `gi_guid`, the list and each entry within GOOD_LIMITS. A list that
+ * fails takes the ordinary path, which names what is wrong with it.
+ */
+export function deferrableArtifacts(raw: unknown): Json[] | null {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > GOOD_LIMITS.artifacts) return null
+  const count = (value: unknown) =>
+    Array.isArray(value) ? value.length : isObject(value) ? Object.keys(value).length : 0
+  const short = (value: unknown) =>
+    typeof value !== 'string' || value.length <= GOOD_LIMITS.keyLength
+  const shortKeys = (list: unknown) => objects(list).every((s) => short(s.key))
+  for (const item of raw) {
+    if (!isObject(item)) return null
+    if (typeof item.gi_guid !== 'string' || !GUID.test(item.gi_guid)) return null
+    if (Math.max(count(item.substats), count(item.unactivatedSubstats)) > GOOD_LIMITS.substats) {
+      return null
+    }
+    if (!short(item.setKey) || !short(item.slotKey) || !short(item.mainStatKey)) return null
+    if (!short(item.location)) return null
+    if (!shortKeys(item.substats) || !shortKeys(item.unactivatedSubstats)) return null
+  }
+  return raw as Json[]
+}
+
+/** A deferrable list as normalizeGood reads it: the occurrences, and each one's guid. */
+export function normalizeArtifactList(raw: readonly Record<string, unknown>[]): {
+  artifacts: ArtifactOccurrence[]
+  guids: string[]
+} {
+  return { artifacts: raw.map(toArtifact), guids: raw.map((item) => item.gi_guid as string) }
+}
+
 /** Each kept item's `gi_guid`, aligned with what toArtifact / toWeapon keep. */
 function toItemGuids(input: Json): NormalizedGood['itemGuids'] | null {
   const guid = (raw: Json) =>

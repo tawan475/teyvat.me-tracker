@@ -374,6 +374,8 @@ describe('accounts and imports', () => {
       server: 'ASIA',
       dashboardUrl: `${ORIGIN}/app/a/${account.id}`,
       scope: 'account',
+      // What the snapshot routes take: Capture gzips its uploads on this word.
+      upload: { gzip: true },
     })
     const bad = await SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/verify-key`, {
       headers: { 'x-import-key': 'gdt_ik_wrong' },
@@ -669,6 +671,44 @@ describe('accounts and imports', () => {
     expect(huge.status).toBe(413)
   })
 
+  // Capture's gzip upload (from 1.18.2, once the tracker says `upload.gzip`):
+  // the same multipart, the `file` part gzip bytes named *.json.gz.
+  it('stores a key upload whose file part is gzip as it stores the plain one', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const good = sampleGood(sampleExtras())
+    const plain = await importByKey(importKey, good, 1_000)
+    expect(plain.status).toBe(201)
+    expect(((await plain.json()) as ImportResponse).upload).toEqual({ gzip: true })
+
+    const gzipped = await new Response(
+      new Blob([JSON.stringify({ ...good, materials: { ...good.materials, Mora: 77 } })])
+        .stream()
+        .pipeThrough(new CompressionStream('gzip')),
+    ).arrayBuffer()
+    const send = (name: string, type: string, timestamp: number) => {
+      const form = new FormData()
+      form.set('timestamp', String(timestamp))
+      form.set('file', new File([gzipped], name, { type }))
+      return SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
+        method: 'POST',
+        headers: { 'x-import-key': importKey },
+        body: form,
+      })
+    }
+    const desktop = await send('irminsul_capture.json.gz', 'application/gzip', 2_000)
+    expect(desktop.status, await desktop.clone().text()).toBe(201)
+    // Either sign is enough: the name alone (Android's), or the type alone.
+    expect((await send('teyvatme_capture.json.gz', 'application/octet-stream', 3_000)).status).toBe(
+      200,
+    )
+    expect((await send('capture.json', 'application/gzip', 4_000)).status).toBe(200)
+
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list.map((s) => s.summary.mora)).toEqual([77, good.materials!.Mora])
+    expect(list[0]!.rawSize).toBeGreaterThan(gzipped.byteLength)
+  })
+
   it('rejects malformed files with a clear error', async () => {
     const { importKey } = await createAccount((await signUp()).client)
     const response = await SELF.fetch(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
@@ -859,6 +899,7 @@ describe('user import key', () => {
       server: null,
       dashboardUrl: `${ORIGIN}/app`,
       scope: 'user',
+      upload: { gzip: true },
     })
 
     // A new key replaces the old one at once.

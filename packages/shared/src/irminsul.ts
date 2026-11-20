@@ -10,7 +10,7 @@
 
 import { deviceAlertsPatch } from './alerts'
 import { z } from 'zod'
-import type { GenshinServer } from './index'
+import type { GenshinServer, UploadSupport } from './index'
 
 /** The only client: irminsul is a public client (no secret), proven by PKCE. */
 export const IRMINSUL_CLIENT_ID = 'irminsul'
@@ -117,6 +117,7 @@ export interface IrminsulWhoami {
   server: GenshinServer | null
   dashboardUrl: string
   configUrl: string
+  upload?: UploadSupport
 }
 
 /** `POST /api/oauth/token`, either grant. */

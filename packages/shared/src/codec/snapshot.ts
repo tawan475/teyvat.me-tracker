@@ -4,7 +4,14 @@ import type { GiCollections, GiEndgame, GiExploration, GiTasks, Good } from '../
 import { sha256Hex128 } from '../hash'
 import { exportedOff } from '../off'
 import { deflateRaw } from './compress'
-import { normalizeGood, type NormalizedGood, type NormalizeOptions } from './normalize'
+import {
+  deferrableArtifacts,
+  normalizeArtifactList,
+  normalizeGood,
+  type NormalizedGood,
+  type NormalizeOptions,
+} from './normalize'
+import { artifactsFingerprint } from './parts'
 import {
   decodeAchievements,
   decodeAchievementTimes,
@@ -74,6 +81,29 @@ export interface PreparedSnapshot {
   /** Catalog hash of each `good.artifacts` entry, in the same order. */
   artifactHashes: string[]
   summary: SnapshotSummary
+  /**
+   * Set while the artifact list has not been read (`deferArtifacts`):
+   * `good.artifacts`, `artifactHashes` and the summary's artifact figures are
+   * empty until `resolveDeferredArtifacts` reads it, or a stored section made
+   * from the same list stands in for it (`withHeldArtifacts`).
+   */
+  deferred?: DeferredArtifacts
+}
+
+/** An artifact list set aside: what it was (`fingerprint`) and the list itself. */
+export interface DeferredArtifacts {
+  /** `artifactsFingerprint` of the list: equal lists, read by the same code, have it equal. */
+  fingerprint: string
+  raw: readonly Record<string, unknown>[]
+}
+
+export interface PrepareOptions extends NormalizeOptions {
+  /**
+   * Leaves a list that carries a guid per piece unread (see
+   * PreparedSnapshot.deferred): a server that already stored a section made
+   * from the same list skips normalising and hashing two thousand pieces.
+   */
+  deferArtifacts?: boolean
 }
 
 /**
@@ -83,13 +113,74 @@ export interface PreparedSnapshot {
  */
 export async function prepareSnapshot(
   input: unknown,
-  options: NormalizeOptions = {},
+  options: PrepareOptions = {},
 ): Promise<PreparedSnapshot> {
+  if (options.deferArtifacts) {
+    const deferred = await deferredOf(input, options)
+    if (deferred) return deferred
+  }
   const good = normalizeGood(input, options)
   const artifactHashes = await Promise.all(
     good.artifacts.map((a) => hashArtifactIdentity(a.identity)),
   )
   return { good, artifactHashes, summary: summarize(good) }
+}
+
+/** `input` with its artifact list set aside, or null when it has to be read now. */
+async function deferredOf(
+  input: unknown,
+  options: NormalizeOptions,
+): Promise<PreparedSnapshot | null> {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return null
+  const raw = deferrableArtifacts((input as Record<string, unknown>).artifacts)
+  const fingerprint = raw && (await artifactsFingerprint(raw))
+  if (!raw || !fingerprint) return null
+  const good = normalizeGood({ ...input, artifacts: [] }, options)
+  // The whole-capture check counts the bag: a file without characters is
+  // read in full, so that check sees its artifacts.
+  if (good.characters.length === 0) return null
+  return { good, artifactHashes: [], summary: summarize(good), deferred: { fingerprint, raw } }
+}
+
+/**
+ * Reads a deferred artifact list: the snapshot as `prepareSnapshot` without
+ * `deferArtifacts` gives it (the list was checked against GOOD_LIMITS when it
+ * was set aside, so this never refuses).
+ */
+export async function resolveDeferredArtifacts(
+  prepared: PreparedSnapshot,
+): Promise<PreparedSnapshot> {
+  if (!prepared.deferred) return prepared
+  const { artifacts, guids } = normalizeArtifactList(prepared.deferred.raw)
+  const good: NormalizedGood = {
+    ...prepared.good,
+    artifacts,
+    itemGuids: {
+      artifacts: guids,
+      weapons: prepared.good.itemGuids?.weapons ?? prepared.good.weapons.map(() => null),
+    },
+  }
+  const artifactHashes = await Promise.all(artifacts.map((a) => hashArtifactIdentity(a.identity)))
+  return { good, artifactHashes, summary: summarize(good) }
+}
+
+/** The summary's figures that come from the artifact list. */
+export type ArtifactFigures = Pick<SnapshotSummary, 'artifacts' | 'artifact3' | 'artifact4'>
+
+/** A deferred snapshot whose artifacts a stored section stands in for: its summary made whole. */
+export function withHeldArtifacts(
+  prepared: PreparedSnapshot,
+  figures: ArtifactFigures,
+): PreparedSnapshot {
+  return {
+    ...prepared,
+    summary: {
+      ...prepared.summary,
+      artifacts: figures.artifacts,
+      artifact3: figures.artifact3,
+      artifact4: figures.artifact4,
+    },
+  }
 }
 
 function summarize(good: NormalizedGood): SnapshotSummary {
@@ -352,15 +443,26 @@ export async function completeSnapshot(
   sections: StaticSections,
   prepared: PreparedSnapshot,
   artifactIds: ReadonlyMap<string, number>,
+  /**
+   * The hash of a stored artifacts section made from the same list (the list
+   * is deferred): it stands in for the section, whose `json` stays empty.
+   */
+  heldArtifacts?: string,
 ): Promise<EncodedSnapshot> {
   const { good, artifactHashes } = prepared
+  if (prepared.deferred && heldArtifacts === undefined) {
+    throw new Error('The artifact list is deferred: resolve it or name the held section')
+  }
   const refs = good.artifacts.map((artifact, index) => {
     const hash = artifactHashes[index]!
     const id = artifactIds.get(hash)
     if (id === undefined) throw new Error(`No catalog id for artifact ${hash}`)
     return { id, state: artifact.state }
   })
-  const artifacts = await makeSection('artifacts', encodeArtifacts(refs))
+  const artifacts: Section =
+    heldArtifacts !== undefined
+      ? { kind: 'artifacts', hash: heldArtifacts, json: '' }
+      : await makeSection('artifacts', encodeArtifacts(refs))
   const base = [
     sections.characters.hash,
     sections.weapons.hash,

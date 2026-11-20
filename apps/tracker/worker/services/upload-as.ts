@@ -9,7 +9,14 @@
  * UID (422 `uid_required` for a file without one).
  */
 
-import { preparedItemIndex, type ImportResponse, type PreparedSnapshot } from '@gdt/shared'
+import {
+  UPLOAD_SUPPORT,
+  itemIndexKey,
+  preparedItemIndex,
+  resolveDeferredArtifacts,
+  type ImportResponse,
+  type PreparedSnapshot,
+} from '@gdt/shared'
 import type { Context } from 'hono'
 import type { AppEnv } from '../env'
 import { ApiError } from '../lib/http'
@@ -86,6 +93,13 @@ export async function uploadAs(
   // the answer without `live`, so irminsul keeps to snapshots).
   if (live && result.newest) {
     try {
+      // The journal's item index. When the artifact list was not read (a
+      // stored section stood in for it), the index of the journal row stands
+      // if it was made from the same items; else the list is read after all.
+      const index = preparedItemIndex(result.prepared.good)
+      const itemsKey = result.artifactsFingerprint
+        ? await itemIndexKey(result.artifactsFingerprint, index?.weapons ?? [])
+        : null
       const base = await openJournal(live, {
         accountId: account.id,
         userId: account.user_id ?? userId,
@@ -94,7 +108,14 @@ export async function uploadAs(
         takenAt: response.takenAt,
         session: result.prepared.good.capture?.session ?? '',
         summary: result.prepared.summary,
-        items: preparedItemIndex(result.prepared.good),
+        items: result.heldArtifacts ? null : index,
+        itemsKey,
+        ...(result.heldArtifacts
+          ? {
+              itemsLater: async () =>
+                preparedItemIndex((await resolveDeferredArtifacts(result.prepared)).good),
+            }
+          : {}),
         off: result.prepared.good.off,
       })
       response.live = { base, watching: anyListening(listener) }
@@ -122,7 +143,11 @@ export async function uploadAs(
     })
   }
   return c.json<ImportResponse>(
-    { ...response, account: { id: account.id, name: account.name, uid: account.uid, created } },
+    {
+      ...response,
+      account: { id: account.id, name: account.name, uid: account.uid, created },
+      upload: UPLOAD_SUPPORT,
+    },
     response.status === 'created' ? 201 : 200,
   )
 }

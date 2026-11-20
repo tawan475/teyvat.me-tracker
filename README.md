@@ -1259,8 +1259,9 @@ The Worker asks Cloudflare's GraphQL Analytics API six small questions per
 10 minutes at most while a staff page shows the panel, never logs or
 answers the token, and shows a figure Cloudflare refuses as unknown without
 losing the rest. CPU time (`cpuTimeUs`) and Durable Object duration
-(`activeTime`) are fields Cloudflare's public docs do not list: check those
-two rows against the dashboard after setting the token.
+(`activeTime`) are fields Cloudflare's public docs do not list; every figure,
+the per-route counts and the hourly ones were checked against the real API
+on 2026-11-20 and answered.
 
 </details>
 

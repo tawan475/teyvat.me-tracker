@@ -160,6 +160,15 @@
     "serversQ": "支援哪些伺服器？",
     "serversA": "全部支援：美服、歐服、亞服與台港澳服。"
   },
+  "community": {
+    "overline": "社群",
+    "title": "加入我們的社群",
+    "card": "在 Discord 上提問、回饋並取得更新消息。",
+    "join": "加入 Discord",
+    "discord": "與其他玩家一起提問、回饋，取得更新消息。",
+    "github": "原始碼、版本發布與問題回報。",
+    "kofi": "幫忙分擔營運費用。"
+  },
   "footer": {
     "label": "頁尾",
     "disclaimer": "Teyvat.me 是非官方的粉絲專案，與 HoYoverse 無關，也未獲其認可。原神是 HoYoverse 的商標。",

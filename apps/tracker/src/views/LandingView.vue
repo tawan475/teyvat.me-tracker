@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import LandingCapture from '@/components/landing/LandingCapture.vue'
+import LandingCommunity from '@/components/landing/LandingCommunity.vue'
 import LandingFaq from '@/components/landing/LandingFaq.vue'
 import LandingFooter from '@/components/landing/LandingFooter.vue'
 import LandingHero from '@/components/landing/LandingHero.vue'
@@ -34,6 +35,7 @@ const languageOpen = ref(false)
         <LandingCapture />
         <LandingPrivacy />
         <LandingFaq />
+        <LandingCommunity />
       </main>
       <LandingFooter />
     </div>

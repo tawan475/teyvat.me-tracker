@@ -160,6 +160,15 @@
     "serversQ": "Những máy chủ nào?",
     "serversA": "Tất cả: Châu Mỹ, Châu Âu, Châu Á và TW/HK/MO."
   },
+  "community": {
+    "overline": "Cộng đồng",
+    "title": "Tham gia cộng đồng",
+    "card": "Hỏi đáp, góp ý và tin phát hành trên Discord.",
+    "join": "Tham gia Discord",
+    "discord": "Hỏi đáp, góp ý và tin phát hành, cùng những người chơi khác.",
+    "github": "Mã nguồn, bản phát hành và báo lỗi.",
+    "kofi": "Giúp trang trải chi phí vận hành."
+  },
   "footer": {
     "label": "Chân trang",
     "disclaimer": "Teyvat.me là dự án không chính thức của người hâm mộ, không liên kết và không được HoYoverse chứng thực. Genshin Impact là thương hiệu của HoYoverse.",

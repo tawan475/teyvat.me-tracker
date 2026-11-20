@@ -160,6 +160,15 @@
     "serversQ": "対応サーバーは？",
     "serversA": "すべてです：アメリカ、ヨーロッパ、アジア、TW/HK/MO。"
   },
+  "community": {
+    "overline": "コミュニティ",
+    "title": "コミュニティに参加",
+    "card": "質問、フィードバック、リリース情報は Discord で。",
+    "join": "Discord に参加",
+    "discord": "質問やフィードバック、リリース情報を他のプレイヤーと。",
+    "github": "ソースコード、リリース、Issue。",
+    "kofi": "運営費用を支援できます。"
+  },
   "footer": {
     "label": "フッター",
     "disclaimer": "Teyvat.me は非公式のファンプロジェクトであり、HoYoverse とは提携しておらず、承認も受けていません。原神は HoYoverse の商標です。",

@@ -342,9 +342,6 @@
   color: var(--tx);
   background: rgba(255, 255, 255, 0.06);
 }
-.lp .lang .short {
-  display: none;
-}
 
 /* how it works */
 .lp .steps3 {
@@ -1596,9 +1593,6 @@
   .lp .lang .long {
     display: none;
   }
-  .lp .lang .short {
-    display: inline;
-  }
   .lp .acts .btn {
     flex: 1 1 100%;
   }
@@ -1914,5 +1908,227 @@
     --block: calc(var(--pw) * 9 / 16 + 121px);
     width: var(--pw);
     min-height: var(--block);
+  }
+}
+
+/*
+ * Discord, Ko-fi and the community (the user's pick, 2026-11-19: row E of
+ * https://claude.ai/artifact/FGBTwZdsTvrucA1F9gsJGD). Top bar: two glass
+ * buttons left of the language button. Tracker section: a card beside the
+ * heading. After the FAQ: three doors.
+ *
+ * The bar gives way in steps so it fits every language (measured in all 15):
+ * to 1200px the two buttons are icons and the language button the globe
+ * alone; to 960px the Download button goes (the hero has one); to 860px the
+ * menu links go; on phones Ko-fi yields first when the sign-in word is long
+ * (it wraps to a hidden second line of its 40px row).
+ */
+.lp svg.dcm {
+  width: 20px;
+  height: 15.2px;
+  flex: none;
+}
+.lp .nav-socs {
+  display: contents;
+}
+.lp .nav-soc {
+  padding: 0 14px;
+  backdrop-filter: none;
+}
+@media (max-width: 1200px) {
+  .lp .nav-soc {
+    width: 40px;
+    padding: 0;
+  }
+  .lp .nav-soc .lbl,
+  .lp .lang .long {
+    display: none;
+  }
+  .lp .lang {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+@media (max-width: 960px) {
+  .lp .nav .hide-s {
+    display: none;
+  }
+}
+@media (max-width: 860px) {
+  .lp .navlinks {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .lp .nav-r {
+    min-width: 0;
+    gap: 6px;
+  }
+  .lp .nav-socs {
+    display: flex;
+    flex: 0 1 86px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0 6px;
+    height: 40px;
+    min-width: 40px;
+    overflow: hidden;
+  }
+  .lp .nav .btn-t {
+    padding: 0 6px;
+  }
+}
+/* 360px phones: the same bar, packed closer */
+@media (max-width: 380px) {
+  .lp .nav {
+    gap: 6px;
+  }
+  .lp .nav-r {
+    gap: 4px;
+  }
+  .lp .nav .brand {
+    font-size: 18px;
+    gap: 6px;
+  }
+}
+.lp .btn-dc {
+  background: #5865f2; /* Discord's own blue; white on it is 4.6:1 */
+  color: #ffffff;
+  box-shadow: 0 10px 28px -10px rgba(88, 101, 242, 0.8);
+}
+.lp .disc {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #5865f2;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.lp .disc svg.dcm {
+  width: 24px;
+  height: 18.2px;
+}
+.lp a.tile-g {
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.lp a.tile-g:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.lp a.tile-g:hover .btn {
+  transform: none;
+}
+.lp .head-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 48px;
+  margin-bottom: 40px;
+}
+.lp .head-row .sec-h {
+  margin-bottom: 0;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.lp .join {
+  flex: 0 1 440px;
+  margin-left: auto;
+  min-width: 0;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lp .join-t {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lp .join-t b {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.lp .join-t span {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--tx2);
+}
+.lp .doors {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+.lp .door {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.lp .door.main {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.lp .door-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.lp .door-top b {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.lp .door-top > .ic {
+  margin-left: auto;
+  color: var(--tx3);
+}
+.lp .door-p {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--tx2);
+}
+@media (max-width: 1200px) {
+  .lp .head-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .lp .join {
+    flex: none;
+    margin-left: 0;
+  }
+}
+@media (max-width: 1100px) {
+  .lp .doors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lp .door.main {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 720px) {
+  .lp .head-row {
+    margin-bottom: 28px;
+  }
+  .lp .join,
+  .lp .door.main {
+    flex-wrap: wrap;
+  }
+  .lp .join .btn,
+  .lp .door.main .btn {
+    flex: 1 1 100%;
+  }
+  .lp .doors {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 }

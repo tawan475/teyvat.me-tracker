@@ -160,6 +160,15 @@
     "serversQ": "Which servers?",
     "serversA": "All of them: America, Europe, Asia and TW/HK/MO."
   },
+  "community": {
+    "overline": "Community",
+    "title": "Join our community",
+    "card": "Questions, feedback and release news on Discord.",
+    "join": "Join Discord",
+    "discord": "Questions, feedback and release news, with other players.",
+    "github": "Source code, releases and issues.",
+    "kofi": "Help with the running costs."
+  },
   "footer": {
     "label": "Footer",
     "disclaimer": "Teyvat.me is an unofficial fan project and is not affiliated with or endorsed by HoYoverse. Genshin Impact is a trademark of HoYoverse.",

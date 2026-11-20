@@ -9,6 +9,7 @@
 
 import {
   CODE_VERIFIER,
+  clientName,
   toBase64Url,
   type GenshinServer,
   type IrminsulTokenResponse,
@@ -333,8 +334,9 @@ export async function exchangeCode(
     d1
       .prepare(
         `INSERT INTO user_sessions (user_id, method, user_agent, ip, created_ip, country, city,
-           created_at, last_seen_at, expires_at, device_name, upload_mode, upload_account_id)
-         SELECT ?1, 'irminsul', ?2, ?3, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, ?10
+           created_at, last_seen_at, expires_at, device_name, upload_mode, upload_account_id,
+           client)
+         SELECT ?1, 'irminsul', ?2, ?3, ?3, ?4, ?5, ?6, ?6, ?7, ?8, ?9, ?10, ?12
          WHERE (SELECT token_version FROM users WHERE id = ?1) = ?11
            AND (SELECT suspended_at FROM users WHERE id = ?1) IS NULL
          RETURNING id`,
@@ -351,6 +353,8 @@ export async function exchangeCode(
         row.upload_mode,
         row.upload_account_id,
         owner.token_version,
+        // The program's own name, for staff (Metrics › Program): another client keeps its own.
+        clientName(body.app),
       ),
   ])
   const sid = inserted!.results[0]?.id

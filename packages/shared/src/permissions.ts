@@ -21,6 +21,8 @@ export const PERMISSION_NODES = [
   'site.settings',
   'roles.manage',
   'audit.view',
+  // Appended 2026-11-20: the Metrics page.
+  'site.metrics',
 ] as const
 export type PermissionNode = (typeof PERMISSION_NODES)[number]
 
@@ -58,6 +60,7 @@ export const PERMISSION_GROUPS: {
     name: 'Site',
     nodes: [
       { node: 'site.settings', label: 'Sign-up switch and upload limits' },
+      { node: 'site.metrics', label: 'Metrics page' },
       { node: 'roles.manage', label: 'Edit and assign lower roles' },
       { node: 'audit.view', label: 'Read the audit log' },
     ],

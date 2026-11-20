@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AUDIT_KINDS, type AuditKind, type AuditRow } from '@gdt/shared'
+import AuditSummary from '@/components/staff/AuditSummary.vue'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -197,6 +198,7 @@ const pageCount = computed(() =>
   <PageHeader :title="$t('staff.audit.title')" />
 
   <div class="flex flex-col gap-4">
+    <AuditSummary />
     <UiToolbar :label="$t('staff.audit.filter')">
       <div class="flex flex-wrap items-center gap-2">
         <label class="relative min-w-0 basis-full sm:min-w-48 sm:basis-0 sm:flex-1">

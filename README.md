@@ -1188,6 +1188,151 @@ the session (`requireActiveSession`), never the diag key. Migration 0020.
 </details>
 
 <details>
+<summary><b>Staff metrics</b></summary>
+
+`/app/staff/metrics` (node `site.metrics`, which no seeded role holds: the
+Owner gives it to roles on the Roles page): one page with a switcher on top,
+All (every section, the default), Now, Live sync, Activity and Capacity. API
+`/api/staff/metrics/*` (`worker/routes/staff-metrics.ts`, reads in
+`worker/services/metrics.ts`).
+
+**What it costs.** Nothing here runs per user or per request of theirs.
+Every figure is read from state the site keeps anyway, when a staff member
+opens the page, and the Worker keeps each read for 60 seconds (the day
+charts and Cloudflare's usage for 10 minutes), so many staff refreshing cost
+one read. Two writes exist: one `site_samples` row an hour for the whole
+site (below), and an `admin_audit` row when a staff member looks at the
+Online list (one per member per 10 minutes).
+
+| Figure | Read from |
+| --- | --- |
+| Online | `users.live_since` (each user's hub sets it on its first socket and clears it on its last; a write that tells a hub without sockets clears a stale mark) |
+| Capture running, client devices | `user_sessions` with method `irminsul`: not ended, and `last_seen_at` within 20 minutes (a client renews its sign-in every 15) |
+| In game, live journals, batches today, at the cap | one pass over `gdt-live` `live_journals` (`updated_at` within 15 minutes, `day_batches`) |
+| Capture's state, device, program, version per listed user | that user's hub (`presenceOf`), only for the 25 rows on screen: never a call per user |
+| Accounts with live data per day | `live_points` (one row per account per day) and the journals' open day |
+| Daily, weekly, monthly users, last seen | `users.last_active_at` (stamped hourly at most), in the same pass as Online |
+| Sign-ups, uploaders, snapshots | `users.created_at`, `user_identities`, `user_upload_days` (kept 90 days) |
+| Wish history use | `wish_histories.updated_at`, `wish_chunks` |
+| Database sizes | `meta.size_after`, which D1 reports with every answer |
+
+At 100,000 users one full uncached read is about 5.6 million rows
+(about $0.006); the Now pass alone about 0.5 million. Resyncs and cap
+refusals are not stored anywhere: they show only with the usage token and
+the zone ID (below).
+
+**Program** is the client program's own name: `teyvat.me-desktop` or
+`teyvat.me-android` for Teyvat.me Capture (told apart by the platform its
+heartbeat reports), `irminsul`, or whatever another client calls itself. The
+name is the `app` a client sends with its token request, kept in
+`user_sessions.client` (migration 0041; lowercase letters, digits, `.`, `_`,
+`-`, at most 32). A device's name is private: it shows to staff with
+`users.view_private`, for users below them.
+
+**The hourly reading.** The hourly cron stores one row in `site_samples`
+(migration 0041) for the whole site: users, online, clients running, in
+game, journals, batches so far that day, daily, weekly and monthly users,
+and the two databases' sizes. 24 rows a day whatever the number of users;
+the tiles' small lines, the Online and in game chart and the Active users
+chart are drawn from it, so they start empty and fill an hour at a time.
+
+**Cloudflare usage** (optional) reads the month's Worker requests and CPU
+time, D1 rows read and written, and Durable Object requests and duration for
+the whole Cloudflare account, and prices what is over the Workers Paid
+plan's included amounts (`USAGE_PLAN` in `packages/shared/src/metrics.ts`).
+It is off until both Worker secrets exist:
+
+1. Open https://dash.cloudflare.com/profile/api-tokens and choose **Create
+   Token**, then **Create Custom Token**.
+2. Permissions: **Account** › **Account Analytics** › **Read**, and (for the
+   two live sync counts) **Zone** › **Analytics** › **Read**. Limit it to
+   the one account and the one zone. Nothing else: the token can only read
+   analytics.
+3. In `apps/tracker`: `pnpm exec wrangler secret put CF_ANALYTICS_TOKEN` and
+   paste the token; `pnpm exec wrangler secret put CF_ACCOUNT_ID` with the
+   account ID (the 32 characters on the account's Workers overview page).
+4. Optional, for "Resyncs, 24 h" and "Refused at the cap, 24 h":
+   `pnpm exec wrangler secret put CF_ZONE_ID` with the zone ID (the zone's
+   overview page). A Free zone answers for the last 24 hours only.
+
+The Worker asks Cloudflare's GraphQL Analytics API six small questions per
+10 minutes at most while a staff page shows the panel, never logs or
+answers the token, and shows a figure Cloudflare refuses as unknown without
+losing the rest. CPU time (`cpuTimeUs`) and Durable Object duration
+(`activeTime`) are fields Cloudflare's public docs do not list; every figure,
+the per-route counts and the hourly ones were checked against the real API
+on 2026-11-20 and answered.
+
+</details>
+
+<details>
+<summary><b>Staff insights</b></summary>
+
+`/app/staff/insights` (the Metrics page's node, `site.metrics`): who the
+users are and what they use, as totals and shares. Nobody is named, so
+nothing is logged. A switcher on top as on Metrics: All, People, Retention,
+Features, Uploads. API `/api/staff/insights/*`
+(`worker/routes/staff-insights.ts`, reads in `worker/services/insights.ts`).
+Each section is an aggregate over state the site keeps anyway, read when a
+staff member opens the page and kept 10 minutes in the Worker instance
+(`worker/lib/keep.ts`).
+
+| Section | Shows | Read from | At 100,000 users |
+| --- | --- | --- | --- |
+| People | Countries (by where users signed up from, or their newest session): users, active in 7 days, new in 30, with a client, uploading. Ways in, language and theme, game servers, client programs by version | `users` (`signup_country`, `settings`, `password_hash`), `user_sessions`, `user_identities`, `passkeys`, `genshin_accounts.server` | about 0.6M rows |
+| Retention | Sign-up weeks against the weeks since: the share still storing snapshots. Sign-up months against who was seen lately. Guest conversions | `user_upload_days` joined to the window's sign-ups, `users.last_active_at`, `users.from_guest` | about 6M rows |
+| Features | Accounts using each part and changed in 7 days: planner goals, wish history, achievement marks, planner tasks, weapon goals, Travel Accounts marks, World Quest marks, sharing. Sharing, alerts and push, API tokens | one existence check per account per table; `account_members`, `user_sessions.alerts`, `push_subscriptions`, `api_tokens` | about 1M index lookups |
+| Uploads | Users at a daily cap today and this week, near their quota, blocked; the last day's snapshots by the program their file names and by why a client sent them | `user_upload_days`, `genshin_accounts.stored_bytes`, the newest 2,000 snapshot headers (`snapshots.meta`) | about 0.2M rows, and CPU for the headers |
+
+A country in the Countries table opens the Users page filtered to it
+(`?country=`), for staff with `users.view`.
+
+**Three small writes came with it** (migration 0042), none of them per
+request:
+
+- **Client versions.** `POST /api/irminsul/presence` stores the program's
+  version and platform on its sign-in's row (`user_sessions.client_version`,
+  `client_platform`, `client_version_at`) only when a heartbeat says
+  something new: about one row written per device per update. A client that
+  uploads with an import key has no row and is not counted.
+- **Guest conversions.** Sign-up keeps `users.from_guest` when the browser
+  holds a guest account with data (`src/lib/guest-hint.ts` reads the
+  `gdt:guest-data` hint): one more column in the sign-up's own insert.
+  Guests who never sign up leave nothing on the server.
+- **Job runs.** Each scheduled run (the hourly reading, the hourly game
+  events sync, the nightly clean-up) leaves a `job_runs` row with how long
+  it took and its result (`worker/services/job-runs.ts`): about 49 rows a
+  day in total; the nightly run drops rows older than 60 days.
+
+**The other staff pages gained:**
+
+- **Overview**: Site health (push alerts, the live database, the Cloudflare
+  usage token, the hourly reading's last time) and Job runs
+  (`GET /api/staff/health`, `staff.view`).
+- **Users**: moderation filters, counted apart from the list
+  (`GET /api/staff/users/flags`, kept 10 minutes) so the list costs what it
+  did: a sign-up burst (3 or more sign-ups from one address within an hour),
+  many accounts (5 or more), a UID that another user's account also has,
+  heavy uploads (more than a day's byte limit stored in 7 days), never used
+  (signed up over 90 days ago, stored nothing, never came back). A matching
+  row says why. Bursts and shared UIDs are each one grouped pass joined to
+  the user, never a scan per user.
+- **Audit**: the last 30 days of staff actions per day by kind, and per
+  staff member (`GET /api/staff/audit/summary`, `audit.view`).
+- **Metrics › Capacity**: with the usage token, Cloudflare's figures hour by
+  hour (the hourly reading keeps the hour's Worker requests, failed runs
+  and CPU time, and the zone's refused API requests, in the same
+  `site_samples` row: no extra rows, up to six small questions an hour), and
+  the last 24 hours' refused requests by route (needs `CF_ZONE_ID`; a Free
+  zone keeps 24 hours).
+
+Not built, because they cannot be read from stored state and counting them
+costs per event: page and feature views, guests who never sign up, and API
+calls per token. They belong to the analytics plan (`docs/plans/analytics.md`).
+
+</details>
+
+<details>
 <summary><b>Languages</b></summary>
 
 The site speaks every language Genshin Impact ships: English, Simplified and

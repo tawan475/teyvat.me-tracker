@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import {
+  BURST_SIGNUPS,
+  MANY_ACCOUNTS,
   STAFF_BULK_MAX,
   STAFF_USER_FILTERS,
   STAFF_USER_SORTS,
+  UNUSED_DAYS,
+  USER_FLAGS,
   type StaffUserFilter,
   type StaffUserRow,
   type StaffUserSort,
@@ -10,7 +14,7 @@ import {
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Ban, Search, SearchX, Trash2 } from 'lucide-vue-next'
+import { Ban, Search, SearchX, Trash2, TriangleAlert, X } from 'lucide-vue-next'
 import SortHeader from '@/components/characters/SortHeader.vue'
 import ConfirmDialog from '@/components/snapshot-history/ConfirmDialog.vue'
 import LegacyCheckbox from '@/components/snapshot-history/LegacyCheckbox.vue'
@@ -37,6 +41,7 @@ import { useSnapshotSelection } from '@/composables/useSnapshotSelection'
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { formatBytes, formatDate, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
+import { regionName } from '@/lib/region-name'
 import { vStickyHead } from '@/lib/sticky-head'
 import { useFeedback } from '@/stores/feedback'
 import { useSession } from '@/stores/session'
@@ -63,12 +68,19 @@ const filter = ref<StaffUserFilter>(pick(route.query.filter, STAFF_USER_FILTERS,
 const sort = ref<StaffUserSort>(pick(route.query.sort, STAFF_USER_SORTS, 'joined'))
 const direction = ref<'asc' | 'desc'>(route.query.dir === 'asc' ? 'asc' : 'desc')
 const page = ref(Math.max(1, Number(route.query.page) || 1))
+/** Only users who signed up from this country (the Insights page's Countries link here). */
+const country = ref(
+  typeof route.query.country === 'string' && /^[A-Za-z0-9]{2,3}$/.test(route.query.country)
+    ? route.query.country.toUpperCase()
+    : '',
+)
 
-watch([query, filter, sort, direction], () => (page.value = 1))
-watch([query, filter, sort, direction, page], () => {
+watch([query, filter, sort, direction, country], () => (page.value = 1))
+watch([query, filter, sort, direction, page, country], () => {
   void router.replace({
     query: {
       ...(query.value ? { q: query.value } : {}),
+      ...(country.value ? { country: country.value } : {}),
       ...(filter.value !== 'all' ? { filter: filter.value } : {}),
       ...(sort.value !== 'joined' ? { sort: sort.value } : {}),
       ...(direction.value !== 'desc' ? { dir: direction.value } : {}),
@@ -84,9 +96,42 @@ const { data, error, loading, reload } = useResource(
     sort: sort.value,
     dir: direction.value,
     page: page.value,
+    country: country.value || undefined,
   }),
   (params) => api.staff.users(params),
 )
+
+/**
+ * The moderation filters: who a moderator should look at. Their counts are
+ * read apart from the list (kept ten minutes by the Worker), so the list
+ * itself costs what it did.
+ */
+const { data: flags } = useResource(
+  () => true,
+  () => api.staff.userFlags(),
+)
+const flagChips = computed(() =>
+  USER_FLAGS.map((value) => ({
+    value,
+    label: t(`staff.users.flags.${value}`),
+    title: t(`staff.users.flags.${value}Title`, {
+      n: value === 'burst' ? BURST_SIGNUPS : value === 'manyAccounts' ? MANY_ACCOUNTS : UNUSED_DAYS,
+    }),
+  })),
+)
+/** Why a row matches the moderation filter in use (nothing for the other filters). */
+function flagText(user: StaffUserRow): string {
+  const value = user.flagValue
+  if (value === undefined) return ''
+  if (filter.value === 'burst')
+    return t('staff.users.flags.burstWhy', { n: formatNumber(Number(value)) })
+  if (filter.value === 'sharedUid')
+    return t('staff.users.flags.sharedUidWhy', { uid: String(value) })
+  if (filter.value === 'heavy')
+    return t('staff.users.flags.heavyWhy', { size: formatBytes(Number(value)) })
+  return ''
+}
+
 const rows = computed<StaffUserRow[]>(() => data.value?.users ?? [])
 
 /** The chips in three groups: who, what they keep, standing. */
@@ -264,7 +309,7 @@ const pageCount = computed(() =>
             :key="chip.value"
             radio
             :pressed="filter === chip.value"
-            :count="data?.counts[chip.value]"
+            :count="(data?.counts as Record<string, number> | undefined)?.[chip.value]"
             :title="chip.title"
             @toggle="filter = chip.value"
           >
@@ -282,6 +327,31 @@ const pageCount = computed(() =>
           "
           >{{ formatNumber(data.total) }} / {{ formatNumber(data.counts.all) }}</span
         >
+      </div>
+      <div
+        class="scroll-hide scroll-fade-x -mx-3 flex items-center gap-2 overflow-x-auto px-3 sm:mx-0 sm:scroll-fade-none sm:flex-wrap sm:overflow-visible sm:px-0"
+        role="group"
+        :aria-label="$t('staff.users.flags.label')"
+      >
+        <FilterChip
+          v-if="country"
+          pressed
+          :title="$t('staff.users.flags.countryTitle')"
+          @toggle="country = ''"
+        >
+          {{ regionName(country) }}
+          <X class="size-3.5" aria-hidden="true" />
+        </FilterChip>
+        <FilterChip
+          v-for="chip in flagChips"
+          :key="chip.value"
+          :pressed="filter === chip.value"
+          :count="flags?.[chip.value]"
+          :title="chip.title"
+          @toggle="filter = filter === chip.value ? 'all' : chip.value"
+        >
+          {{ chip.label }}
+        </FilterChip>
       </div>
     </UiToolbar>
 
@@ -457,7 +527,16 @@ const pageCount = computed(() =>
               />
             </td>
             <td class="tabular px-3 py-1.5 text-right font-mono text-text-muted">{{ user.id }}</td>
-            <td class="max-w-64 px-3 py-1.5"><UserLink :user="user" no-id /></td>
+            <td class="max-w-64 px-3 py-1.5">
+              <UserLink :user="user" no-id />
+              <span
+                v-if="flagText(user)"
+                class="mt-0.5 flex items-center gap-1 text-xs text-warning-text"
+              >
+                <TriangleAlert class="size-3 shrink-0" aria-hidden="true" />
+                <span class="truncate">{{ flagText(user) }}</span>
+              </span>
+            </td>
             <td class="px-3 py-1.5"><MethodMarks :methods="user.methods" /></td>
             <td class="px-3 py-1.5">
               <span class="flex flex-wrap gap-1">

@@ -132,6 +132,7 @@ export const api = {
     email: string | null
     password: string
     turnstile?: string
+    guest?: boolean
   }) =>
     requestJson<MeResponse>('/api/auth/register', { method: 'POST', json: body, noRefresh: true }),
   logout: () => requestJson<void>('/api/auth/logout', { method: 'POST', noRefresh: true }),
@@ -200,7 +201,12 @@ export const api = {
     requestJson<OAuthPendingResponse>('/api/auth/oauth/pending', { noRefresh: true }),
   oauthCancel: () =>
     requestJson<void>('/api/auth/oauth/pending', { method: 'DELETE', noRefresh: true }),
-  oauthRegister: (body: { username: string; useEmail: boolean; turnstile?: string }) =>
+  oauthRegister: (body: {
+    username: string
+    useEmail: boolean
+    turnstile?: string
+    guest?: boolean
+  }) =>
     requestJson<MeResponse>('/api/auth/oauth/pending/register', {
       method: 'POST',
       json: body,

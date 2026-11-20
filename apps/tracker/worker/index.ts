@@ -30,7 +30,9 @@ import { staff } from './routes/staff'
 import { wishProxy } from './routes/wish-proxy'
 import { wishAccounts, wishSync } from './routes/wishes'
 import { syncGameEvents } from './services/game-events'
+import { recordJob } from './services/job-runs'
 import { runMaintenance } from './services/maintenance'
+import { takeSample } from './services/metrics'
 
 const app = new Hono<AppEnv>().basePath('/api')
 
@@ -124,8 +126,30 @@ export default {
     // Cloudflare (scripts/repack.ts): a long history's re-encode outran the
     // Worker's CPU limit.
     if (controller.cron === EVENTS_CRON) {
+      // The same hour's reading of the whole site, for the staff Metrics
+      // page's trends (services/metrics.ts): one row an hour, however many users.
+      // Each run leaves a row for the staff Overview's Job runs (services/job-runs.ts).
       ctx.waitUntil(
-        syncGameEvents(env.DB).then((status) =>
+        recordJob(
+          env.DB,
+          'sample',
+          () => takeSample(env),
+          (sample) => ({
+            ok: true,
+            detail: { users: sample.users, online: sample.online, inGame: sample.inGame },
+          }),
+        ).catch((error: unknown) => console.warn('site_sample_failed', String(error))),
+      )
+      ctx.waitUntil(
+        recordJob(
+          env.DB,
+          'events',
+          () => syncGameEvents(env.DB),
+          (status) => ({
+            ok: status.ok,
+            detail: { counts: status.counts, errors: status.errors },
+          }),
+        ).then((status) =>
           console.log(
             'game events',
             JSON.stringify({ ok: status.ok, counts: status.counts, errors: status.errors }),
@@ -137,9 +161,9 @@ export default {
     // Optional var (wrangler.jsonc "vars" or the dashboard): v1 rows to repack per day.
     const repackLimit = Number((env as { REPACK_CRON_LIMIT?: string }).REPACK_CRON_LIMIT ?? 0) || 0
     ctx.waitUntil(
-      runMaintenance(env.DB, Date.now(), { repackLimit }).then((result) =>
-        console.log('maintenance', JSON.stringify(result)),
-      ),
+      recordJob(env.DB, 'maintenance', () =>
+        runMaintenance(env.DB, Date.now(), { repackLimit }),
+      ).then((result) => console.log('maintenance', JSON.stringify(result))),
     )
   },
 } satisfies ExportedHandler<Env>

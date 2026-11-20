@@ -1,7 +1,9 @@
 import type { PermissionNode } from '@gdt/shared'
 import type { RouteMeta } from 'vue-router'
 import {
+  Activity,
   Castle,
+  ChartColumn,
   ClipboardList,
   Gem,
   HardDrive,
@@ -72,6 +74,14 @@ export const STAFF_SECTIONS: StaffSection[] = [
     permission: 'staff.view',
     primary: true,
   },
+  {
+    name: 'staff-metrics',
+    label: 'metrics',
+    icon: Activity,
+    permission: 'site.metrics',
+    primary: true,
+  },
+  { name: 'staff-insights', label: 'insights', icon: ChartColumn, permission: 'site.metrics' },
   { name: 'staff-users', label: 'users', icon: Users, permission: 'users.view', primary: true },
   {
     name: 'staff-storage',

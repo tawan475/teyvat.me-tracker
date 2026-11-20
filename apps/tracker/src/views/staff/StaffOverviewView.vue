@@ -3,6 +3,7 @@ import gameData from '@gdt/game-data/data/meta.json'
 import type { DomainEventWindow, SignupMode, StaffSiteResponse } from '@gdt/shared'
 import { computed, ref } from 'vue'
 import DomainEventsDialog from '@/components/staff/DomainEventsDialog.vue'
+import HealthPanels from '@/components/staff/HealthPanels.vue'
 import LimitsDialog, { type LimitsPatch } from '@/components/staff/LimitsDialog.vue'
 import MethodMarks from '@/components/staff/MethodMarks.vue'
 import StackedBars from '@/components/staff/StackedBars.vue'
@@ -466,6 +467,8 @@ const emailTone = (state: StaffSiteResponse['email']) =>
         </div>
       </UiPanel>
     </div>
+
+    <HealthPanels />
   </div>
 
   <LimitsDialog

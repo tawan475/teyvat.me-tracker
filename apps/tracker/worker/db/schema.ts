@@ -118,6 +118,12 @@ export const users = sqliteTable(
      * by the routes that change a device's alerts. Added in 0035.
      */
     alertsOn: integer('alerts_on'),
+    /**
+     * The browser that signed up held a guest account with data (README
+     * "Guest mode"): set by the sign-up's own insert, for the staff Insights
+     * page's guest conversions. Added in 0042.
+     */
+    fromGuest: integer('from_guest', { mode: 'boolean' }).notNull().default(false),
   },
   (t) => [
     uniqueIndex('users_import_key_hash_unique')
@@ -655,6 +661,23 @@ export const userSessions = sqliteTable(
      * its own notification. NULL: never set. Added in 0035.
      */
     alerts: text('alerts', { mode: 'json' }).$type<DeviceAlerts>(),
+    /**
+     * The name a client program gave itself when it signed in (`app` of the
+     * token request: `teyvatme`, or another client's own name; `@gdt/shared`
+     * clientName). NULL: a browser, or a sign-in from before 0041. For the
+     * staff Metrics page's Program column. Added in 0041.
+     */
+    client: text('client'),
+    /**
+     * What the client's heartbeat last said of itself (`app` and `platform`
+     * of `POST /api/irminsul/presence`), written by that route only when one
+     * of them changes, so about once per device per update. `client_version_at`:
+     * when this version was first heard. For the staff Insights page's
+     * Client programs. Added in 0042.
+     */
+    clientVersion: text('client_version'),
+    clientPlatform: text('client_platform'),
+    clientVersionAt: integer('client_version_at'),
   },
   (t) => [index('user_sessions_user_revoked_idx').on(t.userId, t.revokedAt)],
 )
@@ -826,6 +849,60 @@ export const siteSettings = sqliteTable('site_settings', {
   /** The staff member who set it; NULL: set by hand (wrangler) or since deleted. */
   updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
 })
+
+/**
+ * One reading of the whole site per hour (migration 0041; services/metrics.ts
+ * `takeSample`, run by the hourly cron): what the staff Metrics page draws
+ * its trends from. One row an hour whatever the number of users; `at` is the
+ * hour's start (unix ms), so a rerun in the same hour replaces its row.
+ */
+export const siteSamples = sqliteTable('site_samples', {
+  at: integer('at').primaryKey(),
+  users: integer('users').notNull().default(0),
+  /** Users with an open site socket (`users.live_since`). */
+  online: integer('online').notNull().default(0),
+  /** Capture sign-ins renewed in the last 20 minutes. */
+  capture: integer('capture').notNull().default(0),
+  /** Accounts whose live journal got a batch in the last 15 minutes. */
+  inGame: integer('in_game').notNull().default(0),
+  journals: integer('journals').notNull().default(0),
+  /** Live batches so far that UTC day. */
+  batches: integer('batches').notNull().default(0),
+  dau: integer('dau').notNull().default(0),
+  wau: integer('wau').notNull().default(0),
+  mau: integer('mau').notNull().default(0),
+  /** The two databases' sizes as D1 reported them (0: it did not say). */
+  dbBytes: integer('db_bytes').notNull().default(0),
+  liveBytes: integer('live_bytes').notNull().default(0),
+  // Cloudflare's own figures for the hour before the reading (services/
+  // cf-usage.ts `hourFigures`); NULL while the usage token is off or
+  // Cloudflare did not answer. Added in 0042.
+  cfRequests: integer('cf_requests'),
+  cfErrors: integer('cf_errors'),
+  cfCpuMs: integer('cf_cpu_ms'),
+  cf4xx: integer('cf_4xx'),
+  cf429: integer('cf_429'),
+  cf5xx: integer('cf_5xx'),
+})
+
+/**
+ * What each scheduled job did (migration 0042; services/job-runs.ts): one row
+ * per run of the hourly reading, the game events sync and the nightly
+ * clean-up, about 49 a day in total. `detail` is the job's own result as
+ * JSON. Rows older than 60 days go with the nightly run.
+ */
+export const jobRuns = sqliteTable(
+  'job_runs',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    job: text('job').notNull(),
+    startedAt: integer('started_at').notNull(),
+    tookMs: integer('took_ms').notNull().default(0),
+    ok: integer('ok', { mode: 'boolean' }).notNull().default(true),
+    detail: text('detail').notNull().default('{}'),
+  },
+  (t) => [index('job_runs_started_idx').on(t.startedAt)],
+)
 
 /**
  * Staff roles (migration 0020), Discord's model: `permissions` is a JSON array

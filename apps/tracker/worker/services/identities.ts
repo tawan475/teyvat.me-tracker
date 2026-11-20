@@ -107,6 +107,8 @@ export async function createUserWithIdentity(
     /** Where the sign-up came from (users.signup_ip, signup_country). */
     signupIp?: string | null
     signupCountry?: string | null
+    /** The browser held a guest account with data (users.from_guest). */
+    fromGuest?: boolean
   },
   identity: PendingIdentity,
   now = Date.now(),
@@ -116,8 +118,8 @@ export async function createUserWithIdentity(
   await d1.batch([
     d1
       .prepare(
-        `INSERT INTO users (username, username_key, email, email_verified, password_hash, token_version, settings, created_at, signup_ip, signup_country)
-         VALUES (?1, ?2, ?3, 0, '', 0, '{}', ?4, ?5, ?6)`,
+        `INSERT INTO users (username, username_key, email, email_verified, password_hash, token_version, settings, created_at, signup_ip, signup_country, from_guest)
+         VALUES (?1, ?2, ?3, 0, '', 0, '{}', ?4, ?5, ?6, ?7)`,
       )
       .bind(
         account.username,
@@ -126,6 +128,7 @@ export async function createUserWithIdentity(
         now,
         account.signupIp ?? null,
         account.signupCountry ?? null,
+        account.fromGuest ? 1 : 0,
       ),
     d1
       .prepare(

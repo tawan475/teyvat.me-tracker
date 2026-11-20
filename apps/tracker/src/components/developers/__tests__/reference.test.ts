@@ -1,5 +1,6 @@
 import {
   applyDelta,
+  exportedOff,
   GOOD_LIMITS,
   goodDeltaSchema,
   normalizeGood,
@@ -92,8 +93,15 @@ describe('the developer page', () => {
     })
     expect(good.off).toEqual(off)
     expect([...good.materials.keys()]).toEqual(['Mora'])
-    // A file without the key has none: an older Capture.
+    // On an upload [] is "everything shared", and a file without the key has
+    // none: an older Capture.
+    expect(normalizeGood({ ...FILE_EXAMPLE, gi_off: [] }).off).toEqual([])
     expect(normalizeGood(FILE_EXAMPLE).off).toBeUndefined()
+    // A file exported from the tracker carries the key only when it names a
+    // part: both of those captures export without it.
+    expect(exportedOff(off)).toEqual(off)
+    expect(exportedOff([])).toBeUndefined()
+    expect(exportedOff(undefined)).toBeUndefined()
   })
 
   it('quotes the file limits the tracker enforces', () => {

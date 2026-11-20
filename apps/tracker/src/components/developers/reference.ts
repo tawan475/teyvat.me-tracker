@@ -296,7 +296,7 @@ Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Reco
   {
     key: 'gi_off',
     uploadsOnly: true,
-    what: 'The parts this capture did not share. [] = everything shared; absent = an older Capture.',
+    what: 'The parts this capture did not share. On a Capture upload, [] = everything shared and absent = an older Capture.',
     shape: `GiOffPart[]               // the names, always in this order
 GiOffPart =
   | 'characters'          // with gi_characters, which is not a name of its own
@@ -317,7 +317,7 @@ GiOffPart =
   | 'gi_events'
   | 'gi_miliastra'`,
     example: ['gi_player.numbers', 'gi_teapot'] satisfies NonNullable<Leyline['gi_off']>,
-    note: 'Capture leaves the key of a part named here out of its upload, so an absent key is "not shared", not "empty". On tracker uploads and on files exported from the tracker (which keep an empty characters, weapons, artifacts or materials beside it); never in Capture’s local files or live batches.',
+    note: 'Capture leaves the key of a part named here out of its upload, so an absent key is "not shared", not "empty". A file exported from the tracker carries gi_off only when it names a part, so absent there can also mean everything was shared; the export keeps an empty characters, weapons, artifacts or materials beside it. Never in Capture’s local files or live batches.',
   },
   {
     key: 'gi_guid, gi_exp',

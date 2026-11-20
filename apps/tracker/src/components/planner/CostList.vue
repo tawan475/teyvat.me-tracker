@@ -72,7 +72,11 @@ const legendRows = computed(() => {
         :is="openItem ? 'button' : 'span'"
         :type="openItem ? 'button' : undefined"
         class="flex w-full flex-col items-center gap-0.5 rounded-lg"
-        :class="openItem ? 'transition-colors hover:bg-surface-overlay' : ''"
+        :class="
+          openItem
+            ? 'transition-[background-color,box-shadow] hover:bg-surface-overlay hover:ring-[3px] hover:ring-surface-overlay'
+            : ''
+        "
         :aria-haspopup="openItem ? 'dialog' : undefined"
         @click="open(c.key, $event)"
       >

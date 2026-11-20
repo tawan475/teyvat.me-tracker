@@ -36,7 +36,12 @@ const sessions = ref<SessionResponse[] | null>(null)
 /** The session being signed out, 'others', or 'here'. */
 const busy = ref<number | 'others' | 'here' | null>(null)
 
-/** The device irminsul's Configure button asked for (`?device=`), highlighted. */
+/**
+ * The device irminsul's Configure button asked for (`?device=`), highlighted:
+ * a ring with the row's own padding on every side (the row widens into the
+ * panel's padding, so its content stays in line with the other rows), and no
+ * divider above or below it, where the line would touch the ring.
+ */
 const focused = computed(() => {
   const id = Number(route.query.device)
   return Number.isSafeInteger(id) && id > 0 ? id : null
@@ -212,11 +217,12 @@ async function signOut() {
         v-for="row in rows"
         :id="`device-${row.id}`"
         :key="row.id"
-        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0"
+        :data-focused="row.id === focused ? '' : undefined"
+        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3 has-[+[data-focused]]:border-transparent"
         :class="
           row.id === focused
-            ? 'rounded-lg ring-2 ring-accent ring-offset-4 ring-offset-surface-raised'
-            : ''
+            ? '-mx-3 rounded-lg border-transparent px-3 ring-2 ring-accent'
+            : 'first:pt-0 last:pb-0'
         "
       >
         <div class="flex min-w-0 items-center gap-3">

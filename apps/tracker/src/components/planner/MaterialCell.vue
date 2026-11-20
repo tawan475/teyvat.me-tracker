@@ -58,7 +58,9 @@ function open(event: MouseEvent) {
     class="flex flex-col items-center gap-0.5 rounded-lg"
     :class="[
       { md: 'w-16 gap-1', sm: 'w-12 gap-1', xs: 'w-10' }[size],
-      openItem ? 'transition-colors hover:bg-surface-overlay focus-visible:bg-surface-overlay' : '',
+      openItem
+        ? 'transition-[background-color,box-shadow] hover:bg-surface-overlay hover:ring-[3px] hover:ring-surface-overlay focus-visible:bg-surface-overlay'
+        : '',
     ]"
     :title="title"
     :aria-haspopup="openItem ? 'dialog' : undefined"

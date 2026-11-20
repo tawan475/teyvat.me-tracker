@@ -596,7 +596,7 @@ const MAP_PARTS = [
           <h3 class="min-w-0 text-sm font-semibold">
             <button
               type="button"
-              class="flex w-full min-w-0 items-center gap-1.5 rounded-md py-1 text-left hover:bg-surface-overlay/50"
+              class="flex w-full min-w-0 items-center gap-1.5 rounded-md py-1 text-left hover:bg-surface-overlay/50 hover:ring-4 hover:ring-surface-overlay/50"
               :aria-expanded="openCities.has(city.city)"
               @click="toggleCity(city.city)"
             >

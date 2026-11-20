@@ -147,11 +147,18 @@ describe('the game events sync', () => {
     expect(again.fullAt).toBe(status.fullAt)
     expect(again.counts).toEqual(status.counts)
     expect((await lastEventsSync(env.DB))?.at).toBe(again.at)
-    // A day later the contents are read in full again.
+    // An unchanged notice is not written again within a day.
+    const seen = () =>
+      env.DB.prepare(
+        'SELECT min(last_seen_at) AS first, max(last_seen_at) AS last FROM game_notices',
+      ).first<{ first: number; last: number }>()
+    expect(await seen()).toEqual({ first: status.at, last: status.at })
+    // A day later the contents are read in full again (and the rows' last-seen time moves).
     asked = []
     const daily = await syncGameEvents(env.DB, status.at + 25 * 3_600_000, fake())
     expect(asked.length).toBeGreaterThan(5)
     expect(daily.fullAt).toBe(daily.at)
+    expect(await seen()).toEqual({ first: daily.at, last: daily.at })
 
     const asia = (await (
       await SELF.fetch(`${ORIGIN}/api/game-events?server=ASIA`)

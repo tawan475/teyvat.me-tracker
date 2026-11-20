@@ -348,6 +348,9 @@ export async function syncGameEvents(
   // A local time compared as text: a day of slack covers every server's zone.
   const gone = new Date(now - KEEP_MS - 86_400_000).toISOString().slice(0, 16)
   await d1.batch([
+    // An unchanged notice is rewritten once a day at most (only for its
+    // last-seen time): the hourly sync used to rewrite every row, 19,000 row
+    // writes a week for nothing.
     ...rows.map((row) =>
       d1
         .prepare(
@@ -355,7 +358,11 @@ export async function syncGameEvents(
            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9)
            ON CONFLICT (server, source, ann_id) DO UPDATE SET kind = excluded.kind,
              start = excluded.start, "end" = excluded."end", titles = excluded.titles,
-             image = excluded.image, last_seen_at = excluded.last_seen_at`,
+             image = excluded.image, last_seen_at = excluded.last_seen_at
+           WHERE kind IS NOT excluded.kind OR start IS NOT excluded.start
+             OR "end" IS NOT excluded."end" OR titles IS NOT excluded.titles
+             OR image IS NOT excluded.image
+             OR last_seen_at < excluded.last_seen_at - 86400000`,
         )
         .bind(
           row.server,

@@ -17,6 +17,7 @@ import { UPLOAD_LIMIT_DEFAULTS, utcDay } from '../services/upload-limits'
 import {
   Client,
   ORIGIN,
+  inOneWindow,
   irminsulForm,
   sampleExtras,
   sampleGood,
@@ -683,18 +684,22 @@ describe('upload limits apply as to keys', () => {
   })
 
   it('20 uploads a minute per session', async () => {
-    const { client } = await signUp()
-    const tokens = await signIn(client)
     const good = sampleGood(sampleExtras())
-    for (let i = 0; i < 20; i++) {
-      expect((await upload(tokens.access_token, good, 1_000)).status).toBeLessThan(300)
-    }
-    const limited = await upload(tokens.access_token, good, 1_000)
-    expect(limited.status).toBe(429)
+    const { client, statuses } = await inOneWindow(async () => {
+      const { client } = await signUp()
+      const tokens = await signIn(client)
+      const statuses: number[] = []
+      for (let i = 0; i < 21; i++) {
+        statuses.push((await upload(tokens.access_token, good, 1_000)).status)
+      }
+      return { client, statuses }
+    })
+    expect(Math.max(...statuses.slice(0, 20))).toBeLessThan(300)
+    expect(statuses[20]).toBe(429)
     // Another session of the same user has its own budget.
     const other = await signIn(client)
     expect((await upload(other.access_token, good, 1_000)).status).toBe(200)
-  })
+  }, 60_000)
 })
 
 describe('D1 cost', () => {

@@ -8,7 +8,7 @@ import worker from '../index'
 import { randomToken, sha256Hex } from '../lib/crypto'
 import { FORGOT_PASSWORD_ANSWER } from '../routes/recovery'
 import { runMaintenance } from '../services/maintenance'
-import { Client, ORIGIN, type Transport } from './client'
+import { Client, ORIGIN, inOneWindow, type Transport } from './client'
 
 const db = getDb(env.DB)
 const PASSWORD = 'correct horse battery staple'
@@ -290,11 +290,14 @@ describe('forgot password', () => {
 
   it('limits each IP', async () => {
     const mail = new FakeMail()
-    const client = new Client(via(mail))
-    const statuses: number[] = []
-    for (let i = 0; i < 7; i++) {
-      statuses.push((await post(client, '/api/auth/forgot-password', { login: 'x' })).status)
-    }
+    const statuses = await inOneWindow(async () => {
+      const client = new Client(via(mail))
+      const statuses: number[] = []
+      for (let i = 0; i < 7; i++) {
+        statuses.push((await post(client, '/api/auth/forgot-password', { login: 'x' })).status)
+      }
+      return statuses
+    })
     expect(statuses.slice(0, 5)).toEqual([202, 202, 202, 202, 202])
     expect(statuses.at(-1)).toBe(429)
   })

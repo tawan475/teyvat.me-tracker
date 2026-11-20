@@ -25,6 +25,24 @@ export function withEnv(overrides: Record<string, unknown>): Transport {
 }
 
 /**
+ * Runs a burst against a rate limiter inside ONE of its windows. The local
+ * limiter counts in fixed windows on the wall clock (every `periodMs` since
+ * the epoch), so a burst that is under way when a window ends is counted from
+ * zero again and its last request gets through. Such a run proves nothing, so
+ * it is run again: the answer comes from a run no window ended in.
+ *
+ * `burst` starts from fresh keys (a new user, key or address) every time and
+ * returns what the test checks; expectations go after it, on the answer.
+ */
+export async function inOneWindow<T>(burst: () => Promise<T>, periodMs = 60_000): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    const window = Math.floor(Date.now() / periodMs)
+    const answer = await burst()
+    if (Math.floor(Date.now() / periodMs) === window || attempt === 3) return answer
+  }
+}
+
+/**
  * The email features on (EMAIL_FEATURES=1). SELF runs with them paused, as
  * production does until the var is set.
  */

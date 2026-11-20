@@ -16,7 +16,7 @@ import {
   usageStatement,
   utcDay,
 } from '../services/upload-limits'
-import { Client, ORIGIN, irminsulForm, sampleGood, signUp } from './client'
+import { Client, ORIGIN, inOneWindow, irminsulForm, sampleGood, signUp } from './client'
 
 const DIAG = 'test-diag-key-test-diag-key-test-diag-key'
 const MB = 1024 * 1024
@@ -340,17 +340,16 @@ describe('storage quota', () => {
 
 describe('import key burst', () => {
   it('takes 20 uploads a minute per key, then 429; verify-key keeps working', async () => {
-    // The local limiter counts in 60 s windows on the wall clock: start in a
-    // fresh one, or the window can roll over mid-burst and let the 21st through.
-    const left = 60_000 - (Date.now() % 60_000)
-    if (left < 20_000) await new Promise((done) => setTimeout(done, left + 200))
-    const { importKey } = await setup()
+    const { importKey, statuses, limited } = await inOneWindow(async () => {
+      const { importKey } = await setup()
+      const statuses: number[] = []
+      for (let i = 0; i < 20; i++) {
+        statuses.push((await importByKey(importKey, sampleGood(), 1_000)).response.status)
+      }
+      return { importKey, statuses, limited: await importByKey(importKey, sampleGood(), 1_000) }
+    })
     const other = await setup()
-    for (let i = 0; i < 20; i++) {
-      const { response } = await importByKey(importKey, sampleGood(), 1_000)
-      expect(response.status, `upload ${i + 1}`).toBe(i === 0 ? 201 : 200)
-    }
-    const limited = await importByKey(importKey, sampleGood(), 1_000)
+    expect(statuses).toEqual([201, ...Array<number>(19).fill(200)])
     expect(limited.response.status).toBe(429)
     expect((await errorOf(limited.response)).code).toBe('rate_limited')
 

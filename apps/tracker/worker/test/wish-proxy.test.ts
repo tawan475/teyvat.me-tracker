@@ -1,7 +1,7 @@
 import { WISH_API_HOSTS } from '@gdt/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SELF } from 'cloudflare:test'
-import { Client, ORIGIN, signUp } from './client'
+import { Client, ORIGIN, inOneWindow, signUp } from './client'
 
 const KEY = 'Synthetic0Key+only/for/tests=='
 const LINK = `https://webstatic-sea.hoyoverse.com/genshin/event/e20190909gacha-v3/index.html?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&region=os_asia&authkey=${encodeURIComponent(KEY)}&game_biz=hk4e_global#/log`
@@ -127,13 +127,11 @@ describe('wish link proxy', () => {
   })
 
   it('limits signed-out pages per IP', async () => {
-    let status = 200
-    let n = 0
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const ip = `198.51.100.${10 + attempt}`
-      const minute = Math.floor(Date.now() / 60_000)
-      status = 200
-      n = 0
+    let runs = 0
+    const { status, n } = await inOneWindow(async () => {
+      const ip = `198.51.100.${10 + runs++}`
+      let status = 200
+      let n = 0
       while (status === 200 && n < 200) {
         status = (
           await SELF.fetch(`${ORIGIN}/api/wishes/fetch-page`, {
@@ -149,8 +147,8 @@ describe('wish link proxy', () => {
         ).status
         n++
       }
-      if (Math.floor(Date.now() / 60_000) === minute) break
-    }
+      return { status, n }
+    })
     expect(status).toBe(429)
     expect(n).toBe(121)
     // 121 requests one after another: past the 20 s default when the whole suite loads the machine.
@@ -178,22 +176,16 @@ describe('wish link proxy', () => {
   })
 
   it('limits pages per user', async () => {
-    // The limiter counts in fixed one-minute windows: a run that crosses a
-    // minute boundary starts counting again, so it is run again with a new
-    // user (a run takes seconds, so the second never crosses one too).
-    let status = 200
-    let n = 0
-    for (let attempt = 0; attempt < 2; attempt++) {
+    const { status, n } = await inOneWindow(async () => {
       const { client } = await signUp()
-      const minute = Math.floor(Date.now() / 60_000)
-      status = 200
-      n = 0
+      let status = 200
+      let n = 0
       while (status === 200 && n < 200) {
         status = (await fetchPage(client, {})).status
         n++
       }
-      if (Math.floor(Date.now() / 60_000) === minute) break
-    }
+      return { status, n }
+    })
     expect(status).toBe(429)
     expect(n).toBe(121)
     // Another user is not affected.

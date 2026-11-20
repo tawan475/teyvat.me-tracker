@@ -1,8 +1,9 @@
 # Lighter snapshot uploads
 
 Status: **design, nothing built** (2026-11-20). Drafted by the tracker session with the Capture
-session's own research (both read independently, then compared). The user decides the open points
-in §6 before anything is built.
+session's own research (both read independently, then compared; the Capture session checked this
+contract against its code on both platforms and its points are folded in). The user decides the
+open points in §6 before anything is built.
 
 ## 1. Why
 
@@ -63,7 +64,12 @@ the stored section when this account already has one made from the same input.
   naming the fingerprints the stored index was made from); otherwise it is rebuilt as today.
 - Correctness rule: a fingerprint only ever resolves inside one account, and the salt changes
   whenever the codec's reading of the part changes, so a hit is the same input read by the same
-  code. A test replays real-scale uploads through both paths and compares the stored bytes.
+  code. It resolves to a stored blob that the same statement checks still exists for that account
+  (never to "the section of snapshot N"), so a deleted or compacted snapshot, the daily
+  collection or a repack end in a miss, not in wrong data. A test replays real-scale uploads
+  through both paths and compares the stored bytes.
+- A salt change empties every account's fingerprints at once: each account's next upload takes the
+  full path once. Expect that CPU bump right after such a deploy.
 
 Expected: an import whose artifacts did not change costs about a quarter of today's CPU. How often
 that is (logins and logouts on days without artifact changes; never on farming days) is measured
@@ -88,7 +94,7 @@ in production before step 2 is built: the import logs hit or miss per part.
   "head": { "format": "GOOD", "version": 3, "source": "Teyvat.me", "gi_off": [], "gi_capture": { } },
   // Every part of the export, in the order their bytes follow. `size` only when the bytes are sent.
   "parts": [
-    { "name": "artifacts", "hash": "<SHA-256 of the part's bytes, hex>" },
+    { "name": "artifacts", "hash": "<first 128 bits of SHA-256 of the part's bytes, 32 hex>" },
     { "name": "materials", "hash": "…", "size": 37092 }
   ]
 }
@@ -98,6 +104,10 @@ in production before step 2 is built: the import logs hit or miss per part.
   Capture serialised it. The hash is over those bytes, so Rust and JavaScript never have to agree
   on a canonical form: the tracker hashes what it received (WebCrypto) and refuses a mismatch.
 - A part left out of the upload by `gi_off` is not listed. `gi_off` itself travels in `head`.
+  Capture strips before it hashes (the bag copies too, since 1.18.0), so a part's bytes already
+  reflect its switches.
+- `uid` is in the header because `gi_player` may not be sent; when it is sent and names another
+  UID, the upload is refused. A body whose sizes do not add up to its length is refused.
 - Capture sends a part's bytes when its hash differs from what the tracker acknowledged last for
   this account (kept per tracker origin and UID; losing it only costs one fuller upload).
 - Answers: the import answer of today plus `ack` (the hashes the tracker now holds) and
@@ -105,15 +115,26 @@ in production before step 2 is built: the import logs hit or miss per part.
   `gi_achievement_progress` + `gi_events`, and `gi_teapot` + `gi_miliastra` + `gi_endgame`).
   `409 parts_needed` with `need: [names]` when the tracker lacks a part that was not sent (another
   device uploaded, a snapshot was deleted, the codec changed): Capture sends the request again
-  with those parts.
+  with those parts. The retry is the same snapshot (same timestamp and `gi_capture`), never a
+  second one; Capture holds the serialised parts until the answer.
+- Grouped sections resolve by the group's hashes together, never by one part's.
+- `/irminsul/attach` writes endgame parts into a snapshot after the fact: it must leave a
+  fingerprint on the blob it was made for (a new blob for the attached content) or drop it, so a
+  hash never comes to mean other bytes than the ones it was taken from.
+- Removing a part from history (`parts/remove`) drops that part's fingerprints for the account,
+  or a hash-only upload could bring removed data back.
 - The tracker validates and normalises every part it is sent exactly as today, and stores under
   (account, part, hash) the same record step 1 keeps. A hash it was not sent the bytes for can
   only resolve to something this account uploaded before, so a client that lies harms only its
   own account.
 - Preconditions in Capture: lists sorted before export (items by `gi_guid`, achievements by id,
   `materials` by key), so a part's bytes are stable. The tracker does not depend on list order.
-- Capture learns the route exists from a field in the `verify-key` / `whoami` / import answer
-  (`snapshotParts: 1`), as it learned live sync.
+- Capture learns what a tracker takes from one field in the `verify-key` / `whoami` / import
+  answer: `upload: { gzip: true, snapshotParts: 1 }`. Capture can be pointed at another tracker
+  (self-hosted), so it sends neither gzip nor parts without it. gzip on the old routes works on
+  the tracker today and could ship in Capture on its own.
+- Both platforms build the body in the shared Rust core (parts, hashes, header, gzip) and hand the
+  finished bytes to the HTTP call, so desktop and Android cannot drift.
 - `/irminsul/attach` can become a call of this route later; it stays as it is in v1.
 
 Expected: the upload is 5-15% of today's bytes on a day without artifact changes (plus gzip, about
@@ -133,11 +154,15 @@ plus the batches the tracker already holds. Two ways to stop paying for it:
 
 - **Keep it, made cheap** (default of this plan): steps 1 and 2 make a logout cost a fraction of
   today's whenever the artifacts did not change in the session.
-- **Drop it while a journal is open**: Capture flushes a last batch and sends nothing more. "Now"
-  on the site is already the newest snapshot plus the journal. What changes for the user: one
-  snapshot fewer per session in the Snapshots list and in time travel (the session's end state is
-  stored by the next login), and nothing re-checks the journal against the game's full state at
-  logout. Roughly halves import CPU with almost no new protocol. The user's call.
+- **Drop it for a final batch**: at the connection's end Capture flushes one last batch at once,
+  marked `end: true`, and sends no snapshot. "Now" on the site is already the newest snapshot
+  plus the journal. Capture's check of its own code: the logout snapshot is sent only when the
+  journal holds something, it is not the next session's base (every login sends its own) and it
+  does not re-check the journal (each batch carries `sum`); its one job is to carry the last
+  changes not yet sent as a batch and to mark the session's end. A few KB arrive more surely than
+  1.4 MB when the app is closing. A missed final batch loses nothing for good: the next login has
+  the state, only at that login's time. What changes for the user: one snapshot fewer per session
+  in the Snapshots list and in time travel. Roughly halves import CPU. The user's call.
 
 ## 5. Other findings kept for later
 
@@ -152,5 +177,7 @@ plus the batches the tracker already holds. Two ways to stop paying for it:
 ## 6. For the user to decide
 
 1. Build step 1 now (tracker only)?
-2. The logout snapshot: keep (cheap) or drop while a journal is open?
+2. The logout snapshot: keep (cheap) or drop for a final batch?
 3. Step 2 with Capture: after step 1's hit rate is measured, or straight away?
+4. gzip on today's uploads in the next Capture update (about 9 times fewer bytes, no CPU change
+   on the tracker)? The Capture session asks the user this itself.

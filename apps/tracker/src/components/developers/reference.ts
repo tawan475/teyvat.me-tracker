@@ -274,6 +274,98 @@ Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Reco
     >,
   },
   {
+    key: 'gi_endgame',
+    what: 'Endgame progress: the Imaginarium Theater season, Stygian Onslaught records and the Spiral Abyss record book.',
+    shape: `{
+  theater?: {                       // the season running, as of the login
+    season: number                  // RoleCombatSchedule id
+    difficulty?: number             // difficulty id; absent until chosen
+    level?: 1 | 2 | 3 | 4 | 5       // Easy, Normal, Hard, Visionary, Lunar Mode
+    acts: number                    // acts cleared this season
+    stars?: number                  // Star Challenge Stellas earned
+    maxStars?: number
+    starredActs?: number[]          // the acts whose star was earned, ascending
+    arcana?: Record<card, number>   // Lunar Arcana cards held: card 1–22 → copies
+  }
+  stygian?: { records: StygianRecord[] }   // one per season and run kind, oldest first
+  abyss?: { periods: AbyssRecord[] }       // the record book, oldest first
+}
+StygianRecord = {
+  season: number
+  difficulty: number                // 1–6
+  at: number                        // when the record was set
+  coop: boolean
+  fights: {                         // the bosses, in the game's order
+    time: number                    // seconds; 0 when not finished
+    done: boolean
+    team: CharacterKey[]            // the account's own team
+    strike?: Figure                 // Strongest Single Strike
+    damage?: Figure                 // Highest Total Damage Dealt
+    players?: { p: number; team: { key: CharacterKey; level?: number; constellation?: number }[] }[]
+  }[]
+  players?: { p: number; self: boolean; picture?: number; nickname?: string }[]   // co-op, by position 1–4; never a UID
+}
+AbyssRecord = {
+  season: number                    // TowerSchedule id (the period)
+  floor: number; chamber: number    // the deepest descent
+  stars: number
+  defeats?: Figure; strike?: Figure; damageTaken?: Figure; skills?: Figure; bursts?: Figure
+  picked: { key: CharacterKey; times: number }[]   // the four most used
+}
+Figure = { value: number; by?: CharacterKey }`,
+    example: {
+      theater: {
+        season: 31,
+        difficulty: 5,
+        level: 4,
+        acts: 10,
+        stars: 9,
+        maxStars: 10,
+        starredActs: [1, 2, 3, 4, 5, 6, 7, 8, 10],
+        arcana: { '1': 2, '22': 1 },
+      },
+      stygian: {
+        records: [
+          {
+            season: 14,
+            difficulty: 5,
+            at: 1790000000,
+            coop: false,
+            fights: [
+              {
+                time: 84,
+                done: true,
+                team: ['Furina', 'Neuvillette', 'Kazuha', 'Xilonen'],
+                strike: { value: 612345, by: 'Neuvillette' },
+                damage: { value: 4812345, by: 'Neuvillette' },
+              },
+              { time: 0, done: false, team: ['Mavuika', 'Citlali', 'Bennett', 'Xilonen'] },
+            ],
+          },
+        ],
+      },
+      abyss: {
+        periods: [
+          {
+            season: 125,
+            floor: 12,
+            chamber: 3,
+            stars: 36,
+            defeats: { value: 58, by: 'Furina' },
+            strike: { value: 734567, by: 'Mavuika' },
+            picked: [
+              { key: 'Furina', times: 6 },
+              { key: 'Xilonen', times: 6 },
+              { key: 'Mavuika', times: 3 },
+              { key: 'Neuvillette', times: 3 },
+            ],
+          },
+        ],
+      },
+    } satisfies NonNullable<Leyline['gi_endgame']>,
+    note: 'Each of the three parts is kept only when all of it is in range. Each is as the game last sent it: the Theater at login, the other two when their menu is opened.',
+  },
+  {
     key: 'gi_capture',
     uploadsOnly: true,
     what: 'Why this snapshot was taken, and which game login it belongs to (live sync).',

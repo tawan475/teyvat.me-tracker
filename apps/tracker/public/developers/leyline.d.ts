@@ -93,9 +93,13 @@ export interface Leyline {
   gi_capture?: GiCapture
   /**
    * [1.18] The parts the user does not share (Settings › Sharing), `[]` when
-   * everything is shared; absent from older builds. Tracker uploads only.
-   * A part named here is left out of the upload: for `characters`,
-   * `weapons`, `artifacts` and `materials` the key itself is absent.
+   * everything is shared; absent from older builds. Capture writes it in
+   * tracker uploads only, never in a file it saves. A part named here is
+   * left out of the upload: for `characters`, `weapons`, `artifacts` and
+   * `materials` the key itself is absent.
+   * A file exported from teyvat.me carries it too, when the capture it came
+   * from had parts off; there an absent key can also mean everything was
+   * shared (an empty list is not written back).
    */
   gi_off?: GiOffPart[]
   /** [shipped] What the player has collected. */
@@ -104,6 +108,8 @@ export interface Leyline {
   gi_wardrobe?: GiWardrobe
   /** [shipped] Exploration: Statues, offerings, map points, exploration, reputation. */
   gi_exploration?: GiExploration
+  /** Endgame: the Imaginarium Theater's season state and the Stygian Onslaught's records. */
+  gi_endgame?: GiEndgame
   /** [shipped] How far each unfinished achievement is, by achievement id (those with a total). */
   gi_achievement_progress?: Record<IdKey, { progress: number; total: number }>
   /**
@@ -453,6 +459,135 @@ export interface GiExploration {
   >
 }
 
+// ── gi_endgame ──────────────────────────────────────────────────────────────
+// Each part as the game last sent it: the Theater's state at every login (and when the
+// Theater is opened), the Stygian records when its menu is opened. Absent when not captured.
+
+export interface GiEndgame {
+  theater?: GiTheater
+  stygian?: GiStygian
+  /** The Spiral Abyss's record book, as listed when its Challenge Summary opens (Capture 1.17.21+). */
+  abyss?: GiAbyssBook
+}
+
+export interface GiAbyssBook {
+  /** One per period played, oldest first (the game keeps the last two years). */
+  periods: GiAbyssRecord[]
+}
+
+export interface GiAbyssRecord {
+  /** TowerScheduleExcelConfigData.scheduleId (the period). */
+  season: GameId
+  /** The deepest descent: floor (9-12) and chamber (1-3). */
+  floor: number
+  chamber: number
+  /** Stars earned that period (36 at a full clear). */
+  stars: number
+  /** Most Defeats. Each figure is absent when the game sent it empty, or when the message's field layout is not one Capture knows the labels of (every version renumbers them). */
+  defeats?: GiFigure
+  /** Strongest Single Strike. */
+  strike?: GiFigure
+  /** Most Damage Taken. */
+  damageTaken?: GiFigure
+  /** Elemental Skills Unleashed. */
+  skills?: GiFigure
+  /** Elemental Bursts Unleashed. */
+  bursts?: GiFigure
+  /** The characters the game lists as picked that period (the four most used), with how often. */
+  picked: { key: string; times: number }[]
+}
+
+export interface GiTheater {
+  /** The season running: RoleCombatScheduleExcelConfigData.scheduleId. */
+  season: GameId
+  /** The difficulty chosen this season (RoleCombatDifficultyExcelConfigData.difficultyId); absent until chosen. */
+  difficulty?: GameId
+  /** That row's difficultyLevel: 1 Easy, 2 Normal, 3 Hard, 4 Visionary, 5 Lunar Mode; absent when the game data lacks the row. */
+  level?: 1 | 2 | 3 | 4 | 5
+  /** Acts cleared this season (the game records them once the run is over; 0 before, and in a season not entered). */
+  acts: number
+  /** Star Challenge Stellas earned this season (Capture 1.17.19+; absent when they could not be told from the message). */
+  stars?: number
+  /** Stars the difficulty offers: its acts plus the hardest difficulty's extra bouts (Capture 1.17.19+, when the game data knows the row). */
+  maxStars?: number
+  /** The acts whose star was earned, ascending (with `stars`; the extra bouts' stars count in `stars` only). */
+  starredActs?: number[]
+  /**
+   * The Lunar Arcana cards held (Capture 1.17.31+): card number → copies held. The number is the
+   * card's place in RoleCombatTarotCardExcelConfigData, its Roman numeral and its icon
+   * UI_RoleCombat_Tarot_NN (1 The Magician … 22 The Fool). `{}` when none are held; absent when the
+   * game's message did not carry the list clearly.
+   */
+  arcana?: Record<string, number>
+}
+
+export interface GiStygian {
+  /** One per season played and run kind (solo, co-op), oldest first. */
+  records: GiStygianRecord[]
+}
+
+export interface GiStygianRecord {
+  /** LeyLineChallengeExcelConfigData.scheduleId. */
+  season: GameId
+  /** 1-6. */
+  difficulty: number
+  /** When the record was set. */
+  at: UnixSeconds
+  /** A co-op run. Other players' UIDs are never exported; since 1.17.20 their position, picture, nickname and characters are (`players`). */
+  coop: boolean
+  /** The bosses, in the game's order. */
+  fights: GiStygianFight[]
+  /** A co-op run's players by position (Capture 1.17.20+; absent on solo records and when the list did not read). */
+  players?: GiStygianPlayer[]
+}
+
+export interface GiStygianPlayer {
+  /** The position, 1-4: the game's 1P-4P. */
+  p: number
+  /** The account's own place in the run. */
+  self: boolean
+  /** ProfilePictureExcelConfigData.id. */
+  picture?: GameId
+  /** The in-game name, as the game's record screen shows it. */
+  nickname?: string
+}
+
+export interface GiStygianPlayerTeam {
+  /** The player's position (`GiStygianPlayer.p`; 1 in a solo run). */
+  p: number
+  /** Their characters in the fight, as the record holds them. */
+  team: GiStygianMember[]
+}
+
+export interface GiStygianMember {
+  /** GOOD character key. */
+  key: string
+  /** The level when the record was set (absent when the message did not tell the field apart). */
+  level?: number
+  /** The constellation when the record was set, 0-6 (absent when the message did not tell it apart: a message with no C0 character anywhere). */
+  constellation?: number
+}
+
+export interface GiStygianFight {
+  /** Seconds; 0 when not finished. */
+  time: number
+  done: boolean
+  /** The account's own team, as GOOD character keys ("Traveler" for any Traveler). */
+  team: string[]
+  /** The strongest single strike of the fight, when the game sent the figures. */
+  strike?: GiFigure
+  /** The highest total damage dealt by one character. */
+  damage?: GiFigure
+  /** Every player's characters by position, with the record's own level and constellation (Capture 1.17.20+; absent when the record's player list did not read). */
+  players?: GiStygianPlayerTeam[]
+}
+
+export interface GiFigure {
+  value: number
+  /** The character (GOOD key); absent when the game names two characters for the fight's two figures and cannot say which is which. */
+  by?: string
+}
+
 // ── gi_capture ──────────────────────────────────────────────────── [shipped]
 
 export interface GiCapture {
@@ -464,6 +599,28 @@ export interface GiCapture {
   world: number
   /** The live journal this snapshot ends. */
   journal: { seq: number }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 1b. Attach: the endgame parts for this login's snapshot                [1.17.21]
+//     POST <api>/irminsul/attach (Bearer or x-import-key)
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * The endgame parts the game sends only when a screen is opened, after the
+ * login's snapshot (the Stygian records, the Spiral Abyss record book, the
+ * Theater's state after a run): sent once per change, a few KB. The tracker
+ * replaces each part present in this login's newest snapshot (its
+ * `gi_capture.session` = `session`) and keeps the rest; 404 (no snapshot
+ * yet) and 409 (another login's snapshot) are dropped, the next login's
+ * snapshot carries the data; 429 / 5xx / no answer are retried with backoff.
+ */
+export interface LeylineAttach {
+  v: 1
+  uid: number
+  /** The login's session id (`GiCapture.session`). */
+  session: string
+  gi_endgame: GiEndgame
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

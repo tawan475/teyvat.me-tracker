@@ -37,6 +37,7 @@ describe('the developer page', () => {
       'gi_capture',
       'gi_characters',
       'gi_collections',
+      'gi_endgame',
       'gi_events',
       'gi_exp',
       'gi_exploration',
@@ -74,6 +75,7 @@ describe('the developer page', () => {
     expect(good.events).toEqual(doc('gi_events'))
     expect(good.teapot).toEqual(doc('gi_teapot'))
     expect(good.miliastra).toEqual(doc('gi_miliastra'))
+    expect(good.endgame).toEqual(doc('gi_endgame'))
     expect(good.capture).toEqual(doc('gi_capture'))
     expect(good.itemGuids).toEqual({ artifacts: [], weapons: ['3488998120056947072'] })
   })

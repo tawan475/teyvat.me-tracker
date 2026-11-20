@@ -101,6 +101,11 @@ irminsul counts changes since its last batch and sends when (first match wins):
 | someone watching | ≥ 15 s **and** ≥ 1 change, while the server says a tracker tab is open |
 | lone change | ≥ 2 min **and** ≥ 1 change |
 
+**Teyvat.me Capture 1.18.0 (2026-11-20, Capture 9deb092):** while the tracker answers
+`watching: true`, batches are 5 s apart (not watched: 15 s as above), and a batch waits until
+the changes have rested 1 s (3 s at most). At most 12 batches a minute per account, inside
+`LIVE_LIMITER` (20/60 s); the 2,000 a day limit is unchanged. The wire format is unchanged.
+
 No change → no traffic: an AFK day sends nothing. "Changes" counts distinct keys (a
 material changed twice is one change), not packets.
 

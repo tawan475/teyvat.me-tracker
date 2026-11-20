@@ -65,8 +65,22 @@ export const SEASON_DIM: readonly (readonly [number, number])[] = [
 export const PROFILE = {
   /** The profile picture's circle. */
   picture: { x: 32, y: 25, d: 140 },
-  text: { left: 204, right: 90, top: 28, bottom: 26 },
+  /** `left` with no frame; `gap` is kept clear right of a frame (profileTextLeft). */
+  text: { left: 204, gap: 24, right: 90, top: 28, bottom: 26 },
 } as const
+
+/**
+ * Where the owner's text starts, from the profile card's left. A frame is
+ * drawn at the game's scale, so a wide one (wings, 360px in its own pixels)
+ * reaches past the usual start and its edge touched the name (the user,
+ * 2026-11-20): the text keeps `gap` clear of the frame's own width.
+ * `frameWidth` is the drawn width (frameSize), 0 with no frame.
+ */
+export function profileTextLeft(frameWidth: number): number {
+  const { picture, text } = PROFILE
+  if (!frameWidth) return text.left
+  return Math.max(text.left, Math.ceil(picture.x + picture.d / 2 + frameWidth / 2 + text.gap))
+}
 
 type Box = { x: number; y: number; w: number; h: number }
 

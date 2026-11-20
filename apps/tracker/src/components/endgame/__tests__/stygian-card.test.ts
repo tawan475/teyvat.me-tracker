@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { frameSize } from '@/data/profile-card'
 import {
   COLUMN,
   DIRE_TIME_LIMIT,
+  PROFILE,
   STYGIAN_CARD,
   bagCell,
   columnFootH,
   fastestFight,
+  profileTextLeft,
   seasonMonth,
   seasonVersion,
   splitBossName,
@@ -105,5 +108,22 @@ describe('stygian share card', () => {
     ]
     expect(seasonVersion('2026-09-30 10:00:00', banners)).toBe('7.1')
     expect(seasonVersion('2020-01-01 00:00:00', banners)).toBeNull()
+  })
+
+  it('keeps the name clear of the profile frame', () => {
+    const { picture, text } = PROFILE
+    const frameRight = (natural: number) =>
+      picture.x + picture.d / 2 + frameSize(picture.d, natural) / 2
+    // No frame, and a frame that ends well short of the text: the usual start.
+    expect(profileTextLeft(0)).toBe(text.left)
+    expect(profileTextLeft(frameSize(picture.d, 200))).toBe(text.left)
+    // Every frame width the game has (272-360px): the gap holds.
+    for (const natural of [272, 300, 324, 360]) {
+      const left = profileTextLeft(frameSize(picture.d, natural))
+      expect(left - frameRight(natural), `frame ${natural}`).toBeGreaterThanOrEqual(text.gap)
+      expect(left).toBeGreaterThanOrEqual(text.left)
+    }
+    // The widest frame still leaves the name most of the panel.
+    expect(profileTextLeft(frameSize(picture.d, 360))).toBeLessThanOrEqual(text.left + 40)
   })
 })

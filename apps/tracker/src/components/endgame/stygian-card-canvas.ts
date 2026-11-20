@@ -32,6 +32,7 @@ import {
   COLUMN,
   MEDAL_PILL,
   PROFILE,
+  profileTextLeft,
   SEASON_DIM,
   SEASON_FADE,
   STYGIAN_CARD,
@@ -304,6 +305,7 @@ class StygianPainter extends CardPaint {
     if (avatar)
       p.clipped(px, py, pic.d, pic.d, pic.d / 2, () => p.cover(avatar, px, py, pic.d, pic.d))
     const frame = profile.frame ? this.images.get(profile.frame) : null
+    const left = profileTextLeft(frame ? frameSize(pic.d, frame.width) : 0)
     if (frame) {
       // At the game's scale, centred on the picture; the card's edge cuts it.
       const size = frameSize(pic.d, frame.width)
@@ -317,8 +319,8 @@ class StygianPainter extends CardPaint {
     }
 
     const { text } = PROFILE
-    const x = box.x + text.left
-    const max = box.w - text.left - text.right
+    const x = box.x + left
+    const max = box.w - left - text.right
     let y = box.y + text.top
     if (profile.name) {
       this.line(profile.name, x, y, 34, 800, this.c.text, { lineHeight: 39, max })

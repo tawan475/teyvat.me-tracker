@@ -31,7 +31,6 @@ import {
   SLOTS,
   serverFromUid,
   artifactKeyString,
-  compactSubstats,
   completeSnapshot,
   decodeSnapshotMeta,
   contentKey,
@@ -104,8 +103,6 @@ interface SameTimeRow {
   content_key: number | null
 }
 
-/** Artifacts per INSERT statement; keeps each bound JSON parameter well under D1's limits. */
-const ARTIFACT_INSERT_CHUNK = 400
 /** Artifacts per catalog chunk an import writes (repack merges small ones). */
 export const CATALOG_CHUNK_SIZE = 512
 
@@ -310,19 +307,26 @@ async function importOnce(
   // 2.
   const missing = hashes.filter((hash) => !artifactIds.has(hash))
   let staged: { id: number; identity: ArtifactIdentity }[] = []
+  // What the store batch checks before it writes: no other upload added a
+  // chunk to this account's catalog since this one read it.
+  let catalogGuard: CatalogGuard | null = null
   if (missing.length > 0) {
     // An artifact the catalog lacks: this upload stores a snapshot.
     assertCanStore(usage, now)
-    const inserted = await insertArtifacts(d1, meter, accountId, missing, identities, chunks.maxId)
-    for (const hash of missing) {
+    const reserved = await reserveArtifactIds(d1, meter, accountId, missing.length, chunks.maxId)
+    for (const [i, hash] of missing.entries()) {
       // A chunk written since step 1 may hold it already: use that id.
-      const id = inserted.chunkIds.get(keys.get(hash)!) ?? inserted.ids.get(hash)
-      if (id === undefined) throw new Error(`No catalog id for artifact ${hash}`)
+      const held = reserved.chunkIds.get(keys.get(hash)!)
+      const id = held ?? reserved.first + i
       artifactIds.set(hash, id)
-      if (!inserted.chunkIds.has(keys.get(hash)!))
-        staged.push({ id, identity: identities.get(hash)! })
+      if (held === undefined) staged.push({ id, identity: identities.get(hash)! })
     }
-    staged = staged.sort((a, b) => a.id - b.id)
+    staged = staged.sort((x, y) => x.id - y.id)
+    catalogGuard = {
+      afterChunk: reserved.maxChunkId,
+      first: reserved.first,
+      last: reserved.first + missing.length - 1,
+    }
   }
 
   const encoded = await completeSnapshot(sections, prepared, artifactIds)
@@ -472,7 +476,7 @@ async function importOnce(
   // 3.
   const statements = plan.blobs.map((blob) => insertBlobStatement(d1, accountId, blob))
   statements.push(
-    insertSnapshotStatement(d1, accountId, legacy, {
+    insertSnapshotStatement(d1, accountId, legacy, catalogGuard, {
       takenAt,
       rawSize: upload.rawSize,
       contentKey: key,
@@ -491,7 +495,9 @@ async function importOnce(
   )
   const snapshotIndex = statements.length - 1
   const chunkBytes = { bytes: 0 }
-  statements.push(...catalogChunkStatements(d1, accountId, staged, chunkBytes))
+  if (catalogGuard) {
+    statements.push(...newChunkStatements(d1, accountId, staged, catalogGuard, chunkBytes))
+  }
   statements.push(
     countUploadStatement(d1, accountId, day, plan.storedSize + chunkBytes.bytes, {
       takenAt,
@@ -522,9 +528,10 @@ async function importOnce(
     throw error
   }
   const inserted = results[snapshotIndex]!.results[0] as { id: number } | undefined
-  // A section it points at was collected in between. The batch stored only
-  // sections (the next collection takes them) and the catalog chunk (which
-  // the next attempt finds), so try again from the top.
+  // A section it points at was collected in between, or another upload added
+  // to the catalog since this one read it (its chunk may hold a piece this
+  // one was about to store again). The batch stored only sections (the next
+  // collection takes them), so try again from the top.
   if (!inserted) throw new Retry()
   return response(
     'created',
@@ -662,8 +669,12 @@ function selectArtifactIds(
 ): D1PreparedStatement {
   return d1
     .prepare(
-      `SELECT a.id, a.hash FROM json_each(?2) AS j
-       CROSS JOIN artifacts AS a ON a.account_id = ?1 AND a.hash = j.value`,
+      // Walks the account's v1 rows (none, but for a handful of accounts) and
+      // only then looks at the hashes: the `+` keeps SQLite from seeking the
+      // index once per hash, which read a row per artifact of every upload
+      // (30% of all the rows the database read) to find nothing.
+      `SELECT a.id, a.hash FROM artifacts AS a
+       WHERE a.account_id = ?1 AND +a.hash IN (SELECT value FROM json_each(?2))`,
     )
     .bind(accountId, JSON.stringify(hashes))
 }
@@ -683,59 +694,112 @@ function readChunks(rows: Record<string, unknown>[]): { ids: Map<string, number>
   return { ids, maxId }
 }
 
+/** What a store batch needs to know that the catalog is still as this upload read it. */
+interface CatalogGuard {
+  /** The newest chunk row this upload has seen. */
+  afterChunk: number
+  /** The catalog ids this upload reserved (its own chunks start inside them). */
+  first: number
+  last: number
+}
+
+/** True while no other upload has written a chunk since `afterChunk` (account `?1`). */
+function catalogGuardSql(afterChunk: string, first: string, last: string): string {
+  return `NOT EXISTS (SELECT 1 FROM artifact_chunks WHERE account_id = ?1 AND id > ${afterChunk}
+            AND (first_id < ${first} OR first_id > ${last}))`
+}
+
 /**
- * Inserts catalog rows (idempotently) and returns the ids of `hashes`; also
- * any of them that a chunk written since `afterChunk` holds already.
+ * Reserves `count` catalog ids in a row (returns the first) without writing
+ * a row per artifact: a placeholder row takes the next id of the `artifacts`
+ * sequence, a second one at the range's end moves the sequence past it, and
+ * both are deleted, all in one batch. The ids come from the sequence the v1
+ * rows used, so they never meet an id given out before. Also reads the
+ * chunks written since `afterChunk` (their identities, and the newest row).
+ *
+ * Until 2026-11 every new artifact was inserted into `artifacts` here and
+ * deleted again once its chunk was written: four row writes per piece, three
+ * quarters of all the rows the database wrote.
  */
-async function insertArtifacts(
+async function reserveArtifactIds(
   d1: D1Database,
   meter: D1Meter,
   accountId: number,
-  hashes: string[],
-  identities: ReadonlyMap<string, ArtifactIdentity>,
+  count: number,
   afterChunk: number,
-): Promise<{ ids: Map<string, number>; chunkIds: Map<string, number> }> {
+): Promise<{ first: number; chunkIds: Map<string, number>; maxChunkId: number }> {
   const now = Date.now()
+  const tag = `~reserve:${crypto.randomUUID()}`
+  const columns = `account_id, hash, set_key, slot_key, level, rarity, main_stat_key,
+           substats, unactivated_substats, total_rolls, elixer_crafted, created_at`
+  const blank = `'', '', 0, 0, '', '[]', '[]', 0, 0, ?3`
   const statements: D1PreparedStatement[] = [
     d1
       .prepare('SELECT id, data FROM artifact_chunks WHERE account_id = ?1 AND id > ?2')
       .bind(accountId, afterChunk),
+    d1
+      .prepare(`INSERT INTO artifacts (${columns}) VALUES (?1, ?2, ${blank}) RETURNING id`)
+      .bind(accountId, `${tag}:a`, now),
   ]
-  for (let i = 0; i < hashes.length; i += ARTIFACT_INSERT_CHUNK) {
-    const rows = hashes.slice(i, i + ARTIFACT_INSERT_CHUNK).map((hash) => {
-      const a = identities.get(hash)!
-      return [
-        hash,
-        a.setKey,
-        a.slotKey,
-        a.level,
-        a.rarity,
-        a.mainStatKey,
-        compactSubstats(a.substats),
-        compactSubstats(a.unactivatedSubstats),
-        a.totalRolls,
-        a.elixirCrafted ? 1 : 0,
-      ]
-    })
+  if (count > 1) {
     statements.push(
       d1
         .prepare(
-          `INSERT INTO artifacts (account_id, hash, set_key, slot_key, level, rarity, main_stat_key,
-             substats, unactivated_substats, total_rolls, elixer_crafted, created_at)
-           SELECT ?1, value->>0, value->>1, value->>2, value->>3, value->>4, value->>5,
-             value->6, value->7, value->>8, value->>9, ?3
-           FROM json_each(?2) WHERE true
-           ON CONFLICT (account_id, hash) DO NOTHING`,
+          `INSERT INTO artifacts (id, ${columns})
+           SELECT id + ?4, ?1, ?5, ${blank} FROM artifacts WHERE account_id = ?1 AND hash = ?2`,
         )
-        .bind(accountId, JSON.stringify(rows), now),
+        .bind(accountId, `${tag}:a`, now, count - 1, `${tag}:b`),
     )
   }
-  statements.push(selectArtifactIds(d1, accountId, hashes))
+  statements.push(
+    d1
+      .prepare('DELETE FROM artifacts WHERE account_id = ?1 AND hash IN (?2, ?3)')
+      .bind(accountId, `${tag}:a`, `${tag}:b`),
+  )
   const results = await meter.batch(d1, 'catalog', statements)
-  return {
-    ids: idMap(results[results.length - 1]!.results),
-    chunkIds: readChunks(results[0]!.results).ids,
+  const first = (results[1]!.results[0] as { id: number } | undefined)?.id
+  if (first === undefined) throw new Error('No catalog ids were reserved')
+  const read = readChunks(results[0]!.results)
+  return { first, chunkIds: read.ids, maxChunkId: Math.max(afterChunk, read.maxId) }
+}
+
+/**
+ * The chunks of an upload's new catalog entries (ids it reserved), written
+ * only while `guard` holds: the snapshot beside them carries the same check,
+ * so either all of it is stored or none.
+ */
+function newChunkStatements(
+  d1: D1Database,
+  accountId: number,
+  entries: readonly { id: number; identity: ArtifactIdentity }[],
+  guard: CatalogGuard,
+  /** Adds the bytes of the chunks it writes to `written.bytes`. */
+  written: { bytes: number },
+): D1PreparedStatement[] {
+  const statements: D1PreparedStatement[] = []
+  for (let i = 0; i < entries.length; i += CATALOG_CHUNK_SIZE) {
+    const part = entries.slice(i, i + CATALOG_CHUNK_SIZE)
+    const data = encodeCatalogChunk(part)
+    written.bytes += data.length
+    statements.push(
+      d1
+        .prepare(
+          `INSERT INTO artifact_chunks (account_id, first_id, last_id, count, data)
+           SELECT ?1, ?2, ?3, ?4, ?5 WHERE ${catalogGuardSql('?6', '?7', '?8')}`,
+        )
+        .bind(
+          accountId,
+          part[0]!.id,
+          part.at(-1)!.id,
+          part.length,
+          data,
+          guard.afterChunk,
+          guard.first,
+          guard.last,
+        ),
+    )
   }
+  return statements
 }
 
 /**
@@ -860,6 +924,8 @@ function insertSnapshotStatement(
   d1: D1Database,
   accountId: number,
   legacy: boolean,
+  /** Set when the upload adds to the catalog: nothing is stored once it moved. */
+  catalog: CatalogGuard | null,
   row: SnapshotRowV2,
 ): D1PreparedStatement {
   const params: unknown[] = [accountId, row.takenAt, Date.now(), row.rawSize, row.plan.storedSize]
@@ -873,6 +939,15 @@ function insertSnapshotStatement(
     selects.push(`${refSql(idParam, hashParam)} AS ${REF_COLUMNS[slot]}`)
     guards.push(
       `((${idParam} IS NULL AND ${hashParam} IS NULL) OR r.${REF_COLUMNS[slot]} IS NOT NULL)`,
+    )
+  }
+  if (catalog) {
+    guards.push(
+      catalogGuardSql(
+        `?${params.push(catalog.afterChunk)}`,
+        `?${params.push(catalog.first)}`,
+        `?${params.push(catalog.last)}`,
+      ),
     )
   }
   // While the v1 columns exist, their NOT NULL ones get '' / 0.

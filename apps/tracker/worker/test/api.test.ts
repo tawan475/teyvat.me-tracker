@@ -1,4 +1,5 @@
 import {
+  decodeCatalogChunk,
   catalogFromRows,
   asLeyline,
   decodeSnapshot,
@@ -31,6 +32,7 @@ import { ApiError } from '../lib/http'
 import { D1Meter } from '../lib/meter'
 import { hashPassword } from '../lib/password'
 import { accountForUid } from '../services/accounts'
+import { importSnapshot } from '../services/import'
 import {
   Client,
   ORIGIN,
@@ -1276,6 +1278,178 @@ describe('D1 cost', () => {
     // A history read is linear in snapshots (each reads its row, its blobs
     // and its keyframe's): 133 at 18 when measured.
     expect(history['rows-read']).toBeLessThanOrEqual(8 * 18 + 10)
+  })
+
+  // Until 2026-11 every new artifact was a row inserted into `artifacts` and
+  // deleted again once its chunk was written (four row writes per piece,
+  // three quarters of all the rows the database wrote): a first upload of
+  // 1,500 pieces wrote over 6,000 rows. Its ids are reserved in one go now.
+  it('adds to the catalog without writing a row per artifact', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const piece = (i: number) => ({
+      ...sampleGood().artifacts[1]!,
+      substats: [{ key: 'hp', value: i + 1 }],
+    })
+    const many = Array.from({ length: 1500 }, (_, i) => piece(i))
+    const first = await costedImport(importKey, sampleGood({ artifacts: many }), 1_000)
+    expect(first.status).toBe(201)
+    expect(first.cost['round-trips']).toBeLessThanOrEqual(3)
+    expect(first.cost['rows-written']).toBeLessThan(60)
+    // No row read per artifact either: the v1 probe walks the account's v1 rows (none).
+    expect(first.cost['rows-read']).toBeLessThan(400)
+
+    const more = [...many, piece(2000), piece(2001), piece(2002)]
+    const later = await costedImport(importKey, sampleGood({ artifacts: more }), 2_000)
+    expect(later.status).toBe(201)
+    expect(later.cost['rows-written']).toBeLessThan(40)
+
+    const catalog = await env.DB.prepare(
+      `SELECT (SELECT count(*) FROM artifacts WHERE account_id = ?1) AS staged,
+              (SELECT sum(count) FROM artifact_chunks WHERE account_id = ?1) AS pieces,
+              (SELECT count(*) FROM artifact_chunks WHERE account_id = ?1) AS chunks`,
+    )
+      .bind(account.id)
+      .first<{ staged: number; pieces: number; chunks: number }>()
+    expect(catalog).toEqual({ staged: 0, pieces: 1503, chunks: 4 })
+    console.log('COST first', JSON.stringify(first.cost), 'later', JSON.stringify(later.cost))
+  })
+
+  it('reserves catalog ids from the sequence the v1 rows used, and stores a piece once under a race', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const piece = (i: number) => ({
+      ...sampleGood().artifacts[1]!,
+      substats: [{ key: 'def', value: i + 1 }],
+    })
+    const some = Array.from({ length: 40 }, (_, i) => piece(i))
+    expect((await costedImport(importKey, sampleGood({ artifacts: some }), 1_000)).status).toBe(201)
+    const top = await env.DB.prepare(
+      'SELECT max(last_id) AS id FROM artifact_chunks WHERE account_id = ?1',
+    )
+      .bind(account.id)
+      .first<{ id: number }>()
+    // A v1 row written now (an old Worker version mid-deploy) gets an id past every reserved one.
+    const legacy = await env.DB.prepare(
+      `INSERT INTO artifacts (account_id, hash, set_key, slot_key, level, rarity, main_stat_key,
+         substats, unactivated_substats, total_rolls, elixer_crafted, created_at)
+       VALUES (?1, 'legacy-row', '', '', 0, 0, '', '[]', '[]', 0, 0, 0) RETURNING id`,
+    )
+      .bind(account.id)
+      .first<{ id: number }>()
+    expect(legacy!.id).toBeGreaterThan(top!.id)
+    await env.DB.prepare("DELETE FROM artifacts WHERE hash = 'legacy-row'").run()
+
+    // Two uploads at once, both holding the same 30 new pieces.
+    const fresh = Array.from({ length: 30 }, (_, i) => piece(1000 + i))
+    const both = await Promise.all([
+      costedImport(importKey, sampleGood({ artifacts: [...some, ...fresh] }), 2_000),
+      costedImport(importKey, sampleGood({ artifacts: [...fresh, piece(5000)] }), 3_000),
+    ])
+    expect(both.map((r) => r.status)).toEqual([201, 201])
+    const rows = await env.DB.prepare('SELECT data FROM artifact_chunks WHERE account_id = ?1')
+      .bind(account.id)
+      .all<{ data: ArrayBuffer | number[] }>()
+    const entries = rows.results.flatMap((row) => decodeCatalogChunk(new Uint8Array(row.data)))
+    // 40 + 30 + 1 distinct pieces, each stored once and under its own id.
+    expect(entries).toHaveLength(71)
+    expect(new Set(entries.map((e) => e.key)).size).toBe(71)
+    expect(new Set(entries.map((e) => e.id)).size).toBe(71)
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list).toHaveLength(3)
+  })
+
+  it('still finds a piece by its v1 row', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await createAccount(client)
+    const good = sampleGood()
+    const prepared = await prepareSnapshot(good, { materials: MATERIALS })
+    const identity = prepared.good.artifacts[0]!.identity
+    const row = await env.DB.prepare(
+      `INSERT INTO artifacts (account_id, hash, set_key, slot_key, level, rarity, main_stat_key,
+         substats, unactivated_substats, total_rolls, elixer_crafted, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, '[]', '[]', 0, 0, 0) RETURNING id`,
+    )
+      .bind(
+        account.id,
+        await hashArtifactIdentity(identity),
+        identity.setKey,
+        identity.slotKey,
+        identity.level,
+        identity.rarity,
+        identity.mainStatKey,
+      )
+      .first<{ id: number }>()
+    expect((await costedImport(importKey, good, 1_000)).status).toBe(201)
+    const rows = await env.DB.prepare('SELECT data FROM artifact_chunks WHERE account_id = ?1')
+      .bind(account.id)
+      .all<{ data: ArrayBuffer | number[] }>()
+    const entries = rows.results.flatMap((r) => decodeCatalogChunk(new Uint8Array(r.data)))
+    // Every other piece went to a chunk under a new id; this one kept its v1 row.
+    expect(entries).toHaveLength(good.artifacts.length - 1)
+    expect(entries.map((e) => e.id)).not.toContain(row!.id)
+    const kept = await env.DB.prepare('SELECT count(*) AS n FROM artifacts WHERE account_id = ?1')
+      .bind(account.id)
+      .first<{ n: number }>()
+    expect(kept!.n).toBe(1)
+  })
+
+  // The race itself, forced: upload A has read the catalog and reserved its
+  // ids when upload B (the same new pieces) stores first. A's store batch
+  // then writes nothing and A starts over, finding B's ids.
+  it('starts an upload over when another one added to the catalog meanwhile', async () => {
+    const { client } = await signUp()
+    const { account } = await createAccount(client)
+    const target = { id: account.id, uid: null }
+    const piece = (i: number) => ({
+      ...sampleGood().artifacts[1]!,
+      substats: [{ key: 'atk', value: i + 1 }],
+    })
+    const upload = (good: unknown, timestamp: number) => {
+      const text = JSON.stringify(good)
+      return { text, rawSize: text.length, timestamp }
+    }
+    const fresh = Array.from({ length: 20 }, (_, i) => piece(i))
+    let batches = 0
+    let other: Promise<unknown> | null = null
+    const racing = new Proxy(env.DB, {
+      get(db, property) {
+        if (property !== 'batch') {
+          const value = Reflect.get(db, property)
+          return typeof value === 'function' ? value.bind(db) : value
+        }
+        return async (statements: D1PreparedStatement[]) => {
+          batches += 1
+          // A's third batch is its store: B gets in first.
+          if (batches === 3) {
+            other = importSnapshot(env.DB, target, upload(sampleGood({ artifacts: fresh }), 2_000))
+            await other
+          }
+          return db.batch(statements)
+        }
+      },
+    })
+    const a = await importSnapshot(
+      racing,
+      target,
+      upload(sampleGood({ artifacts: [...fresh, piece(100)] }), 1_000),
+    )
+    expect(a.response.status).toBe('created')
+    expect(other).not.toBeNull()
+    // lookup, reserve, store (refused), then lookup, reserve (one piece), store.
+    expect(batches).toBe(6)
+    const rows = await env.DB.prepare('SELECT data FROM artifact_chunks WHERE account_id = ?1')
+      .bind(account.id)
+      .all<{ data: ArrayBuffer | number[] }>()
+    const entries = rows.results.flatMap((row) => decodeCatalogChunk(new Uint8Array(row.data)))
+    expect(entries).toHaveLength(21)
+    expect(new Set(entries.map((e) => e.key)).size).toBe(21)
+    expect(new Set(entries.map((e) => e.id)).size).toBe(21)
+    const list = await client.json<SnapshotResponse[]>(`/api/accounts/${account.id}/snapshots`)
+    expect(list).toHaveLength(2)
+    // Both snapshots decode: every piece they name is in the catalog.
+    const bundle = await client.fetch(`/api/accounts/${account.id}/bundle?format=2`)
+    expect(bundle.status).toBe(200)
   })
 
   it('answers an unchanged re-upload in one round trip', async () => {

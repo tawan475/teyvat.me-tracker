@@ -94,4 +94,7 @@ export const staffMetrics = new Hono<AppEnv>()
     return c.json<StaffActivityMetrics>(await activityMetrics(c.env, range))
   })
 
-  .get('/capacity', async (c) => c.json<StaffCapacityMetrics>(await capacityMetrics(c.env)))
+  .get('/capacity', async (c) => {
+    const range = pick<TrendRange>(c, 'range', TREND_RANGES, '7d')
+    return c.json<StaffCapacityMetrics>(await capacityMetrics(c.env, range))
+  })

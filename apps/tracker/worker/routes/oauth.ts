@@ -297,7 +297,13 @@ export const oauth = new Hono<AppEnv>()
     try {
       user = await createUserWithIdentity(
         c.env.DB,
-        { username: body.username, email, signupIp: origin.ip, signupCountry: origin.country },
+        {
+          username: body.username,
+          email,
+          signupIp: origin.ip,
+          signupCountry: origin.country,
+          fromGuest: body.guest === true,
+        },
         identity,
       )
     } catch (error) {

@@ -211,7 +211,24 @@
     "deleteTitle": "{n}人のユーザーを削除",
     "deleteText": "アカウント、スナップショット、ログイン方法も一緒に削除されます。元に戻せません。",
     "deleteConfirm": "ユーザーを削除",
-    "suspendTitle": "{n}人のユーザーを停止"
+    "suspendTitle": "{n}人のユーザーを停止",
+    "flags": {
+      "label": "モデレーション",
+      "countryTitle": "この国から登録したユーザーのみ表示しています。クリックで全員を表示",
+      "burst": "登録の集中",
+      "burstTitle": "1時間以内に同じアドレスから{n}件以上の登録",
+      "burstWhy": "1時間以内に同じアドレスから{n}件の登録",
+      "manyAccounts": "アカウント多数",
+      "manyAccountsTitle": "原神アカウントが{n}個以上",
+      "sharedUid": "UID 重複",
+      "sharedUidTitle": "他のユーザーのアカウントにも同じUIDがあります",
+      "sharedUidWhy": "UID {uid} は他のユーザーにもあります",
+      "heavy": "大量アップロード",
+      "heavyTitle": "過去7日間の保存量が1日分の上限を超えています",
+      "heavyWhy": "7日間で{size}を保存",
+      "unused": "未使用",
+      "unusedTitle": "{n}日以上前に登録し、何も保存せず、その後戻ってきていません"
+    }
   },
   "storage": {
     "title": "ストレージ",
@@ -326,7 +343,19 @@
     "oneDevice": "1台のデバイス",
     "limitDefault": "{key}の既定値",
     "bulk": "一括{n}件",
-    "events": "秘境イベント {from} → {to}"
+    "events": "秘境イベント {from} → {to}",
+    "summary": {
+      "title": "スタッフの操作",
+      "label": "過去30日間の1日あたりのスタッフの操作数（種類別）",
+      "byStaff": "スタッフ別",
+      "staff": "スタッフ",
+      "views": "データ閲覧",
+      "viewsTitle": "ユーザーのゲームデータの閲覧回数",
+      "users": "ユーザー",
+      "data": "データ",
+      "deletes": "削除",
+      "other": "ロールとサイト"
+    }
   },
   "user": {
     "title": "ユーザー",
@@ -736,7 +765,212 @@
       "bill": "現時点の請求額",
       "billTitle": "プランの基本料金に、含まれる量を超えた分を定価で加えた額",
       "projected": "このペースでの月末",
-      "projectedTitle": "同じ計算を、今月の使用量を月末まで延ばして行ったもの"
+      "projectedTitle": "同じ計算を、今月の使用量を月末まで延ばして行ったもの",
+      "history": "Cloudflare（1時間ごと）",
+      "historyRequests": "リクエスト",
+      "historyRefused": "拒否",
+      "historyPeak": "{name}、最大 {n}",
+      "historyLabel": "1時間あたりのWorkerリクエスト数と拒否されたリクエスト数",
+      "errors": "エラーと拒否",
+      "errorsTitle": "Cloudflareのアナリティクスから取得。無料プランのゾーンは24時間分のみ保持されます",
+      "errorsOff": "CF_ZONE_ID のシークレットを設定すると表示されます",
+      "errorsNone": "拒否されたリクエストはありません",
+      "route": "ルート",
+      "http4xxTitle": "リクエスト側の理由で拒否：入力の誤り、権限なし、サイズ超過",
+      "http429Title": "レート制限または1日の上限で拒否",
+      "http5xxTitle": "Workerでエラーが発生",
+      "otherRoutes": "その他"
+    }
+  },
+  "insights": {
+    "title": "インサイト",
+    "readAtTitle": "{when}に取得。スタッフが何人見ていても、各セクションの取得は10分に1回までです",
+    "share": "割合",
+    "tabs": {
+      "all": "すべて",
+      "people": "ユーザー層",
+      "retention": "リテンション",
+      "features": "機能",
+      "uploads": "アップロード"
+    },
+    "tabTitles": {
+      "all": "すべてのセクションを1ページに表示",
+      "people": "国、ログイン方法、言語、クライアントプログラム",
+      "retention": "戻ってくるユーザーと、ゲストからの移行",
+      "features": "サイトのどの機能が使われているか、共有、通知、API",
+      "uploads": "ユーザーが達した上限と、アップロードの送信元"
+    },
+    "people": {
+      "bases": {
+        "signup": "登録時の場所",
+        "session": "最終セッション"
+      },
+      "basisLabel": "どの場所を使うか",
+      "countries": "国",
+      "country": "国",
+      "active7d": "アクティブ、7日",
+      "active7dTitle": "過去7日間にアクティブ",
+      "new30d": "新規、30日",
+      "new30dTitle": "過去30日間に登録",
+      "withClient": "クライアントあり",
+      "withClientTitle": "クライアントプログラムがログイン中のユーザー",
+      "uploading": "アップロードあり",
+      "uploadingTitle": "過去30日間にスナップショットを保存",
+      "otherCountries": "その他（{n}か国）",
+      "openUsers": "ここからのユーザーを開く",
+      "ways": "ログイン方法",
+      "password": "パスワード",
+      "passkey": "パスキー",
+      "passkeyTitle": "パスキー合計{n}個",
+      "noPassword": "パスワード未設定",
+      "noPasswordTitle": "Discord、Google、またはパスキーのみでログイン",
+      "oneWay": "ログイン方法が1つだけ",
+      "oneWayTitle": "それを失うとログインできなくなります",
+      "suspended": "停止中",
+      "uploadsBlocked": "アップロードブロック中",
+      "languageTheme": "言語とテーマ",
+      "otherCount": "その他（{n}）",
+      "followsBrowser": "ブラウザに合わせる",
+      "themes": {
+        "system": "テーマはデバイスに合わせる",
+        "light": "ライトテーマ",
+        "dark": "ダークテーマ"
+      },
+      "servers": "ゲームサーバー",
+      "noServer": "未設定",
+      "clients": "クライアントプログラム",
+      "oldTitle": "そのプログラムで使用中の最新バージョンより古いバージョンのデバイス",
+      "oldCount": "旧バージョン {n}台",
+      "old": "旧版",
+      "devices": "デバイス",
+      "firstSeen": "初回確認",
+      "firstSeenTitle": "このバージョンから最初に通信があった日時",
+      "noVersion": "未報告",
+      "noVersionTitle": "ログイン済みですが、バージョンを伝えるハートビートがまだありません",
+      "noClients": "ログイン中のクライアントプログラムなし"
+    },
+    "retention": {
+      "title": "アップロード継続（登録週別）",
+      "rule": "各週の登録者に占める割合",
+      "ruleTitle": "その週にスナップショットを1件以上保存したユーザーを、その週に数えます",
+      "signedUp": "登録",
+      "week": "{n}週",
+      "weekTitle": "登録から{n}週間後",
+      "cellTitle": "{of}人中{n}人",
+      "months": "最近の確認状況（登録月別）",
+      "seen30": "確認、30日",
+      "gone": "離脱",
+      "goneTitle": "過去30日間に確認なし",
+      "guests": "ゲストからの移行",
+      "fromGuest": "ゲストから開始",
+      "fromGuestTitle": "登録時、ブラウザにデータのあるゲストアカウントがありました",
+      "stillActive": "現在もアクティブ",
+      "stillActiveTitle": "そのうち過去7日間にアクティブ"
+    },
+    "features": {
+      "title": "機能の利用状況",
+      "feature": "機能",
+      "changed": "変更、7日",
+      "changedTitle": "過去7日間に変更があったアカウント",
+      "names": {
+        "plannerGoals": "プランナーの目標",
+        "wishes": "祈願履歴",
+        "achievements": "アチーブメントのマーク",
+        "tasks": "プランナーのタスク",
+        "weaponGoals": "武器の目標",
+        "anecdotes": "のんびり旅手帳のマーク",
+        "quests": "世界任務のマーク",
+        "sharing": "共有"
+      },
+      "sharing": {
+        "title": "共有",
+        "accounts": "共有中のアカウント",
+        "viewers": "閲覧者",
+        "editors": "編集者",
+        "pending": "保留中の招待",
+        "pendingTitle": "まだ誰も承諾していない招待",
+        "largest": "最大の共有",
+        "largestTitle": "1つのアカウントが持つ最大メンバー数"
+      },
+      "alerts": {
+        "title": "通知とプッシュ",
+        "devices": "通知のあるデバイス",
+        "subscriptions": "プッシュ購読",
+        "failing": "失敗中",
+        "failingTitle": "直近の配信が失敗している購読",
+        "lastOk": "最終配信"
+      },
+      "alertKinds": {
+        "resin": "樹脂量",
+        "resinFull": "樹脂満タン",
+        "expeditions": "探索派遣",
+        "welkin": "空月の祝福",
+        "commissions": "デイリー依頼",
+        "bargains": "スター交換"
+      },
+      "api": {
+        "title": "公開 API",
+        "tokens": "トークン",
+        "byUsers": "ユーザー{n}人",
+        "used24h": "使用、24時間",
+        "used7d": "使用、7日",
+        "write": "書き込み可",
+        "writeTitle": "読み取りだけでなく変更もできるトークン",
+        "expiring": "期限間近",
+        "expiringTitle": "14日以内に期限切れ",
+        "revoked": "無効化済み",
+        "supporters": "サポーター",
+        "customLimits": "カスタム制限"
+      }
+    },
+    "uploads": {
+      "atCap": "今日1日の上限に到達",
+      "atCapHint": "1日でスナップショット{snapshots}件または保存量{size}に到達",
+      "thisWeek": "今週 {n}",
+      "day": "スナップショット、24時間",
+      "stored": "保存量 {size}",
+      "sources": "プログラム別アップロード",
+      "sampledTitle": "最新{n}件のスナップショットについて、各ファイルに記された作成プログラム",
+      "reasonsTitle": "クライアントが送信した理由",
+      "none": "過去1日間のアップロードなし",
+      "reasons": {
+        "login": "ログイン",
+        "world": "ワールド移動",
+        "manual": "手動",
+        "collapse": "ジャーナル集約",
+        "logout": "ログアウト",
+        "resync": "再同期",
+        "change": "変更",
+        "none": "理由なし"
+      }
+    }
+  },
+  "health": {
+    "title": "サイトの健全性",
+    "push": "プッシュ通知",
+    "pushTitle": "プッシュ用のキーが2つとも設定されている間オンになります",
+    "liveDb": "ライブデータベース",
+    "liveDbTitle": "ライブ同期の書き込み先データベース",
+    "usage": "Cloudflare 使用量",
+    "usageTitle": "使用量トークンとアカウント ID が設定されている間オンになります",
+    "usageZone": "ルート別の件数",
+    "usageZoneTitle": "ゾーン ID も設定されている間オンになります",
+    "lastSample": "1時間ごとの記録",
+    "lastSampleTitle": "サイト全体の最後の記録が保存された日時",
+    "never": "なし",
+    "jobs": "ジョブの実行",
+    "noRuns": "実行記録がまだありません",
+    "job": "ジョブ",
+    "ran": "実行日時",
+    "tookHead": "所要時間",
+    "took": "{n}秒",
+    "result": "結果",
+    "done": "完了",
+    "failed": "失敗",
+    "jobNames": {
+      "sample": "1時間ごとの記録",
+      "events": "ゲームイベント",
+      "maintenance": "夜間クリーンアップ"
     }
   }
 }

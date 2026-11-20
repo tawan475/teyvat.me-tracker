@@ -211,7 +211,24 @@
     "deleteTitle": "{n} kullanıcıyı sil",
     "deleteText": "Hesapları, anlık görüntüleri ve girişleri de silinir. Bu işlem geri alınamaz.",
     "deleteConfirm": "Kullanıcıları sil",
-    "suspendTitle": "{n} kullanıcıyı askıya al"
+    "suspendTitle": "{n} kullanıcıyı askıya al",
+    "flags": {
+      "label": "Moderasyon",
+      "countryTitle": "Yalnızca bu ülkeden kayıt olan kullanıcılar. Herkesi göstermek için tıkla",
+      "burst": "Kayıt patlaması",
+      "burstTitle": "Bir saat içinde tek adresten {n} veya daha fazla kayıt",
+      "burstWhy": "Bir saatte tek adresten {n} kayıt",
+      "manyAccounts": "Çok hesap",
+      "manyAccountsTitle": "{n} veya daha fazla Genshin hesabı",
+      "sharedUid": "Ortak UID",
+      "sharedUidTitle": "Başka bir kullanıcının hesabında da bulunan bir UID",
+      "sharedUidWhy": "UID {uid} başka bir kullanıcıda da var",
+      "heavy": "Yoğun yükleme",
+      "heavyTitle": "Son 7 günde bir günlük sınırdan fazlasını sakladı",
+      "heavyWhy": "7 günde {size} saklandı",
+      "unused": "Hiç kullanılmadı",
+      "unusedTitle": "{n} günden uzun süre önce kayıt oldu, hiçbir şey saklamadı ve bir daha gelmedi"
+    }
   },
   "storage": {
     "title": "Depolama",
@@ -326,7 +343,19 @@
     "oneDevice": "Bir cihaz",
     "limitDefault": "{key} varsayılanı",
     "bulk": "{n} öğelik toplu işlem",
-    "events": "zindan etkinlikleri {from} → {to}"
+    "events": "zindan etkinlikleri {from} → {to}",
+    "summary": {
+      "title": "Yetkili işlemleri",
+      "label": "Türe göre günlük yetkili işlemleri, son 30 gün",
+      "byStaff": "Yetkiliye göre",
+      "staff": "Yetkili",
+      "views": "Veri görüntülemeleri",
+      "viewsTitle": "Kullanıcıların oyun verilerine bakışlar",
+      "users": "Kullanıcılar",
+      "data": "Veri",
+      "deletes": "Silmeler",
+      "other": "Roller ve site"
+    }
   },
   "user": {
     "title": "Kullanıcı",
@@ -736,7 +765,212 @@
       "bill": "Şimdiye kadarki fatura",
       "billTitle": "Planın taban fiyatı artı dahil miktarları aşan kısım, liste fiyatlarıyla",
       "projected": "Ay sonu, bu hızla",
-      "projectedTitle": "Aynısı, bu ayın kullanımı ay sonuna kadar sürdürülerek"
+      "projectedTitle": "Aynısı, bu ayın kullanımı ay sonuna kadar sürdürülerek",
+      "history": "Cloudflare, saat saat",
+      "historyRequests": "İstekler",
+      "historyRefused": "Reddedilen",
+      "historyPeak": "{name}, en yüksek {n}",
+      "historyLabel": "Saat başına Worker istekleri ve reddedilen istekler",
+      "errors": "Hatalar ve retler",
+      "errorsTitle": "Cloudflare analizlerinden. Ücretsiz bir bölge 24 saat saklar",
+      "errorsOff": "CF_ZONE_ID gizli değeri ayarlanınca gösterilir",
+      "errorsNone": "Hiçbir şey reddedilmedi",
+      "route": "Rota",
+      "http4xxTitle": "İsteğin kendisinden kaynaklanan ret: hatalı girdi, izin yok, çok büyük",
+      "http429Title": "Hız sınırı veya günlük sınır nedeniyle reddedildi",
+      "http5xxTitle": "Worker başarısız oldu",
+      "otherRoutes": "Diğer her şey"
+    }
+  },
+  "insights": {
+    "title": "İçgörüler",
+    "readAtTitle": "{when} okundu. Kaç yetkili bakarsa baksın, her bölüm on dakikada en fazla bir kez okunur",
+    "share": "Pay",
+    "tabs": {
+      "all": "Tümü",
+      "people": "Kişiler",
+      "retention": "Elde tutma",
+      "features": "Özellikler",
+      "uploads": "Yüklemeler"
+    },
+    "tabTitles": {
+      "all": "Tüm bölümler tek sayfada",
+      "people": "Ülkeler, giriş yolları, diller, istemci programları",
+      "retention": "Kimler geri geliyor ve misafir dönüşümleri",
+      "features": "Sitenin hangi bölümleri kullanılıyor, paylaşım, uyarılar, API",
+      "uploads": "İnsanların takıldığı sınırlar ve yüklemelerin nereden geldiği"
+    },
+    "people": {
+      "bases": {
+        "signup": "Kayıt yeri",
+        "session": "Son oturum"
+      },
+      "basisLabel": "Hangi yer",
+      "countries": "Ülkeler",
+      "country": "Ülke",
+      "active7d": "Etkin, 7 g",
+      "active7dTitle": "Son 7 günde etkin olanlar",
+      "new30d": "Yeni, 30 g",
+      "new30dTitle": "Son 30 günde kayıt olanlar",
+      "withClient": "İstemcisi olan",
+      "withClientTitle": "Giriş yapmış bir istemci programı olan kullanıcılar",
+      "uploading": "Yükleyen",
+      "uploadingTitle": "Son 30 günde anlık görüntü saklayanlar",
+      "otherCountries": "Diğer ({n} ülke)",
+      "openUsers": "Buradaki kullanıcıları aç",
+      "ways": "Giriş yolları",
+      "password": "Şifre",
+      "passkey": "Geçiş anahtarı",
+      "passkeyTitle": "Toplam {n} geçiş anahtarı",
+      "noPassword": "Şifre belirlenmemiş",
+      "noPasswordTitle": "Yalnızca Discord, Google veya geçiş anahtarıyla giriş yapar",
+      "oneWay": "Tek giriş yolu",
+      "oneWayTitle": "Onu kaybeden hesabına giremez",
+      "suspended": "Askıda",
+      "uploadsBlocked": "Yüklemeler engelli",
+      "languageTheme": "Dil ve tema",
+      "otherCount": "Diğer ({n})",
+      "followsBrowser": "Tarayıcıyı izler",
+      "themes": {
+        "system": "Tema cihazı izler",
+        "light": "Açık tema",
+        "dark": "Koyu tema"
+      },
+      "servers": "Oyun sunucuları",
+      "noServer": "Ayarlanmamış",
+      "clients": "İstemci programları",
+      "oldTitle": "Programının kullanımdaki en yeni sürümünden daha eski bir sürümde olan cihazlar",
+      "oldCount": "{n} cihaz eski sürümde",
+      "old": "Eski",
+      "devices": "Cihazlar",
+      "firstSeen": "İlk görülme",
+      "firstSeenTitle": "Bu sürümden ilk kez ne zaman haber alındığı",
+      "noVersion": "Bildirilmedi",
+      "noVersionTitle": "Giriş yapmış, ancak henüz hiçbir sinyal sürümünü bildirmedi",
+      "noClients": "Giriş yapmış istemci programı yok"
+    },
+    "retention": {
+      "title": "Hâlâ yükleyenler, kayıt haftasına göre",
+      "rule": "Her haftanın kayıtlarındaki pay",
+      "ruleTitle": "Bir kullanıcı, o hafta en az bir anlık görüntü sakladıysa o haftada sayılır",
+      "signedUp": "Kayıt",
+      "week": "H{n}",
+      "weekTitle": "Kayıttan {n} hafta sonra",
+      "cellTitle": "{of} kullanıcıdan {n}",
+      "months": "Son zamanlarda görülenler, kayıt ayına göre",
+      "seen30": "Görülen, 30 g",
+      "gone": "Giden",
+      "goneTitle": "Son 30 günde görülmeyenler",
+      "guests": "Misafir dönüşümleri",
+      "fromGuest": "Misafir başlayan",
+      "fromGuestTitle": "Kayıt olurken tarayıcıda veri içeren bir misafir hesabı vardı",
+      "stillActive": "Hâlâ etkin",
+      "stillActiveTitle": "Bunlardan son 7 günde etkin olanlar"
+    },
+    "features": {
+      "title": "Özellik kullanımı",
+      "feature": "Özellik",
+      "changed": "Değişen, 7 g",
+      "changedTitle": "Son 7 günde bunu değiştiren hesaplar",
+      "names": {
+        "plannerGoals": "Planlayıcı hedefleri",
+        "wishes": "Dilek geçmişi",
+        "achievements": "Başarım işaretleri",
+        "tasks": "Planlayıcı görevleri",
+        "weaponGoals": "Silah hedefleri",
+        "anecdotes": "Seyahat Notları işaretleri",
+        "quests": "Dünya Görevi işaretleri",
+        "sharing": "Paylaşım"
+      },
+      "sharing": {
+        "title": "Paylaşım",
+        "accounts": "Paylaşılan hesaplar",
+        "viewers": "İzleyiciler",
+        "editors": "Düzenleyiciler",
+        "pending": "Bekleyen davetler",
+        "pendingTitle": "Henüz kimsenin kabul etmediği davetler",
+        "largest": "En büyük paylaşım",
+        "largestTitle": "Tek bir hesabın sahip olduğu en çok üye"
+      },
+      "alerts": {
+        "title": "Uyarılar ve push",
+        "devices": "Uyarısı olan cihazlar",
+        "subscriptions": "Push abonelikleri",
+        "failing": "Başarısız",
+        "failingTitle": "Son gönderimleri başarısız olan abonelikler",
+        "lastOk": "Son teslim"
+      },
+      "alertKinds": {
+        "resin": "Reçine miktarı",
+        "resinFull": "Reçine dolu",
+        "expeditions": "Keşifler",
+        "welkin": "Yeni Ayın Lütfu",
+        "commissions": "Özel Görevler",
+        "bargains": "Paimon'un Dükkanı"
+      },
+      "api": {
+        "title": "Herkese açık API",
+        "tokens": "Token'lar",
+        "byUsers": "{n} kullanıcı",
+        "used24h": "Kullanılan, 24 sa",
+        "used7d": "Kullanılan, 7 g",
+        "write": "Yazabilir",
+        "writeTitle": "Yalnızca okumakla kalmayıp bir şeyi değiştirebilen token'lar",
+        "expiring": "Süresi doluyor",
+        "expiringTitle": "14 gün içinde süresi dolacak",
+        "revoked": "İptal edildi",
+        "supporters": "Destekçiler",
+        "customLimits": "Özel sınırlar"
+      }
+    },
+    "uploads": {
+      "atCap": "Bugün günlük sınırda",
+      "atCapHint": "Bir günde {snapshots} anlık görüntüye veya {size} saklanan veriye ulaştı",
+      "thisWeek": "bu hafta {n}",
+      "day": "Anlık görüntüler, 24 sa",
+      "stored": "{size} saklandı",
+      "sources": "Programa göre yüklemeler",
+      "sampledTitle": "Her dosyanın kendi bildirdiği oluşturan program, en yeni {n} anlık görüntü üzerinden",
+      "reasonsTitle": "İstemci bunları neden gönderdi",
+      "none": "Son bir günde yükleme yok",
+      "reasons": {
+        "login": "Giriş",
+        "world": "Dünya değişimi",
+        "manual": "Elle",
+        "collapse": "Günlük birleştirildi",
+        "logout": "Çıkış",
+        "resync": "Yeniden senkronizasyon",
+        "change": "Değişiklik",
+        "none": "Neden belirtilmedi"
+      }
+    }
+  },
+  "health": {
+    "title": "Site durumu",
+    "push": "Push uyarıları",
+    "pushTitle": "İki push anahtarı da ayarlıyken açık",
+    "liveDb": "Canlı veritabanı",
+    "liveDbTitle": "Canlı senkronizasyonun yazdığı veritabanı",
+    "usage": "Cloudflare kullanımı",
+    "usageTitle": "Kullanım token'ı ve hesap ID'si ayarlıyken açık",
+    "usageZone": "Rota başına sayımlar",
+    "usageZoneTitle": "Bölge ID'si de ayarlıyken açık",
+    "lastSample": "Saatlik okuma",
+    "lastSampleTitle": "Tüm sitenin son okumasının ne zaman saklandığı",
+    "never": "Hiç",
+    "jobs": "İş çalışmaları",
+    "noRuns": "Henüz kayıtlı çalışma yok",
+    "job": "İş",
+    "ran": "Çalıştı",
+    "tookHead": "Süre",
+    "took": "{n} sn",
+    "result": "Sonuç",
+    "done": "Bitti",
+    "failed": "Başarısız",
+    "jobNames": {
+      "sample": "Saatlik okuma",
+      "events": "Oyun etkinlikleri",
+      "maintenance": "Gecelik temizlik"
     }
   }
 }

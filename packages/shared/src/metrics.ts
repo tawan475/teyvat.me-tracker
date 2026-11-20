@@ -55,6 +55,20 @@ export interface SiteSample {
   /** Bytes of the two databases (0 when D1 did not say). */
   dbBytes: number
   liveBytes: number
+  /**
+   * Cloudflare's own figures for the hour before the reading (null while the
+   * usage token is off, or for a figure Cloudflare did not answer): Worker
+   * requests, failed runs and CPU ms for the account, and the zone's
+   * refused API requests.
+   */
+  cf?: {
+    requests: number | null
+    errors: number | null
+    cpuMs: number | null
+    http4xx: number | null
+    http429: number | null
+    http5xx: number | null
+  } | null
 }
 
 /** `GET /api/staff/metrics/now`. */
@@ -241,6 +255,21 @@ export interface StaffCapacityMetrics {
   growthPerDay: number
   /** null: the usage token is not set. */
   usage: CloudflareUsage | null
+  /** The last 24 hours' refused API requests by route, most first; null without the token and zone ID. */
+  routes: RouteRefusals[] | null
+  range: TrendRange
+  /** Hourly readings in `range` that carry Cloudflare's figures, oldest first. */
+  history: SiteSample[]
+}
+
+/** One route's refused requests (Cloudflare's zone analytics). */
+export interface RouteRefusals {
+  /** The path with ids folded (`/api/accounts/:id/bundle`); `other`: the rest. */
+  route: string
+  /** 4xx other than 429. */
+  http4xx: number
+  http429: number
+  http5xx: number
 }
 
 /** What a month's usage costs: the base price plus each item's part over what is included. */

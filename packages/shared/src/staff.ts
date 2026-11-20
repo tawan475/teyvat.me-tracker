@@ -194,6 +194,12 @@ export interface StaffUserRow {
   suspendedAt: number | null
   uploadsBlockedAt: number | null
   signupCountry: string | null
+  /**
+   * Why the row matches the moderation filter in use: the sign-ups from its
+   * address that hour (`burst`), the UID another user also has (`sharedUid`),
+   * the bytes stored in 7 days (`heavy`).
+   */
+  flagValue?: string | number
   /** `users.view_private` only. */
   signupIp?: string | null
   email?: string | null
@@ -227,6 +233,12 @@ export const STAFF_USER_FILTERS = [
   // Appended 2026-11-08: the other halves, so uploads and wishes can be read both ways.
   'uploads',
   'noWishes',
+  // Appended 2026-11-20: the moderation filters (USER_FLAGS in ./insights).
+  'burst',
+  'manyAccounts',
+  'sharedUid',
+  'heavy',
+  'unused',
 ] as const
 export type StaffUserFilter = (typeof STAFF_USER_FILTERS)[number]
 

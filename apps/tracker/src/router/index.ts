@@ -276,6 +276,13 @@ const router = createRouter({
               () => import('@/views/staff/StaffMetricsView.vue'),
             ),
             staffPage(
+              'insights',
+              'staff-insights',
+              'insights',
+              'site.metrics',
+              () => import('@/views/staff/StaffInsightsView.vue'),
+            ),
+            staffPage(
               'users',
               'staff-users',
               'users',

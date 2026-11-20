@@ -125,6 +125,7 @@ async function captureOf(c: Context<AppEnv>, limiter: RateLimit | undefined, buc
       device: 'Capture',
       alerts: null,
       whoami: undefined,
+      known: null,
     }
   }
   const claims = await readAccessToken(c, token)
@@ -133,15 +134,24 @@ async function captureOf(c: Context<AppEnv>, limiter: RateLimit | undefined, buc
   await rateLimit(limiter, `irminsul-${bucket}:${claims.sid}`)
   const [{ owner, session }, row] = await Promise.all([
     sessionOwnerWith(c, claims),
-    c.env.DB.prepare('SELECT device_name, alerts FROM user_sessions WHERE id = ?1')
+    c.env.DB.prepare(
+      'SELECT device_name, alerts, client_version, client_platform FROM user_sessions WHERE id = ?1',
+    )
       .bind(claims.sid)
-      .first<{ device_name: string | null; alerts: string | null }>(),
+      .first<{
+        device_name: string | null
+        alerts: string | null
+        client_version: string | null
+        client_platform: string | null
+      }>(),
   ])
   return {
     owner,
     sid: claims.sid,
     device: row?.device_name || 'Capture',
     alerts: row?.alerts ? readDeviceAlerts(JSON.parse(row.alerts)) : null,
+    // What the row says of the program, to tell when a heartbeat says otherwise.
+    known: row ? { version: row.client_version, platform: row.client_platform } : null,
     // What GET /whoami answers, from the row read anyway: Capture needs no whoami poll.
     whoami: whoamiOf(pageOrigin(c.env, c.req.url), claims.sid, session),
   }
@@ -154,8 +164,41 @@ function accountOf(owner: UploadOwner, uid: string | null) {
 }
 
 export const captureLink = new Hono<AppEnv>().post('/presence', async (c) => {
-  const { owner, sid, device, alerts, whoami } = await captureOf(c, c.env.LIVE_LIMITER, 'presence')
+  const { owner, sid, device, alerts, whoami, known } = await captureOf(
+    c,
+    c.env.LIVE_LIMITER,
+    'presence',
+  )
   const body = await parseJson(c, presenceRequest)
+  // The program's version and platform are kept on its sign-in's row, for the
+  // staff Insights page (Client programs). Written only when a heartbeat says
+  // something new: about once per device per update, never per heartbeat.
+  const version = body.app ?? null
+  const platform = body.platform ?? null
+  if (
+    sid !== null &&
+    known &&
+    (version !== null || platform !== null) &&
+    ((version ?? known.version) !== known.version ||
+      (platform ?? known.platform) !== known.platform)
+  ) {
+    const write = c.env.DB.prepare(
+      `UPDATE user_sessions SET
+         client_version_at = CASE WHEN ?2 IS NOT NULL AND client_version IS NOT ?2 THEN ?4
+           ELSE client_version_at END,
+         client_version = coalesce(?2, client_version),
+         client_platform = coalesce(?3, client_platform)
+       WHERE id = ?1`,
+    )
+      .bind(sid, version, platform, Date.now())
+      .run()
+      .catch((error: unknown) => console.warn('client_version_failed', String(error)))
+    try {
+      c.executionCtx.waitUntil(write)
+    } catch {
+      // No execution context (a direct app.fetch): the write still runs.
+    }
+  }
   const uid = body.uid ? String(body.uid) : null
   const account = accountOf(owner, uid)
   const userId = uploaderUserId(owner)

@@ -211,7 +211,24 @@
     "deleteTitle": "사용자 {n}명 삭제",
     "deleteText": "계정, 스냅샷, 로그인 정보가 함께 삭제됩니다. 되돌릴 수 없습니다.",
     "deleteConfirm": "사용자 삭제",
-    "suspendTitle": "사용자 {n}명 정지"
+    "suspendTitle": "사용자 {n}명 정지",
+    "flags": {
+      "label": "모더레이션",
+      "countryTitle": "이 국가에서 가입한 사용자만 표시합니다. 클릭하면 모두 표시",
+      "burst": "가입 급증",
+      "burstTitle": "1시간 내 같은 주소에서 가입 {n}건 이상",
+      "burstWhy": "1시간 내 같은 주소에서 가입 {n}건",
+      "manyAccounts": "계정 다수",
+      "manyAccountsTitle": "원신 계정 {n}개 이상",
+      "sharedUid": "UID 중복",
+      "sharedUidTitle": "다른 사용자의 계정에도 있는 UID",
+      "sharedUidWhy": "UID {uid}: 다른 사용자에게도 있음",
+      "heavy": "대량 업로드",
+      "heavyTitle": "최근 7일간 하루 한도보다 많이 저장",
+      "heavyWhy": "7일간 {size} 저장",
+      "unused": "사용한 적 없음",
+      "unusedTitle": "{n}일보다 전에 가입했고, 아무것도 저장하지 않았으며 다시 오지 않음"
+    }
   },
   "storage": {
     "title": "저장 공간",
@@ -326,7 +343,19 @@
     "oneDevice": "기기 하나",
     "limitDefault": "{key} 기본값",
     "bulk": "일괄 {n}건",
-    "events": "비경 이벤트 {from} → {to}"
+    "events": "비경 이벤트 {from} → {to}",
+    "summary": {
+      "title": "스태프 작업",
+      "label": "최근 30일간 일별 스태프 작업, 종류별",
+      "byStaff": "스태프별",
+      "staff": "스태프",
+      "views": "데이터 조회",
+      "viewsTitle": "사용자 게임 데이터 조회 횟수",
+      "users": "사용자",
+      "data": "데이터",
+      "deletes": "삭제",
+      "other": "역할 및 사이트"
+    }
   },
   "user": {
     "title": "사용자",
@@ -736,7 +765,212 @@
       "bill": "현재까지 청구액",
       "billTitle": "요금제 기본 요금에 포함량 초과분을 정가로 더한 금액",
       "projected": "이 속도로 월말",
-      "projectedTitle": "같은 계산을 이번 달 사용량을 월말까지 이어서 적용한 값"
+      "projectedTitle": "같은 계산을 이번 달 사용량을 월말까지 이어서 적용한 값",
+      "history": "Cloudflare, 시간별",
+      "historyRequests": "요청",
+      "historyRefused": "거부",
+      "historyPeak": "{name}, 최고 {n}",
+      "historyLabel": "시간별 Worker 요청과 거부된 요청",
+      "errors": "오류 및 거부",
+      "errorsTitle": "Cloudflare 분석에서 읽음. 무료 요금제 영역은 24시간분만 보관합니다",
+      "errorsOff": "CF_ZONE_ID 시크릿을 설정하면 표시됩니다",
+      "errorsNone": "거부된 요청 없음",
+      "route": "경로",
+      "http4xxTitle": "요청 자체의 이유로 거부됨: 잘못된 입력, 권한 없음, 크기 초과",
+      "http429Title": "요청 제한 또는 일일 한도로 거부됨",
+      "http5xxTitle": "Worker 실패",
+      "otherRoutes": "그 외"
+    }
+  },
+  "insights": {
+    "title": "인사이트",
+    "readAtTitle": "{when}에 읽음. 스태프 몇 명이 보든 각 섹션은 10분에 최대 한 번만 읽습니다",
+    "share": "비율",
+    "tabs": {
+      "all": "전체",
+      "people": "사용자층",
+      "retention": "리텐션",
+      "features": "기능",
+      "uploads": "업로드"
+    },
+    "tabTitles": {
+      "all": "모든 섹션을 한 페이지에",
+      "people": "국가, 로그인 방법, 언어, 클라이언트 프로그램",
+      "retention": "다시 오는 사용자와 게스트 전환",
+      "features": "사이트에서 쓰이는 기능, 공유, 알림, API",
+      "uploads": "사용자가 걸리는 한도와 업로드 출처"
+    },
+    "people": {
+      "bases": {
+        "signup": "가입 위치",
+        "session": "마지막 세션"
+      },
+      "basisLabel": "기준 위치",
+      "countries": "국가",
+      "country": "국가",
+      "active7d": "활성, 7일",
+      "active7dTitle": "최근 7일 내 활동",
+      "new30d": "신규, 30일",
+      "new30dTitle": "최근 30일 내 가입",
+      "withClient": "클라이언트 있음",
+      "withClientTitle": "로그인된 클라이언트 프로그램이 있는 사용자",
+      "uploading": "업로드 있음",
+      "uploadingTitle": "최근 30일 내 스냅샷 저장",
+      "otherCountries": "기타 ({n}개국)",
+      "openUsers": "이곳의 사용자 열기",
+      "ways": "로그인 방법",
+      "password": "비밀번호",
+      "passkey": "패스키",
+      "passkeyTitle": "패스키 총 {n}개",
+      "noPassword": "비밀번호 미설정",
+      "noPasswordTitle": "Discord, Google 또는 패스키로만 로그인",
+      "oneWay": "로그인 방법 하나뿐",
+      "oneWayTitle": "잃어버리면 로그인할 수 없게 됩니다",
+      "suspended": "정지됨",
+      "uploadsBlocked": "업로드 차단됨",
+      "languageTheme": "언어 및 테마",
+      "otherCount": "기타 ({n})",
+      "followsBrowser": "브라우저 설정 따름",
+      "themes": {
+        "system": "테마는 기기 설정 따름",
+        "light": "밝은 테마",
+        "dark": "어두운 테마"
+      },
+      "servers": "게임 서버",
+      "noServer": "설정 안 됨",
+      "clients": "클라이언트 프로그램",
+      "oldTitle": "해당 프로그램에서 사용 중인 최신 버전보다 오래된 버전의 기기",
+      "oldCount": "구버전 {n}대",
+      "old": "구버전",
+      "devices": "기기",
+      "firstSeen": "첫 확인",
+      "firstSeenTitle": "이 버전에서 처음 통신이 온 시각",
+      "noVersion": "보고 안 됨",
+      "noVersionTitle": "로그인되어 있지만 아직 버전을 알린 하트비트가 없음",
+      "noClients": "로그인된 클라이언트 프로그램 없음"
+    },
+    "retention": {
+      "title": "계속 업로드, 가입 주별",
+      "rule": "각 주 가입자 중 비율",
+      "ruleTitle": "해당 주에 스냅샷을 1개 이상 저장한 사용자를 그 주에 집계합니다",
+      "signedUp": "가입",
+      "week": "{n}주차",
+      "weekTitle": "가입 후 {n}주",
+      "cellTitle": "사용자 {of}명 중 {n}명",
+      "months": "최근 활동, 가입 월별",
+      "seen30": "활동, 30일",
+      "gone": "이탈",
+      "goneTitle": "최근 30일 내 활동 없음",
+      "guests": "게스트 전환",
+      "fromGuest": "게스트로 시작",
+      "fromGuestTitle": "가입할 때 브라우저에 데이터가 있는 게스트 계정이 있었음",
+      "stillActive": "아직 활성",
+      "stillActiveTitle": "그중 최근 7일 내 활동"
+    },
+    "features": {
+      "title": "기능 사용",
+      "feature": "기능",
+      "changed": "변경, 7일",
+      "changedTitle": "최근 7일 내 변경한 계정",
+      "names": {
+        "plannerGoals": "플래너 목표",
+        "wishes": "기원 기록",
+        "achievements": "업적 표시",
+        "tasks": "플래너 할 일",
+        "weaponGoals": "무기 목표",
+        "anecdotes": "여행 일화집 표시",
+        "quests": "월드 임무 표시",
+        "sharing": "공유"
+      },
+      "sharing": {
+        "title": "공유",
+        "accounts": "공유된 계정",
+        "viewers": "보기 권한",
+        "editors": "편집 권한",
+        "pending": "대기 중인 초대",
+        "pendingTitle": "아직 아무도 수락하지 않은 초대",
+        "largest": "최대 공유",
+        "largestTitle": "한 계정의 최대 멤버 수"
+      },
+      "alerts": {
+        "title": "알림 및 푸시",
+        "devices": "알림이 있는 기기",
+        "subscriptions": "푸시 구독",
+        "failing": "실패 중",
+        "failingTitle": "최근 전송이 실패한 구독",
+        "lastOk": "마지막 전송"
+      },
+      "alertKinds": {
+        "resin": "레진 수량",
+        "resinFull": "레진 가득",
+        "expeditions": "탐사 파견",
+        "welkin": "공월 축복",
+        "commissions": "일일 의뢰",
+        "bargains": "더스트 라이트 교환"
+      },
+      "api": {
+        "title": "공개 API",
+        "tokens": "토큰",
+        "byUsers": "사용자 {n}명",
+        "used24h": "사용, 24시간",
+        "used7d": "사용, 7일",
+        "write": "쓰기 가능",
+        "writeTitle": "읽기뿐 아니라 변경도 할 수 있는 토큰",
+        "expiring": "만료 예정",
+        "expiringTitle": "14일 내 만료",
+        "revoked": "폐기됨",
+        "supporters": "후원자",
+        "customLimits": "사용자 지정 한도"
+      }
+    },
+    "uploads": {
+      "atCap": "오늘 일일 한도 도달",
+      "atCapHint": "하루에 스냅샷 {snapshots}개 또는 저장량 {size}에 도달",
+      "thisWeek": "이번 주 {n}",
+      "day": "스냅샷, 24시간",
+      "stored": "{size} 저장",
+      "sources": "프로그램별 업로드",
+      "sampledTitle": "최신 스냅샷 {n}개에서 각 파일에 적힌 생성 프로그램",
+      "reasonsTitle": "클라이언트가 보낸 이유",
+      "none": "최근 하루 동안 업로드 없음",
+      "reasons": {
+        "login": "로그인",
+        "world": "월드 변경",
+        "manual": "수동",
+        "collapse": "저널 축약",
+        "logout": "로그아웃",
+        "resync": "재동기화",
+        "change": "변경",
+        "none": "이유 없음"
+      }
+    }
+  },
+  "health": {
+    "title": "사이트 상태",
+    "push": "푸시 알림",
+    "pushTitle": "푸시 키 두 개가 모두 설정되어 있으면 켜집니다",
+    "liveDb": "실시간 데이터베이스",
+    "liveDbTitle": "실시간 동기화가 기록하는 데이터베이스",
+    "usage": "Cloudflare 사용량",
+    "usageTitle": "사용량 토큰과 계정 ID가 설정되어 있으면 켜집니다",
+    "usageZone": "경로별 집계",
+    "usageZoneTitle": "영역 ID도 설정되어 있으면 켜집니다",
+    "lastSample": "시간별 기록",
+    "lastSampleTitle": "사이트 전체의 마지막 기록이 저장된 시각",
+    "never": "없음",
+    "jobs": "작업 실행",
+    "noRuns": "아직 실행 기록 없음",
+    "job": "작업",
+    "ran": "실행 시각",
+    "tookHead": "소요 시간",
+    "took": "{n}초",
+    "result": "결과",
+    "done": "완료",
+    "failed": "실패",
+    "jobNames": {
+      "sample": "시간별 기록",
+      "events": "게임 이벤트",
+      "maintenance": "야간 정리"
     }
   }
 }

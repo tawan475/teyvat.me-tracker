@@ -13,6 +13,7 @@ import { setClockPreference } from '@/lib/format'
 import { applyTheme } from '@/lib/theme'
 import { applyLocale, storedPreference } from '@/i18n/apply'
 import { bootCacheUser, clearBootCache, readBootCache, updateBootCache } from './boot-cache'
+import { guestHint } from '@/lib/guest-hint'
 import { markSignedUp } from '@/lib/passkey-nudge-store'
 import { setPushOnHere } from '@/lib/push-flag'
 import { bootstrapOnce, forgetBootstrap } from './bootstrap'
@@ -127,14 +128,14 @@ export const useSession = defineStore('session', () => {
     password: string,
     turnstile?: string,
   ) {
-    adopt(await api.register({ username, email, password, turnstile }))
+    adopt(await api.register({ username, email, password, turnstile, guest: guestHint() }))
     loading = Promise.resolve()
     markSignedUp()
   }
 
   /** A new account for the provider account waiting on /oauth; signs in. */
   async function oauthRegister(username: string, useEmail: boolean, turnstile?: string) {
-    adopt(await api.oauthRegister({ username, useEmail, turnstile }))
+    adopt(await api.oauthRegister({ username, useEmail, turnstile, guest: guestHint() }))
     loading = Promise.resolve()
     markSignedUp()
   }

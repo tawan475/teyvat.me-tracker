@@ -15,14 +15,22 @@ import type {
   SignupMode,
   SnapshotResponse,
   ActivityRange,
+  CountryBasis,
   JournalSort,
   OnlineFilter,
   StaffActivityMetrics,
   StaffAuditResponse,
+  StaffAuditSummary,
   StaffCapacityMetrics,
+  StaffFeatureInsights,
+  StaffHealthResponse,
   StaffLiveMetrics,
   StaffNowMetrics,
   StaffOnlineResponse,
+  StaffPeopleInsights,
+  StaffRetentionInsights,
+  StaffUploadInsights,
+  StaffUserFlagsResponse,
   TrendRange,
   StaffInspectResponse,
   StaffMeResponse,
@@ -80,7 +88,10 @@ export const staffApi = {
     sort?: StaffUserSort
     dir?: 'asc' | 'desc'
     page?: number
+    country?: string
   }) => requestJson<StaffUsersResponse>(`/api/staff/users${query(params)}`),
+  /** How many users each moderation filter matches. */
+  userFlags: () => requestJson<StaffUserFlagsResponse>('/api/staff/users/flags'),
   user: (id: number) => requestJson<StaffUserDetailResponse>(user(id)),
   bulk: (
     body:
@@ -161,7 +172,18 @@ export const staffApi = {
     requestJson<StaffLiveMetrics>(`/api/staff/metrics/live${query(params)}`),
   metricsActivity: (range?: ActivityRange) =>
     requestJson<StaffActivityMetrics>(`/api/staff/metrics/activity${query({ range })}`),
-  metricsCapacity: () => requestJson<StaffCapacityMetrics>('/api/staff/metrics/capacity'),
+  metricsCapacity: (range?: TrendRange) =>
+    requestJson<StaffCapacityMetrics>(`/api/staff/metrics/capacity${query({ range })}`),
+
+  // The Insights page (site.metrics): totals and shares, nobody named.
+  insightsPeople: (basis?: CountryBasis) =>
+    requestJson<StaffPeopleInsights>(`/api/staff/insights/people${query({ basis })}`),
+  insightsRetention: () => requestJson<StaffRetentionInsights>('/api/staff/insights/retention'),
+  insightsFeatures: () => requestJson<StaffFeatureInsights>('/api/staff/insights/features'),
+  insightsUploads: () => requestJson<StaffUploadInsights>('/api/staff/insights/uploads'),
+  /** What is switched on and whether the scheduled jobs run. */
+  health: () => requestJson<StaffHealthResponse>('/api/staff/health'),
+  auditSummary: () => requestJson<StaffAuditSummary>('/api/staff/audit/summary'),
 
   roles: () => requestJson<StaffRolesResponse>('/api/staff/roles'),
   createRole: (body: { name: string; color: string; permissions: string[] }) =>

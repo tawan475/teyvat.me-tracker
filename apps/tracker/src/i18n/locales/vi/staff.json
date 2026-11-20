@@ -211,7 +211,24 @@
     "deleteTitle": "Xóa {n} người dùng",
     "deleteText": "Tài khoản, bản chụp và cách đăng nhập của họ cũng bị xóa theo. Không thể hoàn tác.",
     "deleteConfirm": "Xóa người dùng",
-    "suspendTitle": "Đình chỉ {n} người dùng"
+    "suspendTitle": "Đình chỉ {n} người dùng",
+    "flags": {
+      "label": "Kiểm duyệt",
+      "countryTitle": "Chỉ người dùng đăng ký từ quốc gia này. Nhấp để hiện tất cả",
+      "burst": "Đăng ký dồn dập",
+      "burstTitle": "Từ {n} đăng ký trở lên từ một địa chỉ trong vòng một giờ",
+      "burstWhy": "{n} đăng ký từ một địa chỉ trong một giờ",
+      "manyAccounts": "Nhiều tài khoản",
+      "manyAccountsTitle": "Từ {n} tài khoản Genshin trở lên",
+      "sharedUid": "Trùng UID",
+      "sharedUidTitle": "UID mà tài khoản của người dùng khác cũng có",
+      "sharedUidWhy": "UID {uid} cũng là của người dùng khác",
+      "heavy": "Tải lên nhiều",
+      "heavyTitle": "Đã lưu nhiều hơn giới hạn một ngày trong 7 ngày qua",
+      "heavyWhy": "Đã lưu {size} trong 7 ngày",
+      "unused": "Chưa từng dùng",
+      "unusedTitle": "Đăng ký hơn {n} ngày trước, không lưu gì và không quay lại"
+    }
   },
   "storage": {
     "title": "Lưu trữ",
@@ -326,7 +343,19 @@
     "oneDevice": "Một thiết bị",
     "limitDefault": "{key} mặc định",
     "bulk": "hàng loạt {n}",
-    "events": "sự kiện bí cảnh {from} → {to}"
+    "events": "sự kiện bí cảnh {from} → {to}",
+    "summary": {
+      "title": "Hành động của quản trị viên",
+      "label": "Hành động của quản trị viên mỗi ngày theo loại, 30 ngày qua",
+      "byStaff": "Theo quản trị viên",
+      "staff": "Quản trị viên",
+      "views": "Lượt xem dữ liệu",
+      "viewsTitle": "Lượt xem dữ liệu game của người dùng",
+      "users": "Người dùng",
+      "data": "Dữ liệu",
+      "deletes": "Xóa",
+      "other": "Vai trò và trang web"
+    }
   },
   "user": {
     "title": "Người dùng",
@@ -736,7 +765,212 @@
       "bill": "Hóa đơn đến nay",
       "billTitle": "Giá cơ bản của gói cộng phần vượt mức bao gồm, theo giá niêm yết",
       "projected": "Cuối tháng, với tốc độ này",
-      "projectedTitle": "Tương tự, với mức sử dụng tháng này kéo dài đến cuối tháng"
+      "projectedTitle": "Tương tự, với mức sử dụng tháng này kéo dài đến cuối tháng",
+      "history": "Cloudflare, theo từng giờ",
+      "historyRequests": "Yêu cầu",
+      "historyRefused": "Bị từ chối",
+      "historyPeak": "{name}, đỉnh {n}",
+      "historyLabel": "Yêu cầu Worker và yêu cầu bị từ chối mỗi giờ",
+      "errors": "Lỗi và từ chối",
+      "errorsTitle": "Từ phân tích của Cloudflare. Vùng miễn phí giữ 24 giờ",
+      "errorsOff": "Hiển thị khi đã đặt secret CF_ZONE_ID",
+      "errorsNone": "Không có gì bị từ chối",
+      "route": "Tuyến",
+      "http4xxTitle": "Bị từ chối vì chính yêu cầu: dữ liệu sai, không được phép, quá lớn",
+      "http429Title": "Bị từ chối do giới hạn tần suất hoặc giới hạn ngày",
+      "http5xxTitle": "Worker gặp lỗi",
+      "otherRoutes": "Mọi thứ khác"
+    }
+  },
+  "insights": {
+    "title": "Phân tích",
+    "readAtTitle": "Đọc {when}. Mỗi mục được đọc tối đa một lần trong mười phút, dù có bao nhiêu quản trị viên xem",
+    "share": "Tỷ lệ",
+    "tabs": {
+      "all": "Tất cả",
+      "people": "Người dùng",
+      "retention": "Giữ chân",
+      "features": "Tính năng",
+      "uploads": "Tải lên"
+    },
+    "tabTitles": {
+      "all": "Mọi mục trên một trang",
+      "people": "Quốc gia, cách đăng nhập, ngôn ngữ, chương trình khách",
+      "retention": "Ai quay lại, và khách chuyển thành người dùng",
+      "features": "Phần nào của trang được dùng, chia sẻ, thông báo, API",
+      "uploads": "Những giới hạn mọi người chạm phải, và tải lên đến từ đâu"
+    },
+    "people": {
+      "bases": {
+        "signup": "Nơi đăng ký",
+        "session": "Phiên gần nhất"
+      },
+      "basisLabel": "Theo nơi nào",
+      "countries": "Quốc gia",
+      "country": "Quốc gia",
+      "active7d": "Hoạt động, 7 ngày",
+      "active7dTitle": "Hoạt động trong 7 ngày qua",
+      "new30d": "Mới, 30 ngày",
+      "new30dTitle": "Đăng ký trong 30 ngày qua",
+      "withClient": "Có chương trình",
+      "withClientTitle": "Người dùng có chương trình khách đã đăng nhập",
+      "uploading": "Đang tải lên",
+      "uploadingTitle": "Đã lưu một bản chụp trong 30 ngày qua",
+      "otherCountries": "Khác ({n} quốc gia)",
+      "openUsers": "Mở người dùng từ đây",
+      "ways": "Cách đăng nhập",
+      "password": "Mật khẩu",
+      "passkey": "Khóa truy cập",
+      "passkeyTitle": "Tổng cộng {n} khóa truy cập",
+      "noPassword": "Chưa đặt mật khẩu",
+      "noPasswordTitle": "Chỉ đăng nhập bằng Discord, Google hoặc khóa truy cập",
+      "oneWay": "Chỉ một cách đăng nhập",
+      "oneWayTitle": "Mất nó là họ không vào được nữa",
+      "suspended": "Đã đình chỉ",
+      "uploadsBlocked": "Đã chặn tải lên",
+      "languageTheme": "Ngôn ngữ và chủ đề",
+      "otherCount": "Khác ({n})",
+      "followsBrowser": "Theo trình duyệt",
+      "themes": {
+        "system": "Chủ đề theo thiết bị",
+        "light": "Chủ đề sáng",
+        "dark": "Chủ đề tối"
+      },
+      "servers": "Máy chủ game",
+      "noServer": "Chưa đặt",
+      "clients": "Chương trình khách",
+      "oldTitle": "Thiết bị dùng phiên bản cũ hơn phiên bản mới nhất đang được dùng của chương trình đó",
+      "oldCount": "{n} dùng phiên bản cũ hơn",
+      "old": "Cũ hơn",
+      "devices": "Thiết bị",
+      "firstSeen": "Thấy lần đầu",
+      "firstSeenTitle": "Lần đầu phiên bản này có tín hiệu",
+      "noVersion": "Chưa báo",
+      "noVersionTitle": "Đã đăng nhập, nhưng chưa có tín hiệu nào cho biết phiên bản",
+      "noClients": "Chưa có chương trình khách nào đăng nhập"
+    },
+    "retention": {
+      "title": "Vẫn tải lên, theo tuần đăng ký",
+      "rule": "Tỷ lệ trên số đăng ký của mỗi tuần",
+      "ruleTitle": "Người dùng được tính vào một tuần khi lưu ít nhất một bản chụp trong tuần đó",
+      "signedUp": "Đăng ký",
+      "week": "T{n}",
+      "weekTitle": "{n} tuần sau khi đăng ký",
+      "cellTitle": "{n} trên {of} người dùng",
+      "months": "Xuất hiện gần đây, theo tháng đăng ký",
+      "seen30": "Xuất hiện, 30 ngày",
+      "gone": "Đã rời đi",
+      "goneTitle": "Không xuất hiện trong 30 ngày qua",
+      "guests": "Khách chuyển đổi",
+      "fromGuest": "Bắt đầu là khách",
+      "fromGuestTitle": "Khi đăng ký, trình duyệt đang giữ một tài khoản khách có dữ liệu",
+      "stillActive": "Vẫn hoạt động",
+      "stillActiveTitle": "Trong số đó, hoạt động trong 7 ngày qua"
+    },
+    "features": {
+      "title": "Mức dùng tính năng",
+      "feature": "Tính năng",
+      "changed": "Thay đổi, 7 ngày",
+      "changedTitle": "Tài khoản đã thay đổi mục này trong 7 ngày qua",
+      "names": {
+        "plannerGoals": "Mục tiêu kế hoạch",
+        "wishes": "Lịch sử cầu nguyện",
+        "achievements": "Đánh dấu Thành Tựu",
+        "tasks": "Nhiệm vụ kế hoạch",
+        "weaponGoals": "Mục tiêu vũ khí",
+        "anecdotes": "Đánh dấu Ghi Chép Lữ Hành",
+        "quests": "Đánh dấu Nhiệm Vụ Thế Giới",
+        "sharing": "Chia sẻ"
+      },
+      "sharing": {
+        "title": "Chia sẻ",
+        "accounts": "Tài khoản được chia sẻ",
+        "viewers": "Người xem",
+        "editors": "Người sửa",
+        "pending": "Lời mời đang chờ",
+        "pendingTitle": "Lời mời chưa ai chấp nhận",
+        "largest": "Chia sẻ lớn nhất",
+        "largestTitle": "Số thành viên nhiều nhất của một tài khoản"
+      },
+      "alerts": {
+        "title": "Thông báo và push",
+        "devices": "Thiết bị có thông báo",
+        "subscriptions": "Đăng ký push",
+        "failing": "Đang lỗi",
+        "failingTitle": "Các đăng ký có những lần gửi gần nhất thất bại",
+        "lastOk": "Gửi được lần cuối"
+      },
+      "alertKinds": {
+        "resin": "Lượng nhựa",
+        "resinFull": "Nhựa đầy",
+        "expeditions": "Phái Đi",
+        "welkin": "Không Nguyệt Chúc Phúc",
+        "commissions": "Ủy Thác",
+        "bargains": "Đổi Bụi Ánh Sáng"
+      },
+      "api": {
+        "title": "API công khai",
+        "tokens": "Token",
+        "byUsers": "{n} người dùng",
+        "used24h": "Đã dùng, 24 giờ",
+        "used7d": "Đã dùng, 7 ngày",
+        "write": "Được ghi",
+        "writeTitle": "Token được phép thay đổi dữ liệu, không chỉ đọc",
+        "expiring": "Sắp hết hạn",
+        "expiringTitle": "Hết hạn trong vòng 14 ngày",
+        "revoked": "Đã thu hồi",
+        "supporters": "Người ủng hộ",
+        "customLimits": "Giới hạn riêng"
+      }
+    },
+    "uploads": {
+      "atCap": "Chạm giới hạn ngày hôm nay",
+      "atCapHint": "Đã đạt {snapshots} bản chụp hoặc {size} dữ liệu lưu trong một ngày",
+      "thisWeek": "{n} trong tuần này",
+      "day": "Bản chụp, 24 giờ",
+      "stored": "đã lưu {size}",
+      "sources": "Tải lên theo chương trình",
+      "sampledTitle": "Chương trình tạo ra tệp, theo chính tệp ghi lại, trên {n} bản chụp mới nhất",
+      "reasonsTitle": "Vì sao chương trình khách gửi chúng",
+      "none": "Không có lượt tải lên nào trong ngày qua",
+      "reasons": {
+        "login": "Đăng nhập",
+        "world": "Đổi thế giới",
+        "manual": "Thủ công",
+        "collapse": "Gộp nhật ký",
+        "logout": "Đăng xuất",
+        "resync": "Đồng bộ lại",
+        "change": "Có thay đổi",
+        "none": "Không nêu lý do"
+      }
+    }
+  },
+  "health": {
+    "title": "Tình trạng trang web",
+    "push": "Thông báo push",
+    "pushTitle": "Bật khi đã đặt cả hai khóa push",
+    "liveDb": "Cơ sở dữ liệu trực tiếp",
+    "liveDbTitle": "Cơ sở dữ liệu mà đồng bộ trực tiếp ghi vào",
+    "usage": "Mức sử dụng Cloudflare",
+    "usageTitle": "Bật khi đã đặt token sử dụng và ID tài khoản",
+    "usageZone": "Số đếm theo tuyến",
+    "usageZoneTitle": "Bật khi đã đặt thêm cả ID vùng",
+    "lastSample": "Lần đọc hàng giờ",
+    "lastSampleTitle": "Thời điểm lưu lần đọc toàn trang gần nhất",
+    "never": "Chưa từng",
+    "jobs": "Lượt chạy tác vụ",
+    "noRuns": "Chưa ghi nhận lượt chạy nào",
+    "job": "Tác vụ",
+    "ran": "Chạy lúc",
+    "tookHead": "Mất",
+    "took": "{n} giây",
+    "result": "Kết quả",
+    "done": "Xong",
+    "failed": "Thất bại",
+    "jobNames": {
+      "sample": "Lần đọc hàng giờ",
+      "events": "Sự kiện game",
+      "maintenance": "Dọn dẹp hằng đêm"
     }
   }
 }

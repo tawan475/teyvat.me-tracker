@@ -18,6 +18,7 @@
  */
 
 import {
+  METRICS_SLOW_TTL_MS,
   OAUTH_PROVIDER_LABELS,
   STAFF_PAGE_SIZE,
   STAFF_USER_FILTERS,
@@ -47,6 +48,8 @@ import {
   type AuditKind,
   type LivePointsResponse,
   type StaffAuditResponse,
+  type StaffAuditSummary,
+  type StaffHealthResponse,
   type StaffInspectResponse,
   type StaffMeResponse,
   type StaffOverviewResponse,
@@ -57,6 +60,7 @@ import {
   type StaffSiteResponse,
   type StaffUserDetailResponse,
   type StaffUserFilter,
+  type StaffUserFlagsResponse,
   type StaffUserSort,
   type StorageSort,
   type StorageWindow,
@@ -73,6 +77,7 @@ import { Hono, type Context } from 'hono'
 import type { AppEnv } from '../env'
 import { emailEnabled, emailFeatures, linkOrigin } from '../lib/email'
 import { ApiError, idParam, isUniqueViolation, notFound, parseJson } from '../lib/http'
+import { keep } from '../lib/keep'
 import { enabledProviders, isProvider } from '../lib/oauth'
 import { requireActiveSession, revokeAllSessions } from '../lib/session'
 import { need, requireStaff, type StaffActor } from '../lib/staff'
@@ -80,6 +85,7 @@ import { listAccounts, newImportKey, recomputeAccount, dataVersionOf } from '../
 import { listSnapshots, parseIds, parseSections } from '../services/account-views'
 import { auditStatement, inspectReadStatement, listAudit, userHistory } from '../services/audit'
 import { adminResetLink } from '../services/auth-tokens'
+import { auditSummary, siteHealth } from '../services/insights'
 import { buildBundle, catalogJson } from '../services/export'
 import { unlinkIdentity } from '../services/identities'
 import {
@@ -112,6 +118,7 @@ import {
   overview,
   seesPrivate,
   storage,
+  userFlags,
   userRowOf,
   type Target,
 } from '../services/staff'
@@ -133,6 +140,7 @@ import { lastEventsSync, syncGameEvents } from '../services/game-events'
 import { deleteUsers } from '../services/user-delete'
 import { UPLOAD_SETTING_KEYS, utcDay } from '../services/upload-limits'
 import { readWishHistory } from '../services/wishes'
+import { staffInsights } from './staff-insights'
 import { staffMetrics } from './staff-metrics'
 import {
   readAchievementMarks,
@@ -340,6 +348,12 @@ export const staff = new Hono<AppEnv>()
   // Who is online, live sync, activity and capacity (routes/staff-metrics.ts).
   .route('/metrics', staffMetrics)
 
+  // Who the users are and what they use (routes/staff-insights.ts).
+  .route('/insights', staffInsights)
+
+  /** What is switched on and whether the scheduled jobs run (the Overview's panels). */
+  .get('/health', async (c) => c.json<StaffHealthResponse>(await siteHealth(c.env, c.req.url)))
+
   // ---------------------------------------------------------------- overview
 
   .get('/overview', async (c) => {
@@ -429,8 +443,23 @@ export const staff = new Hono<AppEnv>()
           sort: pick<StaffUserSort>(c.req.query('sort'), STAFF_USER_SORTS, 'joined'),
           dir: c.req.query('dir') === 'asc' ? 'asc' : 'desc',
           page: pageOf(c.req.query('page')),
+          country: c.req.query('country') ?? null,
+          // The heavy filter's line is the site's daily byte limit: read only for it.
+          ...(c.req.query('filter') === 'heavy'
+            ? { heavyBytes: (await readSiteSettings(c.env.DB)).limits.dailyBytes }
+            : {}),
         },
         { actor, private: can(actor, 'users.view_private') },
+      ),
+    )
+  })
+
+  /** How many users each moderation filter matches (kept ten minutes). */
+  .get('/users/flags', need('users.view'), async (c) => {
+    const now = Date.now()
+    return c.json<StaffUserFlagsResponse>(
+      await keep('user-flags', METRICS_SLOW_TTL_MS, now, async () =>
+        userFlags(c.env.DB, (await readSiteSettings(c.env.DB)).limits.dailyBytes, now),
       ),
     )
   })
@@ -1110,6 +1139,11 @@ export const staff = new Hono<AppEnv>()
   })
 
   // ------------------------------------------------------------------- audit
+
+  /** The last 30 days of staff actions, per day by kind and per staff member. */
+  .get('/audit/summary', need('audit.view'), async (c) =>
+    c.json<StaffAuditSummary>(await auditSummary(c.env.DB)),
+  )
 
   .get('/audit', need('audit.view'), async (c) => {
     const page = pageOf(c.req.query('page'))

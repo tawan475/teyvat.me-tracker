@@ -13,6 +13,7 @@ import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { api } from '@/api'
 import { useResource } from '@/data/use-resource'
+import { vStickyHead } from '@/lib/sticky-head'
 import { t } from '@/i18n'
 import { formatDateTime, formatNumber, formatRelative } from '@/lib/format'
 

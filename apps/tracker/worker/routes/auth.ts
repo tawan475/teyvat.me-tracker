@@ -269,6 +269,7 @@ export const auth = new Hono<AppEnv>()
           passwordHash: hashPassword(body.password, pepper(c)),
           signupIp: origin.ip,
           signupCountry: origin.country,
+          fromGuest: body.guest === true,
         })
         .returning()) as [User]
     } catch (error) {

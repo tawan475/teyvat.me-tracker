@@ -211,7 +211,24 @@
     "deleteTitle": "Hapus {n} pengguna",
     "deleteText": "Akun, snapshot dan cara masuk mereka ikut terhapus. Ini tidak bisa dibatalkan.",
     "deleteConfirm": "Hapus pengguna",
-    "suspendTitle": "Tangguhkan {n} pengguna"
+    "suspendTitle": "Tangguhkan {n} pengguna",
+    "flags": {
+      "label": "Moderasi",
+      "countryTitle": "Hanya pengguna yang mendaftar dari negara ini. Klik untuk menampilkan semua",
+      "burst": "Lonjakan pendaftaran",
+      "burstTitle": "{n} pendaftaran atau lebih dari satu alamat dalam satu jam",
+      "burstWhy": "{n} pendaftaran dari satu alamat dalam satu jam",
+      "manyAccounts": "Banyak akun",
+      "manyAccountsTitle": "{n} akun Genshin atau lebih",
+      "sharedUid": "UID sama",
+      "sharedUidTitle": "UID yang juga dimiliki akun pengguna lain",
+      "sharedUidWhy": "UID {uid} juga milik pengguna lain",
+      "heavy": "Unggahan berat",
+      "heavyTitle": "Menyimpan lebih dari batas sehari dalam 7 hari terakhir",
+      "heavyWhy": "{size} disimpan dalam 7 hari",
+      "unused": "Tidak pernah dipakai",
+      "unusedTitle": "Mendaftar lebih dari {n} hari lalu, tidak menyimpan apa pun dan tidak pernah kembali"
+    }
   },
   "storage": {
     "title": "Penyimpanan",
@@ -326,7 +343,19 @@
     "oneDevice": "Satu perangkat",
     "limitDefault": "{key} bawaan",
     "bulk": "massal {n}",
-    "events": "event domain {from} → {to}"
+    "events": "event domain {from} → {to}",
+    "summary": {
+      "title": "Aksi staf",
+      "label": "Aksi staf per hari menurut jenis, 30 hari terakhir",
+      "byStaff": "Per anggota staf",
+      "staff": "Staf",
+      "views": "Melihat data",
+      "viewsTitle": "Melihat data game pengguna",
+      "users": "Pengguna",
+      "data": "Data",
+      "deletes": "Penghapusan",
+      "other": "Peran dan situs"
+    }
   },
   "user": {
     "title": "Pengguna",
@@ -736,7 +765,212 @@
       "bill": "Tagihan sejauh ini",
       "billTitle": "Harga dasar paket ditambah yang melebihi jumlah yang termasuk, dengan harga daftar",
       "projected": "Akhir bulan, dengan laju ini",
-      "projectedTitle": "Sama, dengan pemakaian bulan ini diteruskan hingga akhir bulan"
+      "projectedTitle": "Sama, dengan pemakaian bulan ini diteruskan hingga akhir bulan",
+      "history": "Cloudflare, jam demi jam",
+      "historyRequests": "Permintaan",
+      "historyRefused": "Ditolak",
+      "historyPeak": "{name}, puncak {n}",
+      "historyLabel": "Permintaan Worker dan permintaan yang ditolak per jam",
+      "errors": "Kesalahan dan penolakan",
+      "errorsTitle": "Dari analitik Cloudflare. Zona gratis menyimpan 24 jam",
+      "errorsOff": "Ditampilkan setelah secret CF_ZONE_ID diatur",
+      "errorsNone": "Tidak ada yang ditolak",
+      "route": "Rute",
+      "http4xxTitle": "Ditolak karena permintaannya sendiri: input salah, tidak diizinkan, terlalu besar",
+      "http429Title": "Ditolak oleh batas laju atau batas harian",
+      "http5xxTitle": "Worker gagal",
+      "otherRoutes": "Semua yang lain"
+    }
+  },
+  "insights": {
+    "title": "Wawasan",
+    "readAtTitle": "Dibaca {when}. Setiap bagian dibaca paling banyak sekali dalam sepuluh menit, berapa pun staf yang melihat",
+    "share": "Porsi",
+    "tabs": {
+      "all": "Semua",
+      "people": "Orang",
+      "retention": "Retensi",
+      "features": "Fitur",
+      "uploads": "Unggahan"
+    },
+    "tabTitles": {
+      "all": "Semua bagian dalam satu halaman",
+      "people": "Negara, cara masuk, bahasa, program klien",
+      "retention": "Siapa yang kembali, dan konversi tamu",
+      "features": "Bagian situs mana yang dipakai, berbagi, peringatan, API",
+      "uploads": "Batas yang dicapai orang, dan dari mana unggahan datang"
+    },
+    "people": {
+      "bases": {
+        "signup": "Tempat mendaftar",
+        "session": "Sesi terakhir"
+      },
+      "basisLabel": "Tempat yang mana",
+      "countries": "Negara",
+      "country": "Negara",
+      "active7d": "Aktif, 7 h",
+      "active7dTitle": "Aktif dalam 7 hari terakhir",
+      "new30d": "Baru, 30 h",
+      "new30dTitle": "Mendaftar dalam 30 hari terakhir",
+      "withClient": "Punya klien",
+      "withClientTitle": "Pengguna yang program kliennya sudah masuk",
+      "uploading": "Mengunggah",
+      "uploadingTitle": "Menyimpan snapshot dalam 30 hari terakhir",
+      "otherCountries": "Lainnya ({n} negara)",
+      "openUsers": "Buka pengguna dari sini",
+      "ways": "Cara masuk",
+      "password": "Kata sandi",
+      "passkey": "Kunci sandi",
+      "passkeyTitle": "{n} kunci sandi seluruhnya",
+      "noPassword": "Tanpa kata sandi",
+      "noPasswordTitle": "Hanya masuk dengan Discord, Google atau kunci sandi",
+      "oneWay": "Hanya satu cara masuk",
+      "oneWayTitle": "Kalau hilang, mereka tidak bisa masuk lagi",
+      "suspended": "Ditangguhkan",
+      "uploadsBlocked": "Unggahan diblokir",
+      "languageTheme": "Bahasa dan tema",
+      "otherCount": "Lainnya ({n})",
+      "followsBrowser": "Mengikuti browser",
+      "themes": {
+        "system": "Tema mengikuti perangkat",
+        "light": "Tema terang",
+        "dark": "Tema gelap"
+      },
+      "servers": "Server game",
+      "noServer": "Belum diatur",
+      "clients": "Program klien",
+      "oldTitle": "Perangkat dengan versi yang lebih lama dari versi terbaru programnya yang sedang dipakai",
+      "oldCount": "{n} di versi lebih lama",
+      "old": "Lama",
+      "devices": "Perangkat",
+      "firstSeen": "Pertama terlihat",
+      "firstSeenTitle": "Kapan versi ini pertama kali memberi kabar",
+      "noVersion": "Tidak dilaporkan",
+      "noVersionTitle": "Sudah masuk, tetapi belum ada sinyal yang menyebutkan versinya",
+      "noClients": "Tidak ada program klien yang masuk"
+    },
+    "retention": {
+      "title": "Masih mengunggah, menurut minggu pendaftaran",
+      "rule": "Porsi dari pendaftaran tiap minggu",
+      "ruleTitle": "Pengguna dihitung dalam satu minggu bila menyimpan minimal satu snapshot pada minggu itu",
+      "signedUp": "Mendaftar",
+      "week": "M{n}",
+      "weekTitle": "{n} minggu setelah mendaftar",
+      "cellTitle": "{n} dari {of} pengguna",
+      "months": "Terlihat belakangan, menurut bulan pendaftaran",
+      "seen30": "Terlihat, 30 h",
+      "gone": "Pergi",
+      "goneTitle": "Tidak terlihat dalam 30 hari terakhir",
+      "guests": "Konversi tamu",
+      "fromGuest": "Mulai sebagai tamu",
+      "fromGuestTitle": "Saat mendaftar, browsernya menyimpan akun tamu yang berisi data",
+      "stillActive": "Masih aktif",
+      "stillActiveTitle": "Dari jumlah itu, aktif dalam 7 hari terakhir"
+    },
+    "features": {
+      "title": "Pemakaian fitur",
+      "feature": "Fitur",
+      "changed": "Diubah, 7 h",
+      "changedTitle": "Akun yang mengubahnya dalam 7 hari terakhir",
+      "names": {
+        "plannerGoals": "Target perencana",
+        "wishes": "Riwayat Permohonan",
+        "achievements": "Tanda achievement",
+        "tasks": "Tugas perencana",
+        "weaponGoals": "Target senjata",
+        "anecdotes": "Tanda Travel Account",
+        "quests": "Tanda Quest Dunia",
+        "sharing": "Berbagi"
+      },
+      "sharing": {
+        "title": "Berbagi",
+        "accounts": "Akun yang dibagikan",
+        "viewers": "Pelihat",
+        "editors": "Editor",
+        "pending": "Undangan menunggu",
+        "pendingTitle": "Undangan yang belum diterima siapa pun",
+        "largest": "Berbagi terbesar",
+        "largestTitle": "Anggota terbanyak yang dimiliki satu akun"
+      },
+      "alerts": {
+        "title": "Peringatan dan push",
+        "devices": "Perangkat dengan peringatan",
+        "subscriptions": "Langganan push",
+        "failing": "Gagal",
+        "failingTitle": "Langganan yang pengiriman terakhirnya gagal",
+        "lastOk": "Terakhir terkirim"
+      },
+      "alertKinds": {
+        "resin": "Jumlah resin",
+        "resinFull": "Resin penuh",
+        "expeditions": "Ekspedisi",
+        "welkin": "Welkin",
+        "commissions": "Misi Harian",
+        "bargains": "Penukaran Paimon"
+      },
+      "api": {
+        "title": "API publik",
+        "tokens": "Token",
+        "byUsers": "{n} pengguna",
+        "used24h": "Dipakai, 24 j",
+        "used7d": "Dipakai, 7 h",
+        "write": "Boleh menulis",
+        "writeTitle": "Token yang boleh mengubah sesuatu, bukan hanya membaca",
+        "expiring": "Segera kedaluwarsa",
+        "expiringTitle": "Kedaluwarsa dalam 14 hari",
+        "revoked": "Dicabut",
+        "supporters": "Pendukung",
+        "customLimits": "Batas khusus"
+      }
+    },
+    "uploads": {
+      "atCap": "Di batas harian hari ini",
+      "atCapHint": "Mencapai {snapshots} snapshot atau {size} tersimpan dalam satu hari",
+      "thisWeek": "{n} minggu ini",
+      "day": "Snapshot, 24 j",
+      "stored": "{size} disimpan",
+      "sources": "Unggahan menurut program",
+      "sampledTitle": "Program pembuat menurut isi tiap file, dari {n} snapshot terbaru",
+      "reasonsTitle": "Alasan klien mengirimnya",
+      "none": "Tidak ada unggahan dalam sehari terakhir",
+      "reasons": {
+        "login": "Masuk game",
+        "world": "Ganti dunia",
+        "manual": "Manual",
+        "collapse": "Jurnal diringkas",
+        "logout": "Keluar game",
+        "resync": "Sinkron ulang",
+        "change": "Ada perubahan",
+        "none": "Tanpa alasan"
+      }
+    }
+  },
+  "health": {
+    "title": "Kesehatan situs",
+    "push": "Peringatan push",
+    "pushTitle": "Nyala selama kedua kunci push diatur",
+    "liveDb": "Database live",
+    "liveDbTitle": "Database yang ditulisi sinkronisasi live",
+    "usage": "Pemakaian Cloudflare",
+    "usageTitle": "Nyala selama token pemakaian dan ID akun diatur",
+    "usageZone": "Hitungan per rute",
+    "usageZoneTitle": "Nyala selama ID zona juga diatur",
+    "lastSample": "Pembacaan per jam",
+    "lastSampleTitle": "Kapan pembacaan seluruh situs terakhir disimpan",
+    "never": "Tidak pernah",
+    "jobs": "Eksekusi tugas",
+    "noRuns": "Belum ada eksekusi yang tercatat",
+    "job": "Tugas",
+    "ran": "Dijalankan",
+    "tookHead": "Durasi",
+    "took": "{n} dtk",
+    "result": "Hasil",
+    "done": "Selesai",
+    "failed": "Gagal",
+    "jobNames": {
+      "sample": "Pembacaan per jam",
+      "events": "Event game",
+      "maintenance": "Pembersihan malam"
     }
   }
 }

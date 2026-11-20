@@ -8,7 +8,11 @@
  */
 
 import {
+  BURST_SIGNUPS,
+  MANY_ACCOUNTS,
   STAFF_PAGE_SIZE,
+  UNUSED_DAYS,
+  USER_FLAGS,
   type DayCount,
   type IdentityResponse,
   type SignInMethod,
@@ -19,6 +23,7 @@ import {
   type StaffStorageRow,
   type StaffUserCounts,
   type StaffUserFilter,
+  type StaffUserFlagsResponse,
   type StaffUserRow,
   type StaffUserSort,
   type StaffUsersResponse,
@@ -190,6 +195,43 @@ export interface UserQuery {
   sort: StaffUserSort
   dir: 'asc' | 'desc'
   page: number
+  /** Only users who signed up from this country (ISO code, as Cloudflare reported it). */
+  country?: string | null
+  /** The `heavy` filter's line: bytes stored in 7 days (the site's daily byte limit). */
+  heavyBytes?: number
+}
+
+/**
+ * The moderation filters' helpers (USER_FLAGS): addresses with a burst of
+ * sign-ups in one hour, and UIDs that accounts of more than one user carry.
+ * Each is one grouped pass, joined to the user, never a scan per user.
+ */
+const FLAG_CTES = `bursts AS (SELECT ${signupIpSql('bu')} AS ip, bu.created_at / 3600000 AS hour,
+      count(*) AS n FROM users AS bu WHERE ${signupIpSql('bu')} IS NOT NULL
+      GROUP BY ip, hour HAVING count(*) >= ${BURST_SIGNUPS}),
+  shared_uids AS (SELECT uid, count(DISTINCT user_id) AS n FROM genshin_accounts
+      WHERE uid IS NOT NULL AND uid <> '' GROUP BY uid HAVING count(DISTINCT user_id) > 1)`
+
+const BURST_SQL = `(SELECT b.n FROM bursts AS b WHERE b.ip = ${signupIpSql('u')}
+    AND b.hour = u.created_at / 3600000)`
+const SHARED_UID_SQL = `(SELECT sg.uid FROM genshin_accounts AS sg JOIN shared_uids AS su ON su.uid = sg.uid
+    WHERE sg.user_id = u.id ORDER BY sg.id LIMIT 1)`
+const heavySql = (day: string) =>
+  `(SELECT coalesce(sum(hd.stored_bytes), 0) FROM user_upload_days AS hd
+    WHERE hd.user_id = u.id AND hd.day >= ${day})`
+
+/** Why a row matches the moderation filter in use (null for the other filters). */
+function flagValueSql(filter: StaffUserFilter, args: Args, now: number): string {
+  switch (filter) {
+    case 'burst':
+      return BURST_SQL
+    case 'sharedUid':
+      return SHARED_UID_SQL
+    case 'heavy':
+      return heavySql(args.add(dayKey(now - 6 * DAY)))
+    default:
+      return 'NULL'
+  }
 }
 
 const SORT_SQL: Record<StaffUserSort, string> = {
@@ -214,8 +256,25 @@ function activeSql(args: Args, since: number): string {
     WHERE ga.user_id = u.id AND ls.last_seen_at >= ${at}))`
 }
 
-function filterSql(filter: StaffUserFilter, args: Args, now: number): string | null {
+function filterSql(
+  filter: StaffUserFilter,
+  args: Args,
+  now: number,
+  heavyBytes = Number.MAX_SAFE_INTEGER,
+): string | null {
   switch (filter) {
+    case 'burst':
+      return `${BURST_SQL} IS NOT NULL`
+    case 'manyAccounts':
+      return `coalesce(t.accounts, 0) >= ${MANY_ACCOUNTS}`
+    case 'sharedUid':
+      return `${SHARED_UID_SQL} IS NOT NULL`
+    case 'heavy':
+      return `${heavySql(args.add(dayKey(now - 6 * DAY)))} >= ${args.add(heavyBytes)}`
+    case 'unused':
+      return `(u.created_at < ${args.add(now - UNUSED_DAYS * DAY)} AND coalesce(t.snapshots, 0) = 0
+        AND coalesce(wi.pulls, 0) = 0
+        AND (${lastActiveSql('u')} IS NULL OR ${lastActiveSql('u')} < u.created_at + ${DAY}))`
     case 'all':
       return null
     case 'new':
@@ -269,10 +328,23 @@ export async function listUsers(
   now = Date.now(),
 ): Promise<StaffUsersResponse> {
   const args = new Args()
-  const search = searchSql(query.q, args, context.private)
+  const country = /^[A-Za-z0-9]{2,3}$/.test(query.country ?? '')
+    ? query.country!.toUpperCase()
+    : null
+  // The country narrows the list like the search does (the chips count within it).
+  const narrowed = (list: Args) =>
+    [
+      searchSql(query.q, list, context.private),
+      country ? `${signupCountrySql('u')} = ${list.add(country)}` : null,
+    ]
+      .filter(Boolean)
+      .join(' AND ') || null
+  // The row's reason comes first in the statement, so its argument does too.
+  const flagValue = flagValueSql(query.filter, args, now)
+  const search = narrowed(args)
   // The chips count with the search applied, each with its own condition.
   const countArgs = new Args()
-  const countSearch = searchSql(query.q, countArgs, context.private)
+  const countSearch = narrowed(countArgs)
   const chips = (
     [
       'new',
@@ -289,7 +361,9 @@ export async function listUsers(
     (filter) =>
       `sum(CASE WHEN ${filterSql(filter, countArgs, now)} THEN 1 ELSE 0 END) AS ${filter}`,
   )
-  const filter = filterSql(query.filter, args, now)
+  const filter = filterSql(query.filter, args, now, query.heavyBytes)
+  const flagged = (USER_FLAGS as readonly string[]).includes(query.filter)
+  const withSql = flagged ? `${USER_TOTALS}, ${FLAG_CTES}` : USER_TOTALS
   const where = [search, filter].filter(Boolean)
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const direction = query.dir === 'asc' ? 'ASC' : 'DESC'
@@ -301,7 +375,8 @@ export async function listUsers(
   const [rows, counts, roles] = await d1.batch<Record<string, unknown>>([
     d1
       .prepare(
-        `WITH ${USER_TOTALS} SELECT ${USER_COLUMNS}, count(*) OVER () AS total ${FROM_USERS}
+        `WITH ${withSql} SELECT ${flagValue} AS flag_value, ${USER_COLUMNS},
+           count(*) OVER () AS total ${FROM_USERS}
          ${whereSql} ORDER BY ${order} LIMIT ${limit} OFFSET ${offset}`,
       )
       .bind(...args.values),
@@ -323,7 +398,14 @@ export async function listUsers(
       ? Number(c.all_users ?? 0)
       : Number(c[query.filter] ?? 0)
   return {
-    users: result.map((row) => userRowOf(row, { ...context, roles: map })),
+    users: result.map((row) => {
+      const user = userRowOf(row, { ...context, roles: map })
+      // The shared UID and the sizes are not private; a burst's count is not the address.
+      if (row.flag_value !== null && row.flag_value !== undefined) {
+        user.flagValue = row.flag_value as string | number
+      }
+      return user
+    }),
     total,
     page,
     pageSize: STAFF_PAGE_SIZE,
@@ -340,6 +422,26 @@ export async function listUsers(
       staff: Number(c.staff ?? 0),
     } satisfies StaffUserCounts,
   }
+}
+
+/** How many users each moderation filter matches (the Users page's chips; one statement). */
+export async function userFlags(
+  d1: D1Database,
+  heavyBytes: number,
+  now = Date.now(),
+): Promise<StaffUserFlagsResponse> {
+  const args = new Args()
+  const sums = USER_FLAGS.map(
+    (flag) =>
+      `sum(CASE WHEN ${filterSql(flag, args, now, heavyBytes)} THEN 1 ELSE 0 END) AS ${flag}`,
+  )
+  const row = await d1
+    .prepare(`WITH ${USER_TOTALS}, ${FLAG_CTES} SELECT ${sums.join(', ')} ${FROM_USERS}`)
+    .bind(...args.values)
+    .first<Record<string, unknown>>()
+  return Object.fromEntries(
+    USER_FLAGS.map((flag) => [flag, Number(row?.[flag] ?? 0)]),
+  ) as StaffUserFlagsResponse
 }
 
 /** The account rows of a user's detail page. */

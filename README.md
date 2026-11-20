@@ -1265,6 +1265,73 @@ two rows against the dashboard after setting the token.
 </details>
 
 <details>
+<summary><b>Staff insights</b></summary>
+
+`/app/staff/insights` (the Metrics page's node, `site.metrics`): who the
+users are and what they use, as totals and shares. Nobody is named, so
+nothing is logged. A switcher on top as on Metrics: All, People, Retention,
+Features, Uploads. API `/api/staff/insights/*`
+(`worker/routes/staff-insights.ts`, reads in `worker/services/insights.ts`).
+Each section is an aggregate over state the site keeps anyway, read when a
+staff member opens the page and kept 10 minutes in the Worker instance
+(`worker/lib/keep.ts`).
+
+| Section | Shows | Read from | At 100,000 users |
+| --- | --- | --- | --- |
+| People | Countries (by where users signed up from, or their newest session): users, active in 7 days, new in 30, with a client, uploading. Ways in, language and theme, game servers, client programs by version | `users` (`signup_country`, `settings`, `password_hash`), `user_sessions`, `user_identities`, `passkeys`, `genshin_accounts.server` | about 0.6M rows |
+| Retention | Sign-up weeks against the weeks since: the share still storing snapshots. Sign-up months against who was seen lately. Guest conversions | `user_upload_days` joined to the window's sign-ups, `users.last_active_at`, `users.from_guest` | about 6M rows |
+| Features | Accounts using each part and changed in 7 days: planner goals, wish history, achievement marks, planner tasks, weapon goals, Travel Accounts marks, World Quest marks, sharing. Sharing, alerts and push, API tokens | one existence check per account per table; `account_members`, `user_sessions.alerts`, `push_subscriptions`, `api_tokens` | about 1M index lookups |
+| Uploads | Users at a daily cap today and this week, near their quota, blocked; the last day's snapshots by the program their file names and by why a client sent them | `user_upload_days`, `genshin_accounts.stored_bytes`, the newest 2,000 snapshot headers (`snapshots.meta`) | about 0.2M rows, and CPU for the headers |
+
+A country in the Countries table opens the Users page filtered to it
+(`?country=`), for staff with `users.view`.
+
+**Three small writes came with it** (migration 0042), none of them per
+request:
+
+- **Client versions.** `POST /api/irminsul/presence` stores the program's
+  version and platform on its sign-in's row (`user_sessions.client_version`,
+  `client_platform`, `client_version_at`) only when a heartbeat says
+  something new: about one row written per device per update. A client that
+  uploads with an import key has no row and is not counted.
+- **Guest conversions.** Sign-up keeps `users.from_guest` when the browser
+  holds a guest account with data (`src/lib/guest-hint.ts` reads the
+  `gdt:guest-data` hint): one more column in the sign-up's own insert.
+  Guests who never sign up leave nothing on the server.
+- **Job runs.** Each scheduled run (the hourly reading, the hourly game
+  events sync, the nightly clean-up) leaves a `job_runs` row with how long
+  it took and its result (`worker/services/job-runs.ts`): about 49 rows a
+  day in total; the nightly run drops rows older than 60 days.
+
+**The other staff pages gained:**
+
+- **Overview**: Site health (push alerts, the live database, the Cloudflare
+  usage token, the hourly reading's last time) and Job runs
+  (`GET /api/staff/health`, `staff.view`).
+- **Users**: moderation filters, counted apart from the list
+  (`GET /api/staff/users/flags`, kept 10 minutes) so the list costs what it
+  did: a sign-up burst (3 or more sign-ups from one address within an hour),
+  many accounts (5 or more), a UID that another user's account also has,
+  heavy uploads (more than a day's byte limit stored in 7 days), never used
+  (signed up over 90 days ago, stored nothing, never came back). A matching
+  row says why. Bursts and shared UIDs are each one grouped pass joined to
+  the user, never a scan per user.
+- **Audit**: the last 30 days of staff actions per day by kind, and per
+  staff member (`GET /api/staff/audit/summary`, `audit.view`).
+- **Metrics › Capacity**: with the usage token, Cloudflare's figures hour by
+  hour (the hourly reading keeps the hour's Worker requests, failed runs
+  and CPU time, and the zone's refused API requests, in the same
+  `site_samples` row: no extra rows, up to six small questions an hour), and
+  the last 24 hours' refused requests by route (needs `CF_ZONE_ID`; a Free
+  zone keeps 24 hours).
+
+Not built, because they cannot be read from stored state and counting them
+costs per event: page and feature views, guests who never sign up, and API
+calls per token. They belong to the analytics plan (`docs/plans/analytics.md`).
+
+</details>
+
+<details>
 <summary><b>Languages</b></summary>
 
 The site speaks every language Genshin Impact ships: English, Simplified and

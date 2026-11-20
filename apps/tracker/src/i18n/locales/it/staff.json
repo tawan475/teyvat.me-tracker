@@ -211,7 +211,24 @@
     "deleteTitle": "Elimina {n} utenti",
     "deleteText": "I loro account, istantanee e accessi vengono eliminati con loro. L'operazione è irreversibile.",
     "deleteConfirm": "Elimina utenti",
-    "suspendTitle": "Sospendi {n} utente | Sospendi {n} utenti"
+    "suspendTitle": "Sospendi {n} utente | Sospendi {n} utenti",
+    "flags": {
+      "label": "Moderazione",
+      "countryTitle": "Solo gli utenti iscritti da questo paese. Clicca per mostrare tutti",
+      "burst": "Raffica di iscrizioni",
+      "burstTitle": "{n} o più iscrizioni da uno stesso indirizzo entro un'ora",
+      "burstWhy": "{n} iscrizioni da uno stesso indirizzo in un'ora",
+      "manyAccounts": "Molti account",
+      "manyAccountsTitle": "{n} o più account Genshin",
+      "sharedUid": "UID ripetuto",
+      "sharedUidTitle": "Un UID che ha anche l'account di un altro utente",
+      "sharedUidWhy": "L'UID {uid} è anche di un altro utente",
+      "heavy": "Caricamenti pesanti",
+      "heavyTitle": "Ha salvato più del limite di un giorno negli ultimi 7 giorni",
+      "heavyWhy": "{size} salvati in 7 giorni",
+      "unused": "Mai usato",
+      "unusedTitle": "Iscritto da oltre {n} giorni, non ha salvato nulla e non è mai tornato"
+    }
   },
   "storage": {
     "title": "Spazio",
@@ -326,7 +343,19 @@
     "oneDevice": "Un dispositivo",
     "limitDefault": "{key} predefinito",
     "bulk": "gruppo di {n}",
-    "events": "eventi dei domini {from} → {to}"
+    "events": "eventi dei domini {from} → {to}",
+    "summary": {
+      "title": "Azioni dello staff",
+      "label": "Azioni dello staff al giorno per tipo, ultimi 30 giorni",
+      "byStaff": "Per membro dello staff",
+      "staff": "Staff",
+      "views": "Consultazioni",
+      "viewsTitle": "Consultazioni dei dati di gioco degli utenti",
+      "users": "Utenti",
+      "data": "Dati",
+      "deletes": "Eliminazioni",
+      "other": "Ruoli e sito"
+    }
   },
   "user": {
     "title": "Utente",
@@ -736,7 +765,212 @@
       "bill": "Fattura finora",
       "billTitle": "Il prezzo base del piano più ciò che supera le quantità incluse, a prezzi di listino",
       "projected": "Fine mese, a questo ritmo",
-      "projectedTitle": "Lo stesso, con l'utilizzo di questo mese proiettato a fine mese"
+      "projectedTitle": "Lo stesso, con l'utilizzo di questo mese proiettato a fine mese",
+      "history": "Cloudflare, ora per ora",
+      "historyRequests": "Richieste",
+      "historyRefused": "Rifiutate",
+      "historyPeak": "{name}, massimo {n}",
+      "historyLabel": "Richieste al Worker e richieste rifiutate all'ora",
+      "errors": "Errori e rifiuti",
+      "errorsTitle": "Dalle statistiche di Cloudflare. Una zona Free conserva 24 ore",
+      "errorsOff": "Visibile quando il secret CF_ZONE_ID è impostato",
+      "errorsNone": "Niente è stato rifiutato",
+      "route": "Percorso",
+      "http4xxTitle": "Rifiutate per un motivo della richiesta stessa: dati errati, non consentito, troppo grande",
+      "http429Title": "Rifiutate da un limite di richieste o da un limite giornaliero",
+      "http5xxTitle": "Il Worker ha dato errore",
+      "otherRoutes": "Tutto il resto"
+    }
+  },
+  "insights": {
+    "title": "Analisi",
+    "readAtTitle": "Letto il {when}. Ogni sezione viene letta al massimo una volta ogni dieci minuti, per quanti membri dello staff guardino",
+    "share": "Quota",
+    "tabs": {
+      "all": "Tutto",
+      "people": "Persone",
+      "retention": "Fidelizzazione",
+      "features": "Funzioni",
+      "uploads": "Caricamenti"
+    },
+    "tabTitles": {
+      "all": "Tutte le sezioni in una pagina",
+      "people": "Paesi, modi di accesso, lingue, programmi client",
+      "retention": "Chi torna, e conversioni degli ospiti",
+      "features": "Quali parti del sito vengono usate, condivisione, avvisi, l'API",
+      "uploads": "Limiti che le persone raggiungono, e da dove arrivano i caricamenti"
+    },
+    "people": {
+      "bases": {
+        "signup": "All'iscrizione",
+        "session": "Ultima sessione"
+      },
+      "basisLabel": "Quale luogo",
+      "countries": "Paesi",
+      "country": "Paese",
+      "active7d": "Attivi, 7 g",
+      "active7dTitle": "Attivi negli ultimi 7 giorni",
+      "new30d": "Nuovi, 30 g",
+      "new30dTitle": "Iscritti negli ultimi 30 giorni",
+      "withClient": "Con client",
+      "withClientTitle": "Utenti con un programma client connesso",
+      "uploading": "Con caricamenti",
+      "uploadingTitle": "Hanno salvato un'istantanea negli ultimi 30 giorni",
+      "otherCountries": "Altri ({n} paesi)",
+      "openUsers": "Apri gli utenti di qui",
+      "ways": "Modi di accesso",
+      "password": "Password",
+      "passkey": "Passkey",
+      "passkeyTitle": "{n} passkey in tutto",
+      "noPassword": "Senza password",
+      "noPasswordTitle": "Accede solo con Discord, Google o una passkey",
+      "oneWay": "Un solo modo di accesso",
+      "oneWayTitle": "Se lo perdono, restano chiusi fuori",
+      "suspended": "Sospesi",
+      "uploadsBlocked": "Caricamenti bloccati",
+      "languageTheme": "Lingua e tema",
+      "otherCount": "Altro ({n})",
+      "followsBrowser": "Segue il browser",
+      "themes": {
+        "system": "Tema del dispositivo",
+        "light": "Tema chiaro",
+        "dark": "Tema scuro"
+      },
+      "servers": "Server di gioco",
+      "noServer": "Non impostato",
+      "clients": "Programmi client",
+      "oldTitle": "Dispositivi con una versione più vecchia della più recente in uso del loro programma",
+      "oldCount": "{n} con versione più vecchia",
+      "old": "Più vecchia",
+      "devices": "Dispositivi",
+      "firstSeen": "Prima volta",
+      "firstSeenTitle": "Quando questa versione ha dato segnale per la prima volta",
+      "noVersion": "Non segnalata",
+      "noVersionTitle": "Connesso, e nessun heartbeat ha ancora indicato la versione",
+      "noClients": "Nessun programma client connesso"
+    },
+    "retention": {
+      "title": "Caricano ancora, per settimana di iscrizione",
+      "rule": "Quota delle iscrizioni di ogni settimana",
+      "ruleTitle": "Un utente conta in una settimana se vi ha salvato almeno un'istantanea",
+      "signedUp": "Iscrizione",
+      "week": "S{n}",
+      "weekTitle": "{n} settimane dopo l'iscrizione",
+      "cellTitle": "{n} su {of} utenti",
+      "months": "Visti di recente, per mese di iscrizione",
+      "seen30": "Visti, 30 g",
+      "gone": "Assenti",
+      "goneTitle": "Non visti negli ultimi 30 giorni",
+      "guests": "Conversioni degli ospiti",
+      "fromGuest": "Hanno iniziato come ospiti",
+      "fromGuestTitle": "Al momento dell'iscrizione il browser conteneva un account ospite con dati",
+      "stillActive": "Ancora attivi",
+      "stillActiveTitle": "Di questi, attivi negli ultimi 7 giorni"
+    },
+    "features": {
+      "title": "Uso delle funzioni",
+      "feature": "Funzione",
+      "changed": "Modificato, 7 g",
+      "changedTitle": "Account che l'hanno modificato negli ultimi 7 giorni",
+      "names": {
+        "plannerGoals": "Obiettivi del pianificatore",
+        "wishes": "Cronologia desideri",
+        "achievements": "Segni degli obiettivi",
+        "tasks": "Attività del pianificatore",
+        "weaponGoals": "Obiettivi delle armi",
+        "anecdotes": "Segni dei Registri di viaggio",
+        "quests": "Segni delle missioni avventura",
+        "sharing": "Condivisione"
+      },
+      "sharing": {
+        "title": "Condivisione",
+        "accounts": "Account condivisi",
+        "viewers": "Lettori",
+        "editors": "Editor",
+        "pending": "Inviti in attesa",
+        "pendingTitle": "Inviti che nessuno ha ancora accettato",
+        "largest": "Account più condiviso",
+        "largestTitle": "Il numero più alto di membri di un account"
+      },
+      "alerts": {
+        "title": "Avvisi e push",
+        "devices": "Dispositivi con avvisi",
+        "subscriptions": "Sottoscrizioni push",
+        "failing": "In errore",
+        "failingTitle": "Sottoscrizioni le cui ultime consegne non sono riuscite",
+        "lastOk": "Ultima consegna"
+      },
+      "alertKinds": {
+        "resin": "Quantità di resina",
+        "resinFull": "Resina piena",
+        "expeditions": "Spedizioni",
+        "welkin": "Benedizione lunare",
+        "commissions": "Incarichi giornalieri",
+        "bargains": "Bazar di Paimon"
+      },
+      "api": {
+        "title": "API pubblica",
+        "tokens": "Token",
+        "byUsers": "{n} utenti",
+        "used24h": "Usati, 24 h",
+        "used7d": "Usati, 7 g",
+        "write": "Con scrittura",
+        "writeTitle": "Token che possono modificare qualcosa, non solo leggere",
+        "expiring": "In scadenza",
+        "expiringTitle": "Scadono entro 14 giorni",
+        "revoked": "Revocati",
+        "supporters": "Sostenitori",
+        "customLimits": "Limiti personalizzati"
+      }
+    },
+    "uploads": {
+      "atCap": "A un limite giornaliero oggi",
+      "atCapHint": "Hanno raggiunto {snapshots} istantanee o {size} salvati in un giorno",
+      "thisWeek": "{n} questa settimana",
+      "day": "Istantanee, 24 h",
+      "stored": "{size} salvati",
+      "sources": "Caricamenti per programma",
+      "sampledTitle": "Il programma che ogni file indica come suo autore, sulle {n} istantanee più recenti",
+      "reasonsTitle": "Perché un client li ha inviati",
+      "none": "Nessun caricamento nell'ultimo giorno",
+      "reasons": {
+        "login": "Accesso",
+        "world": "Cambio di mondo",
+        "manual": "A mano",
+        "collapse": "Giornale compattato",
+        "logout": "Uscita",
+        "resync": "Risincronizzazione",
+        "change": "Una modifica",
+        "none": "Nessun motivo indicato"
+      }
+    }
+  },
+  "health": {
+    "title": "Stato del sito",
+    "push": "Avvisi push",
+    "pushTitle": "Attivi finché entrambe le chiavi push sono impostate",
+    "liveDb": "Database live",
+    "liveDbTitle": "Il database su cui scrive la sincronizzazione live",
+    "usage": "Utilizzo di Cloudflare",
+    "usageTitle": "Attivo finché il token di utilizzo e l'ID dell'account sono impostati",
+    "usageZone": "Conteggi per percorso",
+    "usageZoneTitle": "Attivi finché è impostato anche l'ID della zona",
+    "lastSample": "Lettura oraria",
+    "lastSampleTitle": "Quando è stata salvata l'ultima lettura dell'intero sito",
+    "never": "Mai",
+    "jobs": "Esecuzioni dei processi",
+    "noRuns": "Ancora nessuna esecuzione registrata",
+    "job": "Processo",
+    "ran": "Eseguito",
+    "tookHead": "Durata",
+    "took": "{n} s",
+    "result": "Risultato",
+    "done": "Completato",
+    "failed": "Non riuscito",
+    "jobNames": {
+      "sample": "Lettura oraria",
+      "events": "Eventi di gioco",
+      "maintenance": "Pulizia notturna"
     }
   }
 }

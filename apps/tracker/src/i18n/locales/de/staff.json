@@ -211,7 +211,24 @@
     "deleteTitle": "{n} Benutzer löschen",
     "deleteText": "Ihre Konten, Snapshots und Anmeldungen werden mitgelöscht. Das kann nicht rückgängig gemacht werden.",
     "deleteConfirm": "Benutzer löschen",
-    "suspendTitle": "{n} Benutzer sperren | {n} Benutzer sperren"
+    "suspendTitle": "{n} Benutzer sperren | {n} Benutzer sperren",
+    "flags": {
+      "label": "Moderation",
+      "countryTitle": "Nur Benutzer, die sich aus diesem Land registriert haben. Klicken, um alle zu zeigen",
+      "burst": "Registrierungswelle",
+      "burstTitle": "{n} oder mehr Registrierungen von einer Adresse innerhalb einer Stunde",
+      "burstWhy": "{n} Registrierungen von einer Adresse in einer Stunde",
+      "manyAccounts": "Viele Konten",
+      "manyAccountsTitle": "{n} oder mehr Genshin-Konten",
+      "sharedUid": "Doppelte UID",
+      "sharedUidTitle": "Eine UID, die auch das Konto eines anderen Benutzers hat",
+      "sharedUidWhy": "UID {uid} gehört auch einem anderen Benutzer",
+      "heavy": "Viel hochgeladen",
+      "heavyTitle": "In den letzten 7 Tagen mehr als das Limit eines Tages gespeichert",
+      "heavyWhy": "{size} in 7 Tagen gespeichert",
+      "unused": "Nie genutzt",
+      "unusedTitle": "Vor über {n} Tagen registriert, nichts gespeichert und nie zurückgekommen"
+    }
   },
   "storage": {
     "title": "Speicher",
@@ -326,7 +343,19 @@
     "oneDevice": "Ein Gerät",
     "limitDefault": "{key} Standard",
     "bulk": "Sammelaktion: {n}",
-    "events": "Sphären-Aktionen {from} → {to}"
+    "events": "Sphären-Aktionen {from} → {to}",
+    "summary": {
+      "title": "Team-Aktionen",
+      "label": "Team-Aktionen pro Tag nach Art, letzte 30 Tage",
+      "byStaff": "Nach Teammitglied",
+      "staff": "Team",
+      "views": "Datenansichten",
+      "viewsTitle": "Ansichten der Spieldaten von Benutzern",
+      "users": "Benutzer",
+      "data": "Daten",
+      "deletes": "Löschungen",
+      "other": "Rollen und Website"
+    }
   },
   "user": {
     "title": "Benutzer",
@@ -736,7 +765,212 @@
       "bill": "Rechnung bisher",
       "billTitle": "Grundpreis des Tarifs plus alles über den enthaltenen Mengen, zu Listenpreisen",
       "projected": "Monatsende, bei diesem Tempo",
-      "projectedTitle": "Dasselbe, mit der Nutzung dieses Monats bis zum Monatsende hochgerechnet"
+      "projectedTitle": "Dasselbe, mit der Nutzung dieses Monats bis zum Monatsende hochgerechnet",
+      "history": "Cloudflare, Stunde für Stunde",
+      "historyRequests": "Anfragen",
+      "historyRefused": "Abgelehnt",
+      "historyPeak": "{name}, Höchststand {n}",
+      "historyLabel": "Worker-Anfragen und abgelehnte Anfragen pro Stunde",
+      "errors": "Fehler und Ablehnungen",
+      "errorsTitle": "Aus den Analysedaten von Cloudflare. Eine Free-Zone behält 24 Stunden",
+      "errorsOff": "Wird angezeigt, sobald das Secret CF_ZONE_ID gesetzt ist",
+      "errorsNone": "Nichts wurde abgelehnt",
+      "route": "Route",
+      "http4xxTitle": "Wegen der Anfrage selbst abgelehnt: falsche Eingabe, nicht erlaubt, zu groß",
+      "http429Title": "Durch ein Rate-Limit oder ein Tageslimit abgelehnt",
+      "http5xxTitle": "Der Worker ist fehlgeschlagen",
+      "otherRoutes": "Alles andere"
+    }
+  },
+  "insights": {
+    "title": "Einblicke",
+    "readAtTitle": "Gelesen am {when}. Jeder Bereich wird höchstens einmal in zehn Minuten gelesen, egal wie viele aus dem Team zusehen",
+    "share": "Anteil",
+    "tabs": {
+      "all": "Alle",
+      "people": "Personen",
+      "retention": "Wiederkehr",
+      "features": "Funktionen",
+      "uploads": "Uploads"
+    },
+    "tabTitles": {
+      "all": "Alle Bereiche auf einer Seite",
+      "people": "Länder, Anmeldewege, Sprachen, Client-Programme",
+      "retention": "Wer wiederkommt, und Gast-Umwandlungen",
+      "features": "Welche Teile der Website genutzt werden, Teilen, Hinweise, die API",
+      "uploads": "Limits, an die Leute stoßen, und woher Uploads kommen"
+    },
+    "people": {
+      "bases": {
+        "signup": "Bei Registrierung",
+        "session": "Letzte Sitzung"
+      },
+      "basisLabel": "Welcher Ort",
+      "countries": "Länder",
+      "country": "Land",
+      "active7d": "Aktiv, 7 T",
+      "active7dTitle": "In den letzten 7 Tagen aktiv",
+      "new30d": "Neu, 30 T",
+      "new30dTitle": "In den letzten 30 Tagen registriert",
+      "withClient": "Mit Client",
+      "withClientTitle": "Benutzer mit einem angemeldeten Client-Programm",
+      "uploading": "Mit Uploads",
+      "uploadingTitle": "In den letzten 30 Tagen einen Snapshot gespeichert",
+      "otherCountries": "Andere ({n} Länder)",
+      "openUsers": "Benutzer von hier öffnen",
+      "ways": "Anmeldewege",
+      "password": "Passwort",
+      "passkey": "Passkey",
+      "passkeyTitle": "{n} Passkeys insgesamt",
+      "noPassword": "Ohne Passwort",
+      "noPasswordTitle": "Meldet sich nur mit Discord, Google oder einem Passkey an",
+      "oneWay": "Nur ein Anmeldeweg",
+      "oneWayTitle": "Geht er verloren, sind sie ausgesperrt",
+      "suspended": "Gesperrt",
+      "uploadsBlocked": "Uploads blockiert",
+      "languageTheme": "Sprache und Design",
+      "otherCount": "Andere ({n})",
+      "followsBrowser": "Folgt dem Browser",
+      "themes": {
+        "system": "Design folgt dem Gerät",
+        "light": "Helles Design",
+        "dark": "Dunkles Design"
+      },
+      "servers": "Spielserver",
+      "noServer": "Nicht gesetzt",
+      "clients": "Client-Programme",
+      "oldTitle": "Geräte mit einer älteren Version als der neuesten genutzten ihres Programms",
+      "oldCount": "{n} mit älterer Version",
+      "old": "Älter",
+      "devices": "Geräte",
+      "firstSeen": "Zuerst gesehen",
+      "firstSeenTitle": "Wann sich diese Version zum ersten Mal gemeldet hat",
+      "noVersion": "Nicht gemeldet",
+      "noVersionTitle": "Angemeldet, und noch kein Heartbeat hat die Version genannt",
+      "noClients": "Kein Client-Programm angemeldet"
+    },
+    "retention": {
+      "title": "Laden noch hoch, nach Registrierungswoche",
+      "rule": "Anteil der Registrierungen jeder Woche",
+      "ruleTitle": "Ein Benutzer zählt in einer Woche, wenn er darin mindestens einen Snapshot gespeichert hat",
+      "signedUp": "Registriert",
+      "week": "W{n}",
+      "weekTitle": "{n} Wochen nach der Registrierung",
+      "cellTitle": "{n} von {of} Benutzern",
+      "months": "Zuletzt gesehen, nach Registrierungsmonat",
+      "seen30": "Gesehen, 30 T",
+      "gone": "Weg",
+      "goneTitle": "In den letzten 30 Tagen nicht gesehen",
+      "guests": "Gast-Umwandlungen",
+      "fromGuest": "Als Gast begonnen",
+      "fromGuestTitle": "Der Browser enthielt bei der Registrierung ein Gastkonto mit Daten",
+      "stillActive": "Noch aktiv",
+      "stillActiveTitle": "Davon in den letzten 7 Tagen aktiv"
+    },
+    "features": {
+      "title": "Funktionsnutzung",
+      "feature": "Funktion",
+      "changed": "Geändert, 7 T",
+      "changedTitle": "Konten, die es in den letzten 7 Tagen geändert haben",
+      "names": {
+        "plannerGoals": "Planer-Ziele",
+        "wishes": "Gebetsverlauf",
+        "achievements": "Errungenschafts-Markierungen",
+        "tasks": "Planer-Aufgaben",
+        "weaponGoals": "Waffenziele",
+        "anecdotes": "Reiseberichte-Markierungen",
+        "quests": "Weltauftrags-Markierungen",
+        "sharing": "Teilen"
+      },
+      "sharing": {
+        "title": "Teilen",
+        "accounts": "Geteilte Konten",
+        "viewers": "Betrachter",
+        "editors": "Bearbeiter",
+        "pending": "Offene Einladungen",
+        "pendingTitle": "Einladungen, die noch niemand angenommen hat",
+        "largest": "Meistgeteiltes Konto",
+        "largestTitle": "Die meisten Mitglieder, die ein Konto hat"
+      },
+      "alerts": {
+        "title": "Hinweise und Push",
+        "devices": "Geräte mit Hinweisen",
+        "subscriptions": "Push-Abos",
+        "failing": "Fehlerhaft",
+        "failingTitle": "Abos, deren letzte Zustellungen fehlgeschlagen sind",
+        "lastOk": "Zuletzt zugestellt"
+      },
+      "alertKinds": {
+        "resin": "Harzmenge",
+        "resinFull": "Harz voll",
+        "expeditions": "Erkundungen",
+        "welkin": "Mondsegen",
+        "commissions": "Tägliche Missionen",
+        "bargains": "Rares für Staub und Glanz"
+      },
+      "api": {
+        "title": "Öffentliche API",
+        "tokens": "Tokens",
+        "byUsers": "{n} Benutzer",
+        "used24h": "Genutzt, 24 h",
+        "used7d": "Genutzt, 7 T",
+        "write": "Darf schreiben",
+        "writeTitle": "Tokens, die etwas ändern dürfen, nicht nur lesen",
+        "expiring": "Laufen ab",
+        "expiringTitle": "Laufen innerhalb von 14 Tagen ab",
+        "revoked": "Widerrufen",
+        "supporters": "Unterstützer",
+        "customLimits": "Eigene Limits"
+      }
+    },
+    "uploads": {
+      "atCap": "Heute an einem Tageslimit",
+      "atCapHint": "{snapshots} Snapshots oder {size} gespeichert an einem Tag erreicht",
+      "thisWeek": "{n} diese Woche",
+      "day": "Snapshots, 24 h",
+      "stored": "{size} gespeichert",
+      "sources": "Uploads nach Programm",
+      "sampledTitle": "Welches Programm jede Datei als Ersteller nennt, über die neuesten {n} Snapshots",
+      "reasonsTitle": "Warum ein Client sie gesendet hat",
+      "none": "Keine Uploads in den letzten 24 Stunden",
+      "reasons": {
+        "login": "Anmeldung",
+        "world": "Weltwechsel",
+        "manual": "Von Hand",
+        "collapse": "Journal zusammengefasst",
+        "logout": "Abmeldung",
+        "resync": "Neu-Sync",
+        "change": "Eine Änderung",
+        "none": "Kein Grund angegeben"
+      }
+    }
+  },
+  "health": {
+    "title": "Zustand der Website",
+    "push": "Push-Hinweise",
+    "pushTitle": "An, solange beide Push-Schlüssel gesetzt sind",
+    "liveDb": "Live-Datenbank",
+    "liveDbTitle": "Die Datenbank, in die Live-Sync schreibt",
+    "usage": "Cloudflare-Nutzung",
+    "usageTitle": "An, solange das Nutzungs-Token und die Konto-ID gesetzt sind",
+    "usageZone": "Zählung je Route",
+    "usageZoneTitle": "An, solange auch die Zonen-ID gesetzt ist",
+    "lastSample": "Stündlicher Messwert",
+    "lastSampleTitle": "Wann der letzte Messwert der ganzen Website gespeichert wurde",
+    "never": "Nie",
+    "jobs": "Job-Läufe",
+    "noRuns": "Noch keine Läufe aufgezeichnet",
+    "job": "Job",
+    "ran": "Ausgeführt",
+    "tookHead": "Dauer",
+    "took": "{n} s",
+    "result": "Ergebnis",
+    "done": "Erledigt",
+    "failed": "Fehlgeschlagen",
+    "jobNames": {
+      "sample": "Stündlicher Messwert",
+      "events": "Spielaktionen",
+      "maintenance": "Nächtliche Bereinigung"
     }
   }
 }

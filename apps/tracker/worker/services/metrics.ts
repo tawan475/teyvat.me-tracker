@@ -39,7 +39,7 @@ import {
   type StaffOnlineRow,
   type TrendRange,
 } from '@gdt/shared'
-import { cloudflareUsage, liveRouteCounts } from './cf-usage'
+import { cloudflareUsage, hourFigures, liveRouteCounts, routeRefusals } from './cf-usage'
 import { liveHub } from './live'
 import { DAILY_BATCHES, liveDb } from './live-sync'
 import type { RoleRow, Standing } from './roles'
@@ -208,24 +208,41 @@ function sampleOf(row: Record<string, unknown>): SiteSample {
     mau: n(row.mau),
     dbBytes: n(row.db_bytes),
     liveBytes: n(row.live_bytes),
+    cf:
+      row.cf_requests == null && row.cf_4xx == null && row.cf_5xx == null
+        ? null
+        : {
+            requests: nullable(row.cf_requests),
+            errors: nullable(row.cf_errors),
+            cpuMs: nullable(row.cf_cpu_ms),
+            http4xx: nullable(row.cf_4xx),
+            http429: nullable(row.cf_429),
+            http5xx: nullable(row.cf_5xx),
+          },
   }
 }
+
+const nullable = (value: unknown): number | null => (value == null ? null : Number(value))
 
 /**
  * Stores this hour's reading of the whole site: one row, whatever the number
  * of users (a rerun in the same hour replaces it). The hourly cron calls it.
  */
 export async function takeSample(env: Env, now = Date.now()): Promise<SiteSample> {
-  const pass = await nowPass(env, now)
   const at = Math.floor(now / HOUR) * HOUR
+  // Cloudflare's figures for the hour that just ended ride in the same row.
+  const [pass, cf] = await Promise.all([nowPass(env, now), hourFigures(env, at).catch(() => null)])
   await env.DB.prepare(
     `INSERT INTO site_samples (at, users, online, capture, in_game, journals, batches, dau, wau,
-       mau, db_bytes, live_bytes)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
+       mau, db_bytes, live_bytes, cf_requests, cf_errors, cf_cpu_ms, cf_4xx, cf_429, cf_5xx)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)
      ON CONFLICT (at) DO UPDATE SET users = excluded.users, online = excluded.online,
        capture = excluded.capture, in_game = excluded.in_game, journals = excluded.journals,
        batches = excluded.batches, dau = excluded.dau, wau = excluded.wau, mau = excluded.mau,
-       db_bytes = excluded.db_bytes, live_bytes = excluded.live_bytes`,
+       db_bytes = excluded.db_bytes, live_bytes = excluded.live_bytes,
+       cf_requests = excluded.cf_requests, cf_errors = excluded.cf_errors,
+       cf_cpu_ms = excluded.cf_cpu_ms, cf_4xx = excluded.cf_4xx, cf_429 = excluded.cf_429,
+       cf_5xx = excluded.cf_5xx`,
   )
     .bind(
       at,
@@ -240,6 +257,12 @@ export async function takeSample(env: Env, now = Date.now()): Promise<SiteSample
       pass.mau,
       pass.dbBytes,
       pass.liveBytes,
+      cf?.requests ?? null,
+      cf?.errors ?? null,
+      cf?.cpuMs ?? null,
+      cf?.http4xx ?? null,
+      cf?.http429 ?? null,
+      cf?.http5xx ?? null,
     )
     .run()
   return {
@@ -255,6 +278,7 @@ export async function takeSample(env: Env, now = Date.now()): Promise<SiteSample
     mau: pass.mau,
     dbBytes: pass.dbBytes,
     liveBytes: pass.liveBytes,
+    cf,
   }
 }
 
@@ -810,8 +834,12 @@ export async function activityMetrics(
 
 // --------------------------------------------------------------- capacity
 
-export async function capacityMetrics(env: Env, now = Date.now()): Promise<StaffCapacityMetrics> {
-  const [pass, storage, usage] = await Promise.all([
+export async function capacityMetrics(
+  env: Env,
+  range: TrendRange = '7d',
+  now = Date.now(),
+): Promise<StaffCapacityMetrics> {
+  const [pass, storage, usage, routes, trend] = await Promise.all([
     passOf(env, now),
     memo('capacity:storage', METRICS_SLOW_TTL_MS, now, async () => {
       const [totals, growth] = await env.DB.batch<Record<string, unknown>>([
@@ -839,6 +867,8 @@ export async function capacityMetrics(env: Env, now = Date.now()): Promise<Staff
       }
     }),
     cloudflareUsage(env, now),
+    routeRefusals(env, now),
+    memo(`trend:${range}`, METRICS_TTL_MS, now, () => readSamples(env.DB, now - RANGE_MS[range])),
   ])
   return {
     at: pass.at,
@@ -849,5 +879,8 @@ export async function capacityMetrics(env: Env, now = Date.now()): Promise<Staff
     storage: storage.split,
     growthPerDay: storage.growthPerDay,
     usage,
+    routes,
+    range,
+    history: trend.filter((sample) => sample.cf),
   }
 }

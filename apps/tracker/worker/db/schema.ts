@@ -118,6 +118,12 @@ export const users = sqliteTable(
      * by the routes that change a device's alerts. Added in 0035.
      */
     alertsOn: integer('alerts_on'),
+    /**
+     * The browser that signed up held a guest account with data (README
+     * "Guest mode"): set by the sign-up's own insert, for the staff Insights
+     * page's guest conversions. Added in 0042.
+     */
+    fromGuest: integer('from_guest', { mode: 'boolean' }).notNull().default(false),
   },
   (t) => [
     uniqueIndex('users_import_key_hash_unique')
@@ -662,6 +668,16 @@ export const userSessions = sqliteTable(
      * staff Metrics page's Program column. Added in 0041.
      */
     client: text('client'),
+    /**
+     * What the client's heartbeat last said of itself (`app` and `platform`
+     * of `POST /api/irminsul/presence`), written by that route only when one
+     * of them changes, so about once per device per update. `client_version_at`:
+     * when this version was first heard. For the staff Insights page's
+     * Client programs. Added in 0042.
+     */
+    clientVersion: text('client_version'),
+    clientPlatform: text('client_platform'),
+    clientVersionAt: integer('client_version_at'),
   },
   (t) => [index('user_sessions_user_revoked_idx').on(t.userId, t.revokedAt)],
 )
@@ -858,7 +874,35 @@ export const siteSamples = sqliteTable('site_samples', {
   /** The two databases' sizes as D1 reported them (0: it did not say). */
   dbBytes: integer('db_bytes').notNull().default(0),
   liveBytes: integer('live_bytes').notNull().default(0),
+  // Cloudflare's own figures for the hour before the reading (services/
+  // cf-usage.ts `hourFigures`); NULL while the usage token is off or
+  // Cloudflare did not answer. Added in 0042.
+  cfRequests: integer('cf_requests'),
+  cfErrors: integer('cf_errors'),
+  cfCpuMs: integer('cf_cpu_ms'),
+  cf4xx: integer('cf_4xx'),
+  cf429: integer('cf_429'),
+  cf5xx: integer('cf_5xx'),
 })
+
+/**
+ * What each scheduled job did (migration 0042; services/job-runs.ts): one row
+ * per run of the hourly reading, the game events sync and the nightly
+ * clean-up, about 49 a day in total. `detail` is the job's own result as
+ * JSON. Rows older than 60 days go with the nightly run.
+ */
+export const jobRuns = sqliteTable(
+  'job_runs',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    job: text('job').notNull(),
+    startedAt: integer('started_at').notNull(),
+    tookMs: integer('took_ms').notNull().default(0),
+    ok: integer('ok', { mode: 'boolean' }).notNull().default(true),
+    detail: text('detail').notNull().default('{}'),
+  },
+  (t) => [index('job_runs_started_idx').on(t.startedAt)],
+)
 
 /**
  * Staff roles (migration 0020), Discord's model: `permissions` is a JSON array

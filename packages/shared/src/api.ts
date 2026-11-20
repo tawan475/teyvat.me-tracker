@@ -52,6 +52,8 @@ export const registerRequest = z.object({
   email: emailSchema.nullish().or(z.literal('').transform(() => null)),
   password: passwordSchema,
   turnstile: turnstileToken,
+  /** This browser holds a guest account with data (README "Guest mode"): kept as `users.from_guest`. */
+  guest: z.boolean().optional(),
 })
 
 /** Username or email. */
@@ -128,6 +130,8 @@ export const oauthRegisterRequest = z.object({
    */
   useEmail: z.boolean().default(false),
   turnstile: turnstileToken,
+  /** As `registerRequest.guest`. */
+  guest: z.boolean().optional(),
 })
 
 export const GENSHIN_SERVERS = ['AMERICA', 'EUROPE', 'ASIA', 'SAR'] as const

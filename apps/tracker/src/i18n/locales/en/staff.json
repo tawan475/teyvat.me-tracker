@@ -211,7 +211,24 @@
     "deleteTitle": "Delete {n} users",
     "deleteText": "Their accounts, snapshots and sign-ins go with them. This cannot be undone.",
     "deleteConfirm": "Delete users",
-    "suspendTitle": "Suspend {n} user | Suspend {n} users"
+    "suspendTitle": "Suspend {n} user | Suspend {n} users",
+    "flags": {
+      "label": "Moderation",
+      "countryTitle": "Only users who signed up from this country. Click to show everyone",
+      "burst": "Sign-up burst",
+      "burstTitle": "{n} or more sign-ups from one address within an hour",
+      "burstWhy": "{n} sign-ups from one address in an hour",
+      "manyAccounts": "Many accounts",
+      "manyAccountsTitle": "{n} or more Genshin accounts",
+      "sharedUid": "Shared UID",
+      "sharedUidTitle": "A UID that another user's account also has",
+      "sharedUidWhy": "UID {uid} is also another user's",
+      "heavy": "Heavy uploads",
+      "heavyTitle": "Stored more than a day's limit in the last 7 days",
+      "heavyWhy": "{size} stored in 7 days",
+      "unused": "Never used",
+      "unusedTitle": "Signed up over {n} days ago, stored nothing and never came back"
+    }
   },
   "storage": {
     "title": "Storage",
@@ -326,7 +343,19 @@
     "oneDevice": "One device",
     "limitDefault": "{key} default",
     "bulk": "bulk of {n}",
-    "events": "domain events {from} → {to}"
+    "events": "domain events {from} → {to}",
+    "summary": {
+      "title": "Staff actions",
+      "label": "Staff actions per day by kind, last 30 days",
+      "byStaff": "By staff member",
+      "staff": "Staff",
+      "views": "Data looks",
+      "viewsTitle": "Looks at users' game data",
+      "users": "Users",
+      "data": "Data",
+      "deletes": "Deletes",
+      "other": "Roles and site"
+    }
   },
   "user": {
     "title": "User",
@@ -736,7 +765,212 @@
       "bill": "Bill so far",
       "billTitle": "The plan's base price plus what is over the included amounts, at list prices",
       "projected": "Month end, at this pace",
-      "projectedTitle": "The same with this month's usage carried to the month's end"
+      "projectedTitle": "The same with this month's usage carried to the month's end",
+      "history": "Cloudflare, hour by hour",
+      "historyRequests": "Requests",
+      "historyRefused": "Refused",
+      "historyPeak": "{name}, peak {n}",
+      "historyLabel": "Worker requests and refused requests per hour",
+      "errors": "Errors and refusals",
+      "errorsTitle": "From Cloudflare's analytics. A Free zone keeps 24 hours",
+      "errorsOff": "Shown once the CF_ZONE_ID secret is set",
+      "errorsNone": "Nothing was refused",
+      "route": "Route",
+      "http4xxTitle": "Refused for a reason of the request: wrong input, not allowed, too large",
+      "http429Title": "Refused by a rate limit or a daily cap",
+      "http5xxTitle": "The Worker failed",
+      "otherRoutes": "Everything else"
+    }
+  },
+  "insights": {
+    "title": "Insights",
+    "readAtTitle": "Read {when}. Each section is read once in ten minutes at most, however many staff look",
+    "share": "Share",
+    "tabs": {
+      "all": "All",
+      "people": "People",
+      "retention": "Retention",
+      "features": "Features",
+      "uploads": "Uploads"
+    },
+    "tabTitles": {
+      "all": "Every section on one page",
+      "people": "Countries, ways to sign in, languages, client programs",
+      "retention": "Who comes back, and guest conversions",
+      "features": "Which parts of the site are used, sharing, alerts, the API",
+      "uploads": "Limits people run into, and where uploads come from"
+    },
+    "people": {
+      "bases": {
+        "signup": "Signed up from",
+        "session": "Last session"
+      },
+      "basisLabel": "Which place",
+      "countries": "Countries",
+      "country": "Country",
+      "active7d": "Active, 7 d",
+      "active7dTitle": "Active in the last 7 days",
+      "new30d": "New, 30 d",
+      "new30dTitle": "Signed up in the last 30 days",
+      "withClient": "With a client",
+      "withClientTitle": "Users with a client program signed in",
+      "uploading": "Uploading",
+      "uploadingTitle": "Stored a snapshot in the last 30 days",
+      "otherCountries": "Other ({n} countries)",
+      "openUsers": "Open the users from here",
+      "ways": "Ways in",
+      "password": "Password",
+      "passkey": "Passkey",
+      "passkeyTitle": "{n} passkeys in all",
+      "noPassword": "No password set",
+      "noPasswordTitle": "Signs in with Discord, Google or a passkey only",
+      "oneWay": "Only one way in",
+      "oneWayTitle": "Losing it locks them out",
+      "suspended": "Suspended",
+      "uploadsBlocked": "Uploads blocked",
+      "languageTheme": "Language and theme",
+      "otherCount": "Other ({n})",
+      "followsBrowser": "Follows the browser",
+      "themes": {
+        "system": "Theme follows the device",
+        "light": "Light theme",
+        "dark": "Dark theme"
+      },
+      "servers": "Game servers",
+      "noServer": "Not set",
+      "clients": "Client programs",
+      "oldTitle": "Devices on a version older than the newest in use of their program",
+      "oldCount": "{n} on an older version",
+      "old": "Older",
+      "devices": "Devices",
+      "firstSeen": "First seen",
+      "firstSeenTitle": "When this version was first heard from",
+      "noVersion": "Not reported",
+      "noVersionTitle": "Signed in, and no heartbeat has said its version yet",
+      "noClients": "No client program signed in"
+    },
+    "retention": {
+      "title": "Still uploading, by sign-up week",
+      "rule": "Share of each week's sign-ups",
+      "ruleTitle": "A user counts in a week when they stored at least one snapshot in it",
+      "signedUp": "Signed up",
+      "week": "W{n}",
+      "weekTitle": "{n} weeks after signing up",
+      "cellTitle": "{n} of {of} users",
+      "months": "Seen lately, by sign-up month",
+      "seen30": "Seen, 30 d",
+      "gone": "Gone",
+      "goneTitle": "Not seen in the last 30 days",
+      "guests": "Guest conversions",
+      "fromGuest": "Started as a guest",
+      "fromGuestTitle": "The browser held a guest account with data when it signed up",
+      "stillActive": "Still active",
+      "stillActiveTitle": "Of those, active in the last 7 days"
+    },
+    "features": {
+      "title": "Feature use",
+      "feature": "Feature",
+      "changed": "Changed, 7 d",
+      "changedTitle": "Accounts that changed it in the last 7 days",
+      "names": {
+        "plannerGoals": "Planner goals",
+        "wishes": "Wish history",
+        "achievements": "Achievement marks",
+        "tasks": "Planner tasks",
+        "weaponGoals": "Weapon goals",
+        "anecdotes": "Travel Accounts marks",
+        "quests": "World Quest marks",
+        "sharing": "Sharing"
+      },
+      "sharing": {
+        "title": "Sharing",
+        "accounts": "Shared accounts",
+        "viewers": "Viewers",
+        "editors": "Editors",
+        "pending": "Invites waiting",
+        "pendingTitle": "Invites nobody has accepted yet",
+        "largest": "Largest share",
+        "largestTitle": "The most members one account has"
+      },
+      "alerts": {
+        "title": "Alerts and push",
+        "devices": "Devices with alerts",
+        "subscriptions": "Push subscriptions",
+        "failing": "Failing",
+        "failingTitle": "Subscriptions whose last deliveries failed",
+        "lastOk": "Last delivered"
+      },
+      "alertKinds": {
+        "resin": "Resin amount",
+        "resinFull": "Resin full",
+        "expeditions": "Expeditions",
+        "welkin": "Welkin",
+        "commissions": "Commissions",
+        "bargains": "Bargains"
+      },
+      "api": {
+        "title": "Public API",
+        "tokens": "Tokens",
+        "byUsers": "{n} users",
+        "used24h": "Used, 24 h",
+        "used7d": "Used, 7 d",
+        "write": "May write",
+        "writeTitle": "Tokens that may change something, not only read",
+        "expiring": "Expiring",
+        "expiringTitle": "Expire within 14 days",
+        "revoked": "Revoked",
+        "supporters": "Supporters",
+        "customLimits": "Custom limits"
+      }
+    },
+    "uploads": {
+      "atCap": "At a daily cap today",
+      "atCapHint": "Reached {snapshots} snapshots or {size} stored in one day",
+      "thisWeek": "{n} this week",
+      "day": "Snapshots, 24 h",
+      "stored": "{size} stored",
+      "sources": "Uploads by program",
+      "sampledTitle": "What each file says made it, over the newest {n} snapshots",
+      "reasonsTitle": "Why a client sent them",
+      "none": "No uploads in the last day",
+      "reasons": {
+        "login": "Login",
+        "world": "World change",
+        "manual": "By hand",
+        "collapse": "Journal collapsed",
+        "logout": "Logout",
+        "resync": "Resync",
+        "change": "A change",
+        "none": "No reason given"
+      }
+    }
+  },
+  "health": {
+    "title": "Site health",
+    "push": "Push alerts",
+    "pushTitle": "On while both push keys are set",
+    "liveDb": "Live database",
+    "liveDbTitle": "The database live sync writes to",
+    "usage": "Cloudflare usage",
+    "usageTitle": "On while the usage token and the account ID are set",
+    "usageZone": "Per-route counts",
+    "usageZoneTitle": "On while the zone ID is set as well",
+    "lastSample": "Hourly reading",
+    "lastSampleTitle": "When the last reading of the whole site was stored",
+    "never": "Never",
+    "jobs": "Job runs",
+    "noRuns": "No runs recorded yet",
+    "job": "Job",
+    "ran": "Ran",
+    "tookHead": "Took",
+    "took": "{n} s",
+    "result": "Result",
+    "done": "Done",
+    "failed": "Failed",
+    "jobNames": {
+      "sample": "Hourly reading",
+      "events": "Game events",
+      "maintenance": "Nightly clean-up"
     }
   }
 }

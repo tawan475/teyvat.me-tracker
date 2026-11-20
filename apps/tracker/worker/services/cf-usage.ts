@@ -19,8 +19,11 @@ import {
   METRICS_SLOW_TTL_MS,
   USAGE_KEYS,
   USAGE_PLAN,
+  routeOf,
   usageBill,
   type CloudflareUsage,
+  type RouteRefusals,
+  type SiteSample,
   type UsageItem,
   type UsageKey,
 } from '@gdt/shared'
@@ -194,4 +197,101 @@ export function liveRouteCounts(
     ])
     return { resyncs, capRefusals }
   })
+}
+
+/** How many routes the errors table names before the rest is summed. */
+const ROUTES_MAX = 8
+
+/**
+ * The last 24 hours' refused API requests (status 400 and up) by route, most
+ * first, the rest summed as `other`; null while off, without the zone ID, or
+ * when Cloudflare does not answer. A Free zone keeps 24 hours.
+ */
+export function routeRefusals(env: Env, now = Date.now()): Promise<RouteRefusals[] | null> {
+  const config = usageConfig(env)
+  if (!config?.zone) return Promise.resolve(null)
+  return memo(`refusals:${config.zone}`, now, async () => {
+    const dataset = 'httpRequestsAdaptiveGroups'
+    const since = new Date(now - 86_400_000).toISOString()
+    const data = await ask(
+      config,
+      `{ viewer { zones(filter: {zoneTag: "${config.zone}"}) {
+         ${dataset}(limit: 1000, orderBy: [count_DESC], filter: {datetime_geq: "${since}", clientRequestPath_like: "/api/%", edgeResponseStatus_geq: 400}) {
+           count dimensions { clientRequestPath edgeResponseStatus } } } } }`,
+    )
+    const rows = rowsOf(data, 'zones', dataset)
+    if (!rows) return null
+    const routes = new Map<string, RouteRefusals>()
+    for (const row of rows) {
+      const dimensions = (row.dimensions ?? {}) as Json
+      const route = routeOf(String(dimensions.clientRequestPath ?? ''))
+      const status = Number(dimensions.edgeResponseStatus ?? 0)
+      const count = Number(row.count ?? 0) || 0
+      const sum = routes.get(route) ?? { route, http4xx: 0, http429: 0, http5xx: 0 }
+      if (status === 429) sum.http429 += count
+      else if (status >= 500) sum.http5xx += count
+      else sum.http4xx += count
+      routes.set(route, sum)
+    }
+    const total = (r: RouteRefusals) => r.http4xx + r.http429 + r.http5xx
+    const sorted = [...routes.values()].sort((a, b) => total(b) - total(a))
+    const named = sorted.slice(0, ROUTES_MAX)
+    const rest = sorted.slice(ROUTES_MAX)
+    if (rest.length) {
+      named.push(
+        rest.reduce(
+          (sum, r) => ({
+            route: 'other',
+            http4xx: sum.http4xx + r.http4xx,
+            http429: sum.http429 + r.http429,
+            http5xx: sum.http5xx + r.http5xx,
+          }),
+          { route: 'other', http4xx: 0, http429: 0, http5xx: 0 },
+        ),
+      )
+    }
+    return named
+  })
+}
+
+/**
+ * Cloudflare's figures for the hour that ended at `hourEnd`, for the hourly
+ * reading (services/metrics.ts `takeSample`): null while the reader is off.
+ * Up to six small questions an hour; a figure Cloudflare refuses stays null.
+ */
+export async function hourFigures(env: Env, hourEnd: number): Promise<SiteSample['cf']> {
+  const config = usageConfig(env)
+  if (!config) return null
+  const from = new Date(hourEnd - 3_600_000).toISOString()
+  const to = new Date(hourEnd).toISOString()
+  const times = `datetime_geq: "${from}", datetime_lt: "${to}"`
+  const zoneCount = async (status: string): Promise<number | null> => {
+    if (!config.zone) return null
+    const dataset = 'httpRequestsAdaptiveGroups'
+    const data = await ask(
+      config,
+      `{ viewer { zones(filter: {zoneTag: "${config.zone}"}) {
+         ${dataset}(limit: 100, filter: {${times}, clientRequestPath_like: "/api/%", ${status}}) { count } } } }`,
+    )
+    const rows = rowsOf(data, 'zones', dataset)
+    return rows ? rows.reduce((sum, row) => sum + (Number(row.count ?? 0) || 0), 0) : null
+  }
+  const [requests, errors, cpuUs, http4xx, http429, http5xx] = await Promise.all([
+    accountSum(config, 'workersInvocationsAdaptive', times, 'requests'),
+    accountSum(config, 'workersInvocationsAdaptive', times, 'errors'),
+    accountSum(config, 'workersInvocationsAdaptive', times, 'cpuTimeUs'),
+    zoneCount(
+      'edgeResponseStatus_geq: 400, edgeResponseStatus_lt: 500, edgeResponseStatus_neq: 429',
+    ),
+    zoneCount('edgeResponseStatus: 429'),
+    zoneCount('edgeResponseStatus_geq: 500'),
+  ])
+  return {
+    requests,
+    errors,
+    cpuMs: cpuUs === null ? null : Math.round(cpuUs / 1000),
+    http4xx,
+    http429,
+    http5xx,
+  }
 }

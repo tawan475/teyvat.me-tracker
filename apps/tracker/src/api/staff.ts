@@ -14,7 +14,16 @@ import type {
   InspectView,
   SignupMode,
   SnapshotResponse,
+  ActivityRange,
+  JournalSort,
+  OnlineFilter,
+  StaffActivityMetrics,
   StaffAuditResponse,
+  StaffCapacityMetrics,
+  StaffLiveMetrics,
+  StaffNowMetrics,
+  StaffOnlineResponse,
+  TrendRange,
   StaffInspectResponse,
   StaffMeResponse,
   StaffOverviewResponse,
@@ -142,6 +151,17 @@ export const staffApi = {
     q?: string
     page?: number
   }) => requestJson<StaffStorageResponse>(`/api/staff/storage${query(params)}`),
+
+  // The Metrics page (site.metrics): every figure is read on the page's open.
+  metricsNow: (range?: TrendRange) =>
+    requestJson<StaffNowMetrics>(`/api/staff/metrics/now${query({ range })}`),
+  metricsOnline: (params: { filter?: OnlineFilter; page?: number }) =>
+    requestJson<StaffOnlineResponse>(`/api/staff/metrics/online${query(params)}`),
+  metricsLive: (params: { sort?: JournalSort; page?: number }) =>
+    requestJson<StaffLiveMetrics>(`/api/staff/metrics/live${query(params)}`),
+  metricsActivity: (range?: ActivityRange) =>
+    requestJson<StaffActivityMetrics>(`/api/staff/metrics/activity${query({ range })}`),
+  metricsCapacity: () => requestJson<StaffCapacityMetrics>('/api/staff/metrics/capacity'),
 
   roles: () => requestJson<StaffRolesResponse>('/api/staff/roles'),
   createRole: (body: { name: string; color: string; permissions: string[] }) =>

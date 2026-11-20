@@ -655,6 +655,13 @@ export const userSessions = sqliteTable(
      * its own notification. NULL: never set. Added in 0035.
      */
     alerts: text('alerts', { mode: 'json' }).$type<DeviceAlerts>(),
+    /**
+     * The name a client program gave itself when it signed in (`app` of the
+     * token request: `teyvatme`, or another client's own name; `@gdt/shared`
+     * clientName). NULL: a browser, or a sign-in from before 0041. For the
+     * staff Metrics page's Program column. Added in 0041.
+     */
+    client: text('client'),
   },
   (t) => [index('user_sessions_user_revoked_idx').on(t.userId, t.revokedAt)],
 )
@@ -825,6 +832,32 @@ export const siteSettings = sqliteTable('site_settings', {
   updatedAt: timestamp('updated_at'),
   /** The staff member who set it; NULL: set by hand (wrangler) or since deleted. */
   updatedBy: integer('updated_by').references(() => users.id, { onDelete: 'set null' }),
+})
+
+/**
+ * One reading of the whole site per hour (migration 0041; services/metrics.ts
+ * `takeSample`, run by the hourly cron): what the staff Metrics page draws
+ * its trends from. One row an hour whatever the number of users; `at` is the
+ * hour's start (unix ms), so a rerun in the same hour replaces its row.
+ */
+export const siteSamples = sqliteTable('site_samples', {
+  at: integer('at').primaryKey(),
+  users: integer('users').notNull().default(0),
+  /** Users with an open site socket (`users.live_since`). */
+  online: integer('online').notNull().default(0),
+  /** Capture sign-ins renewed in the last 20 minutes. */
+  capture: integer('capture').notNull().default(0),
+  /** Accounts whose live journal got a batch in the last 15 minutes. */
+  inGame: integer('in_game').notNull().default(0),
+  journals: integer('journals').notNull().default(0),
+  /** Live batches so far that UTC day. */
+  batches: integer('batches').notNull().default(0),
+  dau: integer('dau').notNull().default(0),
+  wau: integer('wau').notNull().default(0),
+  mau: integer('mau').notNull().default(0),
+  /** The two databases' sizes as D1 reported them (0: it did not say). */
+  dbBytes: integer('db_bytes').notNull().default(0),
+  liveBytes: integer('live_bytes').notNull().default(0),
 })
 
 /**

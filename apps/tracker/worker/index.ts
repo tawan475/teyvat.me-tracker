@@ -31,6 +31,7 @@ import { wishProxy } from './routes/wish-proxy'
 import { wishAccounts, wishSync } from './routes/wishes'
 import { syncGameEvents } from './services/game-events'
 import { runMaintenance } from './services/maintenance'
+import { takeSample } from './services/metrics'
 
 const app = new Hono<AppEnv>().basePath('/api')
 
@@ -124,6 +125,13 @@ export default {
     // Cloudflare (scripts/repack.ts): a long history's re-encode outran the
     // Worker's CPU limit.
     if (controller.cron === EVENTS_CRON) {
+      // The same hour's reading of the whole site, for the staff Metrics
+      // page's trends (services/metrics.ts): one row an hour, however many users.
+      ctx.waitUntil(
+        takeSample(env).catch((error: unknown) =>
+          console.warn('site_sample_failed', String(error)),
+        ),
+      )
       ctx.waitUntil(
         syncGameEvents(env.DB).then((status) =>
           console.log(

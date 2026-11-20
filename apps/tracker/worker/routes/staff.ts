@@ -14,6 +14,7 @@
  * - Data (data.*): block uploads, storage quota, reset keys, purge
  *   snapshots, delete a Genshin account, inspect (read-only, logged).
  * - `GET /storage` (data.storage), roles (roles.manage), `GET /audit`.
+ * - `GET /metrics/*` (site.metrics): routes/staff-metrics.ts.
  */
 
 import {
@@ -132,6 +133,7 @@ import { lastEventsSync, syncGameEvents } from '../services/game-events'
 import { deleteUsers } from '../services/user-delete'
 import { UPLOAD_SETTING_KEYS, utcDay } from '../services/upload-limits'
 import { readWishHistory } from '../services/wishes'
+import { staffMetrics } from './staff-metrics'
 import {
   readAchievementMarks,
   readAnecdoteMarks,
@@ -332,6 +334,11 @@ export const staff = new Hono<AppEnv>()
       roles: actor.roles.map(roleRef),
     })
   })
+
+  // ----------------------------------------------------------------- metrics
+
+  // Who is online, live sync, activity and capacity (routes/staff-metrics.ts).
+  .route('/metrics', staffMetrics)
 
   // ---------------------------------------------------------------- overview
 

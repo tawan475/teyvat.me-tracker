@@ -22,6 +22,7 @@ import {
   encodeStaticSections,
   lastRemoval,
   planSnapshotV2,
+  RECENT_ANCHORS,
   prepareSnapshot,
   resolveImportTimestamp,
   sameOff,
@@ -127,6 +128,17 @@ function nearestOf(store: LocalStore, takenAt: number): SnapshotRow | null {
     }
   }
   return before ?? after
+}
+
+/**
+ * The snapshots before the nearest one (the Worker's RECENT_SQL): the
+ * RECENT_ANCHORS captures at or before `takenAt` after the newest of them.
+ */
+function recentOf(store: LocalStore, takenAt: number): SnapshotRow[] {
+  return [...store.snapshots.values()]
+    .filter((row) => row.takenAt <= takenAt)
+    .sort((a, b) => b.takenAt - a.takenAt || b.id - a.id)
+    .slice(1, 1 + RECENT_ANCHORS)
 }
 
 /** A blob with its bases, decoded (as knownBlobs reads them from D1). */
@@ -289,7 +301,10 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
     }
 
     const nearest = nearestOf(store, takenAt)
-    const known = nearest ? knownBlobs(store, nearest.refs) : new Map<number, KnownBlob>()
+    const recent = nearest ? recentOf(store, takenAt) : []
+    const known = nearest
+      ? knownBlobs(store, [...nearest.refs, ...recent.flatMap((row) => row.refs)])
+      : new Map<number, KnownBlob>()
     const existing = new Map<string, { id: number; code: number }>()
     for (const blob of store.blobs.values())
       existing.set(blob.hash, { id: blob.id, code: blob.code })
@@ -302,6 +317,9 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
             SLOTS.map((slot, i) => [slot, known.get(nearest.refs[i] ?? -1) ?? null]),
           )
         : {},
+      recent: Object.fromEntries(
+        SLOTS.map((slot, i) => [slot, recent.map((row) => known.get(row.refs[i] ?? -1) ?? null)]),
+      ),
       existing,
     })
 

@@ -149,7 +149,26 @@ export interface PlanInput {
   growthBytes?: number
   /** Slots whose section is a stored blob already (its id): pointed at, nothing planned. */
   held?: Partial<Record<Slot, number>>
+  /** The blobs of the snapshots before the neighbour (RECENT_ANCHORS), bases attached. */
+  recent?: RecentBlobs
 }
+
+/**
+ * Each slot's blobs of the few snapshots before the neighbour one, nearest
+ * first: more anchors a changed full section may be compressed against.
+ */
+export type RecentBlobs = Partial<Record<Slot, readonly (KnownBlob | null)[]>>
+
+/**
+ * How many snapshots before the neighbour lend their anchors. A part that
+ * alternates between two shapes (Capture's logout and login snapshots told
+ * apart: boss respawns, Aranara, 2026-11-21) never matched the neighbour's
+ * anchor, the other shape, so it was stored mostly whole on every upload.
+ * The snapshot before the neighbour holds the other shape's anchor:
+ * replaying one account's last 60 tasks sections took 437 B per snapshot
+ * down to 325 B; a second snapshot gave nothing more.
+ */
+export const RECENT_ANCHORS = 1
 
 /**
  * Bytes a delta grows by per changed snapshot, in the cost model of
@@ -225,6 +244,7 @@ export async function planSnapshotV2(input: PlanInput): Promise<SnapshotPlan> {
     materialsDictionary: input.materialsDictionary,
     growthBytes: input.growthBytes,
     held: input.held,
+    recent: input.recent,
   })
   return { ...plan, playerVars }
 }
@@ -252,6 +272,8 @@ export interface SectionPlanInput {
   growthBytes?: number
   /** Slots whose section is a stored blob already (its id). */
   held?: Partial<Record<Slot, number>>
+  /** The blobs of the snapshots before that one (see RecentBlobs). */
+  recent?: RecentBlobs
 }
 
 /** The root of a blob's chain of bases: the standalone blob it ends at. */
@@ -291,36 +313,69 @@ export async function planSections(
   }
 
   /**
-   * A full section: against its anchor when that pays, else standalone.
-   * `neighbour`: the neighbour snapshot's blob of the slot, for the
+   * A full section: against the anchor it compresses best against when that
+   * pays, else standalone. `anchors`: the standalone blobs it may be
+   * compressed against, the neighbour's first (ties keep it). `neighbours`:
+   * the neighbour snapshot's blob of the slot and those before it, for the
    * stale-anchor test (STALE_RATIO).
    */
   const storeFull = (
     kind: SectionKind,
     value: unknown,
     hash: string,
-    anchor: KnownBlob | null,
-    neighbour: KnownBlob | null,
+    anchors: readonly KnownBlob[],
+    neighbours: readonly KnownBlob[],
   ): { ref: BlobRef; size: number; base: KnownBlob | null; blob: EncodedBlob } => {
-    const { standalone, withBase } = encodeSectionBlobVariants(kind, value, anchor?.decoded ?? null)
+    const first = encodeSectionBlobVariants(kind, value, anchors[0]?.decoded ?? null)
+    const { standalone } = first
+    let withBase = first.withBase
+    let anchor = withBase ? anchors[0]! : null
+    for (const other of anchors.slice(1)) {
+      const variant = encodeSectionBlobVariants(kind, value, other.decoded).withBase
+      if (variant && (!withBase || variant.data.length < withBase.data.length)) {
+        withBase = variant
+        anchor = other
+      }
+    }
     let useBase = withBase !== null && withBase.data.length * REANCHOR <= standalone.data.length
-    if (
-      useBase &&
-      neighbour &&
-      neighbour.id !== anchor?.id &&
-      withBase!.data.length > STALE_MIN_BYTES
-    ) {
-      const againstNeighbour =
-        deflate(standalone.payload.subarray(1), neighbour.decoded.payload).length + 1
+    if (useBase && withBase!.data.length > STALE_MIN_BYTES) {
+      const body = standalone.payload.subarray(1)
+      let againstNeighbour = Infinity
+      for (const neighbour of neighbours) {
+        if (neighbour.id === anchor?.id) continue
+        againstNeighbour = Math.min(
+          againstNeighbour,
+          deflate(body, neighbour.decoded.payload).length + 1,
+        )
+      }
       if (withBase!.data.length > STALE_RATIO * againstNeighbour) useBase = false
     }
     const blob = useBase ? withBase! : standalone
     const base = useBase ? anchor : null
     return { ref: { hash }, size: blob.data.length, base, blob }
   }
-  /** The standalone blob a full section of this kind would be compressed against. */
-  const anchorOf = (blob: KnownBlob | null | undefined): KnownBlob | null =>
-    blob ? rootOf(blob) : null
+  /**
+   * The standalone blobs a full section of this slot may be compressed
+   * against, each once: `first`'s root (ties keep it), then the recent
+   * snapshots' roots. Only roots: chains stay one deep.
+   */
+  const anchorsOf = (slot: Slot, first: KnownBlob | null): KnownBlob[] => {
+    const out: KnownBlob[] = []
+    for (const blob of [first, ...(input.recent?.[slot] ?? [])]) {
+      if (!blob) continue
+      const root = rootOf(blob)
+      if (!out.some((known) => known.id === root.id)) out.push(root)
+    }
+    return out
+  }
+  /** `first` and the recent snapshots' blobs of the slot, each once. */
+  const neighboursOf = (slot: Slot, first: KnownBlob | null): KnownBlob[] => {
+    const out: KnownBlob[] = []
+    for (const blob of [first, ...(input.recent?.[slot] ?? [])]) {
+      if (blob && !out.some((known) => known.id === blob.id)) out.push(blob)
+    }
+    return out
+  }
 
   const refs = {} as Record<Slot, BlobRef | null>
 
@@ -353,7 +408,7 @@ export async function planSections(
     const candidate = !latest ? null : kindOfCode(latest.code).delta ? latest.base : latest
     const keyframe = candidate && !candidate.base?.base ? candidate : null
     if (!DELTA_KINDS.has(slot) || !keyframe) {
-      const full = storeFull(slot, value, hash, anchorOf(latest), latest)
+      const full = storeFull(slot, value, hash, anchorsOf(slot, latest), neighboursOf(slot, latest))
       refs[slot] = store(hash, kindCode(slot, false), full.base, full.blob)
       continue
     }
@@ -397,7 +452,13 @@ export async function planSections(
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
       continue
     }
-    const full = storeFull(slot, value, hash, anchorOf(keyframe), keyframe)
+    const full = storeFull(
+      slot,
+      value,
+      hash,
+      anchorsOf(slot, keyframe),
+      neighboursOf(slot, keyframe),
+    )
     if (deltaBlob.data.length ** 2 <= 2 * growth * full.size) {
       refs[slot] = store(deltaHash, kindCode(slot, true), keyframe, deltaBlob)
     } else {

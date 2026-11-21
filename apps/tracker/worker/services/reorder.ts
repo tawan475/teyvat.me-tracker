@@ -35,6 +35,7 @@ import {
   fullSection,
   kindOfCode,
   planSections,
+  RECENT_ANCHORS,
   sectionHashOf,
   shortHashHex,
   type AchievementTimesSection,
@@ -163,6 +164,8 @@ export async function planReorder(
   let nextId = -1
   const existing = new Map<string, { id: number; code: number }>()
   let previous: Partial<Record<Slot, KnownBlob | null>> = {}
+  /** The snapshots replayed before `previous`, newest first (the import's RECENT_SQL). */
+  const older: Partial<Record<Slot, KnownBlob | null>>[] = []
   const refs: { id: number; hashes: Partial<Record<Slot, string>>; size: number }[] = []
 
   for (const s of ordered) {
@@ -180,6 +183,9 @@ export async function planReorder(
     const plan = await planSections({
       values,
       latest: previous,
+      recent: Object.fromEntries(
+        SLOTS.map((slot) => [slot, older.map((blobs) => blobs[slot] ?? null)]),
+      ),
       existing,
       materialsDictionary: MATERIALS,
     })
@@ -225,6 +231,8 @@ export async function planReorder(
       hashes[slot] = hash
       latest[slot] = known.get(hash)!
     }
+    older.unshift(previous)
+    older.length = Math.min(older.length, RECENT_ANCHORS)
     previous = latest
     refs.push({ id: s.id, hashes, size })
   }

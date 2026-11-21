@@ -40,6 +40,7 @@ import {
   encodeStaticSections,
   kindOfCode,
   planSnapshotV2,
+  RECENT_ANCHORS,
   prepareSnapshot,
   resolveDeferredArtifacts,
   resolveImportTimestamp,
@@ -143,12 +144,24 @@ export const NEAREST_SQL = `SELECT id, ${REFS_SQL} FROM (
   ) ORDER BY side LIMIT 1`
 
 /**
- * The nearest snapshot's (NEAREST_SQL) v2 sections and every blob they need
- * (bases, and their dictionaries), with data: at most three levels. Nothing
- * for a v1 row.
+ * The snapshots before the nearest one (RECENT_ANCHORS of them, nearest
+ * first): their blobs are more anchors a changed section may be compressed
+ * against (store-v2 RecentBlobs). With no capture at or before the upload's
+ * time the nearest is after it and there are none. ?1 the account, ?2 the
+ * upload's capture time.
+ */
+export const RECENT_SQL = `SELECT id, ${REFS_SQL} FROM snapshots
+  WHERE account_id = ?1 AND deleted_at IS NULL AND taken_at <= ?2
+  ORDER BY taken_at DESC, id DESC LIMIT ${RECENT_ANCHORS} OFFSET 1`
+
+/**
+ * The v2 sections of the nearest snapshot (NEAREST_SQL) and of the ones
+ * before it (RECENT_SQL), and every blob they need (bases, and their
+ * dictionaries), with data: at most three levels. Nothing for a v1 row.
  */
 export const LATEST_BLOBS_SQL = `WITH RECURSIVE latest AS (
-    SELECT ${REFS_SQL} FROM (${NEAREST_SQL})),
+    SELECT ${REFS_SQL} FROM (${NEAREST_SQL})
+    UNION ALL SELECT ${REFS_SQL} FROM (${RECENT_SQL})),
   need(id, depth) AS (
     SELECT j.value, 0 FROM latest, json_each(json_array(${REFS_SQL})) AS j
     UNION SELECT b.base_id, n.depth + 1 FROM section_blobs AS b JOIN need AS n ON b.id = n.id
@@ -279,6 +292,7 @@ async function importOnce(
   const [
     latestResult,
     nearestResult,
+    recentResult,
     sameTimeResult,
     idsResult,
     chunksResult,
@@ -289,6 +303,7 @@ async function importOnce(
   ] = await meter.batch(d1, 'lookup', [
     d1.prepare(latestSql(legacy)).bind(accountId),
     d1.prepare(NEAREST_SQL).bind(accountId, takenAt),
+    d1.prepare(RECENT_SQL).bind(accountId, takenAt),
     d1.prepare(sameTimeSql(legacy)).bind(accountId, takenAt),
     deferred
       ? d1.prepare('SELECT id, hash FROM artifacts WHERE account_id = ?1').bind(accountId)
@@ -502,16 +517,16 @@ async function importOnce(
   // (A held artifacts section is pointed at as it is: the neighbour's is not decoded.)
   const known =
     nearest?.characters_ref != null ? knownBlobs(blobsResult!.results, held !== null) : null
+  const blobsOf = (row: Record<string, unknown>, slot: Slot) =>
+    known!.get((row[REF_COLUMNS[slot]] as number | null) ?? -1) ?? null
   const plan = await planSnapshotV2({
     encoded,
     prepared,
     materialsDictionary: MATERIALS,
-    latest: known
+    latest: known ? Object.fromEntries(SLOTS.map((slot) => [slot, blobsOf(nearest!, slot)])) : {},
+    recent: known
       ? Object.fromEntries(
-          SLOTS.map((slot) => [
-            slot,
-            known.get((nearest![REF_COLUMNS[slot]] as number) ?? -1) ?? null,
-          ]),
+          SLOTS.map((slot) => [slot, recentResult!.results.map((row) => blobsOf(row, slot))]),
         )
       : {},
     existing,

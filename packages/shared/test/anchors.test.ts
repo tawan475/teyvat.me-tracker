@@ -25,10 +25,13 @@ interface Row {
 /** Plans `values` one after another as one account's collections2 sections. */
 async function chain(
   values: readonly unknown[],
+  /** How many snapshots before the neighbour lend their anchors (store-v2 RecentBlobs). */
+  recentCount = 0,
 ): Promise<{ rows: Row[]; known: Map<number, KnownBlob> }> {
   const known = new Map<number, KnownBlob>()
   const byHash = new Map<string, { id: number; code: number }>()
   let latest: KnownBlob | null = null
+  const older: KnownBlob[] = []
   let next = 1
   const rows: Row[] = []
   for (const value of values) {
@@ -36,10 +39,12 @@ async function chain(
     const plan = await planSections({
       values: { collections2: { value, hash } },
       latest: { collections2: latest },
+      recent: { collections2: older.slice(0, recentCount) },
       existing: byHash,
       materialsDictionary: MATERIALS,
     })
     const blob = plan.blobs[0]
+    if (latest) older.unshift(latest)
     if (!blob) {
       const ref = plan.refs.collections2!
       latest = known.get('id' in ref ? ref.id : byHash.get(ref.hash)!.id)!
@@ -173,5 +178,36 @@ describe('stale anchors', () => {
     for (const blob of known.values()) {
       if (blob.base) expect(blob.base.base).toBeNull()
     }
+  })
+
+  it('a part that flips between two shapes rides on the anchor of its own shape', async () => {
+    // Capture's logout and login snapshots told a part apart (2026-11-21):
+    // the neighbour's anchor is always the other shape.
+    const rand = random(19)
+    let defeats = defeatRows(rand, 900)
+    const blueprints = ascending(rand, 600)
+    const login = ascending(rand, 900, 70000)
+    const logout = ascending(rand, 900, 90000)
+    const values: unknown[] = []
+    for (let i = 0; i < 40; i++) {
+      defeats = moreDefeats(defeats, 3, i)
+      values.push(section(defeats, blueprints, i % 2 === 0 ? login : logout))
+    }
+    const total = (rows: Row[]) => rows.slice(2).reduce((sum, row) => sum + row.bytes, 0)
+    const without = await chain(values)
+    const withRecent = await chain(values, 1)
+    expect(total(withRecent.rows)).toBeLessThan(total(without.rows) * 0.75)
+    // Once its shape has an anchor of its own, every logout row is smaller.
+    for (let i = 5; i < values.length; i += 2) {
+      expect(withRecent.rows[i]!.bytes).toBeLessThan(without.rows[i]!.bytes)
+    }
+    // Still one deep, and every blob decodes.
+    for (const blob of withRecent.known.values()) {
+      if (blob.base) expect(blob.base.base).toBeNull()
+    }
+    values.forEach((value, i) => {
+      const row = withRecent.rows[i]!
+      expect(withRecent.known.get(row.id)!.decoded.value).toEqual(value)
+    })
   })
 })

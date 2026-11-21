@@ -16,7 +16,7 @@ import {
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { describe, expect, it } from 'vitest'
 import { BUNDLE_IDS_SQL, V2_BLOBS_SQL, V2_META_SQL } from '../services/export'
-import { LATEST_BLOBS_SQL, NEAREST_SQL } from '../services/import'
+import { LATEST_BLOBS_SQL, NEAREST_SQL, RECENT_SQL } from '../services/import'
 import { reorderAccount } from '../services/reorder'
 import { COLLECT_SECTION_BLOBS, runMaintenance, TRASH_DAYS } from '../services/maintenance'
 import type { RepackResult } from '../services/repack'
@@ -378,6 +378,7 @@ describe('snapshot query plans', () => {
       [1],
     ],
     ['nearest capture (import)', NEAREST_SQL, [1, 2]],
+    ['captures before the nearest (import)', RECENT_SQL, [1, 2]],
     [
       'same capture time',
       `SELECT id FROM snapshots WHERE account_id = ?1 AND taken_at = ?2 AND deleted_at IS NULL`,

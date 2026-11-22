@@ -26,6 +26,7 @@
  */
 
 import {
+  isDroppedChange,
   addPoint,
   applyFigures,
   decodeChanges,
@@ -276,8 +277,9 @@ export async function storeBatch(
   ) {
     throw new ApiError(409, 'resync', 'This batch does not follow the journal: send a snapshot')
   }
+  // Fields the tracker no longer keeps (dropped.ts) are not stored either.
   const sent = dropMaterialChanges(
-    delta.changes,
+    delta.changes.filter((change) => !isDroppedChange(change)),
     offBagKeys(offOfMask(Number(journal.base_off ?? 0))),
   )
   const dayBatches = journal.day === today ? journal.day_batches : 0

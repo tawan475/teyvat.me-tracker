@@ -47,12 +47,16 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
     const exported = await client.json<Good>(
       `/api/accounts/${account.id}/snapshots/${first.snapshotId}/good`,
     )
-    expect(exported.gi_tasks).toEqual(full.gi_tasks)
+    // Respawns and events are not kept, monsters seen only as a count (dropped.ts).
+    const { respawns: _respawns, ...tasks } = full.gi_tasks
+    expect(exported.gi_tasks).toEqual(tasks)
     expect(exported.gi_collections!.hangouts).toEqual(new17.collections.hangouts)
     expect(exported.gi_collections!.blueprints).toEqual(new17.collections.blueprints)
+    expect(exported.gi_collections!.monstersSeen).toBeUndefined()
+    expect(exported.gi_collections!.monstersSeenCount).toBe(new17.collections.monstersSeen.length)
     expect(exported.gi_achievement_progress).toEqual(new17.achievementProgress)
-    expect(exported.gi_events).toEqual(new17.events)
-    expect(Object.keys(exported).slice(-2)).toEqual(['gi_achievement_progress', 'gi_events'])
+    expect(exported.gi_events).toBeUndefined()
+    expect(Object.keys(exported).at(-1)).toBe('gi_achievement_progress')
   })
 
   it('keeps re-uploading a capture a no-op when it was stored before 1.7.0', async () => {

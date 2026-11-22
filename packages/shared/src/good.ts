@@ -273,6 +273,12 @@ export interface GiCollections {
   hangouts?: Record<string, GiHangout>
   /** Monster ids the player has seen (variants too), ascending. */
   monstersSeen?: number[]
+  /**
+   * How many monsters the player has seen: what the tracker keeps of
+   * `monstersSeen` (2026-11-22: only the count is shown). Written by the
+   * tracker's exports; an upload may send it in place of the list.
+   */
+  monstersSeenCount?: number
   /** Furnishing blueprints learned, by item id, ascending. */
   blueprints?: number[]
   /** Recipes unlocked (Capture 1.8.0): crafting bench (Combine), blacksmith (Forge), processing (Compound). */

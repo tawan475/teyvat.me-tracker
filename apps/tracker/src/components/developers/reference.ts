@@ -134,7 +134,7 @@ export const KEY_DOCS: KeyDoc[] = [
   resinSpent?: { value: number; day: number; at: number }   // day 1 = Monday
   weeklyBosses?: { left: number; used?: number; limit: number; cost: number; fullCost: number }
   arRewards?: number[]                            // ranks whose reward was claimed
-  respawns?: Record<id, number[]>                 // Handbook boss or elite → respawn times
+  respawns?: Record<id, number[]>                 // Handbook boss or elite → respawn times (teyvat.me doesn't keep it)
   signIns?: Record<id, { days: number; claimed: number[]; lastAt: number; start: number; end: number }>
   bargains?: {                                    // Paimon's Bargains, when the shop was opened
     at: number
@@ -186,7 +186,7 @@ export const KEY_DOCS: KeyDoc[] = [
   recipes?: Record<id, number>        // recipe → proficiency
   hangouts?: Record<id, { state?; endings: Record<id, 'locked' | 'unclaimed' | 'claimed'>;
                           pictures: number[]; picturesTotal: number }>
-  monstersSeen?: number[]
+  monstersSeen?: number[]                         // teyvat.me keeps only the count: monstersSeenCount
   blueprints?: number[]
   crafting?: { crafting?: number[]; forging?: number[]; processing?: number[] }
   musicGame?: Record<id, { score?: number; claimed: boolean }>
@@ -241,7 +241,7 @@ Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Reco
   },
   {
     key: 'gi_events',
-    what: 'The events running at login and the progress in each.',
+    what: "The events running at login and the progress in each. Teyvat.me doesn't keep it.",
     shape: `Record<eventId, {
   schedule: number
   start: number
@@ -267,7 +267,7 @@ Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Reco
   },
   {
     key: 'gi_miliastra',
-    what: 'Miliastra Wonderland cosmetics owned, and when (0 when the game sent no time).',
+    what: "Miliastra Wonderland cosmetics owned, and when (0 when the game sent no time). Teyvat.me doesn't keep it.",
     shape: '{ cosmetics?: Record<id, number> }',
     example: { cosmetics: { '1000101': 1790000000, '1000102': 0 } } satisfies NonNullable<
       Leyline['gi_miliastra']

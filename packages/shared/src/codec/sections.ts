@@ -820,6 +820,8 @@ export interface CollectionsSection {
   // Capture 1.17.
   /** Parent quests: `f` finished, `a` accepted and not finished (MainQuest ids, ascending). */
   q?: { f: number[]; a?: number[] }
+  /** `monstersSeen`'s count (2026-11-22: the list is no longer kept). */
+  c?: number
 }
 
 export type IdListRow = [id: number, ids: number[]]
@@ -940,6 +942,7 @@ export function encodeCollections2(collections: GiCollections): CollectionsSecti
   const { quests } = collections
   if (quests)
     section.q = { f: [...quests.finished], ...(quests.active ? { a: [...quests.active] } : {}) }
+  if (collections.monstersSeenCount !== undefined) section.c = collections.monstersSeenCount
   return Object.keys(section).length > 0 ? section : null
 }
 
@@ -1027,6 +1030,7 @@ export function decodeCollections(section: CollectionsSection): GiCollections {
     )
   }
   if (section.m) collections.monstersSeen = [...section.m]
+  if (section.c !== undefined) collections.monstersSeenCount = section.c
   if (section.f) collections.blueprints = [...section.f]
   if (section.k) {
     const k = section.k

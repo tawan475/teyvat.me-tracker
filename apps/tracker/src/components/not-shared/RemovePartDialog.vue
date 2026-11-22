@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  DROPPED_PARTS,
   REMOVABLE_PARTS,
   REMOVE_PART_WORD,
   partNeighbours,
@@ -89,6 +90,13 @@ const rows = computed(() => {
       off: off.has(part),
       count: counts.value?.parts.find((c) => c.part === part) ?? null,
     }))
+    .filter(
+      // Parts the tracker no longer keeps (dropped.ts), once nothing of them is left.
+      (row) =>
+        !(DROPPED_PARTS as readonly string[]).includes(row.part) ||
+        !row.count ||
+        row.count.snapshots + row.count.liveChanges > 0,
+    )
 })
 const pickedCount = computed(() => counts.value?.parts.find((c) => c.part === picked.value) ?? null)
 const busy = computed(() => state.value === 'removing')

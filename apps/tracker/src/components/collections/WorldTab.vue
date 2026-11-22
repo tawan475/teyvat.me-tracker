@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { pageNow, useTravel } from '@/views/account/context'
 import { computed, reactive, ref, watch } from 'vue'
 import {
   CheckCheck,
@@ -16,7 +15,6 @@ import {
   Timer,
   Users,
 } from 'lucide-vue-next'
-import { loadFarming } from '@gdt/game-data/farming'
 import EntryGrid, { type GridEntry } from './EntryGrid.vue'
 import HaveFilter, { type HaveFilterValue } from './HaveFilter.vue'
 import NotCaptured from './NotCaptured.vue'
@@ -27,8 +25,6 @@ import UiSegmented, { type SegmentedOption } from '@/components/ui/UiSegmented.v
 import UiStat from '@/components/ui/UiStat.vue'
 import type { CapturedCollections } from '@/data/collections'
 import { idLabel, type CollectionCatalog } from '@/data/collection-names'
-import { respawnRows } from '@/data/respawns'
-import { useResource } from '@/data/use-resource'
 import {
   explorationPercent,
   npcRows,
@@ -37,7 +33,6 @@ import {
   type DomainRow,
   type Progress,
 } from '@/data/world'
-import { localizeFarming } from '@/i18n/localize-farming'
 import { formatNumber, formatRelative, formatDateTime } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { t } from '@/i18n'
@@ -46,28 +41,13 @@ import { t } from '@/i18n'
  * The World (Capture 1.6.0's `gi_exploration`): each scene's map (Teleport
  * Waypoints, domains, areas revealed), the Statues of The Seven, reputation,
  * offerings and exploration per region. Exploration shows raw points until
- * the game data carries each area's total. Bosses' and elites' respawns
- * (Capture 1.7.0) come from the newest capture's `gi_tasks`. The domain,
+ * the game data carries each area's total. The domain,
  * Trounce Domain and NPC stats open their list in one panel (a view switch
  * in its header), entries had and missing.
  */
 const props = defineProps<{ captured: CapturedCollections; catalog: CollectionCatalog }>()
 
 const exploration = computed(() => props.captured.exploration?.value ?? null)
-/** Time travel: respawns counted from the capture's time. */
-const travel = useTravel()
-const farming = useResource(
-  () => 0,
-  () => loadFarming().catch(() => null),
-)
-const respawns = computed(() => {
-  const value = props.captured.respawns?.value
-  if (!value) return []
-  const data = farming.data.value
-  return respawnRows(value, data ? localizeFarming(data) : null, pageNow(travel.value))
-})
-const waiting = computed(() => respawns.value.filter((r) => r.next !== null))
-
 const world = computed(() =>
   exploration.value ? worldModel(exploration.value, props.catalog) : null,
 )
@@ -87,8 +67,8 @@ const tribes = computed(() =>
 )
 
 // The lists behind the stats: domains on the map, Trounce Domains cleared. (Teleport
-// Waypoints, NPCs met, the statue levels of unreleased regions and the bosses'
-// respawns are captured but not shown: the user found them unverifiable.)
+// Waypoints, NPCs met and the statue levels of unreleased regions are captured
+// but not shown: the user found them unverifiable.)
 type ListView = 'domains' | 'cleared'
 const VIEW_KEY = 'collections:world-list'
 const FILTER_KEY = 'collections:world-filter'

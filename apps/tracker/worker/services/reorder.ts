@@ -23,11 +23,19 @@
  * long history's re-encode outran the Worker's CPU limit (account 11's 864
  * snapshots went past 300 s; 17 s on a PC), so it no longer runs in a cron.
  * `dryRun` works out the gain and writes nothing.
+ *
+ * `clean` (2026-11-22) also takes out of every snapshot the fields the
+ * tracker no longer keeps (@gdt/shared dropped.ts `cleanSection`), as the
+ * import stores them now: the check is then against the cleaned sections,
+ * the account is written whenever a section changed (whatever it saves) and
+ * its data version moves, so pages read the history again. Content keys
+ * stay: the import also matches a capture by the hashes it had before.
  */
 
 import {
   BlobDecoder,
   SLOTS,
+  cleanSection,
   artifactRows,
   decodeAchievementTimes,
   decodeMaterials,
@@ -58,6 +66,8 @@ export interface ReorderResult {
   /** Written (false: nothing to gain, a v1 row, or the account changed meanwhile). */
   applied: boolean
   reason?: 'smaller already' | 'v1 rows' | 'changed meanwhile' | 'mismatch' | 'dry run'
+  /** With `clean`: snapshots whose sections held a dropped field. */
+  cleaned?: number
 }
 
 /** Below this share of what it saves, an account is left as it is. */
@@ -132,17 +142,32 @@ interface NewBlob {
 export async function planReorder(
   snapshots: readonly SnapshotRow[],
   blobs: readonly BlobRow[],
+  options: { clean?: boolean } = {},
 ): Promise<{
   blobs: NewBlob[]
   refs: { id: number; hashes: Partial<Record<Slot, string>>; size: number }[]
   before: number
   after: number
+  /** Snapshots whose sections held a dropped field (`clean` only). */
+  cleaned: number
 }> {
   const oldRows = new Map<number, RawBlob>(
     blobs.map((b) => [b.id, { id: b.id, code: b.kind, baseId: b.base_id, data: toBytes(b.data) }]),
   )
   const oldHash = new Map(blobs.map((b) => [b.id, b.hash.toLowerCase()]))
-  const fullOf = fullReader(oldRows)
+  const rawFullOf = fullReader(oldRows)
+  /** The section as it is to be stored: cleaned with `clean` (null: nothing left). */
+  const cleanCache = new Map<number, unknown>()
+  const fullOf = (id: number): unknown => {
+    if (!options.clean) return rawFullOf(id)
+    if (cleanCache.has(id)) return cleanCache.get(id)
+    const { kind } = kindOfCode(oldRows.get(id)!.code)
+    const value = cleanSection(kind, rawFullOf(id))
+    cleanCache.set(id, value)
+    return value
+  }
+  const isCleaned = (id: number) => options.clean === true && fullOf(id) !== rawFullOf(id)
+  let cleaned = 0
 
   // Bytes the snapshots use now: every blob they point at, and its bases.
   const used = new Set<number>()
@@ -170,16 +195,21 @@ export async function planReorder(
 
   for (const s of ordered) {
     const values: SectionValues = {}
+    let held = false
     for (const slot of SLOTS) {
       const id = (s[REF_COLUMNS[slot]] as number | null) ?? null
       if (id === null) continue
       const row = oldRows.get(id)!
       const full = fullOf(id)
-      const hash = kindOfCode(row.code).delta
-        ? shortHashHex(await sectionHashOf(slot, full))
-        : oldHash.get(id)!
+      if (isCleaned(id)) held = true
+      if (full === null) continue
+      const hash =
+        kindOfCode(row.code).delta || isCleaned(id)
+          ? shortHashHex(await sectionHashOf(slot, full))
+          : oldHash.get(id)!
       values[slot] = { value: full, hash }
     }
+    if (held) cleaned++
     const plan = await planSections({
       values,
       latest: previous,
@@ -256,7 +286,9 @@ export async function planReorder(
   for (const r of refs) {
     const s = bySnapshot.get(r.id)!
     for (const slot of SLOTS) {
-      const oldId = (s[REF_COLUMNS[slot]] as number | null) ?? null
+      const stored = (s[REF_COLUMNS[slot]] as number | null) ?? null
+      // A section the cleaning emptied is gone.
+      const oldId = stored !== null && fullOf(stored) === null ? null : stored
       const hash = r.hashes[slot]
       if (oldId === null && hash === undefined) continue
       if (oldId === null || hash === undefined) throw new Error(`mismatch ${r.id} ${slot}`)
@@ -267,7 +299,7 @@ export async function planReorder(
   }
 
   const after = [...made.values()].reduce((sum, b) => sum + b.data.length, 0)
-  return { blobs: [...made.values()], refs, before, after }
+  return { blobs: [...made.values()], refs, before, after, cleaned }
 }
 
 /** Splits rows into JSON arrays of at most CHUNK_CHARS characters. */
@@ -296,7 +328,7 @@ const GUARD = `(SELECT count(*) FROM snapshots WHERE account_id = ?1) = ?2
 export async function reorderAccount(
   d1: D1Database,
   accountId: number,
-  options: { dryRun?: boolean } = {},
+  options: { dryRun?: boolean; clean?: boolean } = {},
 ): Promise<ReorderResult> {
   const [snapshotsResult, blobsResult] = await d1.batch([
     d1
@@ -329,14 +361,18 @@ export async function reorderAccount(
 
   let plan: Awaited<ReturnType<typeof planReorder>>
   try {
-    plan = await planReorder(snapshots, blobs)
+    plan = await planReorder(snapshots, blobs, { clean: options.clean })
   } catch (error) {
     console.error('reorder_mismatch', accountId, String(error))
     return result({ reason: 'mismatch' })
   }
-  const { before, after } = plan
-  if (after > before * (1 - MIN_SAVING)) return result({ before, after, reason: 'smaller already' })
-  if (options.dryRun) return result({ before, after, reason: 'dry run' })
+  const { before, after, cleaned } = plan
+  const clean = options.clean ? { cleaned } : {}
+  // Cleaning writes whatever it saves; a plain repack only when it is worth it.
+  if (cleaned === 0 && after > before * (1 - MIN_SAVING)) {
+    return result({ before, after, ...clean, reason: 'smaller already' })
+  }
+  if (options.dryRun) return result({ before, after, ...clean, reason: 'dry run' })
 
   // Rows already stored exactly so are not written again; rows rewritten in
   // place change the account's byte count (the insert trigger counts only
@@ -413,11 +449,19 @@ export async function reorderAccount(
   statements.push(
     d1
       .prepare(
-        `UPDATE genshin_accounts SET stored_bytes = stored_bytes + ?4 WHERE id = ?1 AND ${GUARD}`,
+        `UPDATE genshin_accounts SET stored_bytes = stored_bytes + ?4${
+          cleaned > 0 ? ', data_version = data_version + 1' : ''
+        } WHERE id = ?1 AND ${GUARD}`,
       )
       .bind(accountId, count, maxId, rewritten),
   )
   const results = await d1.batch(statements)
   const applied = (results.at(-1)!.meta.changes ?? 0) > 0
-  return result({ before, after, applied, ...(applied ? {} : { reason: 'changed meanwhile' }) })
+  return result({
+    before,
+    after,
+    applied,
+    ...clean,
+    ...(applied ? {} : { reason: 'changed meanwhile' }),
+  })
 }

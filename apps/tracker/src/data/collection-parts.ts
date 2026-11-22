@@ -4,20 +4,14 @@ import {
   decodeCollections,
   decodeExploration,
   decodeExtras,
-  decodeProgress,
-  decodeTasks,
   decodeWardrobe,
   type BundleSnapshot,
   type CollectionsSection,
-  type TasksSection,
   type ExplorationSection,
   type ExtrasSection,
   type GiTeapot,
-  type GiEvent,
-  type ProgressSection,
   type GiCollections,
   type GiExploration,
-  type GiTasks,
   type GiWardrobe,
   type WardrobeSection,
 } from '@gdt/shared'
@@ -41,10 +35,6 @@ export interface Captured<T> {
 type Parts = Required<GiCollections> & {
   wardrobe: GiWardrobe
   exploration: GiExploration
-  /** gi_tasks' respawn times (Capture 1.7.0), shown on the World page. */
-  respawns: NonNullable<GiTasks['respawns']>
-  /** gi_events (Capture 1.7.0), by activity id. */
-  events: Record<string, GiEvent>
   /** gi_teapot (Capture 1.8.0): the Serenitea Pot's comfort. */
   teapot: GiTeapot
 }
@@ -55,8 +45,6 @@ export const COLLECTION_SECTIONS = [
   'collections2',
   'wardrobe',
   'exploration',
-  'tasks',
-  'progress',
   'extras',
 ] as const
 
@@ -95,18 +83,6 @@ export function capturedCollections(bundle: CollectionsBundle): CapturedCollecti
         for (const [part, v] of Object.entries(value)) if (!(part in merged)) merged[part] = v
       }
     }
-    const tasks = snapshot.tasks ? bundle.texts.get(snapshot.tasks) : undefined
-    if (tasks !== undefined) {
-      put('respawns', decodeTasks(JSON.parse(tasks) as TasksSection).respawns, snapshot.takenAt)
-    }
-    const progress = snapshot.progress ? bundle.texts.get(snapshot.progress) : undefined
-    if (progress !== undefined) {
-      put(
-        'events',
-        decodeProgress(JSON.parse(progress) as ProgressSection).events,
-        snapshot.takenAt,
-      )
-    }
     const extras = snapshot.extras ? bundle.texts.get(snapshot.extras) : undefined
     if (extras !== undefined) {
       put('teapot', decodeExtras(JSON.parse(extras) as ExtrasSection).teapot, snapshot.takenAt)
@@ -115,36 +91,28 @@ export function capturedCollections(bundle: CollectionsBundle): CapturedCollecti
   return out
 }
 
-/** Pure: the journal's saved teams, respawn times and quests over the captured ones. */
+/** Pure: the journal's saved teams and quests over the captured ones. */
 export function withLiveCollections(
   captured: CapturedCollections,
   live: LiveJournalResponse | null | undefined,
   snapshotId: number | null,
 ): CapturedCollections {
   const wardrobe = captured.wardrobe?.value
-  const respawns = captured.respawns?.value
   const quests = captured.quests?.value
   const now = withLiveParts(
     {
       ...(wardrobe ? { gi_wardrobe: wardrobe } : {}),
-      ...(respawns ? { gi_tasks: { respawns } } : {}),
       ...(quests ? { gi_collections: { quests } } : {}),
     },
     live,
     snapshotId,
-    ['gi_wardrobe', 'gi_tasks', 'quests'],
+    ['gi_wardrobe', 'quests'],
   )
   const at = live?.updatedAt ?? Date.now()
   const out = { ...captured }
   let changed = false
   if (now.gi_wardrobe && now.gi_wardrobe !== wardrobe) {
     out.wardrobe = { value: now.gi_wardrobe, takenAt: at }
-    changed = true
-  }
-  const nextRespawns = now.gi_tasks?.respawns
-  if (nextRespawns !== respawns) {
-    if (nextRespawns) out.respawns = { value: nextRespawns, takenAt: at }
-    else delete out.respawns
     changed = true
   }
   const nextQuests = now.gi_collections?.quests

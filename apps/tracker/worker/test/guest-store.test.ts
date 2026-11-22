@@ -364,7 +364,6 @@ describe('guest store', () => {
     for (const text of localAfter.goods) {
       const good = JSON.parse(text) as Good
       expect(good.gi_achievement_progress).toBeUndefined()
-      expect(good.gi_events).toBeDefined()
       expect(good.gi_player?.nickname).toBeUndefined()
       // The teapot went with its realm currency; the other tasks stay.
       expect(good.gi_teapot).toBeUndefined()
@@ -457,8 +456,8 @@ describe('guest store', () => {
     ]
     const progress = new Set([kindCode('progress', false), kindCode('progress', true)])
     const decoder = new BlobDecoder((id) => (store.blobs as Map<number, never>).get(id))
+    // (The events, once stored beside them, are no longer kept: dropped.ts.)
     const held = rows.filter((r) => progress.has(r.code))
-    expect(held.length).toBeGreaterThan(0)
     for (const row of held) expect(holdsPartKeys(decoder.decode(row.id).value, ['a'])).toBe(false)
     // The newest capture again, with the part shared: stored anew, as on the server.
     const back = await importLocal(full(3), 4_000)

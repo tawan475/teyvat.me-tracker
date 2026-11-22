@@ -895,6 +895,9 @@ function toCollections(raw: unknown): GiCollections | null {
   if (hangouts) collections.hangouts = hangouts
   const seen = idList(raw.monstersSeen, 1, 999_999_999, GOOD_LIMITS.monstersSeen)
   if (seen) collections.monstersSeen = seen
+  else if (isIntIn(raw.monstersSeenCount, 0, GOOD_LIMITS.monstersSeen)) {
+    collections.monstersSeenCount = raw.monstersSeenCount as number
+  }
   const blueprints = idList(raw.blueprints, ...COLLECTION_ITEM, GOOD_LIMITS.blueprints)
   if (blueprints) collections.blueprints = blueprints
   // Capture 1.8.0-1.11.0.

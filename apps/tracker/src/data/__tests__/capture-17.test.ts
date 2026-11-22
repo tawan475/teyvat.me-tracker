@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { FarmingData } from '@gdt/game-data/farming'
 import type { CollectionCatalog } from '../collection-names'
 import { hangoutChapters } from '../hangouts'
-import { respawnRows } from '../respawns'
 
 const texts = (entries: Record<string, [number, Record<string, string>][]>) =>
   Object.fromEntries(
@@ -51,26 +49,5 @@ describe('hangoutChapters', () => {
       { id: 10140102, name: '#10140102', state: 'unclaimed' },
     ])
     expect(chapters[1]).toMatchObject({ name: '#101501', state: null, endingsDone: 0 })
-  })
-})
-
-describe('respawnRows', () => {
-  const farming = {
-    bosses: [{ id: 6, name: 'Electro Hypostasis' }],
-    enemies: [{ id: 2, name: 'Abyss Mage' }],
-  } as unknown as FarmingData
-
-  it('counts spots up and the next one back, bosses first', () => {
-    const now = 1_800_000_000_000
-    const rows = respawnRows(
-      { '2': [1_799_999_000, 1_800_000_600], '6': [1_800_003_600] },
-      farming,
-      now,
-    )
-    expect(rows).toEqual([
-      { id: 6, name: 'Electro Hypostasis', kind: 'boss', spots: 1, up: 0, next: 1_800_003_600_000 },
-      { id: 2, name: 'Abyss Mage', kind: 'enemy', spots: 2, up: 1, next: 1_800_000_600_000 },
-    ])
-    expect(respawnRows({ '9': [1] }, null, now)[0]).toMatchObject({ name: '#9', up: 1, next: null })
   })
 })

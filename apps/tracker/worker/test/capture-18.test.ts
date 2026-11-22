@@ -63,7 +63,8 @@ describe("Teyvat.me Capture 1.8.0-1.11.0's keys", () => {
     expect(exported.gi_tasks!.signIns).toEqual(new18.tasks.signIns)
     expect(exported.gi_exploration!.tribalChapters).toEqual(new18.exploration.tribalChapters)
     expect(exported.gi_teapot).toEqual(new18.teapot)
-    expect(exported.gi_miliastra).toEqual(new18.miliastra)
+    // Miliastra cosmetics are not kept (dropped.ts).
+    expect(exported.gi_miliastra).toBeUndefined()
   })
 
   it('keeps re-uploading a capture a no-op when it was stored before 1.8.0', async () => {

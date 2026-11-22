@@ -73,6 +73,10 @@ function captureKeys(encoded: object): Set<number> {
     if ((name === 'contentHash' || name.endsWith('ContentHash')) && typeof value === 'string') {
       keys.add(contentKey(value))
     }
+    // Stored before the tracker dropped fields it no longer keeps (dropped.ts).
+    if (name === 'preDropContentHashes' && Array.isArray(value)) {
+      for (const hash of value) keys.add(contentKey(hash as string))
+    }
   }
   return keys
 }

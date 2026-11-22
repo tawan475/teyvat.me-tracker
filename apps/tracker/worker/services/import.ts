@@ -400,6 +400,8 @@ async function importOnce(
   const pre21Key = contentKey(encoded.pre21ContentHash)
   const pre22Key = contentKey(encoded.pre22ContentHash)
   const preRecipesKey = contentKey(encoded.preRecipesContentHash)
+  // Stored before the tracker dropped fields it no longer keeps (dropped.ts).
+  const preDropKeys = encoded.preDropContentHashes.map(contentKey)
   const response = (
     status: ImportResponse['status'],
     snapshotId: number,
@@ -445,8 +447,10 @@ async function importOnce(
         row.content_key === pre20Key ||
         row.content_key === pre21Key ||
         row.content_key === pre22Key ||
-        row.content_key === preRecipesKey
-      : row.content_hash === encoded.contentHash ||
+        row.content_key === preRecipesKey ||
+        preDropKeys.includes(row.content_key)
+      : encoded.preDropContentHashes.includes(row.content_hash!) ||
+        row.content_hash === encoded.contentHash ||
         row.content_hash === encoded.legacyContentHash ||
         row.content_hash === encoded.preAnecdotesContentHash ||
         row.content_hash === encoded.preTasksContentHash ||

@@ -201,7 +201,7 @@ describe('removing a part from history', () => {
     expect(of('anecdotes')).toMatchObject({ snapshots: 0, lastAt: null, bytes: 0 })
   })
 
-  it('removes achievements from every snapshot, keeps events and the rest, frees the space', async () => {
+  it('removes achievements from every snapshot, keeps the rest, frees the space', async () => {
     const { client, account, importKey } = await setup()
     const shots = await history(importKey)
     const before = await goods(client, account.id)
@@ -229,7 +229,6 @@ describe('removing a part from history', () => {
         ...rest
       } = was
       expect(good).toEqual(rest)
-      expect(good.gi_events).toEqual(new17.events)
     }
     const { storedBytes: bytesAfter, partsRemovedAt } = await client.json<AccountResponse>(
       `/api/accounts/${account.id}`,
@@ -276,14 +275,13 @@ describe('removing a part from history', () => {
     }
   })
 
-  it('removes the endgame and keeps the teapot and Miliastra stored beside it', async () => {
+  it('removes the endgame and keeps the teapot stored beside it', async () => {
     const { client, account, importKey } = await setup()
     await history(importKey)
     expect((await remove(client, account.id, 'endgame')).status).toBe(200)
     for (const good of (await goods(client, account.id)).values()) {
       expect(good.gi_endgame).toBeUndefined()
       expect(good.gi_teapot).toEqual(new18.teapot)
-      expect(good.gi_miliastra).toEqual(new18.miliastra)
     }
   })
 
@@ -369,7 +367,6 @@ describe('removing a part from history', () => {
       const { realm: _r, ...tasks } = was.gi_tasks ?? {}
       expect(good.gi_tasks).toEqual(Object.keys(tasks).length > 0 ? tasks : undefined)
       expect(good.gi_endgame).toEqual(was.gi_endgame)
-      expect(good.gi_miliastra).toEqual(new18.miliastra)
       const { gi_teapot: _t, gi_tasks: _k, ...rest } = was
       const { gi_tasks: _k2, ...now } = good
       expect(now).toEqual(rest)
@@ -559,8 +556,8 @@ describe('removing a part leaves nothing of it stored (issue 12 review)', () => 
     await history(importKey)
     expect((await storedHold(account.id, 'progress', ['a'])).holds).toBe(true)
     expect((await remove(client, account.id, 'achievements')).status).toBe(200)
+    // (The events, once stored beside them, are no longer kept: dropped.ts.)
     const progress = await storedHold(account.id, 'progress', ['a'])
-    expect(progress.count).toBeGreaterThan(0)
     expect(progress.holds).toBe(false)
     expect((await remove(client, account.id, 'profile')).status).toBe(200)
     const player = await storedHold(account.id, 'player', PROFILE_FIELDS)
@@ -571,9 +568,8 @@ describe('removing a part leaves nothing of it stored (issue 12 review)', () => 
       .bind(account.id, new TextEncoder().encode('player01'))
       .first<{ n: number }>()
     expect(raw!.n).toBe(0)
-    // Every snapshot still decodes, events kept.
+    // Every snapshot still decodes.
     for (const good of (await goods(client, account.id)).values()) {
-      expect(good.gi_events).toEqual(new17.events)
       expect(good.gi_achievement_progress).toBeUndefined()
     }
   })

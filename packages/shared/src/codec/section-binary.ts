@@ -1156,6 +1156,7 @@ const COLLECTION2_PARTS: readonly (readonly [string, TaggedPart])[] = [
   ['o', ascendingPart],
   ['n', ascendingPart],
   ['q', flaggedLists(['f', 'a'], ['list', 'list'])],
+  ['c', { write: (w, value) => void w.uint(uint(value)), read: (r) => r.uint() }],
 ]
 
 const collections2Layout = taggedLayout('collections2', COLLECTION2_PARTS)

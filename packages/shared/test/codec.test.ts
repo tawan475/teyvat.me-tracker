@@ -38,6 +38,7 @@ import {
   inflateRaw,
   kindCode,
   normalizeGood,
+  withoutDropped,
   prepareSnapshot,
   sectionHashesOf,
   storedSnapshotOf,
@@ -252,7 +253,8 @@ class Store {
 
 /** What a perfect round trip must produce: the normalized input, order-insensitive. */
 function expectedGood(input: unknown): Omit<Good, 'timestamp'> {
-  const good = normalizeGood(input, { materials: MATERIALS })
+  // What is stored: the upload without the fields no longer kept (dropped.ts).
+  const good = withoutDropped(normalizeGood(input, { materials: MATERIALS }))
   const expected: Omit<Good, 'timestamp'> = {
     format: good.format,
     version: good.version,
@@ -2096,20 +2098,28 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
     const { encoded, decoded } = await roundTrip(input)
     expect(extraSectionsOf(encoded).at(-1)!.kind).toBe('progress')
     expect(canonical(decoded)).toEqual(canonical(expectedGood(input)))
-    expect(decoded.gi_tasks).toEqual(input.gi_tasks)
+    // The respawns, the monsters seen (kept as a count) and the events are
+    // not stored (dropped.ts, 2026-11-22).
+    const { respawns: _respawns, ...tasks } = input.gi_tasks
+    expect(decoded.gi_tasks).toEqual(tasks)
     expect(decoded.gi_collections!.hangouts).toEqual(new17.collections.hangouts)
-    expect(decoded.gi_collections!.monstersSeen).toHaveLength(2_300)
+    expect(decoded.gi_collections!.monstersSeen).toBeUndefined()
+    expect(decoded.gi_collections!.monstersSeenCount).toBe(2_300)
     expect(decoded.gi_achievement_progress).toEqual(new17.achievementProgress)
-    expect(decoded.gi_events).toEqual(new17.events)
-    expect(Object.keys(decoded).slice(-2)).toEqual(['gi_achievement_progress', 'gi_events'])
+    expect(decoded.gi_events).toBeUndefined()
+    expect(Object.keys(decoded).at(-1)).toBe('gi_achievement_progress')
   })
 
   it('knows the hash a tracker from before 1.7.0 gave the same file', async () => {
     const catalog = new Catalog()
     const before = await roundTrip(base, catalog)
     const after = await roundTrip(input, catalog)
+    // The file holds fields no longer kept: what a tracker before 1.7.0 gave
+    // it is among the hashes from before the drop (dropped.ts).
+    const pre17 = (e: typeof after.encoded) =>
+      e.preDropContentHashes.length > 0 ? e.preDropContentHashes : [e.pre17ContentHash]
     expect(after.encoded.contentHash).not.toBe(before.encoded.contentHash)
-    expect(after.encoded.pre17ContentHash).toBe(before.encoded.contentHash)
+    expect(pre17(after.encoded)).toContain(before.encoded.contentHash)
     expect(before.encoded.pre17ContentHash).toBe(before.encoded.contentHash)
     // Each 1.7.0 part alone, too.
     for (const part of [
@@ -2118,12 +2128,12 @@ describe("Teyvat.me Capture 1.7.0's keys", () => {
       { gi_events: new17.events },
     ]) {
       const one = await roundTrip({ ...base, ...part }, catalog)
-      expect(one.encoded.pre17ContentHash).toBe(before.encoded.contentHash)
+      expect(pre17(one.encoded)).toContain(before.encoded.contentHash)
     }
     // Only 1.7.0 task parts: the file had no tasks before.
     const plain = await roundTrip(sample, catalog)
     const tasksOnly = await roundTrip({ ...sample, gi_tasks: new17.tasks }, catalog)
-    expect(tasksOnly.encoded.pre17ContentHash).toBe(plain.encoded.contentHash)
+    expect(pre17(tasksOnly.encoded)).toContain(plain.encoded.contentHash)
   })
 
   it('drops a bad part and keeps the rest', () => {
@@ -2291,8 +2301,9 @@ describe("Teyvat.me Capture 1.8.0-1.11.0's keys", () => {
     expect(decoded.gi_tasks!.signIns).toEqual(new18.tasks.signIns)
     expect(decoded.gi_exploration).toEqual(input.gi_exploration)
     expect(decoded.gi_teapot).toEqual(new18.teapot)
-    expect(decoded.gi_miliastra).toEqual(new18.miliastra)
-    expect(Object.keys(decoded).slice(-2)).toEqual(['gi_teapot', 'gi_miliastra'])
+    // Miliastra cosmetics are not stored (dropped.ts, 2026-11-22).
+    expect(decoded.gi_miliastra).toBeUndefined()
+    expect(Object.keys(decoded).at(-1)).toBe('gi_teapot')
   })
 
   it('knows the hashes trackers from before 1.8.0 and 1.7.0 gave the same file', async () => {

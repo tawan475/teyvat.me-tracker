@@ -11,6 +11,7 @@ import {
   type NormalizedGood,
   type NormalizeOptions,
 } from './normalize'
+import { withoutDropped } from './dropped'
 import { artifactsFingerprint } from './parts'
 import {
   decodeAchievements,
@@ -77,7 +78,13 @@ export interface SnapshotSummary {
 }
 
 export interface PreparedSnapshot {
+  /** What is stored: the upload without the dropped fields (dropped.ts). */
   good: NormalizedGood
+  /**
+   * The upload as normalised, when it held dropped fields: only for the
+   * content hashes an older tracker gave the same file (`preDropContentHashes`).
+   */
+  full?: NormalizedGood
   /** Catalog hash of each `good.artifacts` entry, in the same order. */
   artifactHashes: string[]
   summary: SnapshotSummary
@@ -119,11 +126,12 @@ export async function prepareSnapshot(
     const deferred = await deferredOf(input, options)
     if (deferred) return deferred
   }
-  const good = normalizeGood(input, options)
+  const full = normalizeGood(input, options)
+  const good = withoutDropped(full)
   const artifactHashes = await Promise.all(
     good.artifacts.map((a) => hashArtifactIdentity(a.identity)),
   )
-  return { good, artifactHashes, summary: summarize(good) }
+  return { good, artifactHashes, summary: summarize(good), ...(good !== full ? { full } : {}) }
 }
 
 /** `input` with its artifact list set aside, or null when it has to be read now. */
@@ -135,11 +143,18 @@ async function deferredOf(
   const raw = deferrableArtifacts((input as Record<string, unknown>).artifacts)
   const fingerprint = raw && (await artifactsFingerprint(raw))
   if (!raw || !fingerprint) return null
-  const good = normalizeGood({ ...input, artifacts: [] }, options)
+  const full = normalizeGood({ ...input, artifacts: [] }, options)
   // The whole-capture check counts the bag: a file without characters is
   // read in full, so that check sees its artifacts.
-  if (good.characters.length === 0) return null
-  return { good, artifactHashes: [], summary: summarize(good), deferred: { fingerprint, raw } }
+  if (full.characters.length === 0) return null
+  const good = withoutDropped(full)
+  return {
+    good,
+    artifactHashes: [],
+    summary: summarize(good),
+    deferred: { fingerprint, raw },
+    ...(good !== full ? { full } : {}),
+  }
 }
 
 /**
@@ -161,7 +176,12 @@ export async function resolveDeferredArtifacts(
     },
   }
   const artifactHashes = await Promise.all(artifacts.map((a) => hashArtifactIdentity(a.identity)))
-  return { good, artifactHashes, summary: summarize(good) }
+  return {
+    good,
+    artifactHashes,
+    summary: summarize(good),
+    ...(prepared.full ? { full: prepared.full } : {}),
+  }
 }
 
 /** The summary's figures that come from the artifact list. */
@@ -317,6 +337,12 @@ export interface EncodedSnapshot extends ExtraSections {
    */
   pre22ContentHash: string
   /**
+   * The hashes trackers before 2026-11-22 gave this file, when it holds fields
+   * no longer kept (dropped.ts): its content hash and every older one. Empty
+   * when it holds none (its hashes above are then those).
+   */
+  preDropContentHashes: string[]
+  /**
    * The content hash with the recipes left out of collections2 (equal to
    * `contentHash` without recipes): what a tracker from before Capture
    * 1.5.0's recipes stored such a file as, so re-uploading it stays a no-op.
@@ -393,21 +419,8 @@ export async function encodeStaticSections(
     optionalSection('collections2', good.collections && encodeCollections2(good.collections)),
     good.wardrobe ? makeSection('wardrobe', encodeWardrobe(good.wardrobe)) : null,
     good.exploration ? makeSection('exploration', encodeExploration(good.exploration)) : null,
-    optionalSection(
-      'progress',
-      encodeProgress({
-        ...(good.achievementProgress ? { achievementProgress: good.achievementProgress } : {}),
-        ...(good.events ? { events: good.events } : {}),
-      }),
-    ),
-    optionalSection(
-      'extras',
-      encodeExtras({
-        ...(good.teapot ? { teapot: good.teapot } : {}),
-        ...(good.miliastra ? { miliastra: good.miliastra } : {}),
-        ...(good.endgame ? { endgame: good.endgame } : {}),
-      }),
-    ),
+    optionalSection('progress', encodeProgress(progressParts(good))),
+    optionalSection('extras', encodeExtras(extrasParts(good))),
   ])
   return {
     characters,
@@ -425,6 +438,23 @@ export async function encodeStaticSections(
     exploration,
     progress,
     extras,
+  }
+}
+
+/** The progress section's parts of a file. */
+function progressParts(good: NormalizedGood): Parameters<typeof encodeProgress>[0] {
+  return {
+    ...(good.achievementProgress ? { achievementProgress: good.achievementProgress } : {}),
+    ...(good.events ? { events: good.events } : {}),
+  }
+}
+
+/** The extras section's parts of a file. */
+function extrasParts(good: NormalizedGood): Parameters<typeof encodeExtras>[0] {
+  return {
+    ...(good.teapot ? { teapot: good.teapot } : {}),
+    ...(good.miliastra ? { miliastra: good.miliastra } : {}),
+    ...(good.endgame ? { endgame: good.endgame } : {}),
   }
 }
 
@@ -656,6 +686,46 @@ export async function completeSnapshot(
   const pre21ContentHash =
     coop || book ? await hashWithEndgame(withoutCoop(withoutBook(endgame!))) : contentHash
   const pre22ContentHash = book ? await hashWithEndgame(withoutBook(endgame!)) : contentHash
+  // A file with fields the tracker no longer keeps (dropped.ts): every hash
+  // a tracker before that gave it, worked out from its sections with them.
+  const preDropContentHashes: string[] = []
+  if (prepared.full) {
+    const full = prepared.full
+    const older = await completeSnapshot(
+      {
+        ...sections,
+        tasks: full.tasks ? await makeSection('tasks', encodeTasks(full.tasks)) : null,
+        collections2: await optionalSection(
+          'collections2',
+          full.collections && encodeCollections2(full.collections),
+        ),
+        progress: await optionalSection('progress', encodeProgress(progressParts(full))),
+        extras: await optionalSection('extras', encodeExtras(extrasParts(full))),
+      },
+      { ...prepared, good: { ...full, artifacts: prepared.good.artifacts }, full: undefined },
+      artifactIds,
+      heldArtifacts,
+    )
+    for (const hash of [
+      older.contentHash,
+      older.legacyContentHash,
+      older.preAnecdotesContentHash,
+      older.preTasksContentHash,
+      older.preCollectionsContentHash,
+      older.preCollections2ContentHash,
+      older.preWardrobeContentHash,
+      older.preExplorationContentHash,
+      older.preRecipesContentHash,
+      older.pre17ContentHash,
+      older.pre18ContentHash,
+      older.pre19ContentHash,
+      older.pre20ContentHash,
+      older.pre21ContentHash,
+      older.pre22ContentHash,
+    ]) {
+      if (!preDropContentHashes.includes(hash)) preDropContentHashes.push(hash)
+    }
+  }
   return {
     ...sections,
     artifacts,
@@ -677,6 +747,7 @@ export async function completeSnapshot(
     pre20ContentHash,
     pre21ContentHash,
     pre22ContentHash,
+    preDropContentHashes,
   }
 }
 

@@ -8,6 +8,8 @@
 //   pnpm --filter @gdt/tracker admin:repack --apply            write those that save >= 5%
 //   pnpm --filter @gdt/tracker admin:repack --account 22 [--account 23] [--apply]
 //   ... --local                                                the dev database instead
+//   ... --clean    also take out the fields the tracker no longer keeps (dropped.ts), writing
+//                  every account that held one whatever it saves
 //   pnpm --filter @gdt/tracker admin:repack --reencode [--apply]  only re-encode, in place,
 //        the JSON-layout blobs a binary form now holds (worker/services/reencode.ts)
 //
@@ -28,6 +30,8 @@ const args = process.argv.slice(2)
 const apply = args.includes('--apply')
 const local = args.includes('--local')
 const reencode = args.includes('--reencode')
+// Also take out the fields the tracker no longer keeps (@gdt/shared dropped.ts).
+const clean = args.includes('--clean')
 const only = args.flatMap((arg, i) => (arg === '--account' ? [Number(args[i + 1])] : []))
 if (only.some((id) => !Number.isInteger(id) || id <= 0)) {
   console.error('Usage: admin:repack [--account <id> ...] [--apply] [--local]')
@@ -103,7 +107,7 @@ try {
     const started = performance.now()
     let result: ReorderResult
     try {
-      result = await reorderAccount(d1, id, { dryRun: !apply })
+      result = await reorderAccount(d1, id, { dryRun: !apply, clean })
     } catch (error) {
       console.log(`${id}\t-\t-\t-\t-\t-\terror: ${String(error)}`)
       continue
@@ -123,7 +127,7 @@ try {
         kb(result.after),
         `${(saving * 100).toFixed(1)}%`,
         `${ms} ms`,
-        outcome,
+        outcome + (result.cleaned !== undefined ? ` (${result.cleaned} cleaned)` : ''),
       ].join('\t'),
     )
   }

@@ -55,6 +55,16 @@ const resource = useResource(
 )
 
 const defeats = computed(() => props.captured.defeats?.value ?? {})
+/**
+ * Monsters seen: the count the tracker keeps since 2026-11-22, or the length
+ * of the list older captures stored (whichever capture is newer).
+ */
+const seen = computed(() => {
+  const count = props.captured.monstersSeenCount
+  const list = props.captured.monstersSeen
+  if (count && (!list || count.takenAt >= list.takenAt)) return count.value
+  return list ? list.value.length : null
+})
 const totals = computed(() => {
   const rows = Object.values(defeats.value)
   return {
@@ -190,10 +200,10 @@ const GRID =
           :hint="$t('collections.defeats.capturedHint', { n: formatNumber(totals.capturedKinds) })"
         />
       </li>
-      <li v-if="captured.monstersSeen" class="flex min-w-0">
+      <li v-if="seen !== null" class="flex min-w-0">
         <UiStat
           :label="$t('collections.defeats.seen')"
-          :value="captured.monstersSeen.value.length"
+          :value="seen"
           exact
           :hint="$t('collections.defeats.seenHint')"
         />

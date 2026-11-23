@@ -1,6 +1,7 @@
 import type { ArchiveTab, WardrobeKind } from '@gdt/shared'
 import type { CollectionData, CollectionSection, CollectionTexts } from '@gdt/game-data/collections'
 import { wikiPage } from '@/lib/wiki'
+import { WIKI_QUEST_TITLES } from '@/lib/wiki-quest-titles'
 
 /**
  * What the Collections tabs list, from the game data's collections
@@ -53,7 +54,10 @@ export function wikiGuide(
   prefix = '',
 ): string | undefined {
   const english = (catalog.english[section].get(id) as Record<string, string> | undefined)?.name
-  return english ? wikiPage(prefix + english) : undefined
+  if (!english) return undefined
+  // A quest whose name is another page (a constellation, a character…) or split into parts.
+  const quest = section === 'quests' || section === 'worldQuests'
+  return wikiPage(prefix + ((quest && WIKI_QUEST_TITLES[english]) || english))
 }
 
 const str = (value: unknown) => (typeof value === 'string' ? value : '')

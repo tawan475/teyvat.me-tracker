@@ -1,6 +1,7 @@
 import { collectionText, loadCollections } from '@gdt/game-data/collections'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { CollectionCatalog } from '../collection-names'
+import { WIKI_QUEST_TITLES } from '@/lib/wiki-quest-titles'
 import { worldQuestList } from '../world-quests'
 
 let en: CollectionCatalog
@@ -39,5 +40,23 @@ describe('World Quests', () => {
     expect(of(first!.id)).toMatchObject({ done: true, active: false })
     expect(of(second!.id)).toMatchObject({ done: false, active: true })
     expect(list.filter((q) => q.done).length).toBe(2)
+  })
+
+  it('links a quest whose name is another wiki page to the quest', () => {
+    const list = worldQuestList(en, null)
+    // Yelan's C6 is "Winner Takes All"; the Snezhnaya quest is "Winner Takes All (Quest)".
+    expect(list.find((q) => q.name === 'Winner Takes All')?.href).toBe(
+      'https://genshin-impact.fandom.com/wiki/Winner_Takes_All_(Quest)',
+    )
+    expect(list.find((q) => q.name === 'Pursuit')?.href).toMatch(/\/Pursuit_\(Part_1\)$/)
+  })
+
+  it('lists only quest names the game data still has', () => {
+    const names = new Set(
+      [en.english.worldQuests, en.english.quests].flatMap((m) =>
+        [...m.values()].map((v) => (v as { name: string }).name),
+      ),
+    )
+    expect(Object.keys(WIKI_QUEST_TITLES).filter((n) => !names.has(n))).toEqual([])
   })
 })

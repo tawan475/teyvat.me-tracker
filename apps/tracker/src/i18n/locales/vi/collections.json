@@ -179,7 +179,7 @@
     "foundHint": "Aranara đã tìm thấy trong số có trong sổ",
     "states": {
       "none": "Chưa tìm thấy",
-      "collectable": "Có thể nhận",
+      "collectable": "Sẵn sàng bắt đầu",
       "collected": "Đã Thu Thập",
       "finished": "Xong"
     },

@@ -179,7 +179,7 @@
     "foundHint": "Aranaras trouvés parmi ceux du carnet",
     "states": {
       "none": "Non trouvé",
-      "collectable": "À récupérer",
+      "collectable": "Prêt à commencer",
       "collected": "Collecté",
       "finished": "Terminé"
     },

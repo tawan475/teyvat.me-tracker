@@ -4,7 +4,7 @@ import {
   CircleCheck,
   CircleDashed,
   ExternalLink,
-  Gift,
+  Play,
   PackageCheck,
   Sprout,
 } from 'lucide-vue-next'
@@ -40,7 +40,12 @@ const counts = computed(() => {
   for (const entry of entries.value) out[entry.state]++
   return out
 })
-const found = computed(() => entries.value.length - counts.value.none)
+/**
+ * Found = met: collected or done. "collectable" is one the daily lock has
+ * opened but the player has not started yet (Nos. 10-15 open one a day after
+ * the one before is done: the user, 2026-11-23), so it is not found yet.
+ */
+const found = computed(() => counts.value.collected + counts.value.finished)
 /** Hide completed: Aranara whose story is finished are left off the list. */
 const hideDone = useHideDone('collections:aranara-hide-done')
 const shown = computed(() =>
@@ -54,7 +59,7 @@ const STATE: Record<GiAranaraState, { icon: Component; tile: string; mark: strin
     mark: 'bg-surface-sunken text-text-muted',
   },
   collectable: {
-    icon: Gift,
+    icon: Play,
     tile: 'border-accent-text/50 bg-accent/10 hover:bg-accent/20',
     mark: 'bg-accent/20 text-accent-text',
   },
@@ -134,16 +139,13 @@ const entryName = (id: number) => t('collections.aranara.entry', { n: formatNumb
 
       <UiEmpty v-if="shown.length === 0" :title="$t('collections.allDone')" />
 
-      <ul
-        v-else
-        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-2 p-3 sm:p-5"
-      >
+      <ul v-else class="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:p-5 lg:grid-cols-5">
         <li v-for="entry in shown" :key="entry.id" class="flex min-w-0">
           <a
             :href="ARANARA_GUIDE"
             target="_blank"
             rel="noopener noreferrer"
-            class="group flex w-full min-w-0 items-center gap-3 rounded-xl border p-2.5 transition-colors"
+            class="group relative flex w-full min-w-0 items-center gap-3 rounded-xl border p-2.5 transition-colors"
             :class="STATE[entry.state].tile"
             :title="`${entryName(entry.id)} · ${stateLabel(entry.state)} · ${$t('collections.aranara.guide')}`"
           >
@@ -154,17 +156,19 @@ const entryName = (id: number) => t('collections.aranara.entry', { n: formatNumb
             >
             <span class="flex min-w-0 flex-1 flex-col">
               <span class="truncate text-sm font-medium">{{ entryName(entry.id) }}</span>
-              <span class="flex min-w-0 items-center gap-1 text-xs text-text-secondary">
+              <span
+                class="flex min-w-0 items-start gap-1 text-xs leading-tight text-text-secondary"
+              >
                 <component
                   :is="STATE[entry.state].icon"
                   class="size-3.5 shrink-0"
                   aria-hidden="true"
                 />
-                <span class="truncate">{{ stateLabel(entry.state) }}</span>
+                <span class="min-w-0 break-words">{{ stateLabel(entry.state) }}</span>
               </span>
             </span>
             <ExternalLink
-              class="size-3.5 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
+              class="absolute top-2 right-2 size-3.5 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
               aria-hidden="true"
             />
           </a>

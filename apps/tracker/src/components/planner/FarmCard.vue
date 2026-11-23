@@ -166,7 +166,9 @@ const meta = computed(
         </span>
         <template v-else-if="run">
           <span :title="runTitle"
-            ><span v-if="run.upperBound" class="font-sans">{{ $t('farm.card.atMostPrefix') }} </span
+            ><span v-if="run.upperBound" class="font-sans">{{
+              `${$t('farm.card.atMostPrefix')} `
+            }}</span
             >{{
               run.weekly
                 ? $t('farm.card.claimsShort', { n: formatNumber(run.runs) })

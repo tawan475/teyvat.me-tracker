@@ -179,7 +179,7 @@
     "foundHint": "Aranara ที่พบแล้ว จากที่มีในสมุดบันทึก",
     "states": {
       "none": "ยังไม่พบ",
-      "collectable": "พร้อมรับ",
+      "collectable": "พร้อมเริ่ม",
       "collected": "รวบรวมแล้ว",
       "finished": "เสร็จแล้ว"
     },

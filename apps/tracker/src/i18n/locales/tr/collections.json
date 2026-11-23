@@ -179,7 +179,7 @@
     "foundHint": "Defterdekilerden bulunan Aranara",
     "states": {
       "none": "Bulunmadı",
-      "collectable": "Alınabilir",
+      "collectable": "Başlamaya hazır",
       "collected": "Alındı",
       "finished": "Bitti"
     },

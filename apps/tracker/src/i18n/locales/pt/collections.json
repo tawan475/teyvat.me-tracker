@@ -179,7 +179,7 @@
     "foundHint": "Aranara encontrados dos listados no caderno",
     "states": {
       "none": "Não encontrado",
-      "collectable": "Pronto para coletar",
+      "collectable": "Pronto para começar",
       "collected": "Coletado",
       "finished": "Concluído"
     },

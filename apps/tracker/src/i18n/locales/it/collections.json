@@ -179,7 +179,7 @@
     "foundHint": "Aranara trovati tra quelli del taccuino",
     "states": {
       "none": "Non trovato",
-      "collectable": "Da raccogliere",
+      "collectable": "Pronto da iniziare",
       "collected": "Ottenuto",
       "finished": "Finito"
     },

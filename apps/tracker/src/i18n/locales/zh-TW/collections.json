@@ -179,7 +179,7 @@
     "foundHint": "筆記中列出的蘭那羅裡已尋得的數量",
     "states": {
       "none": "未找到",
-      "collectable": "可領取",
+      "collectable": "可開始",
       "collected": "已收集",
       "finished": "已完成"
     },

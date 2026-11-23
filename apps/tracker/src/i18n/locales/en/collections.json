@@ -179,7 +179,7 @@
     "foundHint": "Aranara found, of those the notebook lists",
     "states": {
       "none": "Not found",
-      "collectable": "Ready to collect",
+      "collectable": "Ready to start",
       "collected": "Collected",
       "finished": "Done"
     },

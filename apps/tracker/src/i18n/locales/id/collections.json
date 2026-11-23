@@ -179,7 +179,7 @@
     "foundHint": "Aranara yang ditemukan dari yang ada di buku catatan",
     "states": {
       "none": "Belum ditemukan",
-      "collectable": "Siap diambil",
+      "collectable": "Siap dimulai",
       "collected": "Telah Terkumpul",
       "finished": "Selesai"
     },

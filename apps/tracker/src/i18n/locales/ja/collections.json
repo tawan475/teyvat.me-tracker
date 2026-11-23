@@ -179,7 +179,7 @@
     "foundHint": "ノートに載っているアランナラのうち見つけた数",
     "states": {
       "none": "未発見",
-      "collectable": "受取可能",
+      "collectable": "開始可能",
       "collected": "収集済み",
       "finished": "完了"
     },

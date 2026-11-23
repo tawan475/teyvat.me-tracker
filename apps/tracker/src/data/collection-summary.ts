@@ -154,9 +154,10 @@ export function collectionFigures(
       const s = musicSummary(musicSongs(c, v))
       return { have: s.rewardsClaimed, total: s.rewards }
     }),
+    // Found = collected or done; a collectable one is only open to start (AranaraTab).
     aranara: withCatalog(aranara, (c, v) => ({
       have: Object.values(v).reduce(
-        (sum, entries) => sum + Object.values(entries).filter((state) => state !== 'none').length,
+        (sum, entries) => sum + Object.values(entries).filter((state) => state === 'collected' || state === 'finished').length,
         0,
       ),
       total: aranaraTotal(c),

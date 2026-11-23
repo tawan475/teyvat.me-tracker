@@ -179,7 +179,7 @@
     "foundHint": "Gefundene Aranara von denen im Notizbuch",
     "states": {
       "none": "Nicht gefunden",
-      "collectable": "Bereit zum Einsammeln",
+      "collectable": "Bereit zum Starten",
       "collected": "Gesammelt",
       "finished": "Erledigt"
     },

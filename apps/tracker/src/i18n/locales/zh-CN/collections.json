@@ -179,7 +179,7 @@
     "foundHint": "笔记中列出的兰那罗里已寻得的数量",
     "states": {
       "none": "未找到",
-      "collectable": "可领取",
+      "collectable": "可开始",
       "collected": "已收集",
       "finished": "已完成"
     },

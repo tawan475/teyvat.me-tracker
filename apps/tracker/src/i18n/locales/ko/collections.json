@@ -179,7 +179,7 @@
     "foundHint": "노트에 있는 아란나라 중 찾은 수",
     "states": {
       "none": "찾지 못함",
-      "collectable": "수령 가능",
+      "collectable": "시작 가능",
       "collected": "수집 완료",
       "finished": "완료"
     },

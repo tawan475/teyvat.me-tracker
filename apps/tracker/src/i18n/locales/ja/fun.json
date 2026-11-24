@@ -1,0 +1,63 @@
+{
+  "title": "お楽しみ",
+  "new": "新着",
+  "pages": {
+    "teamRandomizer": {
+      "title": "チームランダマイザー",
+      "pitch": "所持キャラクターからランダムにチームを編成"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "キャラクターを読み込めませんでした",
+    "roll": "チームを抽選",
+    "rerollTeam": "このチームを引き直す",
+    "reroll": "{name}を引き直す",
+    "lock": "{name}を固定",
+    "unlock": "{name}の固定を解除",
+    "levelFrom": "Lv.{n}+",
+    "pool": {
+      "label": "抽選対象",
+      "mine": "所持キャラクター",
+      "all": "実装済みすべて",
+      "count": "抽選対象 {n} / {total}",
+      "bench": "{name}を除外",
+      "unbench": "{name}を戻す"
+    },
+    "filter": {
+      "role": "役割",
+      "body": "体格",
+      "gender": "性別"
+    },
+    "role": {
+      "healer": "ヒーラー",
+      "shielder": "シールド",
+      "mainDps": "メインアタッカー",
+      "subDps": "サブアタッカー",
+      "support": "サポーター"
+    },
+    "body": {
+      "tall": "長身",
+      "medium": "中背",
+      "short": "小柄"
+    },
+    "gender": {
+      "f": "女性",
+      "m": "男性"
+    },
+    "rules": {
+      "title": "ルール",
+      "noRepeats": "チーム間で重複なし",
+      "healer": "各チームにヒーラー1人",
+      "elements": "元素をすべて別々に",
+      "fiveStars": "★5は1チーム2人まで"
+    },
+    "failed": {
+      "pool": "抽選対象のキャラクターが足りません",
+      "healer": "両チーム分のヒーラーが足りません",
+      "elements": "ルールを満たす元素が足りません",
+      "fiveStars": "ルールを満たす★4キャラクターが足りません",
+      "locks": "固定したキャラクターがルールに反しています"
+    }
+  },
+  "publicPitch": "実装済みの全キャラクターからランダムに2チーム"
+}

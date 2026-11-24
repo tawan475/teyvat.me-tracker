@@ -1,0 +1,63 @@
+{
+  "title": "Eğlence",
+  "new": "Yeni",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Rastgele gruplar",
+      "pitch": "Kendi karakterlerinden rastgele gruplar"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Karakterler yüklenemedi",
+    "roll": "Grupları çek",
+    "rerollTeam": "Bu grubu yeniden çek",
+    "reroll": "{name} yerine yeniden çek",
+    "lock": "{name} kilitle",
+    "unlock": "{name} kilidini aç",
+    "levelFrom": "Sv. {n}+",
+    "pool": {
+      "label": "Havuz",
+      "mine": "Karakterlerim",
+      "all": "Çıkmış olanların hepsi",
+      "count": "Havuzda {n} / {total}",
+      "bench": "{name} dışarıda kalsın",
+      "unbench": "{name} geri gelsin"
+    },
+    "filter": {
+      "role": "Rol",
+      "body": "Vücut tipi",
+      "gender": "Cinsiyet"
+    },
+    "role": {
+      "healer": "İyileştirici",
+      "shielder": "Kalkancı",
+      "mainDps": "Ana hasar",
+      "subDps": "Yan hasar",
+      "support": "Destek"
+    },
+    "body": {
+      "tall": "Uzun",
+      "medium": "Orta",
+      "short": "Kısa"
+    },
+    "gender": {
+      "f": "Kadın",
+      "m": "Erkek"
+    },
+    "rules": {
+      "title": "Kurallar",
+      "noRepeats": "Gruplar arasında tekrar yok",
+      "healer": "Her grupta bir iyileştirici",
+      "elements": "Tüm elementler farklı",
+      "fiveStars": "Grup başına en fazla iki 5★"
+    },
+    "failed": {
+      "pool": "Havuzda yeterli karakter yok",
+      "healer": "İki grup için yeterli iyileştirici yok",
+      "elements": "Kural için yeterli element yok",
+      "fiveStars": "Kural için yeterli 4★ karakter yok",
+      "locks": "Kilitli karakterler bir kuralı bozuyor"
+    }
+  },
+  "publicPitch": "Çıkmış tüm karakterlerden iki rastgele grup"
+}

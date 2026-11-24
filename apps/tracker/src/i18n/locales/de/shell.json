@@ -23,7 +23,8 @@
     "storage": "Speicher",
     "roles": "Rollen",
     "audit": "Protokoll",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "fun": "Spaß"
   },
   "section": {
     "staff": "Verwaltung",
@@ -92,7 +93,9 @@
     "leyline": "Leyline",
     "endgame": "Endgame",
     "developersApi": "API",
-    "privacy": "Datenschutz"
+    "privacy": "Datenschutz",
+    "fun": "Spaß",
+    "randomizer": "Truppen-Zufallsgenerator"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -200,7 +203,9 @@
     "leyline": "Das Leyline-Format, das Teyvat.me Capture exportiert: GOOD plus alles andere, was dein Account in Genshin Impact enthält, und die Upload-API von Teyvat.me.",
     "endgame": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: die Gegner jeder Saison und deine eigenen Rekorde.",
     "developersApi": "Die Teyvat.me-API: Lies und ändere deine Genshin-Konten, Snapshots, Gebete und Pläne mit einem persönlichen Token.",
-    "privacy": "Was Teyvat.me über dich speichert, wie lange, wer es sehen kann und wie du es exportierst oder löschst."
+    "privacy": "Was Teyvat.me über dich speichert, wie lange, wer es sehen kann und wie du es exportierst oder löschst.",
+    "fun": "Spaß mit deinem Genshin-Impact-Konto: ein Truppen-Zufallsgenerator, der aus deinen eigenen Figuren würfelt, und mehr.",
+    "randomizer": "Kostenloser Truppen-Zufallsgenerator für Genshin Impact: zwei zufällige Truppen aus allen veröffentlichten Figuren, mit Filtern, Regeln, Sperren und Ausschlüssen. Ganz ohne Konto."
   },
   "support": "Teyvat.me auf Ko-fi unterstützen",
   "timeTravel": {

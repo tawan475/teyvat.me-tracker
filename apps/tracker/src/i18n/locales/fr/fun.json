@@ -1,0 +1,63 @@
+{
+  "title": "Détente",
+  "new": "Nouveau",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Équipes aléatoires",
+      "pitch": "Des équipes au hasard parmi vos personnages"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Impossible de charger les personnages",
+    "roll": "Tirer les équipes",
+    "rerollTeam": "Retirer cette équipe",
+    "reroll": "Retirer {name}",
+    "lock": "Verrouiller {name}",
+    "unlock": "Déverrouiller {name}",
+    "levelFrom": "Niv. {n}+",
+    "pool": {
+      "label": "Sélection",
+      "mine": "Mes personnages",
+      "all": "Tous les sortis",
+      "count": "{n} sur {total} dans la sélection",
+      "bench": "Écarter {name}",
+      "unbench": "Remettre {name}"
+    },
+    "filter": {
+      "role": "Rôle",
+      "body": "Gabarit",
+      "gender": "Genre"
+    },
+    "role": {
+      "healer": "Soigneur",
+      "shielder": "Bouclier",
+      "mainDps": "DPS principal",
+      "subDps": "DPS secondaire",
+      "support": "Soutien"
+    },
+    "body": {
+      "tall": "Grand",
+      "medium": "Moyen",
+      "short": "Petit"
+    },
+    "gender": {
+      "f": "Féminin",
+      "m": "Masculin"
+    },
+    "rules": {
+      "title": "Règles",
+      "noRepeats": "Aucun doublon entre les équipes",
+      "healer": "Un soigneur dans chaque équipe",
+      "elements": "Tous les éléments différents",
+      "fiveStars": "Deux 5★ au plus par équipe"
+    },
+    "failed": {
+      "pool": "Pas assez de personnages dans la sélection",
+      "healer": "Pas assez de soigneurs pour les deux équipes",
+      "elements": "Pas assez d'éléments pour la règle",
+      "fiveStars": "Pas assez de personnages 4★ pour la règle",
+      "locks": "Les personnages verrouillés enfreignent une règle"
+    }
+  },
+  "publicPitch": "Deux équipes au hasard parmi tous les personnages sortis"
+}

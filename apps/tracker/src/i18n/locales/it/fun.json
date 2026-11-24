@@ -1,0 +1,63 @@
+{
+  "title": "Divertimento",
+  "new": "Nuovo",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Gruppi casuali",
+      "pitch": "Gruppi casuali con i tuoi personaggi"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Impossibile caricare i personaggi",
+    "roll": "Estrai i gruppi",
+    "rerollTeam": "Estrai di nuovo questo gruppo",
+    "reroll": "Estrai di nuovo {name}",
+    "lock": "Blocca {name}",
+    "unlock": "Sblocca {name}",
+    "levelFrom": "Liv. {n}+",
+    "pool": {
+      "label": "Selezione",
+      "mine": "I miei personaggi",
+      "all": "Tutti quelli usciti",
+      "count": "{n} su {total} nella selezione",
+      "bench": "Escludi {name}",
+      "unbench": "Rimetti {name}"
+    },
+    "filter": {
+      "role": "Ruolo",
+      "body": "Corporatura",
+      "gender": "Genere"
+    },
+    "role": {
+      "healer": "Guaritore",
+      "shielder": "Scudo",
+      "mainDps": "DPS principale",
+      "subDps": "DPS secondario",
+      "support": "Supporto"
+    },
+    "body": {
+      "tall": "Alto",
+      "medium": "Medio",
+      "short": "Basso"
+    },
+    "gender": {
+      "f": "Femminile",
+      "m": "Maschile"
+    },
+    "rules": {
+      "title": "Regole",
+      "noRepeats": "Nessun doppione tra i gruppi",
+      "healer": "Un guaritore in ogni gruppo",
+      "elements": "Tutti elementi diversi",
+      "fiveStars": "Al massimo due 5★ per gruppo"
+    },
+    "failed": {
+      "pool": "Personaggi insufficienti nella selezione",
+      "healer": "Guaritori insufficienti per i due gruppi",
+      "elements": "Elementi insufficienti per la regola",
+      "fiveStars": "Personaggi 4★ insufficienti per la regola",
+      "locks": "I personaggi bloccati violano una regola"
+    }
+  },
+  "publicPitch": "Due gruppi casuali tra tutti i personaggi usciti"
+}

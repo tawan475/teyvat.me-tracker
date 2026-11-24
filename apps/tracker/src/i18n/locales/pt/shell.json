@@ -23,7 +23,8 @@
     "storage": "Armazenamento",
     "roles": "Cargos",
     "audit": "Auditoria",
-    "endgame": "Conteúdo final"
+    "endgame": "Conteúdo final",
+    "fun": "Diversão"
   },
   "section": {
     "staff": "Equipe",
@@ -92,7 +93,9 @@
     "leyline": "Leyline",
     "endgame": "Conteúdo final",
     "developersApi": "API",
-    "privacy": "Privacidade"
+    "privacy": "Privacidade",
+    "fun": "Diversão",
+    "randomizer": "Equipes aleatórias"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -200,7 +203,9 @@
     "leyline": "O formato Leyline, que o Teyvat.me Capture exporta: GOOD mais tudo o que sua conta de Genshin Impact tem, e a API de envio do Teyvat.me.",
     "endgame": "Abismo do Espiral, Teatro das Realidades Imaginárias e Confronto Abissal: os inimigos de cada temporada e seus próprios recordes.",
     "developersApi": "A API do Teyvat.me: leia e altere suas contas de Genshin, capturas, orações e planos com um token pessoal.",
-    "privacy": "O que o Teyvat.me guarda sobre você, por quanto tempo, quem pode ver e como exportar ou excluir."
+    "privacy": "O que o Teyvat.me guarda sobre você, por quanto tempo, quem pode ver e como exportar ou excluir.",
+    "fun": "Coisas divertidas com a sua conta de Genshin Impact: equipes sorteadas entre os seus personagens e mais.",
+    "randomizer": "Sorteio de equipes grátis para Genshin Impact: duas equipes aleatórias com todos os personagens lançados, com filtros, regras, travas e exclusões. Sem conta."
   },
   "support": "Apoie o Teyvat.me no Ko-fi",
   "timeTravel": {

@@ -31,6 +31,7 @@ import landing from './landing.json'
 import endgame from './endgame.json'
 import demo from './demo.json'
 import guest from './guest.json'
+import fun from './fun.json'
 
 const messages = {
   common,
@@ -64,6 +65,7 @@ const messages = {
   endgame,
   demo,
   guest,
+  fun,
 }
 
 export default messages

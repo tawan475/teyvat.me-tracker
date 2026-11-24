@@ -23,7 +23,8 @@
     "storage": "Storage",
     "roles": "Roles",
     "audit": "Audit",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "fun": "Fun"
   },
   "section": {
     "staff": "Staff",
@@ -92,7 +93,9 @@
     "leyline": "Leyline",
     "endgame": "Endgame",
     "developersApi": "API",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "fun": "Fun",
+    "randomizer": "Team randomizer"
   },
   "notFound": {
     "title": "Page not found",
@@ -200,7 +203,9 @@
     "leyline": "The Leyline format, what Teyvat.me Capture exports: GOOD plus everything else your Genshin Impact account holds, and the Teyvat.me upload API.",
     "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records.",
     "developersApi": "The Teyvat.me API: read and change your Genshin accounts, snapshots, wishes and plans with a personal token.",
-    "privacy": "What Teyvat.me keeps about you, for how long, who can see it, and how to export or delete it."
+    "privacy": "What Teyvat.me keeps about you, for how long, who can see it, and how to export or delete it.",
+    "fun": "Fun things to do with your Genshin Impact account: a team randomizer that rolls from your own characters, and more.",
+    "randomizer": "Free Genshin Impact team randomizer: roll two random teams from every released character, with filters, rules, locks and bans. No account needed."
   },
   "support": "Support Teyvat.me on Ko-fi",
   "timeTravel": {

@@ -23,7 +23,8 @@
     "storage": "Stockage",
     "roles": "Rôles",
     "audit": "Audit",
-    "endgame": "Fin de jeu"
+    "endgame": "Fin de jeu",
+    "fun": "Détente"
   },
   "section": {
     "staff": "Équipe",
@@ -92,7 +93,9 @@
     "leyline": "Leyline",
     "endgame": "Fin de jeu",
     "developersApi": "API",
-    "privacy": "Confidentialité"
+    "privacy": "Confidentialité",
+    "fun": "Détente",
+    "randomizer": "Équipes aléatoires"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -200,7 +203,9 @@
     "leyline": "Le format Leyline, ce qu'exporte Teyvat.me Capture : GOOD plus tout ce que contient votre compte Genshin Impact, et l'API d'envoi de Teyvat.me.",
     "endgame": "Profondeurs spiralées, Théâtre de l'imaginarium et Carnage chtonien : les ennemis de chaque saison et vos propres records.",
     "developersApi": "L'API Teyvat.me : lisez et modifiez vos comptes Genshin, instantanés, vœux et plans avec un jeton personnel.",
-    "privacy": "Ce que Teyvat.me garde sur vous, combien de temps, qui peut le voir, et comment l'exporter ou le supprimer."
+    "privacy": "Ce que Teyvat.me garde sur vous, combien de temps, qui peut le voir, et comment l'exporter ou le supprimer.",
+    "fun": "De quoi vous amuser avec votre compte Genshin Impact : des équipes tirées au hasard parmi vos personnages, et plus encore.",
+    "randomizer": "Tirage d'équipes gratuit pour Genshin Impact : deux équipes au hasard parmi tous les personnages sortis, avec filtres, règles, verrous et exclusions. Sans compte."
   },
   "support": "Soutenir Teyvat.me sur Ko-fi",
   "timeTravel": {

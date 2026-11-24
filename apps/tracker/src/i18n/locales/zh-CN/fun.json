@@ -1,0 +1,63 @@
+{
+  "title": "趣味",
+  "new": "新",
+  "pages": {
+    "teamRandomizer": {
+      "title": "队伍随机器",
+      "pitch": "从你自己的角色中随机组队"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "无法加载角色",
+    "roll": "随机队伍",
+    "rerollTeam": "重抽这支队伍",
+    "reroll": "重抽{name}",
+    "lock": "锁定{name}",
+    "unlock": "解锁{name}",
+    "levelFrom": "Lv. {n}+",
+    "pool": {
+      "label": "角色池",
+      "mine": "我的角色",
+      "all": "全部已上线",
+      "count": "角色池 {n} / {total}",
+      "bench": "排除{name}",
+      "unbench": "放回{name}"
+    },
+    "filter": {
+      "role": "定位",
+      "body": "体型",
+      "gender": "性别"
+    },
+    "role": {
+      "healer": "治疗",
+      "shielder": "护盾",
+      "mainDps": "主C",
+      "subDps": "副C",
+      "support": "辅助"
+    },
+    "body": {
+      "tall": "高挑",
+      "medium": "中等",
+      "short": "娇小"
+    },
+    "gender": {
+      "f": "女",
+      "m": "男"
+    },
+    "rules": {
+      "title": "规则",
+      "noRepeats": "队伍之间不重复",
+      "healer": "每队一名治疗",
+      "elements": "元素各不相同",
+      "fiveStars": "每队至多两名5★"
+    },
+    "failed": {
+      "pool": "角色池中的角色不够",
+      "healer": "治疗角色不够分给两队",
+      "elements": "元素不够满足规则",
+      "fiveStars": "4★角色不够满足规则",
+      "locks": "锁定的角色违反了规则"
+    }
+  },
+  "publicPitch": "从全部已上线角色中随机两支队伍"
+}

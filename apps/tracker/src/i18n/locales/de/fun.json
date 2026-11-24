@@ -1,0 +1,63 @@
+{
+  "title": "Spaß",
+  "new": "Neu",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Truppen-Zufallsgenerator",
+      "pitch": "Zufällige Truppen aus deinen eigenen Figuren"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Figuren konnten nicht geladen werden",
+    "roll": "Truppen auswürfeln",
+    "rerollTeam": "Diese Truppe neu auswürfeln",
+    "reroll": "{name} neu auswürfeln",
+    "lock": "{name} sperren",
+    "unlock": "{name} entsperren",
+    "levelFrom": "St. {n}+",
+    "pool": {
+      "label": "Auswahl",
+      "mine": "Meine Figuren",
+      "all": "Alle veröffentlichten",
+      "count": "{n} von {total} in der Auswahl",
+      "bench": "{name} auslassen",
+      "unbench": "{name} zurückholen"
+    },
+    "filter": {
+      "role": "Rolle",
+      "body": "Körpertyp",
+      "gender": "Geschlecht"
+    },
+    "role": {
+      "healer": "Heiler",
+      "shielder": "Schildgeber",
+      "mainDps": "Haupt-DPS",
+      "subDps": "Neben-DPS",
+      "support": "Unterstützer"
+    },
+    "body": {
+      "tall": "Groß",
+      "medium": "Mittel",
+      "short": "Klein"
+    },
+    "gender": {
+      "f": "Weiblich",
+      "m": "Männlich"
+    },
+    "rules": {
+      "title": "Regeln",
+      "noRepeats": "Keine Wiederholungen zwischen Truppen",
+      "healer": "Ein Heiler in jeder Truppe",
+      "elements": "Lauter verschiedene Elemente",
+      "fiveStars": "Höchstens zwei 5★ pro Truppe"
+    },
+    "failed": {
+      "pool": "Nicht genug Figuren in der Auswahl",
+      "healer": "Nicht genug Heiler für beide Truppen",
+      "elements": "Nicht genug Elemente für die Regel",
+      "fiveStars": "Nicht genug 4★-Figuren für die Regel",
+      "locks": "Die gesperrten Figuren verletzen eine Regel"
+    }
+  },
+  "publicPitch": "Zwei zufällige Truppen aus allen veröffentlichten Figuren"
+}

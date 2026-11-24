@@ -23,7 +23,8 @@
     "storage": "Penyimpanan",
     "roles": "Peran",
     "audit": "Audit",
-    "endgame": "Endgame"
+    "endgame": "Endgame",
+    "fun": "Seru-seruan"
   },
   "section": {
     "staff": "Staf",
@@ -92,7 +93,9 @@
     "leyline": "Leyline",
     "endgame": "Endgame",
     "developersApi": "API",
-    "privacy": "Privasi"
+    "privacy": "Privasi",
+    "fun": "Seru-seruan",
+    "randomizer": "Pengacak party"
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",
@@ -200,7 +203,9 @@
     "leyline": "Format Leyline, yang diekspor Teyvat.me Capture: GOOD plus semua isi lain akun Genshin Impact-mu, serta API unggah Teyvat.me.",
     "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri.",
     "developersApi": "API Teyvat.me: baca dan ubah akun Genshin, snapshot, permohonan, dan rencanamu dengan token pribadi.",
-    "privacy": "Apa yang disimpan Teyvat.me tentangmu, berapa lama, siapa yang bisa melihatnya, dan cara mengekspor atau menghapusnya."
+    "privacy": "Apa yang disimpan Teyvat.me tentangmu, berapa lama, siapa yang bisa melihatnya, dan cara mengekspor atau menghapusnya.",
+    "fun": "Hal seru dengan akun Genshin Impact-mu: pengacak party dari karaktermu sendiri, dan lainnya.",
+    "randomizer": "Pengacak party Genshin Impact gratis: dua party acak dari semua karakter yang sudah rilis, dengan filter, aturan, kunci, dan pengecualian. Tanpa akun."
   },
   "support": "Dukung Teyvat.me di Ko-fi",
   "timeTravel": {

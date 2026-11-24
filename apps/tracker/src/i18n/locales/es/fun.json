@@ -1,0 +1,63 @@
+{
+  "title": "Diversión",
+  "new": "Nuevo",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Equipos al azar",
+      "pitch": "Equipos al azar con tus propios personajes"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "No se pudieron cargar los personajes",
+    "roll": "Sortear equipos",
+    "rerollTeam": "Volver a sortear este equipo",
+    "reroll": "Volver a sortear a {name}",
+    "lock": "Fijar a {name}",
+    "unlock": "Soltar a {name}",
+    "levelFrom": "Niv. {n}+",
+    "pool": {
+      "label": "Grupo de sorteo",
+      "mine": "Mis personajes",
+      "all": "Todos los lanzados",
+      "count": "{n} de {total} en el sorteo",
+      "bench": "Dejar fuera a {name}",
+      "unbench": "Volver a incluir a {name}"
+    },
+    "filter": {
+      "role": "Rol",
+      "body": "Complexión",
+      "gender": "Género"
+    },
+    "role": {
+      "healer": "Sanador",
+      "shielder": "Escudo",
+      "mainDps": "DPS principal",
+      "subDps": "DPS secundario",
+      "support": "Apoyo"
+    },
+    "body": {
+      "tall": "Alto",
+      "medium": "Mediano",
+      "short": "Bajo"
+    },
+    "gender": {
+      "f": "Femenino",
+      "m": "Masculino"
+    },
+    "rules": {
+      "title": "Reglas",
+      "noRepeats": "Sin repetidos entre equipos",
+      "healer": "Un sanador en cada equipo",
+      "elements": "Todos los elementos distintos",
+      "fiveStars": "Como mucho dos 5★ por equipo"
+    },
+    "failed": {
+      "pool": "No hay suficientes personajes en el sorteo",
+      "healer": "No hay suficientes sanadores para los dos equipos",
+      "elements": "No hay suficientes elementos para la regla",
+      "fiveStars": "No hay suficientes personajes 4★ para la regla",
+      "locks": "Los personajes fijados incumplen una regla"
+    }
+  },
+  "publicPitch": "Dos equipos al azar entre todos los personajes lanzados"
+}

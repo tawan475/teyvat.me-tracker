@@ -1,0 +1,63 @@
+{
+  "title": "재미",
+  "new": "신규",
+  "pages": {
+    "teamRandomizer": {
+      "title": "파티 랜덤 뽑기",
+      "pitch": "보유 캐릭터로 무작위 파티 편성"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "캐릭터를 불러오지 못했습니다",
+    "roll": "파티 뽑기",
+    "rerollTeam": "이 파티 다시 뽑기",
+    "reroll": "{name} 다시 뽑기",
+    "lock": "{name} 고정",
+    "unlock": "{name} 고정 해제",
+    "levelFrom": "Lv. {n}+",
+    "pool": {
+      "label": "후보",
+      "mine": "내 캐릭터",
+      "all": "출시된 전체",
+      "count": "후보 {n} / {total}",
+      "bench": "{name} 제외",
+      "unbench": "{name} 다시 넣기"
+    },
+    "filter": {
+      "role": "역할",
+      "body": "체형",
+      "gender": "성별"
+    },
+    "role": {
+      "healer": "힐러",
+      "shielder": "실드",
+      "mainDps": "메인 딜러",
+      "subDps": "서브 딜러",
+      "support": "서포터"
+    },
+    "body": {
+      "tall": "장신",
+      "medium": "중간",
+      "short": "단신"
+    },
+    "gender": {
+      "f": "여성",
+      "m": "남성"
+    },
+    "rules": {
+      "title": "규칙",
+      "noRepeats": "파티 간 중복 없음",
+      "healer": "파티마다 힐러 1명",
+      "elements": "원소 모두 다르게",
+      "fiveStars": "파티당 5★ 최대 2명"
+    },
+    "failed": {
+      "pool": "후보 캐릭터가 부족합니다",
+      "healer": "두 파티에 넣을 힐러가 부족합니다",
+      "elements": "규칙에 맞는 원소가 부족합니다",
+      "fiveStars": "규칙에 맞는 4★ 캐릭터가 부족합니다",
+      "locks": "고정한 캐릭터가 규칙에 어긋납니다"
+    }
+  },
+  "publicPitch": "출시된 모든 캐릭터로 무작위 파티 둘"
+}

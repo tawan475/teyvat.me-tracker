@@ -1,0 +1,63 @@
+{
+  "title": "趣味",
+  "new": "新",
+  "pages": {
+    "teamRandomizer": {
+      "title": "隊伍隨機器",
+      "pitch": "從你自己的角色中隨機組隊"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "無法載入角色",
+    "roll": "隨機隊伍",
+    "rerollTeam": "重抽這支隊伍",
+    "reroll": "重抽{name}",
+    "lock": "鎖定{name}",
+    "unlock": "解鎖{name}",
+    "levelFrom": "Lv. {n}+",
+    "pool": {
+      "label": "角色池",
+      "mine": "我的角色",
+      "all": "全部已上線",
+      "count": "角色池 {n} / {total}",
+      "bench": "排除{name}",
+      "unbench": "放回{name}"
+    },
+    "filter": {
+      "role": "定位",
+      "body": "體型",
+      "gender": "性別"
+    },
+    "role": {
+      "healer": "治療",
+      "shielder": "護盾",
+      "mainDps": "主C",
+      "subDps": "副C",
+      "support": "輔助"
+    },
+    "body": {
+      "tall": "高䠷",
+      "medium": "中等",
+      "short": "嬌小"
+    },
+    "gender": {
+      "f": "女",
+      "m": "男"
+    },
+    "rules": {
+      "title": "規則",
+      "noRepeats": "隊伍之間不重複",
+      "healer": "每隊一名治療",
+      "elements": "元素各不相同",
+      "fiveStars": "每隊至多兩名5★"
+    },
+    "failed": {
+      "pool": "角色池中的角色不夠",
+      "healer": "治療角色不夠分給兩隊",
+      "elements": "元素不夠滿足規則",
+      "fiveStars": "4★角色不夠滿足規則",
+      "locks": "鎖定的角色違反了規則"
+    }
+  },
+  "publicPitch": "從全部已上線角色中隨機兩支隊伍"
+}

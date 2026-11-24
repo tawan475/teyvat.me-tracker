@@ -1,0 +1,63 @@
+{
+  "title": "Giải trí",
+  "new": "Mới",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Xếp đội ngẫu nhiên",
+      "pitch": "Đội ngẫu nhiên từ nhân vật của bạn"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Không tải được nhân vật",
+    "roll": "Quay đội",
+    "rerollTeam": "Quay lại đội này",
+    "reroll": "Quay lại {name}",
+    "lock": "Khóa {name}",
+    "unlock": "Mở khóa {name}",
+    "levelFrom": "Cấp {n}+",
+    "pool": {
+      "label": "Nhóm quay",
+      "mine": "Nhân vật của tôi",
+      "all": "Tất cả đã ra mắt",
+      "count": "{n} trên {total} trong nhóm quay",
+      "bench": "Bỏ {name} ra",
+      "unbench": "Đưa {name} trở lại"
+    },
+    "filter": {
+      "role": "Vai trò",
+      "body": "Vóc dáng",
+      "gender": "Giới tính"
+    },
+    "role": {
+      "healer": "Hồi máu",
+      "shielder": "Tạo khiên",
+      "mainDps": "Sát thương chính",
+      "subDps": "Sát thương phụ",
+      "support": "Hỗ trợ"
+    },
+    "body": {
+      "tall": "Cao",
+      "medium": "Trung bình",
+      "short": "Thấp"
+    },
+    "gender": {
+      "f": "Nữ",
+      "m": "Nam"
+    },
+    "rules": {
+      "title": "Quy tắc",
+      "noRepeats": "Không trùng giữa các đội",
+      "healer": "Mỗi đội có một người hồi máu",
+      "elements": "Tất cả nguyên tố khác nhau",
+      "fiveStars": "Tối đa hai 5★ mỗi đội"
+    },
+    "failed": {
+      "pool": "Không đủ nhân vật trong nhóm quay",
+      "healer": "Không đủ người hồi máu cho hai đội",
+      "elements": "Không đủ nguyên tố cho quy tắc",
+      "fiveStars": "Không đủ nhân vật 4★ cho quy tắc",
+      "locks": "Nhân vật đã khóa vi phạm quy tắc"
+    }
+  },
+  "publicPitch": "Hai đội ngẫu nhiên từ mọi nhân vật đã ra mắt"
+}

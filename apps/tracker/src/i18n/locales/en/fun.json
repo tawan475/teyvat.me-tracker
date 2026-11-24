@@ -1,0 +1,63 @@
+{
+  "title": "Fun",
+  "new": "New",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Team randomizer",
+      "pitch": "Random teams from your own characters"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Could not load characters",
+    "roll": "Roll teams",
+    "rerollTeam": "Reroll this team",
+    "reroll": "Reroll {name}",
+    "lock": "Lock {name}",
+    "unlock": "Unlock {name}",
+    "levelFrom": "Lv. {n}+",
+    "pool": {
+      "label": "Pool",
+      "mine": "My characters",
+      "all": "All released",
+      "count": "{n} of {total} in the pool",
+      "bench": "Leave {name} out",
+      "unbench": "Put {name} back"
+    },
+    "filter": {
+      "role": "Role",
+      "body": "Body type",
+      "gender": "Gender"
+    },
+    "role": {
+      "healer": "Healer",
+      "shielder": "Shielder",
+      "mainDps": "Main DPS",
+      "subDps": "Sub DPS",
+      "support": "Support"
+    },
+    "body": {
+      "tall": "Tall",
+      "medium": "Medium",
+      "short": "Short"
+    },
+    "gender": {
+      "f": "Female",
+      "m": "Male"
+    },
+    "rules": {
+      "title": "Rules",
+      "noRepeats": "No repeats across teams",
+      "healer": "A healer in every team",
+      "elements": "All different elements",
+      "fiveStars": "At most two 5★ per team"
+    },
+    "failed": {
+      "pool": "Not enough characters in the pool",
+      "healer": "Not enough healers for both teams",
+      "elements": "Not enough elements for the rule",
+      "fiveStars": "Not enough 4★ characters for the rule",
+      "locks": "The locked characters break a rule"
+    }
+  },
+  "publicPitch": "Two random teams from every released character"
+}

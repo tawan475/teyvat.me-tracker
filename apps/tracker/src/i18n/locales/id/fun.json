@@ -1,0 +1,63 @@
+{
+  "title": "Seru-seruan",
+  "new": "Baru",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Pengacak party",
+      "pitch": "Party acak dari karaktermu sendiri"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Karakter tidak dapat dimuat",
+    "roll": "Acak party",
+    "rerollTeam": "Acak ulang party ini",
+    "reroll": "Acak ulang {name}",
+    "lock": "Kunci {name}",
+    "unlock": "Buka kunci {name}",
+    "levelFrom": "Lv. {n}+",
+    "pool": {
+      "label": "Kumpulan",
+      "mine": "Karakterku",
+      "all": "Semua yang rilis",
+      "count": "{n} dari {total} dalam kumpulan",
+      "bench": "Keluarkan {name}",
+      "unbench": "Masukkan lagi {name}"
+    },
+    "filter": {
+      "role": "Peran",
+      "body": "Tipe tubuh",
+      "gender": "Jenis kelamin"
+    },
+    "role": {
+      "healer": "Penyembuh",
+      "shielder": "Pemberi perisai",
+      "mainDps": "DPS utama",
+      "subDps": "Sub DPS",
+      "support": "Pendukung"
+    },
+    "body": {
+      "tall": "Tinggi",
+      "medium": "Sedang",
+      "short": "Pendek"
+    },
+    "gender": {
+      "f": "Perempuan",
+      "m": "Laki-laki"
+    },
+    "rules": {
+      "title": "Aturan",
+      "noRepeats": "Tanpa pengulangan antar party",
+      "healer": "Satu penyembuh di tiap party",
+      "elements": "Semua elemen berbeda",
+      "fiveStars": "Paling banyak dua 5★ per party"
+    },
+    "failed": {
+      "pool": "Karakter dalam kumpulan tidak cukup",
+      "healer": "Penyembuh tidak cukup untuk kedua party",
+      "elements": "Elemen tidak cukup untuk aturan ini",
+      "fiveStars": "Karakter 4★ tidak cukup untuk aturan ini",
+      "locks": "Karakter yang dikunci melanggar aturan"
+    }
+  },
+  "publicPitch": "Dua party acak dari semua karakter yang sudah rilis"
+}

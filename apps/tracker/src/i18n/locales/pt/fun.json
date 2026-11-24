@@ -1,0 +1,63 @@
+{
+  "title": "Diversão",
+  "new": "Novo",
+  "pages": {
+    "teamRandomizer": {
+      "title": "Equipes aleatórias",
+      "pitch": "Equipes aleatórias com os seus personagens"
+    }
+  },
+  "randomizer": {
+    "loadFailed": "Não foi possível carregar os personagens",
+    "roll": "Sortear equipes",
+    "rerollTeam": "Sortear esta equipe de novo",
+    "reroll": "Sortear {name} de novo",
+    "lock": "Travar {name}",
+    "unlock": "Destravar {name}",
+    "levelFrom": "Nv. {n}+",
+    "pool": {
+      "label": "Seleção",
+      "mine": "Meus personagens",
+      "all": "Todos os lançados",
+      "count": "{n} de {total} na seleção",
+      "bench": "Deixar {name} de fora",
+      "unbench": "Trazer {name} de volta"
+    },
+    "filter": {
+      "role": "Função",
+      "body": "Porte",
+      "gender": "Gênero"
+    },
+    "role": {
+      "healer": "Curandeiro",
+      "shielder": "Escudo",
+      "mainDps": "DPS principal",
+      "subDps": "DPS secundário",
+      "support": "Suporte"
+    },
+    "body": {
+      "tall": "Alto",
+      "medium": "Médio",
+      "short": "Baixo"
+    },
+    "gender": {
+      "f": "Feminino",
+      "m": "Masculino"
+    },
+    "rules": {
+      "title": "Regras",
+      "noRepeats": "Sem repetidos entre as equipes",
+      "healer": "Um curandeiro em cada equipe",
+      "elements": "Todos os elementos diferentes",
+      "fiveStars": "No máximo dois 5★ por equipe"
+    },
+    "failed": {
+      "pool": "Personagens insuficientes na seleção",
+      "healer": "Curandeiros insuficientes para as duas equipes",
+      "elements": "Elementos insuficientes para a regra",
+      "fiveStars": "Personagens 4★ insuficientes para a regra",
+      "locks": "Os personagens travados quebram uma regra"
+    }
+  },
+  "publicPitch": "Duas equipes aleatórias com todos os personagens lançados"
+}

@@ -168,6 +168,13 @@ const router = createRouter({
       component: () => import('@/views/PrivacyView.vue'),
       meta: { public: true, themed: true, title: 'privacy' },
     },
+    // The team randomizer over every released character (Fun; public, follows the theme).
+    {
+      path: '/randomizer',
+      name: 'randomizer',
+      component: () => import('@/views/RandomizerView.vue'),
+      meta: { public: true, themed: true, title: 'randomizer' },
+    },
     {
       path: '/login',
       name: 'login',
@@ -455,6 +462,16 @@ const router = createRouter({
               () => import('@/views/account/EndgameView.vue'),
               true,
             ),
+            // Any slug: FunView shows the hub for one no page has (components/fun/pages.ts).
+            account(
+              'fun/:page?',
+              'account-fun',
+              'fun',
+              () => import('@/views/account/FunView.vue'),
+              {
+                param: 'page',
+              },
+            ),
             account(
               'wishes',
               'account-wishes',
@@ -550,6 +567,9 @@ const router = createRouter({
           () => import('@/views/account/EndgameView.vue'),
           true,
         ),
+        demoPage('fun/:page?', 'fun', 'fun', () => import('@/views/account/FunView.vue'), {
+          param: 'page',
+        }),
         demoPage(
           'wishes',
           'wishes',
@@ -630,6 +650,9 @@ const router = createRouter({
           () => import('@/views/account/EndgameView.vue'),
           true,
         ),
+        guestPage('fun/:page?', 'fun', 'fun', () => import('@/views/account/FunView.vue'), {
+          param: 'page',
+        }),
         guestPage(
           'wishes',
           'wishes',

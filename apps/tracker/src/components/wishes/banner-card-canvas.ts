@@ -40,6 +40,7 @@ import {
   bannerArt,
   bannerArtFallback,
   bannerCardLayout,
+  bannerPanelHeight,
   tileNameGap,
   tileNameSize,
   tileNumberSize,
@@ -127,7 +128,10 @@ export async function drawBannerCard(
   scale = 1,
   progress?: CardProgress,
 ): Promise<DrawnBanner> {
-  const layout = bannerCardLayout(input.numbers.fives.length)
+  const layout = bannerCardLayout(
+    input.numbers.fives.length,
+    bannerPanelHeight(input.banner, input.type === 301 || input.type === 302),
+  )
   const [art, second] = await Promise.all([
     artToDraw(bannerArt(input.banner)),
     artToDraw(
@@ -247,9 +251,12 @@ class BannerPainter extends CardPaint {
 
     this.plate(x, y, w, plateH)
     y += plateH + GAP
-    // No art: its place stays open, the sky showing between the plate and the title.
-    if (this.images.get(art)) this.art(x, y, w, artH, art, second)
-    y += artH + lift
+    // A banner without art has a panel only as tall as its blocks (bannerPanelHeight):
+    // the title follows the plate.
+    if (art) {
+      this.art(x, y, w, artH, art, second)
+      y += artH + lift
+    }
     this.title(x, y + 12, w, lines)
     y += titleH + GAP
     this.stats(x, y, w, statsH)

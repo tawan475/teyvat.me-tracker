@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { parseWishTime } from '@gdt/shared'
 import type { EventBanner } from '@/data/wish-history'
-import { PANEL_H, bannerArt, bannerCardLayout, bannerFileName } from '../banner-card'
+import {
+  PANEL_H,
+  bannerArt,
+  bannerCardLayout,
+  bannerFileName,
+  bannerPanelHeight,
+} from '../banner-card'
 
 const overlaps = (
   a: { x: number; y: number; w: number; h: number },
@@ -64,7 +70,9 @@ describe('banner art names', () => {
 
   it('names the art by the start date on the banner clock, _2 for the second banner', () => {
     expect(bannerArt(banner('2026-09-23 06:00:00'))).toMatch(/\/WishBanner_C_20260923\.webp\?2$/)
-    expect(bannerArt(banner('2026-10-13 18:00:00'), true)).toMatch(/WishBanner_C_20261013_2\.webp\?2$/)
+    expect(bannerArt(banner('2026-10-13 18:00:00'), true)).toMatch(
+      /WishBanner_C_20261013_2\.webp\?2$/,
+    )
     expect(bannerArt(banner('2025-01-21 18:00:00', 'chronicled'))).toMatch(/WishBanner_R_20250121/)
     // Art gi-cdn does not have (yet) is not asked for.
     expect(bannerArt(banner('2031-01-01 18:00:00'))).toBe('')
@@ -74,6 +82,19 @@ describe('banner art names', () => {
     // 06:00 on an America server (UTC-5) is 11:00 UTC.
     const b = { ...banner('2026-09-23 06:00:00'), start: parseWishTime('2026-09-23 11:00:00')! }
     expect(bannerArt(b)).toMatch(/WishBanner_C_20260923\.webp\?2$/)
+  })
+
+  it('a banner without art gets a panel as tall as its blocks, and tiles that keep their size', () => {
+    expect(bannerPanelHeight(banner('2026-09-23 06:00:00'), true)).toBe(PANEL_H)
+    const bare = bannerPanelHeight(banner('2031-01-01 18:00:00'), true)
+    expect(bare).toBeLessThan(PANEL_H * 0.7)
+    for (const n of [0, 1, 3, 6, 12, 20, 40]) {
+      const layout = bannerCardLayout(n, bare)
+      expect(layout.panel.h).toBe(bare)
+      expect(layout.height).toBeGreaterThanOrEqual(2 * 40 + bare)
+      // No tile narrower than the tall card's smallest (the 13+ layout's).
+      if (n) expect(layout.cellW).toBeGreaterThanOrEqual(bannerCardLayout(40).cellW)
+    }
   })
 
   it('names the PNG by version and phase', () => {

@@ -16,7 +16,12 @@ import { readJson, writeJson } from '@/lib/storage'
 import { resolvedTheme } from '@/lib/theme'
 import { useCardExport } from '@/lib/use-card-export'
 import type { CardOwner } from '../characters/share-card'
-import { bannerCardLayout, bannerCardNumbers, bannerFileName } from './banner-card'
+import {
+  bannerCardLayout,
+  bannerCardNumbers,
+  bannerFileName,
+  bannerPanelHeight,
+} from './banner-card'
 import { drawBannerCard, type DrawnBanner } from './banner-card-canvas'
 
 /**
@@ -135,7 +140,14 @@ watch(
   () => (shown.value = null),
 )
 
-const layout = computed(() => bannerCardLayout(numbers.value.fives.length))
+const layout = computed(() =>
+  bannerCardLayout(
+    numbers.value.fives.length,
+    props.banner
+      ? bannerPanelHeight(props.banner, props.type === 301 || props.type === 302)
+      : undefined,
+  ),
+)
 const size = computed(() => `${layout.value.width} × ${layout.value.height}`)
 const exporter = useCardExport({
   draw: async () => {

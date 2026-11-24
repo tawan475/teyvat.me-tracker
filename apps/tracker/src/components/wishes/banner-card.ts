@@ -22,6 +22,35 @@ export const BANNER_CARD_PAD_Y = 40
 /** The info panel's height: the tile rows beside it end level with it. */
 export const PANEL_H = 900
 const PANEL_MIN_W = 560
+/** The panel's blocks (banner-card-canvas draws them at these heights) and the gap between them. */
+export const PANEL_BLOCK = {
+  gap: 10,
+  plate: 48,
+  titleHead: 56,
+  titleLine: 39,
+  stats: 87,
+  table: 160,
+  tally: 68,
+} as const
+
+/** The title's lines: a weapon banner's two 5★, a double run's two names, else one. */
+export function bannerTitleLineCount(banner: EventBanner): number {
+  if (banner.kind === 'weapon') return Math.min(2, banner.featured5.length)
+  return banner.kind === 'character' && banner.name400 ? 2 : 1
+}
+
+/**
+ * The info panel's height. With art it is `PANEL_H` (the art takes what the
+ * blocks leave); a banner without art (`bannerArt` answers '') gets a panel
+ * only as tall as its blocks, so no empty space is left where the art was
+ * (the user, 2026-11-24).
+ */
+export function bannerPanelHeight(banner: EventBanner, rated: boolean): number {
+  if (bannerArt(banner, false, 'en')) return PANEL_H
+  const b = PANEL_BLOCK
+  const title = b.titleHead + bannerTitleLineCount(banner) * b.titleLine
+  return b.plate + b.gap + title + b.gap + b.stats + b.gap + b.table + (rated ? b.gap + b.tally : 0)
+}
 
 /** Tile text as a share of the tile's width, within readable limits (the user's pick). */
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
@@ -48,8 +77,13 @@ export interface BannerCardLayout {
   rowGap: number
 }
 
-/** The card's geometry for `count` 5★ (0 draws the panel alone). */
-export function bannerCardLayout(count: number): BannerCardLayout {
+/**
+ * The card's geometry for `count` 5★ (0 draws the panel alone). `panelH` is
+ * `bannerPanelHeight`: a shorter panel (no art) takes fewer, wider rows of
+ * tiles beside it, so the tiles keep their size.
+ */
+export function bannerCardLayout(count: number, panelH = PANEL_H): BannerCardLayout {
+  const squat = PANEL_H / panelH
   const n = Math.max(0, count)
   let gap: number
   let rowGap: number
@@ -57,23 +91,26 @@ export function bannerCardLayout(count: number): BannerCardLayout {
   let tileCols: number
   let panelRows: number
   if (n <= 12) {
-    tileCols = Math.max(1, Math.min(Math.max(n, 1), Math.round(Math.sqrt(1.5 * n))))
+    tileCols = Math.max(
+      1,
+      Math.min(Math.max(n, 1), (squat > 1 ? Math.ceil : Math.round)(Math.sqrt(1.5 * n * squat))),
+    )
     panelRows = Math.max(1, Math.ceil(n / tileCols))
     gap = 34
     rowGap = 22
     // The cell that makes panelRows rows (cell + name) fill the panel's height.
-    const rowH = (PANEL_H - (panelRows - 1) * rowGap) / panelRows
+    const rowH = (panelH - (panelRows - 1) * rowGap) / panelRows
     let w = ((rowH - label(rowH * 0.6)) * 80) / 98
     w = ((rowH - label(w)) * 80) / 98
     cellW = panelRows === 1 ? Math.min(w, 294) : w
   } else {
     gap = 30
     rowGap = 18
-    panelRows = 4
+    panelRows = Math.max(2, Math.round(4 / squat))
     // The fewest columns (7 at most) whose rows beside the panel hold them all
     // (the user's call: 20 5★ = 5 × 4, not 7 columns with the last row short).
     tileCols = Math.min(7, Math.ceil(n / panelRows))
-    const rowH = (PANEL_H - (panelRows - 1) * rowGap) / panelRows
+    const rowH = (panelH - (panelRows - 1) * rowGap) / panelRows
     const w = ((rowH - label(140)) * 80) / 98
     cellW = ((rowH - label(w)) * 80) / 98
   }
@@ -96,11 +133,11 @@ export function bannerCardLayout(count: number): BannerCardLayout {
   const panelW = panelCols * cellW + (panelCols - 1) * gap
   const rows = n ? Math.floor((tiles.at(-1)!.y - y0) / rowPitch) + 1 : 0
   // Rows beside the panel end level with it (a pixel of rounding stays inside).
-  const gridH = rows <= panelRows ? PANEL_H : Math.max(PANEL_H, rows * rowPitch - rowGap)
+  const gridH = rows <= panelRows ? panelH : Math.max(panelH, rows * rowPitch - rowGap)
   return {
     width: Math.round(2 * x0 + cols * cellW + (cols - 1) * gap),
     height: Math.round(2 * y0 + gridH),
-    panel: { x: x0, y: y0, w: panelW, h: PANEL_H },
+    panel: { x: x0, y: y0, w: panelW, h: panelH },
     cellW,
     cellH,
     tiles,

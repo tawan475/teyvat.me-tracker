@@ -16,6 +16,7 @@ import {
   NOTICE_SERVER_OFFSETS,
   addMinutes,
   bannerAbundance,
+  isChronicledWish,
   mergeDomainWindows,
   noticeKind,
   noticeTag,
@@ -461,7 +462,13 @@ export async function gameEventsFor(
   })
   const posts = rows.filter((r) => r.source === 'hoyolab' && r.end).map(window)
   const wishes = rows.filter((r) => r.source === 'board' && r.kind === 'wish')
-  const banner = bannerAbundance(wishes.map((w) => ({ start: w.start, end: w.end })))
+  const banner = bannerAbundance(
+    wishes.map((w) => ({
+      start: w.start,
+      end: w.end,
+      chronicled: isChronicledWish(englishTitle(w)),
+    })),
+  )
   const domain = mergeDomainWindows([...data, ...staff, ...posts], banner).filter(
     (w) =>
       instant(w.end, server) > now - 86_400_000 && instant(w.start, server) < now + 60 * 86_400_000,

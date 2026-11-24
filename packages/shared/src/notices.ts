@@ -248,28 +248,37 @@ export function noticeShortTitle(title: string): string {
 
 // ------------------------------------------------------------- domain events
 
-/** Days every domain stays open after a new version's banners (the user's rule, 2026-10-14). */
+/** Days every domain stays open after the banners that open them (the user's rule, 2026-10-14). */
 export const BANNER_ABUNDANCE_DAYS = 7
 
 /** A version's second banners open at 18:00 server time; its first ones after the update. */
 const PHASE_TWO_TIME = 'T18:00'
 
+/** A banner on the board; `chronicled` when it is a Chronicled Wish. */
+export interface WishWindow extends NoticeWindow {
+  chronicled?: boolean
+}
+
+/** A Chronicled Wish banner's English title. */
+export const isChronicledWish = (title: string): boolean => /Chronicled Wish/i.test(title)
+
 /**
- * One Overflowing Abundance window per new version: every talent book and
- * weapon material domain open for seven days (to 04:00) from the version's
- * first banners (the owner's observation since 7.1; only the version's
- * start, not its second phase: the user's call, 2026-11-02). The board
- * lists the next version's banners before the running ones end, so a
- * window opens only once those have.
+ * One Overflowing Abundance window per new version, and per second phase
+ * that brings a Chronicled Wish: every talent book and weapon material
+ * domain open from those banners to 04:00 seven days after the day they
+ * open. A plain second phase opens nothing (the user's call, 2026-11-02);
+ * 7.2's second phase, with its Chronicled Wish, showed "Limited-Time Full
+ * Access" from 2026-11-24 18:00 to 2026-12-01 04:00 (the user's reading,
+ * 2026-11-24: it is the Chronicled Wish that opens them). The board lists
+ * the next version's banners before the running ones end, so a window opens
+ * only once those have.
  */
-export function bannerAbundance(
-  wishes: readonly NoticeWindow[],
-  version = '',
-): DomainEventWindow[] {
+export function bannerAbundance(wishes: readonly WishWindow[], version = ''): DomainEventWindow[] {
   const starts = [...new Set(wishes.map((w) => w.start))].sort()
   const out: DomainEventWindow[] = []
   for (const start of starts) {
-    if (start.endsWith(PHASE_TWO_TIME)) continue
+    const chronicled = wishes.some((w) => w.start === start && w.chronicled)
+    if (start.endsWith(PHASE_TWO_TIME) && !chronicled) continue
     const running = wishes
       .filter((w) => w.start < start && w.end && w.end > start)
       .map((w) => w.end!)

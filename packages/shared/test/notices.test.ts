@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   bannerAbundance,
+  isChronicledWish,
   mergeDomainWindows,
   noticeKind,
   noticeShortTitle,
@@ -147,7 +148,7 @@ describe('which notices count', () => {
 })
 
 describe('domain events', () => {
-  it("opens every domain for 7 days from a version's first banners, not its second phase", () => {
+  it("opens every domain for 7 days from a version's first banners, not a plain second phase", () => {
     const phase2 = { start: '2026-10-13T18:00', end: '2026-11-03T15:00' }
     expect(
       bannerAbundance(
@@ -163,6 +164,20 @@ describe('domain events', () => {
         version: '7.1',
       }),
     ])
+  })
+
+  it('opens them from a second phase that brings a Chronicled Wish', () => {
+    // 7.2's second phase: the game showed "Limited-Time Full Access" to 2026-12-01 04:00.
+    const banner = { start: '2026-11-24T18:00', end: '2026-12-15T15:00' }
+    expect(bannerAbundance([banner, { ...banner, chronicled: true }])).toEqual([
+      expect.objectContaining({ start: '2026-11-24T18:00', end: '2026-12-01T04:00' }),
+    ])
+    expect(
+      isChronicledWish(
+        'Event Wish "Names Forged Beneath Blazing Skies" - Chronicled Wish Now Available!',
+      ),
+    ).toBe(true)
+    expect(isChronicledWish('Event Wish "Harmonious Abundance" - Boosted Drop Rate')).toBe(false)
   })
 
   it('opens a next version early on the board only once the running banners end', () => {

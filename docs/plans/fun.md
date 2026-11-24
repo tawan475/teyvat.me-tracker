@@ -377,7 +377,11 @@ Later the same day, on randomizer A:
   joins are limited per IP, and the page is `noindex` and disallowed in
   `robots.txt`. A signed-in visitor picks which of their Genshin accounts to
   bring; a signed-out one is offered guest mode's roster or sign-in, and can
-  watch the board without joining. The link dies with the party. Typing the
+  watch the board without joining. **The party, and its link, last as long
+  as there is activity** (the user): no fixed maximum age, replacing section
+  6's "6 hours at most". It closes after a quiet spell with no roll, ban or
+  join (proposed: 30 minutes; the length is not decided), and its rosters
+  are deleted then. Typing the
   code by hand stays possible ("Join by code" on the hub).
 
 ## Design phase

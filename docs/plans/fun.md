@@ -1,7 +1,9 @@
 # Fun
 
-Status: **plan, nothing built** (drafted 2026-11-24). Design options:
-see "Design phase" at the end. The user decides every open question below.
+Status: **plan, nothing built** (drafted 2026-11-24, brought in line with the
+user's decisions the same day; the "Decisions" block near the end is the
+log). Design: see "Design phase" at the end. The user decides every open
+question in section 9.
 
 A new sidebar section, **Fun**, that behaves like Collections: one hub with a
 card per sub-page, and each sub-page is cheap to add. The first sub-page is a
@@ -33,8 +35,8 @@ randomizer page ("Inspired by Pustur's Genshin Impact Team Randomizer") is
 polite and costs nothing; MIT asks for the notice only if code is copied.
 
 What ours adds: the pool is the account's real roster from the newest capture
-(no clicking 100 portraits), rules, more filters, presets, sharing, and other
-things to randomize.
+(no clicking 100 portraits), rules, more filters, locks and rerolls, a party
+that pools several players' rosters, and other things to randomize.
 
 ## 2. The section's shell
 
@@ -87,9 +89,9 @@ regions already do).
 | Where | What works |
 | --- | --- |
 | Signed in, own account | Everything. |
-| Shared account (viewer or editor) | Everything; presets are per device, so nobody writes to the owner's data. |
-| Guest (`/guest/fun`) | Everything that runs in the browser: the randomizers with the guest's roster, presets, share links, party by code (design C below). A live room, if one is ever built: join yes, host is an open question. |
-| Demo (`/demo/fun`) | Everything, over the demo roster. Presets are not kept. |
+| Shared account (viewer or editor) | Everything; the randomizer keeps its settings per device, so nobody writes to the owner's data. |
+| Guest (`/guest/fun`) | The randomizers with the guest's roster. A party: joining with the browser's roster is proposed, hosting needs an account (section 9). |
+| Demo (`/demo/fun`) | Everything, over the demo roster. Settings are not kept. |
 | No capture yet | The pool switch starts on "All released"; a hint says the roster arrives with the first capture or import. |
 | Characters not shared by Capture (`gi_off`) | The pool is the newest capture that shared characters, with the usual "Not shared by Capture" strip. |
 | Time travel | Fun shows now. The section is hidden while travelling. |
@@ -162,42 +164,44 @@ shows how many of the pool pass, and the pool counter is always on screen
 
 ### Rules (shape the roll)
 
-- Teams 1 to 8, team size 1 to 4 (co-op: 4 players × 1, 2 × 2).
+- **A roll always gives two teams of four at once** (the user's decision).
+  There is no team count or team size control.
 - No repeats across teams (on by default; off allows the same character twice
   in different teams).
 - Per team: at least one healer / one sustain (healer or shielder); at most N
   5★; all different elements; one element only; at least one of element X.
 - **Locks**: pin a character to a slot; the roll fills the rest.
 - **Reroll one slot** and **reroll one team**, keeping the rules true.
-- Undo, and a short history of the last 20 rolls (this visit only).
+- Undo (back to the roll before), beside the full-width "Roll teams" button.
 - Later: "prefer who I picked least" weighting, a fair split of 5★ over teams.
 
 The roller is seeded (a small PRNG seeded from a string), so a seed plus the
-rules plus the pool always gives the same teams: that is what makes share
-links and party-by-code work with no server. Constraints are solved by
+rules plus the pool always gives the same teams: tests can pin a roll, and a
+party can show every player the same result from one small message. Constraints are solved by
 filling the tightest slots first with backtracking; when the rules cannot be
 met it says which rule failed ("Only 1 healer in the pool, 2 teams need one").
 
-### Presets
+### The screen (design A, as trimmed by the user)
 
-A preset = filters + rules + bans + locks under a name ("Abyss, no 5★").
-Built-in ones to start: Abyss (2 teams), Co-op (4 × 1), Solo element, 4★ only.
+Top to bottom: the back arrow and title; Team 1 and Team 2, each four tiles
+(tap a tile to lock it, a reroll button under each, a reroll button per
+team); the full-width "Roll teams" button with Undo beside it; then the Pool
+panel: My characters | All released, the pool counter, the element filter as
+the game's bare element icons with counts, the other filters and Rules as
+dropdown chips, and the whole roster as a grid (tap a portrait to bench it).
 
-Where they live is an open question: per device in `localStorage`
-(`fun:randomizer:<account>`; zero cost, works for guests) or the account's
-settings (synced, one more key in an existing write). Recommended: per device
-first.
+Elements are always the game's element icon (`ElementIcon`), never the word
+and never on a disc or backing; the name is the tooltip and the accessible
+label.
 
-### Sharing a result
+The filters, rules, bans and locks last used are remembered per device
+(`localStorage`, `fun:randomizer:<account>`): no server write.
 
-- **Link**: `?r=<code>` holds the seed, the rules and the picked keys as
-  dictionary ids. Opening it shows the same teams (read-only "Shared roll"
-  view) with a "Roll my own" button.
-- **Picture**: a PNG through the existing card pipeline (`use-card-export`,
-  `CardPaint`, `CardLoading`, rounded transparent corners): teams as bag-cell
-  tiles with element icons and names, the preset's name, teyvat.me. Phase 2.
-- "Open in Share build": hands a rolled team that the account owns to the
-  existing team card.
+### Out of v1 (the user's decision: it only rolls characters)
+
+- Named presets ("Abyss · 2 teams").
+- Sharing a result, as a link or as a picture.
+- The team count control.
 
 ## 5. More randomizers
 
@@ -211,12 +215,45 @@ first.
 | **Artifact piece roller** (roll substats like the game) | A fake piece's substats and upgrades | `artifact-stats.ts` | M | Maybe; it is a simulator, see the backlog |
 | **Where to go** | A random region, viewpoint or waypoint | `/collections` world topic | S | Low |
 
-All of them share the seeded roller, the result history and the share link.
+All of them share the seeded roller. None is in phase 1.
 
 ## 6. Party mode (lobby)
 
-The ask: a host opens a run, others join by a code, and each player's pool
-comes from their own site data.
+### What it is (the user's definition)
+
+- Players link up as 1P to 4P; each one's roster comes from their own site
+  data.
+- One shared board: every character, with a mark for who does **not** have
+  it. The pool that remains is the characters **every** player owns (AND).
+- A click on a character bans it.
+- The invite is a **public link**, `https://teyvat.me/party/<code>`, a page
+  outside `/app` that opens for anyone, signed in or not. Typing the code on
+  the hub ("Join by code") works too.
+- The party and its link **last as long as there is activity**: no maximum
+  age. It closes after a quiet spell and its rosters are deleted then.
+- Also in the same "Add player" list, at no server cost: the user's own other
+  Genshin accounts, and accounts already shared with them. Fallback with no
+  server at all: a player copies a short roster code and the host pastes it.
+
+### What that needs from the server
+
+Each roster must reach the other players, so a seed alone (option C below) is
+not enough. The smallest thing that works is a **party record**: up to four
+rosters (about 22 characters of text each), the bans and the last roll's
+seed, kept only while the party is open. How the other players' pages learn
+of a change is what sets the cost:
+
+| How pages update | What players see | Cost at the yardstick below |
+| --- | --- | --- |
+| **On their own actions and when the tab comes back into view** (plus a Refresh button) | Bans and rolls by others appear on the next look, not the same second | About **$300 to $500 a month**: a few requests and one small write per join, ban and roll |
+| **A check every 30 s while the page is visible** | Within half a minute | About **$2,600 a month** in requests, plus the reads |
+| **A live room** (option B below) | The same second | About **$9,000 to $17,000 a month**, nearly all of it the room staying awake |
+
+All three are inside the plan at today's usage. The first can be upgraded to
+the third later without changing the page's design.
+
+The sections below are the first draft's comparison of ways to connect
+browsers. They stay as the background for the live-room choice.
 
 A pool is small: one bit per released character (about 130 bits, 22
 characters as text). The roll itself is tiny. The cost is entirely in how
@@ -246,30 +283,31 @@ A is the worst of each: the most expensive, no guests, and state to clean up.
 
 ### Recommendation
 
-1. **Ship C first** (phase 3). It is free forever, works for guests, needs no
-   moderation, and most groups who play this way are already on voice chat or
-   stream. Flow: host picks rules, gets a code like `K7Q2-MX9P` and a link;
-   each player opens it, sees "Your pool: 61 characters", presses Roll for
-   round 1, 2, 3… and everyone gets their own team for that round. A "Copy my
-   team" button gives a short code or a picture for the others.
-2. **A live room only if C proves it is wanted**, and then B with hard caps
-   (below) or D. That is a decision for later, with real usage in hand.
+1. **Start with the party record and pages that update on their own actions
+   and on coming back into view.** It does everything the user described
+   except same-second updates, for a few hundred dollars a month at the
+   yardstick.
+2. **A live room (B) only if that delay proves annoying**, with the caps
+   below. D stays the cheaper live option if B's bill ever matters.
 
-### Limits, if a live room is built
+### Limits
 
-- Hosting needs an account (one open room per user); joining does not.
+- Hosting needs an account (one open party per user); joining by the public
+  link does not (proposed; section 9).
 - Codes: 8 characters from a 31-letter alphabet without look-alikes; joins
-  limited per IP (a rate-limit binding, like the wish relay).
-- 8 people a room (4 players + watchers), closes after 30 minutes idle and 6
-  hours at most.
-- Events from the host only, one message per roll (rule changes ride along
-  with the next roll, so the room wakes once), at most one roll per 3 s.
+  limited per IP (a rate-limit binding, like the wish relay). The page is
+  `noindex` and disallowed in `robots.txt`.
+- 4 players. Watching without joining is proposed (section 9).
+- Lifetime: while there is activity; closes after a quiet spell with no
+  roll, ban or join (proposed 30 minutes; section 9). No maximum age.
+- At most one roll per 3 s per party.
 - No chat and no free text except a display name (the site username, or 20
-  characters for a guest, shown only inside the room).
-- Pools are what each browser says they are. Nobody is cheated but
-  themselves; a server-checked pool would mean decoding a snapshot per join.
-- Stored: nothing in D1. The room's state lives in the object and is deleted
-  when it closes.
+  characters for a guest, shown only inside the party).
+- Rosters are what each browser says they are. Nobody is cheated but
+  themselves; a server-checked roster would mean decoding a snapshot per
+  join.
+- Stored: one small party record while it is open, deleted when it closes.
+  Nothing about a party is kept afterwards.
 
 ## 7. Backlog
 
@@ -301,30 +339,48 @@ Sizes: S = about a day, M = a few days, L = a week or more. Add rows freely.
 | Phase | Ships | Needs |
 | --- | --- | --- |
 | **0. Data** | `body` (and model gender) columns in the catalog; `overrides/character-roles.json` with roles and mechanic groups; a game data release | genshin-game-data only |
-| **1. Shell + team randomizer** | The Fun section (hub, registry, routes for account / guest / demo, messages in 15 languages), the team randomizer with pool, filters, rules, locks, reroll, presets per device, share link | the picked designs; phase 0 for the three new filters (the rest works without) |
-| **2. Picture + more to roll** | The result PNG, the loadout add-on, boss / domain, challenge cards, the wheel | a gi-cdn check for any new art name |
-| **3. Party by code** | Design C | nothing new |
+| **1. Shell + team randomizer** | The Fun section (hub A, registry, routes for account / guest / demo, messages in 15 languages) and team randomizer A: pool, filters, rules, locks, reroll, Undo, two teams per roll | phase 0 for the role, body type and gender filters (the rest works without) |
+| **2. Party** | The shared pool board: 1P to 4P, who-lacks marks, the common pool, bans, the public link `/party/<code>` | the open party questions in section 9; one small table or object for the party record; a design round for the board |
+| **3. More to roll** | The loadout add-on, boss / domain, challenge cards, the wheel | a gi-cdn check for any new art name |
 | **4. Small games** | From the backlog, in the order the user picks (suggested: What should I do today, Daily guess, Bingo) | per idea |
-| **5. Live room** | Only if asked for after phase 3 | the cost check above |
+| **5. Live room** | Only if the party's update delay proves annoying | the cost check in section 6 |
 
 Version: phase 1 is a new section, so a `y` bump by the version rule (the
 user's call).
 
 ## 9. Open questions
 
-1. Which hub layout and which randomizer layout (the design options)?
-2. Party mode: C (code, no server) first as recommended, or a live room from
-   the start?
-3. Role tags: hand-kept override as planned? Which tags in v1 (healer,
-   shielder, main DPS, sub DPS, support)? Roles are opinions for some
-   characters; the rule proposed is "what the kit does", not "what the meta
-   says".
-4. Presets: per device, or synced in the account's settings?
-5. A public page (`/randomizer`, indexed and prerendered, "all released" pool
-   with a sign-in nudge) for search traffic, or only inside the app, guest
-   mode and the demo?
-6. The section's name and place: "Fun" after Endgame, with a dice icon?
-7. Does phase 1 bump `y`?
+Settled: hub A; randomizer A as trimmed; two teams per roll; no presets, no
+sharing; elements as bare icons; the hand-kept role list; the party as a
+shared pool board with a public link that lasts while there is activity.
+
+Still open (the recommended answer first):
+
+1. **Go-ahead and scope.** Build phase 0 + phase 1 now, the party after its
+   own questions and a design round for the board. Or wait.
+2. **Anything else on screen A** before it is built? The user said "good for
+   now".
+3. **Role tags in v1:** all five (healer, shielder, main DPS, sub DPS,
+   support), tagged by what the kit does, not by the meta. Or healer and
+   shielder only.
+4. **How a party's pages update:** on your own actions and when the tab
+   comes back into view (about $300 to $500 a month at the yardstick). Or a
+   30-second check (about $2,600), or a live room (about $9,000 to $17,000).
+5. **Who can ban in a party:** every player. Or the host only.
+6. **What a party roll gives:** two teams of four from the common pool, like
+   solo. Or one character per player.
+7. **Quiet time before a party closes:** 30 minutes. Or longer (2 hours
+   survives a break).
+8. **Opening the link without joining:** watching is allowed. Or joining is
+   required.
+9. **Guests in a party:** can join with their browser's roster; hosting
+   needs an account. Or accounts only.
+10. **Lasting friend links:** no, a party per session only. Or also link a
+    friend once and keep them.
+11. **A public `/randomizer` page** for search traffic: not in v1. Or yes,
+    indexed and prerendered with the "All released" pool.
+12. **Name and place:** "Fun" after Endgame, with a dice icon.
+13. **Version:** phase 1 is a new section, so `y` (1.19.0). Or `z`.
 
 ## Decisions
 
@@ -353,8 +409,7 @@ Later the same day, on randomizer A:
 - **It only rolls characters.** Out of v1: the team count control (`− 2 +`),
   presets ("Abyss · 2 teams") and sharing a result (link and picture). One
   roll always gives **two teams of four at once** (the user corrected a first
-  reading of "one set of four"). Sections 4 and 8 above still describe those;
-  this decision wins.
+  reading of "one set of four"). Sections 4 and 8 now say the same.
 - **Elements are shown by the game's element icon, never by the word**
   ("Hydro", "Geo"): on tiles and on the element filter (the name stays as the
   tooltip and the accessible label). The site's `ElementIcon` already does
@@ -390,8 +445,12 @@ Options A to D for the hub and for the team randomizer, at 390 px and
 desktop, on the Tracker Design System:
 https://claude.ai/artifact/7EeAyf2GUYceyKdnRu7kvF (2026-11-24; desktop boards
 are dark, phone boards light, and each board has a theme switch in its
-Tweaks). Portraits and element icons there are placeholders: the canvas
-cannot load game art. Nothing visual is built before the user picks.
+Tweaks). Portraits there are placeholders (the canvas cannot load game art);
+the element icons are the game's own, uploaded to the canvas. The picked
+boards are "Hub A" and "Randomizer A", and Randomizer A was edited to match
+the decisions (two teams, no count / preset / Share, the wide Roll bar with
+Undo, bare element icons). B, C and D and the phone boards still show the
+first draft. The party board has no design yet.
 
 - Hub: A card grid like Collections · B the randomizer's Roll on the hub,
   lists below · C groups with filter chips · D a launcher list with a party

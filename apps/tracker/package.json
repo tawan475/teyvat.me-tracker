@@ -1,6 +1,6 @@
 {
   "name": "@gdt/tracker",
-  "version": "1.18.2",
+  "version": "1.19.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,7 +27,7 @@
     "api:docs": "tsx scripts/api-docs.ts"
   },
   "dependencies": {
-    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.8",
+    "@gdt/game-data": "github:tawan475/genshin-game-data#v7.2.9",
     "@gdt/shared": "workspace:*",
     "@noble/hashes": "^2.4.0",
     "@tailwindcss/vite": "^4.3.1",

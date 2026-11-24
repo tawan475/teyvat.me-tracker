@@ -39,6 +39,24 @@ export const ROW_SPLASH_SCALE = 0.62
 /** The most characters a card holds (the game's team size). */
 export const MAX_PICKS = 4
 
+/**
+ * The totals line's cell widths in `room`: every cell gets `min` (its total
+ * and roll count, never cut); what is left goes to names that want more,
+ * then evenly. Short of room for every name, each gets its share.
+ */
+export function totalsWidths(
+  cells: readonly { min: number; want: number }[],
+  room: number,
+): number[] {
+  const mins = cells.reduce((sum, c) => sum + c.min, 0)
+  const extra = cells.map((c) => Math.max(0, c.want - c.min))
+  const wanted = extra.reduce((sum, e) => sum + e, 0)
+  const left = Math.max(0, room - mins)
+  const share = wanted > left ? left / wanted : 1
+  const spread = wanted < left ? (left - wanted) / cells.length : 0
+  return cells.map((c, i) => c.min + extra[i]! * share + spread)
+}
+
 /** The card's height for `count` rows: 156 + 514 per row (2 rows: 1184). */
 export function teamCardHeight(count: number): number {
   const rows = Math.max(1, count)

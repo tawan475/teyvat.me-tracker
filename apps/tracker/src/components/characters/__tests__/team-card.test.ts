@@ -15,6 +15,7 @@ import {
   teamNameFit,
   teamRegion,
   teamRowTop,
+  totalsWidths,
   togglePick,
 } from '../team-card'
 
@@ -125,5 +126,32 @@ describe('teamRegion', () => {
     expect(teamRegion(['TravelerAnemo', 'Aloy'])).toBe(DEFAULT_TEAM_REGION)
     expect(teamRegion(['NotACharacter'])).toBe(DEFAULT_TEAM_REGION)
     expect(teamRegion([])).toBe(DEFAULT_TEAM_REGION)
+  })
+})
+
+describe('totalsWidths', () => {
+  const sum = (list: number[]) => list.reduce((a, b) => a + b, 0)
+
+  it('spreads spare room evenly and fills the line', () => {
+    expect(
+      totalsWidths(
+        [
+          { min: 40, want: 60 },
+          { min: 50, want: 50 },
+        ],
+        130,
+      ),
+    ).toEqual([70, 60])
+  })
+
+  it('never cuts a total and roll count: the names share what is left', () => {
+    const cells = [
+      { min: 80, want: 120 },
+      { min: 60, want: 80 },
+    ]
+    const widths = totalsWidths(cells, 170)
+    expect(sum(widths)).toBeCloseTo(170)
+    widths.forEach((w, i) => expect(w).toBeGreaterThanOrEqual(cells[i]!.min))
+    expect(widths).toEqual([100, 70])
   })
 })

@@ -81,6 +81,7 @@ import {
   teamNameFit,
   teamRegion,
   teamRowTop,
+  totalsWidths,
 } from './team-card'
 import { constellationIcons, talentIcons } from './talent-icons'
 import { SITE_HOST } from '@/lib/site'
@@ -970,7 +971,7 @@ class TeamPainter extends CardPaint {
 
   /**
    * The line under the sets strip: each substat's total over the pieces and
-   * its roll count, in equal cells (name over total and ×rolls), CRIT Rate
+   * its roll count, in cells as wide as they need (name over total and ×rolls), CRIT Rate
    * and CRIT DMG first on an outlined chip, then the roll count's cell.
    */
   private totals(c: CharacterView, top: number) {
@@ -981,9 +982,7 @@ class TeamPainter extends CardPaint {
     const h = ROW_TOTALS
     this.glass(x, top, w, h, 12, 'panel')
     const gap = 6
-    const countW = 56
     const inner = w - 2 * 10
-    const cellW = (inner - countW - totals.length * gap) / totals.length
     const muted = this.v('--card-muted')
     const cell = (
       cx: number,
@@ -1015,7 +1014,7 @@ class TeamPainter extends CardPaint {
         lineHeight: 18,
         max,
       })
-      if (rolls && left + vw + 4 + this.textWidth(rolls, 12, 600) <= cx + cw - 5) {
+      if (rolls) {
         this.line(
           rolls,
           left + vw + 4,
@@ -1023,23 +1022,36 @@ class TeamPainter extends CardPaint {
           12,
           600,
           this.v(strong ? '--card-secondary' : '--card-muted'),
-          {
-            lineHeight: 18,
-          },
+          { lineHeight: 18 },
         )
       }
     }
-    totals.forEach((total, i) =>
-      cell(
-        x + 10 + i * (cellW + gap),
-        cellW,
-        formatStatShort(total.key),
-        formatStatValue(total.key, total.value),
-        `×${total.rolls}`,
-        total.crit,
-      ),
+    const shown = totals.map((total) => ({
+      name: formatStatShort(total.key),
+      value: formatStatValue(total.key, total.value),
+      rolls: `×${total.rolls}`,
+      strong: total.crit,
+    }))
+    shown.push({
+      name: t('artifacts.detail.rolls'),
+      value: String(totals.reduce((sum, total) => sum + total.rolls, 0)),
+      rolls: '',
+      strong: false,
+    })
+    // Each total and roll count whole; a name is cut only when they leave it no room.
+    const widths = totalsWidths(
+      shown.map((s) => {
+        const min =
+          Math.ceil(this.textWidth(s.value, 15, 700) + 4 + this.textWidth(s.rolls, 12, 600)) + 11
+        const name = Math.ceil(this.textWidth(s.name, 13, s.strong ? 600 : 400)) + 11
+        return { min, want: Math.max(min, name) }
+      }),
+      inner - totals.length * gap,
     )
-    const rolls = totals.reduce((sum, total) => sum + total.rolls, 0)
-    cell(x + w - 10 - countW, countW, t('artifacts.detail.rolls'), String(rolls), '', false)
+    let cx = x + 10
+    shown.forEach((s, i) => {
+      cell(cx, widths[i]!, s.name, s.value, s.rolls, s.strong)
+      cx += widths[i]! + gap
+    })
   }
 }

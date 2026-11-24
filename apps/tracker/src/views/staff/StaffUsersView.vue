@@ -20,7 +20,6 @@ import ConfirmDialog from '@/components/snapshot-history/ConfirmDialog.vue'
 import LegacyCheckbox from '@/components/snapshot-history/LegacyCheckbox.vue'
 import MethodMarks from '@/components/staff/MethodMarks.vue'
 import ReasonDialog from '@/components/staff/ReasonDialog.vue'
-import RoleBadge from '@/components/staff/RoleBadge.vue'
 import UserLink from '@/components/staff/UserLink.vue'
 import { userStatus } from '@/components/staff/status'
 import FilterChip from '@/components/ui/FilterChip.vue'
@@ -444,7 +443,7 @@ const pageCount = computed(() =>
               {{ $t('staff.users.signIn') }}
             </th>
             <th scope="col" class="px-3 py-2 text-left font-medium">
-              {{ $t('staff.common.roles') }}
+              {{ $t('staff.insights.people.country') }}
             </th>
             <th scope="col" class="px-3 py-2 text-right" :aria-sort="ariaSort('accounts')">
               <SortHeader
@@ -538,10 +537,18 @@ const pageCount = computed(() =>
               </span>
             </td>
             <td class="px-3 py-1.5"><MethodMarks :methods="user.methods" /></td>
-            <td class="px-3 py-1.5">
-              <span class="flex flex-wrap gap-1">
-                <RoleBadge v-for="role in user.roles" :key="role.id" :role="role" />
-              </span>
+            <td class="max-w-[10rem] px-3 py-1.5">
+              <!-- Where the user signed up; a click narrows the list to that country. -->
+              <button
+                v-if="user.signupCountry"
+                type="button"
+                class="block max-w-full truncate text-left text-text-secondary hover:text-text-primary hover:underline"
+                :title="`${regionName(user.signupCountry)} (${user.signupCountry})`"
+                @click="country = user.signupCountry"
+              >
+                {{ regionName(user.signupCountry) }}
+              </button>
+              <span v-else class="text-text-muted">—</span>
             </td>
             <td class="tabular px-3 py-1.5 text-right font-mono">
               {{ formatNumber(user.accounts) }}

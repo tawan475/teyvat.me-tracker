@@ -22,7 +22,16 @@ import {
 import { artifactIcon, artifactSetIcon, weaponIcon } from '@/lib/assets'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useUpdateHold } from '@/live/holds'
-import { formatSetName } from '@/utils/artifact-stats'
+import CritValue from '@/components/ui/CritValue.vue'
+import RollValue from '@/components/ui/RollValue.vue'
+import { isCritCirclet } from '@/lib/crit-tiers'
+import { ROLL_QUALITY_LABEL, ROLL_QUALITY_TEXT, inferArtifactRolls } from '@/utils/artifact-rolls'
+import {
+  formatRollValue,
+  formatSetName,
+  formatStatShort,
+  formatStatValue,
+} from '@/utils/artifact-stats'
 import ElementDisc from './ElementDisc.vue'
 import { subjectId, type TipShown } from './detail-tip'
 import { constellationIcons, talentIcons } from './talent-icons'
@@ -35,8 +44,9 @@ import { constellationIcons, talentIcons } from './talent-icons'
  * last is kept per device); a constellation: locked or not, its
  * description; the weapon: its passive at the refinement held, then its
  * lore; an artifact set, or every set the build wears: each bonus, the ones
- * it doesn't reach dimmed; a piece: its name, its set's bonuses and its
- * lore; the element: its name and the weapon type. Text from `@gdt/game-data/details` (English where the language has
+ * it doesn't reach dimmed; a piece: its name, CV and RV, a line per substat
+ * with each roll's value over its tier (the user's pick of the designs,
+ * 2026-11-24), then its set's bonuses and its lore, never folded; the element: its name and the weapon type. Text from `@gdt/game-data/details` (English where the language has
  * none). A hovered tip lets the pointer through; a pinned one has a close
  * button, scrolls, and closes on Escape or a click outside any part.
  */
@@ -153,9 +163,25 @@ interface Attribute {
   value: string
 }
 
+/** A worn piece's rolls: CV, RV and each substat's rolls with their tiers. */
+interface PieceRolls {
+  cv: number
+  rv: number
+  /** Below 5★ the CV/RV tiers don't apply: shown plain. */
+  plain: boolean
+  critCirclet: boolean
+  lines: {
+    key: string
+    total: string
+    rolls: { value: string; tier: string; text: string }[]
+    inactive: boolean
+  }[]
+}
+
 interface Content {
   title: string
   sub: string[]
+  piece?: PieceRolls
   /** undefined while the text loads. */
   sections: Section[] | undefined
   /** A talent's Skill Attributes at `attributeLevel`; undefined: no tabs. */
@@ -265,9 +291,34 @@ const content = computed<Content | null>(() => {
       if (!piece) return null
       const count = ch.sets.find((s) => s.setKey === piece.setKey)?.count ?? 0
       const slot = (SLOT_ORDER as readonly string[]).indexOf(piece.slotKey)
+      const rolls = inferArtifactRolls(piece)
       return {
         title: artifactPieceName(piece.setKey, piece.slotKey) ?? formatSetName(piece.setKey),
         sub: [SLOT_LABELS[piece.slotKey], `+${piece.level}`],
+        piece: {
+          cv: piece.cv,
+          rv: piece.rv,
+          plain: piece.rarity < 5,
+          critCirclet: isCritCirclet(piece.slotKey, piece.mainStatKey),
+          lines: [
+            ...piece.substats.map((s, i) => ({
+              key: s.key,
+              total: formatStatValue(s.key, s.value),
+              rolls: (rolls[i] ?? []).map((r) => ({
+                value: formatRollValue(s.key, r.value),
+                tier: ROLL_QUALITY_LABEL[r.quality],
+                text: ROLL_QUALITY_TEXT[r.quality],
+              })),
+              inactive: false,
+            })),
+            ...(piece.unactivatedSubstats ?? []).map((s) => ({
+              key: s.key,
+              total: formatStatValue(s.key, s.value),
+              rolls: [],
+              inactive: true,
+            })),
+          ],
+        },
         sections: sets.value.has(piece.setKey)
           ? [
               ...setSections(piece.setKey, count, formatSetName(piece.setKey)),
@@ -474,6 +525,23 @@ const labelId = computed(() => `detail-tip-${props.shown ? subjectId(props.shown
               <span v-if="i" aria-hidden="true">·</span>
               <span>{{ part }}</span>
             </template>
+            <template v-if="content.piece">
+              <span aria-hidden="true">·</span>
+              <CritValue
+                :value="content.piece.cv"
+                :crit-circlet="content.piece.critCirclet"
+                :plain="content.piece.plain"
+                label
+                class="font-semibold"
+              />
+              <span aria-hidden="true">·</span>
+              <RollValue
+                :value="content.piece.rv"
+                :plain="content.piece.plain"
+                label
+                class="font-semibold"
+              />
+            </template>
           </p>
         </div>
         <UiIconButton
@@ -531,9 +599,46 @@ const labelId = computed(() => `detail-tip-${props.shown ? subjectId(props.shown
         </dl>
       </div>
       <div
-        v-else-if="content.sections === undefined || content.sections.length"
+        v-else-if="content.piece || content.sections === undefined || content.sections.length"
         class="flex min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-2.5 text-sm leading-relaxed"
       >
+        <!-- A worn piece: one line per substat, each roll's value over its tier -->
+        <ul
+          v-if="content.piece"
+          class="flex flex-col border-b border-border-default pb-1"
+          :aria-label="$t('game.substats')"
+        >
+          <li
+            v-for="line in content.piece.lines"
+            :key="line.key"
+            class="flex items-start gap-2 border-b border-border-subtle py-1.5 leading-snug last:border-b-0"
+            :class="line.inactive ? 'text-text-muted' : ''"
+            :title="line.inactive ? $t('characters.piece.activatesAt4') : undefined"
+          >
+            <span
+              class="w-[4.75rem] shrink-0 truncate"
+              :class="line.inactive ? '' : 'text-text-secondary'"
+              >{{ formatStatShort(line.key) }}</span
+            >
+            <span class="tabular w-12 shrink-0 text-right font-mono font-semibold">{{
+              line.total
+            }}</span>
+            <span v-if="line.inactive" class="min-w-0 flex-1 pl-1 text-xs">{{
+              $t('artifacts.detail.inactive')
+            }}</span>
+            <span v-else class="flex min-w-0 flex-1 flex-wrap gap-x-2.5 gap-y-1 pl-1">
+              <span
+                v-for="(roll, n) in line.rolls"
+                :key="n"
+                class="tabular flex flex-col items-center font-mono text-xs leading-tight"
+                :title="$t('artifacts.detail.rollTier', { tier: roll.tier })"
+              >
+                <span class="font-medium" :class="roll.text">{{ roll.value }}</span>
+                <span class="text-[0.6875rem] text-text-muted">{{ roll.tier }}</span>
+              </span>
+            </span>
+          </li>
+        </ul>
         <div v-if="content.sections === undefined" class="flex flex-col gap-2" aria-hidden="true">
           <UiSkeleton class="h-4 w-full" />
           <UiSkeleton class="h-4 w-11/12" />

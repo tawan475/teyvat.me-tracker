@@ -21,6 +21,10 @@ import {
   qualityArt,
   splashFull,
   splashPlace,
+  CARD_HEIGHT,
+  PIECE_GAP,
+  totalsCells,
+  totalsPanel,
 } from '../share-card'
 
 describe('the emblem over the header art', () => {
@@ -139,5 +143,29 @@ describe('the small text backing', () => {
     expect(chipBackground('Mavuika', 'dark')).toBe('rgba(15,23,42,0.92)')
     expect(chipBackground('Mavuika', 'light')).toBe('rgba(255,255,255,0.92)')
     for (const key of Object.keys(CHIP_OPAQUE)) expect(characterMeta(key), key).toBeDefined()
+  })
+})
+
+describe('the totals line under the build', () => {
+  it('keeps the columns 1080 high and fits the line in the 120 px under them', () => {
+    expect(PIECE_HEIGHT * 5 + PIECE_GAP * 4 + 2 * 44).toBeCloseTo(1080)
+    const panel = totalsPanel()
+    expect(panel).toEqual({ x: 48, y: 1056, w: 1824, h: 100 })
+    expect(CARD_HEIGHT - (panel.y + panel.h)).toBe(44)
+  })
+
+  it('splits the panel into equal cells and the roll count last', () => {
+    for (const n of [0, 1, 6, 10]) {
+      const cells = totalsCells(n)
+      expect(cells).toHaveLength(n + 1)
+      const last = cells[n]!
+      expect(last.x + last.w).toBe(48 + 1824 - 18)
+      if (n) {
+        expect(cells[0]!.x).toBe(48 + 18)
+        expect(cells[n - 1]!.x + cells[n - 1]!.w + 10).toBeCloseTo(last.x, 6)
+      }
+    }
+    // Ten substats still leave every cell room for "CRIT DMG" and "93.2% ×13".
+    expect(totalsCells(10)[0]!.w).toBeGreaterThan(150)
   })
 })

@@ -23,7 +23,7 @@ import ShareActions from '@/components/share/ShareActions.vue'
 import ShareMenu from '@/components/share/ShareMenu.vue'
 import CharacterDetail from './CharacterDetail.vue'
 import FavoriteStar from './FavoriteStar.vue'
-import { CARD_SCALE, type CardOwner } from './share-card'
+import { CARD_HEIGHT, CARD_SCALE, CARD_WIDTH, type CardOwner } from './share-card'
 import { useCardArt } from './card-art'
 import CardArtButton from './CardArtButton.vue'
 import { drawShareCard } from './share-card-canvas'
@@ -35,7 +35,7 @@ import { useConstellationBoosts, useCrownIcon } from './use-boosts'
  * the details are the card itself (CharacterDetail `showcase`), and the
  * header carries its options (theme, name, UID) and PNG / Copy / Share; on
  * narrower screens the details stack and one header button opens the same
- * options and actions. The PNG is the card drawn on a canvas at 1920×1080
+ * options and actions. The PNG is the card drawn on a canvas at 1920×1200
  * (share-card-canvas), the same at any window size, zoom or aspect ratio,
  * whatever the details show. Options are remembered on this device; the
  * UID is off until asked for (it's personal) and falls back to the newest
@@ -171,7 +171,7 @@ const exporter = useCardExport({
     return `${key}-${day}-teyvat-me.png`
   },
   title: () => c.value?.name ?? t('share.export.buildTitle'),
-  pngLabel: () => t('share.export.downloadSized', { size: '1920 × 1080' }),
+  pngLabel: () => t('share.export.downloadSized', { size: `${CARD_WIDTH} × ${CARD_HEIGHT}` }),
 })
 
 /** The character's Fandom wiki page: its English name (the GOOD key's words; the twins share one page). */
@@ -228,7 +228,7 @@ const wikiOf = (key: string) => wikiPage(key.startsWith('Traveler') ? 'Traveler'
         v-model:name="showName"
         v-model:uid="showUid"
         :exporter="exporter"
-        :size="$t('characters.modal.pngSize', { size: '1920 × 1080' })"
+        :size="$t('characters.modal.pngSize', { size: `${CARD_WIDTH} × ${CARD_HEIGHT}` })"
       />
     </template>
 

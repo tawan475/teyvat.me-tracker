@@ -93,6 +93,49 @@ export function cardPieces(character: CharacterView): CardPiece[] {
   })
 }
 
+/** One substat added up over the worn pieces: its total and how many rolls made it. */
+export interface SubstatTotal {
+  key: string
+  value: number
+  rolls: number
+  /** CRIT Rate / CRIT DMG: the totals line shows these brighter (the user's pick). */
+  crit: boolean
+}
+
+const CRIT_KEYS = ['critRate_', 'critDMG_']
+
+/**
+ * What the artifacts' substats add as a whole (Akasha's line, a Discord
+ * user's ask): each active substat's total and roll count over the worn
+ * pieces, CRIT Rate and CRIT DMG first, then most rolls, then the larger
+ * total. A substat whose value can't be split into rolls counts none.
+ */
+export function substatTotals(character: CharacterView): SubstatTotal[] {
+  const totals = new Map<string, SubstatTotal>()
+  for (const piece of character.artifacts) {
+    if (!piece) continue
+    const rolls = inferArtifactRolls(piece)
+    piece.substats.forEach((s, i) => {
+      const total = totals.get(s.key) ?? {
+        key: s.key,
+        value: 0,
+        rolls: 0,
+        crit: CRIT_KEYS.includes(s.key),
+      }
+      total.value += s.value
+      total.rolls += rolls[i]?.length ?? 0
+      totals.set(s.key, total)
+    })
+  }
+  const critOrder = (key: string) => {
+    const at = CRIT_KEYS.indexOf(key)
+    return at < 0 ? CRIT_KEYS.length : at
+  }
+  return [...totals.values()].sort(
+    (a, b) => critOrder(a.key) - critOrder(b.key) || b.rolls - a.rolls || b.value - a.value,
+  )
+}
+
 /** The owner line's parts: name, "UID …", "AR …" (those shown). */
 /** The owner's name at most: the game caps a nickname at 15 characters. */
 export const OWNER_NAME_MAX = 15

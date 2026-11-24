@@ -30,6 +30,7 @@ import { characterBanner } from '@/lib/assets'
 import { useExpNeed } from '@/lib/exp-need'
 import { formatDate, formatFullDateTime } from '@/lib/format'
 import ArtifactPiece from './ArtifactPiece.vue'
+import SubstatTotals from './SubstatTotals.vue'
 import BuildStats from './BuildStats.vue'
 import CharacterTimeline from './CharacterTimeline.vue'
 import ConstellationIcons from './ConstellationIcons.vue'
@@ -343,6 +344,7 @@ watch(
             :slot-key="slot"
             :piece="c.artifacts[index] ?? null"
           />
+          <SubstatTotals :character="c" />
         </div>
       </section>
 

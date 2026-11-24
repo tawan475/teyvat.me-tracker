@@ -1,6 +1,6 @@
 /**
  * The character share card drawn straight onto a canvas, for its PNG: the
- * same 1920×1080 picture as ShareCard (which the page shows, with its
+ * same 1920×1200 picture as ShareCard (which the page shows, with its
  * tooltips), from the same numbers (share-card-model) and palette
  * (share-card CARD_THEMES, the app's tokens under the card's theme). The
  * geometry below is ShareCard's layout worked out in px: a change to one is
@@ -54,6 +54,7 @@ import {
   BAND_ICON,
   BAND_ICON_RIGHT,
   BAND_WIDTH,
+  BUILD_HEIGHT,
   CARD_HEIGHT,
   CARD_PAD_Y,
   CARD_THEMES,
@@ -71,10 +72,13 @@ import {
   nameSize,
   qualityArt,
   splashPlace,
+  totalsCells,
+  totalsPanel,
+  TOTALS_PAD_Y,
   type CardOwner,
   type CardTheme,
 } from './share-card'
-import { cardPieces, ownerParts } from './share-card-model'
+import { cardPieces, ownerParts, substatTotals } from './share-card-model'
 import { constellationIcons, talentIcons } from './talent-icons'
 import { SITE_HOST } from '@/lib/site'
 
@@ -108,7 +112,8 @@ export interface DrawnCard {
 
 const PAD_X = 48
 const TOP = CARD_PAD_Y
-const BOTTOM = CARD_HEIGHT - CARD_PAD_Y
+/** The columns' foot: the build's, above the totals line. */
+const BOTTOM = BUILD_HEIGHT - CARD_PAD_Y
 /** The three columns: who, weapon and stats, the pieces. */
 const LEFT = { x: PAD_X, w: 700 }
 const MIDDLE = { x: PAD_X + 700 + 32, w: 528 }
@@ -116,7 +121,7 @@ const RIGHT = { x: PAD_X + 700 + 32 + 528 + 32, w: 532 }
 
 // ------------------------------------------------------------------ drawing
 
-/** The card at `scale` device pixels per CSS pixel (1: the 1920×1080 PNG). */
+/** The card at `scale` device pixels per CSS pixel (1: the 1920×1200 PNG). */
 export async function drawShareCard(input: CardDrawing, scale = 1): Promise<DrawnCard> {
   const c = input.character
   const pieces = cardPieces(c)
@@ -171,6 +176,7 @@ export async function drawShareCard(input: CardDrawing, scale = 1): Promise<Draw
     card.stats()
     card.sets()
     pieces.forEach((piece, index) => card.piece(piece, index))
+    card.totals()
     roundCorners(p.canvas, CARD_CORNER, scale)
     return { canvas: p.canvas, missing: images.missing + (portraitImages?.missing ?? 0) }
   } finally {
@@ -221,7 +227,7 @@ class CardPainter extends CardPaint {
           saturate: Number(filter?.[2] ?? 1),
           brightness: Number(filter?.[3] ?? 1),
         },
-        () => p.cover(namecard, -60, -40, 2040, 1160),
+        () => p.cover(namecard, -60, -40, 2040, CARD_HEIGHT + 80),
       )
     }
     this.cssGradients(this.v('--card-scrim'))
@@ -730,6 +736,93 @@ class CardPainter extends CardPaint {
     this.line(`${rv}%`, rx, y, 20, 700, rvTone.color, { shadows: rvTone.shadows })
     rx -= this.textWidth('RV ', 20, 400)
     this.line('RV ', rx, y, 20, 400, muted)
+  }
+
+  // -------------------------------------------------- the totals line
+
+  /** ShareCard's totals line: a cell per substat (name; total, ×rolls), CRIT ones on a chip, then the roll count. */
+  totals() {
+    const panel = totalsPanel()
+    this.glass(panel.x, panel.y, panel.w, panel.h, 22, 'panel')
+    const totals = substatTotals(this.c)
+    const muted = this.v('--card-muted')
+    if (!totals.length) {
+      this.line(
+        t('characters.detail.noArtifacts'),
+        panel.x + panel.w / 2,
+        panel.y + 33,
+        22,
+        400,
+        muted,
+        {
+          align: 'center',
+        },
+      )
+      return
+    }
+    const cells = totalsCells(totals.length)
+    const top = panel.y + TOTALS_PAD_Y
+    const h = panel.h - 2 * TOTALS_PAD_Y
+    totals.forEach((total, i) => {
+      const cell = cells[i]!
+      if (total.crit) {
+        this.p.fill(cell.x, top, cell.w, h, 14, this.v('--card-cv-bg'))
+        this.p.insetRing(cell.x, top, cell.w, h, 14, 1.5, muted)
+      }
+      this.cell(
+        cell.x,
+        cell.w,
+        top,
+        formatStatShort(total.key),
+        formatStatValue(total.key, total.value),
+        `×${total.rolls}`,
+        total.crit,
+      )
+    })
+    const count = cells[totals.length]!
+    const rolls = totals.reduce((sum, total) => sum + total.rolls, 0)
+    this.cell(count.x, count.w, top, t('artifacts.detail.rolls'), String(rolls), '', false)
+  }
+
+  /** One cell: its name over its value (and roll count), 14 px in. */
+  private cell(
+    x: number,
+    w: number,
+    top: number,
+    label: string,
+    value: string,
+    rolls: string,
+    strong: boolean,
+  ) {
+    const left = x + 14
+    const max = w - 28
+    this.line(
+      label,
+      left,
+      top + 10,
+      18,
+      strong ? 600 : 400,
+      this.v(strong ? '--card-text' : '--card-secondary'),
+      {
+        lineHeight: 24,
+        max,
+      },
+    )
+    this.line(value, left, top + 36, 26, 700, this.v('--card-text'), { lineHeight: 34, max })
+    if (!rolls) return
+    const vx = left + this.textWidth(value, 26, 700) + 8
+    if (vx + this.textWidth(rolls, 20, 600) > x + w - 14) return
+    this.line(
+      rolls,
+      vx,
+      top + 36 + 4,
+      20,
+      600,
+      this.v(strong ? '--card-secondary' : '--card-muted'),
+      {
+        lineHeight: 30,
+      },
+    )
   }
 
   // -------------------------------------------------- right column

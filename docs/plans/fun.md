@@ -439,6 +439,23 @@ Later the same day, on randomizer A:
   are deleted then. Typing the
   code by hand stays possible ("Join by code" on the hub).
 
+Relayed by the Tracker session the same day (the user answers there from now
+on):
+
+- **Go: build phase 0 and phase 1** (the user typed "build"). No party UI
+  until its board design is picked. Local commits by explicit path, no push.
+- Screen A is built as it stands on the canvas.
+- **No lasting friend links**: a party per session, by the public link.
+- **"Fun", after Endgame, with a dice icon**, unless the user objects on
+  seeing it.
+- **Version:** the batch release bumps it (a new visual section is a `y`
+  bump by the repo rule); phase 1 itself does not touch the version.
+- **Role tags until question 3 is answered:** healer and shielder, with the
+  tag list built so more can be appended.
+
+So section 9's questions 1, 2, 10, 12 and 13 are closed. Still open: 3 (which
+role tags), 4 to 9 (party) and 11 (a public `/randomizer` page).
+
 ## Design phase
 
 Options A to D for the hub and for the team randomizer, at 390 px and

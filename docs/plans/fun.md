@@ -312,15 +312,13 @@ on):
 - **Phase 0**, genshin-game-data 773f0ea + a13482c: catalog columns `body`,
   `gender`, `roles`; `overrides/character-roles.json` with all five tags
   (healing and shields checked against every character's Skill Attributes).
-  **Not released yet**, so the tracker still pins v7.2.8.
+  Released as **v7.2.9**, which the tracker pins.
 - **Phase 1**: `views/account/FunView.vue`, `components/fun/` (`pages.ts` is
   the registry), logic in `src/data/team-randomizer.ts`, messages `fun.json`
   in every locale.
 - **Phase 2**: `/randomizer` (`views/RandomizerView.vue`): the public frame of
   /privacy around the same board (`randomizer/RandomizerBoard.vue`).
-- The role, body type and gender filters and the healer rule **stay hidden
-  until the tracker pins a game data release with the new columns**. Nothing
-  in the tracker changes then.
+- The role, body type and gender filters and the healer rule read those columns.
 - "All released" leaves out a character whose first banner has not opened
   yet (`release-dates.ts`), though the game data already knows it.
 - The hub lists only pages that exist: no "Soon" cards.

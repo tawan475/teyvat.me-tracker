@@ -120,6 +120,20 @@ describe('fillTeams', () => {
     }
   })
 
+  it('finds the only way when the pool has just enough', () => {
+    const twoHealers = cast(13, (c, i) => (c.roles = i === 3 || i === 9 ? ['healer'] : []))
+    const twoHealersBig = cast(120, (c, i) => (c.roles = i === 3 || i === 9 ? ['healer'] : []))
+    // Four 5★ at most in both teams together, out of many: the rest must be 4★.
+    const fourFours = cast(60, (c, i) => (c.rarity = i % 15 === 0 ? 4 : 5))
+    for (let seed = 0; seed < 300; seed++) {
+      for (const pool of [twoHealers, twoHealersBig]) {
+        const teams = teamsOf(fillTeams(input(pool, { healer: true }, seed)))
+        for (const team of teams) expect(team.some((k) => k === 'C3' || k === 'C9')).toBe(true)
+      }
+      teamsOf(fillTeams(input(fourFours, { fiveStars: true }, seed)))
+    }
+  })
+
   it('lets the element-less Traveler sit beside any element', () => {
     const pool = cast(8, (c, i) => {
       c.element = i === 0 ? null : ELEMENTS[i % 4]!

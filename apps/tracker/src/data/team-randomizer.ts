@@ -5,6 +5,7 @@
  * and seed always give the same teams.
  */
 
+import type { BodyType, ModelGender, RoleTag } from '@gdt/game-data/catalog'
 import type { Element, WeaponType } from './game-meta'
 
 /** A roll always gives two teams of four (the user's decision, 2026-11-24). */
@@ -12,11 +13,6 @@ export const TEAM_COUNT = 2
 export const TEAM_SIZE = 4
 /** The "5★ limit" rule: how many a team may hold. */
 export const MAX_FIVE_STARS = 2
-
-export type BodyType = 'tall' | 'medium' | 'short'
-export type ModelGender = 'f' | 'm'
-/** The role tags the game data knows (its ROLE_TAGS; more may be appended there). */
-export type RoleTag = string
 
 /** What the game data knows of a character, as the randomizer reads it. */
 export interface CharacterFacts {
@@ -26,9 +22,8 @@ export interface CharacterFacts {
   weapon: WeaponType | null
   /** CityConfigData id; null for none. */
   region: number | null
-  /** null in game data that has no body types yet. */
   body: BodyType | null
-  /** null for the Traveler (either) and in game data that has none yet. */
+  /** null for the Traveler (either). */
   gender: ModelGender | null
   roles: readonly RoleTag[]
 }
@@ -196,7 +191,7 @@ function shuffled<T>(list: readonly T[], random: () => number): T[] {
   return out
 }
 
-const isHealer = (c: CharacterFacts) => c.roles.includes('healer')
+const isHealer = (c: Pick<CharacterFacts, 'roles'>) => c.roles.includes('healer')
 
 export interface RollInput {
   /** Who may be picked. */
@@ -211,11 +206,30 @@ export interface RollInput {
   avoid?: ReadonlySet<string>
 }
 
-/** The search gives up after this many placements (a tight rule set over a big pool). */
-const NODE_LIMIT = 40_000
+/**
+ * One try gives up after this many placements and starts over in another
+ * order: an unlucky start (the pool's scarce characters together in one team)
+ * is cheaper to leave than to back out of.
+ */
+const NODE_LIMIT = 4_000
+const TRIES = 12
 
 function search(input: RollInput, rules: Rules, avoid: ReadonlySet<string>): string[][] | null {
   const random = seededRandom(input.seed)
+  for (let i = 0; i < TRIES; i++) {
+    const found = attempt(input, rules, avoid, random)
+    if (found !== 'limit') return found
+  }
+  return null
+}
+
+/** One try: the teams, null when there are none to find, or 'limit' when it gave up. */
+function attempt(
+  input: RollInput,
+  rules: Rules,
+  avoid: ReadonlySet<string>,
+  random: () => number,
+): string[][] | null | 'limit' {
   const order = shuffled(input.pool, random).filter((c) => !avoid.has(c.key))
   const teams = input.kept.map((team) => [...team])
   const used = new Set<string>()
@@ -235,21 +249,29 @@ function search(input: RollInput, rules: Rules, avoid: ReadonlySet<string>): str
     ) {
       return false
     }
-    if (rules.healer && !isHealer(c) && !members.some(isHealer)) {
-      // The last open slot of a team without a healer must be one.
-      if (team.filter((key) => key === null).length === 1) return false
-    }
     return true
   }
 
-  const open: [team: number, slot: number][] = []
-  teams.forEach((team, t) => team.forEach((key, s) => key === null && open.push([t, s])))
+  // A team that needs a healer gets it first: filled last, one team could
+  // have taken the healers the other needs.
+  const open: { team: number; slot: number; healer: boolean }[] = []
+  teams.forEach((team, t) => {
+    const has = team.some((key) => key !== null && isHealer(of(key) ?? { roles: [] }))
+    let needs = rules.healer && !has
+    team.forEach((key, slot) => {
+      if (key !== null) return
+      open.push({ team: t, slot, healer: needs })
+      needs = false
+    })
+  })
+  open.sort((x, y) => Number(y.healer) - Number(x.healer))
   let nodes = 0
   const place = (index: number): boolean => {
     if (index === open.length) return true
-    const [t, s] = open[index]!
+    const { team: t, slot: s, healer } = open[index]!
     const team = teams[t]!
     for (const c of order) {
+      if (healer && !isHealer(c)) continue
       if (!fits(team, c)) continue
       if (++nodes > NODE_LIMIT) return false
       team[s] = c.key
@@ -261,9 +283,9 @@ function search(input: RollInput, rules: Rules, avoid: ReadonlySet<string>): str
     }
     return false
   }
-  if (!place(0)) return null
+  if (!place(0)) return nodes > NODE_LIMIT ? 'limit' : null
 
-  // The search puts a needed healer in a team's last open slot: mix each
+  // A needed healer sits in a team's first open slot: mix each
   // team's new picks over its open slots, so no slot is "the healer's".
   input.kept.forEach((kept, t) => {
     const slots = kept.flatMap((key, s) => (key === null ? [s] : []))

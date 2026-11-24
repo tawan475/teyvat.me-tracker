@@ -28,9 +28,7 @@ import {
   passes,
   withoutSlot,
   withoutTeam,
-  type BodyType,
   type CharacterFacts,
-  type ModelGender,
   type OwnedCharacter,
   type PoolFilters,
   type PoolMode,
@@ -68,30 +66,10 @@ const props = withDefaults(
   { owned: () => [] },
 )
 
-/**
- * The game data's facts. Body type, gender and role tags arrive with the
- * game data release that has them (genshin-game-data's catalog columns);
- * until the pinned release does, they read as none and their filters hide.
- */
+/** The game data's facts of a character. */
 function facts(key: string): CharacterFacts | undefined {
-  const info = characterInfo(key) as
-    | (NonNullable<ReturnType<typeof characterInfo>> & {
-        body?: BodyType | null
-        gender?: ModelGender | null
-        roles?: readonly string[]
-      })
-    | undefined
-  return (
-    info && {
-      rarity: info.rarity,
-      element: toElement(info.element),
-      weapon: info.weapon,
-      region: info.region,
-      body: info.body ?? null,
-      gender: info.gender ?? null,
-      roles: info.roles ?? [],
-    }
-  )
+  const info = characterInfo(key)
+  return info && { ...info, element: toElement(info.element) }
 }
 
 // ------------------------------------------------------------ remembered state

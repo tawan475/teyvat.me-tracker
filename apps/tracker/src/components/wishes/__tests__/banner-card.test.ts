@@ -4,6 +4,7 @@ import type { EventBanner } from '@/data/wish-history'
 import {
   PANEL_H,
   bannerArt,
+  bannerCardGeometry,
   bannerCardLayout,
   bannerFileName,
   bannerPanelHeight,
@@ -95,6 +96,21 @@ describe('banner art names', () => {
       // No tile narrower than the tall card's smallest (the 13+ layout's).
       if (n) expect(layout.cellW).toBeGreaterThanOrEqual(bannerCardLayout(40).cellW)
     }
+  })
+
+  it('a Chronicled Wish gets an art box that holds its whole 16:9 picture', () => {
+    const chronicled = banner('2025-01-21 18:00:00', 'chronicled')
+    for (const n of [0, 2, 6, 12, 20]) {
+      const layout = bannerCardGeometry({ ...chronicled, name400: '' }, false, n)
+      // What the panel's blocks leave for the art (see banner-card-canvas `panel`).
+      const artH = layout.panel.h - (48 + 24 + 10 + (56 + 39) + 10 + 87 + 10 + 160)
+      // Never shorter than the picture (no crop), and little to spare.
+      const spare = artH - Math.round((layout.panel.w * 9) / 16)
+      expect(spare).toBeGreaterThanOrEqual(0)
+      expect(spare).toBeLessThanOrEqual(48)
+    }
+    // Other banners keep the fixed panel.
+    expect(bannerCardGeometry(banner('2026-09-23 06:00:00'), true, 6)).toEqual(bannerCardLayout(6))
   })
 
   it('names the PNG by version and phase', () => {

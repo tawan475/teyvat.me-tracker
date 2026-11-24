@@ -20,7 +20,7 @@ import {
   bannerCardLayout,
   bannerCardNumbers,
   bannerFileName,
-  bannerPanelHeight,
+  bannerCardGeometry,
 } from './banner-card'
 import { drawBannerCard, type DrawnBanner } from './banner-card-canvas'
 
@@ -141,12 +141,13 @@ watch(
 )
 
 const layout = computed(() =>
-  bannerCardLayout(
-    numbers.value.fives.length,
-    props.banner
-      ? bannerPanelHeight(props.banner, props.type === 301 || props.type === 302)
-      : undefined,
-  ),
+  props.banner
+    ? bannerCardGeometry(
+        props.banner,
+        props.type === 301 || props.type === 302,
+        numbers.value.fives.length,
+      )
+    : bannerCardLayout(numbers.value.fives.length),
 )
 const size = computed(() => `${layout.value.width} × ${layout.value.height}`)
 const exporter = useCardExport({

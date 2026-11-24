@@ -39,8 +39,7 @@ import { bannerTitle } from '@/data/wish-banner-names'
 import {
   bannerArt,
   bannerArtFallback,
-  bannerCardLayout,
-  bannerPanelHeight,
+  bannerCardGeometry,
   tileNameGap,
   tileNameSize,
   tileNumberSize,
@@ -128,9 +127,10 @@ export async function drawBannerCard(
   scale = 1,
   progress?: CardProgress,
 ): Promise<DrawnBanner> {
-  const layout = bannerCardLayout(
+  const layout = bannerCardGeometry(
+    input.banner,
+    input.type === 301 || input.type === 302,
     input.numbers.fives.length,
-    bannerPanelHeight(input.banner, input.type === 301 || input.type === 302),
   )
   const [art, second] = await Promise.all([
     artToDraw(bannerArt(input.banner)),
@@ -253,16 +253,22 @@ class BannerPainter extends CardPaint {
     y += plateH + GAP
     // A banner without art has a panel only as tall as its blocks (bannerPanelHeight):
     // the title follows the plate.
+    // A Chronicled Wish's picture is shown whole (16:9): what its box doesn't
+    // need is spread over the gaps under it (bannerCardGeometry).
+    let spread = 0
     if (art) {
-      this.art(x, y, w, artH, art, second)
-      y += artH + lift
+      const whole = this.input.banner.kind === 'chronicled' ? Math.round((w * 9) / 16) : artH
+      const shown = Math.min(artH, whole)
+      spread = (artH - shown) / (rated ? 4 : 3)
+      this.art(x, y, w, shown, art, second)
+      y += shown + lift + spread
     }
     this.title(x, y + 12, w, lines)
-    y += titleH + GAP
+    y += titleH + GAP + spread
     this.stats(x, y, w, statsH)
-    y += statsH + GAP
+    y += statsH + GAP + spread
     this.table(x, y, w, tableH)
-    y += tableH + GAP
+    y += tableH + GAP + spread
     if (rated) this.tally(x, y, w, tallyH)
   }
 

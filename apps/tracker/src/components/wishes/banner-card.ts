@@ -146,6 +146,56 @@ export function bannerCardLayout(count: number, panelH = PANEL_H): BannerCardLay
   }
 }
 
+/** HoYoLAB's banner pictures are 16:9 (1200×675). */
+const ART_RATIO = 9 / 16
+/** The line the art gives up to the one-line owner plate (banner-card-canvas's `lift`). */
+const ART_LIFT = 24
+
+/**
+ * The card's geometry for a banner's run of `count` 5★.
+ * - No art: a panel as tall as its blocks (`bannerPanelHeight`).
+ * - A Chronicled Wish: its picture is a row of characters over a row of
+ *   weapons from edge to edge, so the usual crop to the left cut the last
+ *   ones off (the user, 2026-11-24). The panel is as tall as its blocks plus
+ *   the whole 16:9 picture at the panel's width (the width follows the
+ *   height through the tiles, so it is settled in a few rounds).
+ * - Else the fixed `PANEL_H`, the art cropped to what the blocks leave.
+ */
+export function bannerCardGeometry(
+  banner: EventBanner,
+  rated: boolean,
+  count: number,
+): BannerCardLayout {
+  const bare = bannerPanelHeight(banner, rated)
+  if (bare !== PANEL_H || banner.kind !== 'chronicled') return bannerCardLayout(count, bare)
+  const b = PANEL_BLOCK
+  const blocks =
+    b.plate +
+    ART_LIFT +
+    b.gap +
+    (b.titleHead + bannerTitleLineCount(banner) * b.titleLine) +
+    b.gap +
+    b.stats +
+    b.gap +
+    b.table +
+    (rated ? b.gap + b.tally : 0)
+  // The panel's width steps with the tile columns, so the height that fits
+  // the picture exactly is not always reachable: of the heights tried, the
+  // one that leaves the least to spare is kept (the panel spreads the rest
+  // over its gaps: banner-card-canvas `panel`).
+  const spare = (layout: BannerCardLayout) =>
+    layout.panel.h - (blocks + Math.round(layout.panel.w * ART_RATIO))
+  let layout = bannerCardLayout(count)
+  let best = layout
+  for (let round = 0; round < 8; round++) {
+    const panelH = Math.min(PANEL_H, layout.panel.h - spare(layout))
+    if (panelH === layout.panel.h) break
+    layout = bannerCardLayout(count, panelH)
+    if (spare(layout) >= 0 && (spare(best) < 0 || spare(layout) < spare(best))) best = layout
+  }
+  return best
+}
+
 // ------------------------------------------------------------------ the numbers
 
 export interface CardFive {

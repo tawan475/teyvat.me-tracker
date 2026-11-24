@@ -119,6 +119,17 @@ async function artToDraw(url: string): Promise<string> {
   return found ? url : english
 }
 
+/** How many featured 5★ stand in for missing art (a Chronicled Wish has more). */
+const FEATURED_SHOWN = 6
+
+/** The featured 5★'s icons, for a banner without art. */
+function featuredIcons(banner: BannerDrawing['banner']): string[] {
+  return banner.featured5
+    .slice(0, FEATURED_SHOWN)
+    .map((key) => wishIcon({ key, kind: null, name: key, rank: 5, itemId: 0, known: false }))
+    .filter(Boolean)
+}
+
 /** The card at `scale` device pixels per CSS pixel (1: the PNG). */
 export async function drawBannerCard(
   input: BannerDrawing,
@@ -139,6 +150,8 @@ export async function drawBannerCard(
     second,
     qualityCell(5),
     ...input.numbers.fives.map((f) => wishIcon(f.row.pull.item)),
+    // A banner whose art gi-cdn doesn't have: its featured 5★ stand in for it.
+    ...(art ? [] : featuredIcons(input.banner)),
   ]
   const [images, fonts] = await Promise.all([
     CardImages.load(urls, progress),
@@ -281,7 +294,7 @@ class BannerPainter extends CardPaint {
     const image = this.images.get(main)
     p.clipped(x, y, w, h, 20, () => {
       if (image) p.cover(image, x, y, w, h, ART_ANCHOR)
-      else p.fill(x, y, w, h, 0, this.v('--card-panel'))
+      else this.featured(x, y, w, h)
     })
     p.insetRing(x, y, w, h, 20, 1, 'rgba(255,255,255,0.12)')
     const other = second ? this.images.get(second) : null
@@ -293,6 +306,28 @@ class BannerPainter extends CardPaint {
     p.boxShadow(sx, sy, sw, sh, 14, { x: 0, y: 10, blur: 28, color: 'rgba(0,0,0,0.55)' })
     p.fill(sx - 3, sy - 3, sw + 6, sh + 6, 17, this.v('--card-ground'))
     p.clipped(sx, sy, sw, sh, 14, () => p.cover(other, sx, sy, sw, sh, ART_ANCHOR))
+  }
+
+  /**
+   * In place of art gi-cdn doesn't have (a phase whose post isn't fetched
+   * yet): the 5★ ground with the banner's featured 5★ in a centred row, so
+   * the box is never empty.
+   */
+  private featured(x: number, y: number, w: number, h: number) {
+    const { p } = this
+    const { ctx } = p
+    ctx.fillStyle = linearGradient(ctx, RARITY_GRADIENT[5]!, x, y, w, h) ?? '#b45309'
+    ctx.fillRect(x, y, w, h)
+    const icons = featuredIcons(this.input.banner)
+      .map((url) => this.images.get(url))
+      .filter((image) => image !== null)
+    if (!icons.length) return
+    const gap = 16
+    const size = Math.floor(Math.min(h * 0.8, (w - 48 - gap * (icons.length - 1)) / icons.length))
+    const left = x + (w - size * icons.length - gap * (icons.length - 1)) / 2
+    icons.forEach((image, i) =>
+      p.contain(image, left + i * (size + gap), y + (h - size) / 2, size, size),
+    )
   }
 
   /** Version · phase, the banner type and its dates as pills, then its name. */

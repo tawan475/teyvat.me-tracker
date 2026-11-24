@@ -348,6 +348,17 @@ user's call).
   pool). Cost it again once the shape is agreed; the exchange is a few
   requests per party, far below a live room that stays awake.
 
+Later the same day, on randomizer A:
+
+- **It only rolls characters.** Out of v1: the team count control (`− 2 +`),
+  presets ("Abyss · 2 teams") and sharing a result (link and picture). One
+  roll gives one set of four. Sections 4 and 8 above still describe those;
+  this decision wins.
+- **Elements are shown by the game's element icon, never by the word**
+  ("Hydro", "Geo"): on tiles and on the element filter (the name stays as the
+  tooltip and the accessible label). The site's `ElementIcon` already does
+  this; the canvas shows a coloured disc only because it cannot load game art.
+
 ## Design phase
 
 Options A to D for the hub and for the team randomizer, at 390 px and

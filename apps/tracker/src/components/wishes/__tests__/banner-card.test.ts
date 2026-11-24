@@ -63,15 +63,17 @@ describe('banner art names', () => {
   })
 
   it('names the art by the start date on the banner clock, _2 for the second banner', () => {
-    expect(bannerArt(banner('2026-09-23 06:00:00'))).toMatch(/\/WishBanner_C_20260923\.webp$/)
-    expect(bannerArt(banner('2026-10-13 18:00:00'), true)).toMatch(/WishBanner_C_20261013_2\.webp$/)
+    expect(bannerArt(banner('2026-09-23 06:00:00'))).toMatch(/\/WishBanner_C_20260923\.webp\?2$/)
+    expect(bannerArt(banner('2026-10-13 18:00:00'), true)).toMatch(/WishBanner_C_20261013_2\.webp\?2$/)
     expect(bannerArt(banner('2025-01-21 18:00:00', 'chronicled'))).toMatch(/WishBanner_R_20250121/)
+    // Art gi-cdn does not have (yet) is not asked for.
+    expect(bannerArt(banner('2031-01-01 18:00:00'))).toBe('')
   })
 
   it('a server-clock opening keeps its date in any time zone', () => {
     // 06:00 on an America server (UTC-5) is 11:00 UTC.
     const b = { ...banner('2026-09-23 06:00:00'), start: parseWishTime('2026-09-23 11:00:00')! }
-    expect(bannerArt(b)).toMatch(/WishBanner_C_20260923\.webp$/)
+    expect(bannerArt(b)).toMatch(/WishBanner_C_20260923\.webp\?2$/)
   })
 
   it('names the PNG by version and phase', () => {

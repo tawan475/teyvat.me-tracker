@@ -76,14 +76,14 @@ describe('banner art in the language on screen', () => {
 
   it('asks for the language’s art from the first translated phase on, English before', () => {
     const b = banner('2026-11-04 06:00:00')
-    expect(bannerArt(b, false, 'en')).toMatch(/\/WishBanner_C_20261104\.webp$/)
-    expect(bannerArt(b, false, 'th')).toMatch(/\/WishBanner_C_20261104_th\.webp$/)
-    expect(bannerArt(b, true, 'zh-CN')).toMatch(/\/WishBanner_C_20261104_2_zh-CN\.webp$/)
+    expect(bannerArt(b, false, 'en')).toMatch(/\/WishBanner_C_20261104\.webp\?2$/)
+    expect(bannerArt(b, false, 'th')).toMatch(/\/WishBanner_C_20261104_th\.webp\?2$/)
+    expect(bannerArt(b, true, 'zh-CN')).toMatch(/\/WishBanner_C_20261104_2_zh-CN\.webp\?2$/)
     const old = banner('2021-03-02 18:00:00')
     expect(old.start).toBeLessThan(LOCALIZED_ART_FROM)
-    expect(bannerArt(old, false, 'th')).toMatch(/\/WishBanner_C_20210302\.webp$/)
+    expect(bannerArt(old, false, 'th')).toMatch(/\/WishBanner_C_20210302\.webp\?2$/)
     locale.value = 'ja'
-    expect(bannerArt(b)).toMatch(/_ja\.webp$/)
+    expect(bannerArt(b)).toMatch(/_ja\.webp\?2$/)
   })
 
   it('falls back to the English art from a localized URL, and from nothing else', () => {

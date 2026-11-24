@@ -15,6 +15,7 @@ import { formatWishTime, parseWishTime } from '@gdt/shared'
 import type { EventBanner, Outcome, PullRow } from '@/data/wish-history'
 import { locale, type Locale } from '@/i18n/locale'
 import { giCdnArt } from '@/lib/assets'
+import ART from '@/data/wish-banner-art.json'
 
 export const BANNER_CARD_PAD_X = 48
 export const BANNER_CARD_PAD_Y = 40
@@ -191,7 +192,16 @@ export const LOCALIZED_ART_FROM = parseWishTime('2021-08-10 18:00:00')! - 8 * 36
  * language than English the art of that language (`_<code>`: HoYoLAB's
  * post there) is asked for; `bannerArtFallback` gives the English one when
  * it fails to load (a banner the post didn't picture in that language).
+ *
+ * Only art gi-cdn is known to have is asked for (`wish-banner-art.json`,
+ * written by gi-cdn's script): '' for a banner whose art isn't there yet.
+ * gi-cdn answers a missing picture 404 with the images' six-month cache
+ * lifetime, so a picture asked for too early stayed missing in that browser
+ * after it was deployed (7.2 phase 2, 2026-11-24). `ART_REVISION` in the
+ * URL leaves those remembered 404s behind.
  */
+const ART_REVISION = '?2'
+const KNOWN_ART: Readonly<Record<string, string>> = ART
 export function bannerArt(
   banner: EventBanner,
   second = false,
@@ -200,16 +210,22 @@ export function bannerArt(
   const day = formatWishTime(banner.start + 8 * 3600)
     .slice(0, 10)
     .replaceAll('-', '')
-  const suffix = lang !== 'en' && banner.start >= LOCALIZED_ART_FROM ? `_${lang}` : ''
-  return giCdnArt(`WishBanner_${ART_KIND[banner.kind]}_${day}${second ? '_2' : ''}${suffix}`)
+  const base = `${ART_KIND[banner.kind]}_${day}${second ? '_2' : ''}`
+  const languages = KNOWN_ART[base]
+  if (languages === undefined) return ''
+  const localized =
+    lang !== 'en' &&
+    banner.start >= LOCALIZED_ART_FROM &&
+    (languages === '*' || languages.split(' ').includes(lang))
+  return giCdnArt(`WishBanner_${base}${localized ? `_${lang}` : ''}`) + ART_REVISION
 }
 
-const LOCALIZED_ART = /^(.*\/WishBanner_[CWR]_\d{8}(?:_2)?)_(?:zh-CN|zh-TW|[a-z]{2})\.webp$/
+const LOCALIZED_ART = /^(.*\/WishBanner_[CWR]_\d{8}(?:_2)?)_(?:zh-CN|zh-TW|[a-z]{2})\.webp(\?.*)?$/
 
 /** The English art a localized banner art URL falls back to; null when it is the English one already. */
 export function bannerArtFallback(url: string): string | null {
   const m = LOCALIZED_ART.exec(url)
-  return m ? `${m[1]}.webp` : null
+  return m ? `${m[1]}.webp${m[2] ?? ''}` : null
 }
 
 /** The PNG's name: `banner-7-1-phase-1-teyvat-me.png`. */

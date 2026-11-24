@@ -24,13 +24,14 @@ const numbers = computed(() => bannerCardNumbers(props.pulls, props.rolls))
 const arts = computed(() => {
   const b = props.banner
   const second = b.kind === 'character' && b.name400
+  // '' = art gi-cdn doesn't have yet: left out, like art that fails.
   return [
     {
       src: bannerArt(b),
       alt: b.kind === 'weapon' ? t('wishes.banners.weapon.title') : bannerTitle(b.name),
     },
     ...(second ? [{ src: bannerArt(b, true), alt: bannerTitle(b.name400) }] : []),
-  ]
+  ].filter((art) => art.src)
 })
 /** Art that failed to load (a banner the CDN doesn't have yet) is left out. */
 const failed = ref<ReadonlySet<string>>(new Set())

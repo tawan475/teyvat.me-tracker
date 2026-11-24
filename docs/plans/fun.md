@@ -360,6 +360,16 @@ Later the same day, on randomizer A:
   tooltip and the accessible label). The site's `ElementIcon` already does
   this; the canvas shows a coloured disc only because it cannot load game art.
 
+- **Roll bar:** B's full-width "Roll teams" button, with Undo beside it
+  (where B had the team count).
+- Element icons are the bare game icons: no disc or backing behind them.
+- "Good for now" (the user). **Still open:** what else screen A needs, and
+  party mode: a link per session or lasting friend links, whether bans show
+  live for everyone, whether guests can join, and what a roll gives with 1P
+  to 4P. The proposal on the table is a party link per session (rosters
+  deleted when it ends), with the user's own and already-shared accounts as
+  quick picks and a pasted roster code as the no-server fallback.
+
 ## Design phase
 
 Options A to D for the hub and for the team randomizer, at 390 px and

@@ -27,21 +27,29 @@ const runKey = (banner: EventBanner) => `${banner.start}:${banner.name}`
  * One kind's banners (eventBanners' list, sorted by start), grouped by
  * version, newest first; `runs` laid on by start and name (they come from
  * the same file).
+ *
+ * A phase is the version's nth opening time over every kind of banner
+ * (`all`, default this kind's own): a Chronicled Wish that runs only in a
+ * version's second phase is Phase 2, not the first of its kind (it read
+ * "Phase 1" on 7.2's, the user 2026-11-24).
  */
 export function bannerHistory(
   banners: readonly EventBanner[],
   runs: readonly BannerRun[],
+  all: readonly EventBanner[] = banners,
 ): BannerHistoryVersion[] {
   const byKey = new Map(runs.map((run) => [runKey(run.banner), run]))
-  const phases = new Map<string, number>()
+  const starts = new Map<string, number[]>()
+  for (const banner of all) {
+    const list = starts.get(banner.version) ?? []
+    if (!list.includes(banner.start)) list.push(banner.start)
+    starts.set(banner.version, list)
+  }
+  for (const list of starts.values()) list.sort((a, b) => a - b)
   const versions = new Map<string, BannerHistoryRow[]>()
   for (const banner of banners) {
-    // Phases are counted by start time: two banners opening together share one.
-    const seenStarts = phases.get(banner.version) ?? 0
-    const previous = versions.get(banner.version)?.at(-1)
-    const phase =
-      previous && previous.banner.start === banner.start ? previous.phase : seenStarts + 1
-    phases.set(banner.version, phase)
+    // Two banners opening together share one phase.
+    const phase = (starts.get(banner.version)?.indexOf(banner.start) ?? 0) + 1
     const rows = versions.get(banner.version) ?? []
     rows.push({ banner, phase, run: byKey.get(runKey(banner)) ?? null })
     versions.set(banner.version, rows)

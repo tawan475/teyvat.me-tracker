@@ -100,8 +100,13 @@ const now = pageNow(travel.value) / 1000
 const versions = computed(() => {
   const f = file.data.value
   if (!f) return null
-  const list = eventBanners(f, props.history.timezone).get(kind.value) ?? []
-  let out = bannerHistory(list, props.stats.get(banner.value)?.runs ?? [])
+  const kinds = eventBanners(f, props.history.timezone)
+  const list = kinds.get(kind.value) ?? []
+  let out = bannerHistory(
+    list,
+    props.stats.get(banner.value)?.runs ?? [],
+    [...kinds.values()].flat(),
+  )
   if (travel.value) out = announcedBy(out, now)
   if (mine.value) out = pulledOnly(out)
   if (needle.value)

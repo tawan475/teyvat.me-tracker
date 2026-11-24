@@ -45,6 +45,13 @@ describe('banner history', () => {
     ])
   })
 
+  it('numbers a phase by the openings of its version over every kind of banner', () => {
+    // A Chronicled Wish that runs only in the version's second phase.
+    const chronicled = [banner('1.0', 20, 'Chronicled')]
+    const out = bannerHistory(chronicled, [], [...banners, ...chronicled])
+    expect(out[0]!.rows.map((r) => [r.banner.name, r.phase])).toEqual([['Chronicled', 2]])
+  })
+
   it('keeps only pulled banners, or banners featuring a match', () => {
     const out = bannerHistory(banners, runs)
     expect(pulledOnly(out).flatMap((v) => v.rows.map((r) => r.banner.name))).toEqual(['Klee'])

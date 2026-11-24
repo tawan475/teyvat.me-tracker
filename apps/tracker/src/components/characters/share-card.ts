@@ -1,7 +1,7 @@
 /**
  * The share card (ShareCard): its canvas and its own palette, after the
  * "Character Showcase Card" design (Claude Design canvas, dark and light).
- * The card is drawn at 1920×1200 CSS pixels, so the PNG is the card at 1×;
+ * The card is drawn at 1920×1080 CSS pixels, so the PNG is the card at 1×;
  * the details show it scaled to their width.
  */
 
@@ -11,17 +11,8 @@ import { emblemBox } from '@/lib/item-art'
 import type { CritTier } from '@/lib/crit-tiers'
 
 export const CARD_WIDTH = 1920
-/**
- * The build: the three columns run 1080 high, as the card did before the
- * totals line came (2026-11-24); every place and nudge in them is in these px.
- */
-export const BUILD_HEIGHT = 1080
-/** The totals line under the columns (what the artifacts' substats add): the gap above it and its panel. */
-export const TOTALS_GAP = 20
-export const TOTALS_HEIGHT = 100
-/** The whole card: the build, then the totals line, then the bottom padding. */
-export const CARD_HEIGHT = BUILD_HEIGHT + TOTALS_GAP + TOTALS_HEIGHT
-/** The PNG is the card at 1×: 1920×1200. */
+export const CARD_HEIGHT = 1080
+/** The PNG is the card at 1×: 1920×1080. */
 export const CARD_SCALE = 1
 
 /** What the card's foot shows of its owner; null parts are left out. */
@@ -144,40 +135,23 @@ export {
 
 /** The card's frame: its padding top and bottom, and the gap between the five pieces. */
 export const CARD_PAD_Y = 44
-export const CARD_PAD_X = 48
 
 /**
- * The totals line's panel and its cells: one per substat (equal widths,
- * like a CSS grid of `repeat(n, minmax(0, 1fr))`), then the roll count's
- * fixed cell, inside 10 / 18 px of padding with 10 px gaps. The page's card
- * (a grid with these numbers) and the PNG lay it out alike.
+ * The sets panel's substats grid (the user's pick "C", 2026-11-24): what
+ * each substat adds over the pieces with its roll count, two columns of
+ * 30 px rows, filled row by row; CRIT Rate and CRIT DMG first, on a chip.
  */
-export const TOTALS_PAD_Y = 10
-export const TOTALS_PAD_X = 18
-export const TOTALS_CELL_GAP = 10
-export const TOTALS_COUNT_WIDTH = 150
-export function totalsPanel() {
-  return {
-    x: CARD_PAD_X,
-    y: BUILD_HEIGHT - CARD_PAD_Y + TOTALS_GAP,
-    w: CARD_WIDTH - 2 * CARD_PAD_X,
-    h: TOTALS_HEIGHT,
-  }
-}
-/** The cells' left edges and their width for `n` substats; the count cell is the last. */
-export function totalsCells(n: number): { x: number; w: number }[] {
-  const panel = totalsPanel()
-  const inner = panel.w - 2 * TOTALS_PAD_X
-  const w = n ? (inner - TOTALS_COUNT_WIDTH - n * TOTALS_CELL_GAP) / n : 0
-  const cells = Array.from({ length: n }, (_, i) => ({
-    x: panel.x + TOTALS_PAD_X + i * (w + TOTALS_CELL_GAP),
-    w,
-  }))
-  cells.push({
-    x: panel.x + panel.w - TOTALS_PAD_X - TOTALS_COUNT_WIDTH,
-    w: TOTALS_COUNT_WIDTH,
-  })
-  return cells
+export const TOTALS_COLUMNS = 2
+export const TOTALS_ROW = 30
+export const TOTALS_ROW_GAP = 4
+export const TOTALS_COLUMN_GAP = 14
+/** The ×N column's width at the cell's right; a cell pads 8 px each side. */
+export const TOTALS_ROLLS_WIDTH = 36
+export const TOTALS_CELL_PAD = 8
+/** The grid's height for `n` substats. */
+export function totalsGridHeight(n: number): number {
+  const rows = Math.ceil(n / TOTALS_COLUMNS)
+  return rows ? rows * TOTALS_ROW + (rows - 1) * TOTALS_ROW_GAP : 0
 }
 export const PIECE_GAP = 14
 /**
@@ -185,7 +159,7 @@ export const PIECE_GAP = 14
  * height less its padding and the four gaps; empty slots take theirs too),
  * so it is fixed: 187.2px.
  */
-export const PIECE_HEIGHT = (BUILD_HEIGHT - 2 * CARD_PAD_Y - 4 * PIECE_GAP) / 5
+export const PIECE_HEIGHT = (CARD_HEIGHT - 2 * CARD_PAD_Y - 4 * PIECE_GAP) / 5
 
 /**
  * A piece's band (left of its substats): 276px of the game's header art, the
@@ -372,7 +346,7 @@ export function splashPlace(characterKey: string): { left: number; top: number }
   const n = SPLASH_NUDGE[key]
   return {
     left: SPLASH_LEFT + ((n?.right ?? 0) / 100) * CHARACTER_COLUMN,
-    top: SPLASH_TOP + ((n?.down ?? 0) / 100) * BUILD_HEIGHT,
+    top: SPLASH_TOP + ((n?.down ?? 0) / 100) * CARD_HEIGHT,
   }
 }
 

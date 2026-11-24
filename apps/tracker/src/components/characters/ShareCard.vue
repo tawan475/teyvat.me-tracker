@@ -47,11 +47,6 @@ import {
   qualityArt,
   splashFull,
   splashPlace,
-  totalsPanel,
-  TOTALS_CELL_GAP,
-  TOTALS_COUNT_WIDTH,
-  TOTALS_PAD_X,
-  TOTALS_PAD_Y,
   type CardOwner,
 } from './share-card'
 import { cardPieces, expShare, ownerParts, substatTotals } from './share-card-model'
@@ -61,14 +56,12 @@ import { ELEMENT_TEXT } from './tokens'
 import { useCrownIcon } from './use-boosts'
 
 /**
- * The build as one 1920×1200 card, after the "Character Showcase Card"
+ * The build as one 1920×1080 card, after the "Character Showcase Card"
  * design: on the namecard, the splash art fading into it; name, level,
  * friendship and stars, the constellations down the left column's edge, the
  * talents with the owner and the capture date and site at its foot; weapon,
  * the in-game stats and the sets in the middle; the five pieces on the
- * right, both running to the bottom of the build (1080 px); under them,
- * across the card, the totals line: what the substats add over the five
- * pieces, each with its roll count (Akasha's line, a Discord user's ask). The weapon's tile and each
+ * right, both running to the bottom edge. The weapon's tile and each
  * piece's band (main stat, stars, CV and RV left of the icon) carry the
  * game's item header art: its rarity's gradient under the emblem
  * (share-card QUALITY_ART, EMBLEM; from gi-cdn), alike in both themes.
@@ -242,25 +235,12 @@ function rollTitle(key: string, rolls: readonly InferredRoll[]): string {
 
 const ownerLine = computed(() => ownerParts(props.owner))
 
-/** The totals line: what the substats add over the pieces, in cells laid out as the PNG's (totalsCells). */
-const totals = computed(() => substatTotals(c.value))
-const totalRolls = computed(() => totals.value.reduce((sum, s) => sum + s.rolls, 0))
-const TOTALS_STYLE = (() => {
-  const panel = totalsPanel()
-  return {
-    left: `${panel.x}px`,
-    top: `${panel.y}px`,
-    width: `${panel.w}px`,
-    height: `${panel.h}px`,
-    padding: `${TOTALS_PAD_Y}px ${TOTALS_PAD_X}px`,
-    gap: `${TOTALS_CELL_GAP}px`,
-  }
-})()
-const totalsColumns = computed(() =>
-  totals.value.length
-    ? `repeat(${totals.value.length}, minmax(0, 1fr)) ${TOTALS_COUNT_WIDTH}px`
-    : '1fr',
-)
+/**
+ * The sets panel's substats grid (the user's pick "C"): what each substat
+ * adds over the pieces and how many rolls made it; the PNG draws the same
+ * (share-card-canvas totalsGrid, share-card TOTALS_*).
+ */
+const totals = computed(() => (c.value.artifactCount ? substatTotals(c.value) : []))
 
 const tip = useDetailTip()
 /** A part's tip props (the card's thicker ring), none outside the character details. */
@@ -288,7 +268,7 @@ const tipOf = (subject: TipSubject, side = false) =>
     <FadeImage
       v-else
       :src="banner"
-      class="pointer-events-none absolute top-[-40px] left-[-60px] h-[1280px] w-[2040px] max-w-none object-cover [filter:var(--card-namecard-filter)]"
+      class="pointer-events-none absolute top-[-40px] left-[-60px] h-[1160px] w-[2040px] max-w-none object-cover [filter:var(--card-namecard-filter)]"
     />
     <div class="absolute inset-0 [background:var(--card-scrim)]" />
     <div class="absolute inset-0" :style="{ background: glow }" />
@@ -316,7 +296,7 @@ const tipOf = (subject: TipSubject, side = false) =>
     <div class="absolute inset-0 [background:var(--card-vignette)]" />
 
     <div
-      class="absolute inset-[44px_48px_164px_48px] grid grid-cols-[700px_528px_532px] grid-rows-[minmax(0,1fr)] gap-x-[32px]"
+      class="absolute inset-[44px_48px_44px_48px] grid grid-cols-[700px_528px_532px] grid-rows-[minmax(0,1fr)] gap-x-[32px]"
     >
       <!-- Left: who, the constellations down its right edge, the talents at its foot -->
       <section
@@ -651,13 +631,43 @@ const tipOf = (subject: TipSubject, side = false) =>
               >{{ pieces }}</span
             >
           </p>
+          <ul
+            v-if="totals.length"
+            class="grid grid-cols-2 gap-x-[14px] gap-y-[4px]"
+            :class="bonus.length ? 'border-t border-(--card-rule) pt-[10px]' : ''"
+            :aria-label="$t('game.substats')"
+          >
+            <li
+              v-for="total in totals"
+              :key="total.key"
+              class="flex h-[30px] min-w-0 items-center gap-[6px] rounded-[8px] px-[8px] leading-[30px] whitespace-nowrap"
+              :class="
+                total.crit ? 'bg-(--card-cv-bg) shadow-[inset_0_0_0_1.5px_var(--card-muted)]' : ''
+              "
+              :title="`${formatStatShort(total.key)} ${formatStatValue(total.key, total.value)} · ×${total.rolls}`"
+            >
+              <span
+                class="min-w-0 flex-1 truncate text-[20px]"
+                :class="total.crit ? 'font-semibold' : 'text-(--card-secondary)'"
+                >{{ formatStatShort(total.key) }}</span
+              >
+              <span class="text-right text-[21px] font-bold">{{
+                formatStatValue(total.key, total.value)
+              }}</span>
+              <span
+                class="w-[36px] shrink-0 text-right text-[17px] font-semibold"
+                :class="total.crit ? 'text-(--card-secondary)' : 'text-(--card-muted)'"
+                >×{{ total.rolls }}</span
+              >
+            </li>
+          </ul>
           <p v-if="!c.artifactCount" class="text-[22px] text-(--card-muted)">
             {{ $t('characters.detail.noArtifacts') }}
           </p>
           <p
             v-else
             class="flex items-baseline gap-[18px] text-[20px] whitespace-nowrap"
-            :class="bonus.length ? 'border-t border-(--card-rule) pt-[10px]' : ''"
+            :class="bonus.length || totals.length ? 'border-t border-(--card-rule) pt-[10px]' : ''"
           >
             <span class="text-(--card-muted)">{{ $t('characters.detail.build') }}</span>
             <span class="ml-auto" :title="$t('share.card.rvTitle')"
@@ -790,51 +800,6 @@ const tipOf = (subject: TipSubject, side = false) =>
           </div>
         </li>
       </ol>
-    </div>
-
-    <!-- The totals line: each substat over the five pieces with its roll count, CRIT on a chip -->
-    <div
-      class="absolute grid"
-      :class="PANEL"
-      :style="{ ...TOTALS_STYLE, gridTemplateColumns: totalsColumns }"
-      :aria-label="$t('game.substats')"
-    >
-      <p v-if="!totals.length" class="m-auto text-[22px] text-(--card-muted)">
-        {{ $t('characters.detail.noArtifacts') }}
-      </p>
-      <template v-else>
-        <p
-          v-for="total in totals"
-          :key="total.key"
-          class="flex min-w-0 flex-col rounded-[14px] px-[14px] py-[10px]"
-          :class="
-            total.crit ? 'bg-(--card-cv-bg) shadow-[inset_0_0_0_1.5px_var(--card-muted)]' : ''
-          "
-          :title="`${formatStatShort(total.key)} ${formatStatValue(total.key, total.value)} · ×${total.rolls}`"
-        >
-          <span
-            class="truncate text-[18px] leading-[24px]"
-            :class="total.crit ? 'font-semibold text-(--card-text)' : 'text-(--card-secondary)'"
-            >{{ formatStatShort(total.key) }}</span
-          >
-          <span class="mt-[2px] flex min-w-0 items-baseline gap-[8px] whitespace-nowrap">
-            <span class="truncate text-[26px] leading-[34px] font-bold">{{
-              formatStatValue(total.key, total.value)
-            }}</span>
-            <span
-              class="text-[20px] font-semibold"
-              :class="total.crit ? 'text-(--card-secondary)' : 'text-(--card-muted)'"
-              >×{{ total.rolls }}</span
-            >
-          </span>
-        </p>
-        <p class="flex min-w-0 flex-col px-[14px] py-[10px]">
-          <span class="truncate text-[18px] leading-[24px] text-(--card-secondary)">{{
-            $t('artifacts.detail.rolls')
-          }}</span>
-          <span class="mt-[2px] text-[26px] leading-[34px] font-bold">{{ totalRolls }}</span>
-        </p>
-      </template>
     </div>
   </div>
 </template>

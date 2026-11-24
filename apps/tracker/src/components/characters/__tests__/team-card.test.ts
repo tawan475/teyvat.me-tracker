@@ -21,13 +21,13 @@ import {
 const char = (key: string): CharacterView => ({ key, name: key }) as CharacterView
 
 describe('teamCardHeight', () => {
-  it('makes two rows the build card frame', () => {
-    expect(teamCardHeight(2)).toBe(1080)
+  it('makes two rows 1184 high (the build card frame plus two totals lines)', () => {
+    expect(teamCardHeight(2)).toBe(1184)
   })
 
   it('grows by a row and its gap', () => {
-    expect(teamCardHeight(3)).toBe(1542)
-    expect(teamCardHeight(4)).toBe(2004)
+    expect(teamCardHeight(3)).toBe(1698)
+    expect(teamCardHeight(4)).toBe(2212)
   })
 
   it('puts the last row above the bottom padding', () => {

@@ -62,12 +62,14 @@ import {
   type CardOwner,
   type CardTheme,
 } from './share-card'
-import { cardPieces, ownerParts, type CardPiece } from './share-card-model'
+import { cardPieces, ownerParts, substatTotals, type CardPiece } from './share-card-model'
 import {
   ROW_COLUMNS,
   ROW_COLUMN_GAP,
   ROW_PAD,
   ROW_SETS,
+  ROW_TOTALS,
+  ROW_TOTALS_GAP,
   ROW_SPLASH_SCALE,
   ROW_WEAPON,
   TEAM_CARD_WIDTH,
@@ -122,7 +124,8 @@ const MID_X = WHO_X + ROW_COLUMNS.who + ROW_COLUMN_GAP
 const PIECES_X = MID_X + ROW_COLUMNS.middle + ROW_COLUMN_GAP
 const PIECE_GAP = 8
 const PIECE_W = (ROW_COLUMNS.pieces - 4 * PIECE_GAP) / 5
-const PIECE_H = INNER_H - 12 - ROW_SETS
+/** The pieces keep their 306 px: the row's growth is the totals line's. */
+const PIECE_H = INNER_H - 12 - ROW_SETS - ROW_TOTALS_GAP - ROW_TOTALS
 const BAND_H = 104
 const BAND_ICON = 72
 /** A substat's roll bars: each this wide, this far apart, this tall at the top tier. */
@@ -356,6 +359,7 @@ class TeamPainter extends CardPaint {
       this.piece(piece, PIECES_X + index * (PIECE_W + PIECE_GAP), top + ROW_PAD),
     )
     this.sets(c, top + ROW_PAD + PIECE_H + 12)
+    this.totals(c, top + ROW_PAD + PIECE_H + 12 + ROW_SETS + ROW_TOTALS_GAP)
     this.backdropCopy = null
   }
 
@@ -962,5 +966,80 @@ class TeamPainter extends CardPaint {
       )
       y += lineH + gap
     }
+  }
+
+  /**
+   * The line under the sets strip: each substat's total over the pieces and
+   * its roll count, in equal cells (name over total and ×rolls), CRIT Rate
+   * and CRIT DMG first on an outlined chip, then the roll count's cell.
+   */
+  private totals(c: CharacterView, top: number) {
+    const totals = c.artifactCount ? substatTotals(c) : []
+    if (!totals.length) return
+    const x = PIECES_X
+    const w = ROW_COLUMNS.pieces
+    const h = ROW_TOTALS
+    this.glass(x, top, w, h, 12, 'panel')
+    const gap = 6
+    const countW = 56
+    const inner = w - 2 * 10
+    const cellW = (inner - countW - totals.length * gap) / totals.length
+    const muted = this.v('--card-muted')
+    const cell = (
+      cx: number,
+      cw: number,
+      name: string,
+      value: string,
+      rolls: string,
+      strong: boolean,
+    ) => {
+      if (strong) {
+        this.p.fill(cx, top + 2, cw, h - 4, 7, this.v('--card-cv-bg'))
+        this.p.insetRing(cx, top + 2, cw, h - 4, 7, 1.5, muted)
+      }
+      const left = cx + 5
+      const max = cw - 10
+      this.line(
+        name,
+        left,
+        top + 3,
+        13,
+        strong ? 600 : 400,
+        this.v(strong ? '--card-text' : '--card-secondary'),
+        {
+          lineHeight: 16,
+          max,
+        },
+      )
+      const vw = this.line(value, left, top + 19, 15, 700, this.v('--card-text'), {
+        lineHeight: 18,
+        max,
+      })
+      if (rolls && left + vw + 4 + this.textWidth(rolls, 12, 600) <= cx + cw - 5) {
+        this.line(
+          rolls,
+          left + vw + 4,
+          top + 20,
+          12,
+          600,
+          this.v(strong ? '--card-secondary' : '--card-muted'),
+          {
+            lineHeight: 18,
+          },
+        )
+      }
+    }
+    totals.forEach((total, i) =>
+      cell(
+        x + 10 + i * (cellW + gap),
+        cellW,
+        formatStatShort(total.key),
+        formatStatValue(total.key, total.value),
+        `×${total.rolls}`,
+        total.crit,
+      ),
+    )
+    const rolls = totals.reduce((sum, total) => sum + total.rolls, 0)
+    cell(x + w - 10 - countW, countW, t('artifacts.detail.rolls'), String(rolls), '', false)
   }
 }

@@ -1,8 +1,7 @@
 /**
  * The team card (team-card-canvas): two to four characters, one row each,
  * under a header with the team's name and the owner. As wide as the build
- * card (1920px); its height follows the count, and two rows are exactly the
- * build card's 1920×1080. Behind it, blurred, the city painting of the
+ * card (1920px); its height follows the count (two rows: 1920×1184). Behind it, blurred, the city painting of the
  * region most members are from (the game's Party Setup scenes). Also what
  * the picker (BuildPicker) needs: the picks' order and the team members
  * found in the roster.
@@ -18,8 +17,8 @@ export const TEAM_PAD_X = 48
 export const TEAM_PAD_Y = 40
 export const TEAM_HEADER = 72
 export const TEAM_HEADER_GAP = 20
-/** One character's row, and the gap between rows. */
-export const TEAM_ROW = 446
+/** One character's row, and the gap between rows (446 before the totals line, 2026-11-24). */
+export const TEAM_ROW = 498
 export const TEAM_ROW_GAP = 16
 /** Inside a row: its padding, then who / weapon and stats / the pieces. */
 export const ROW_PAD = 20
@@ -28,13 +27,19 @@ export const ROW_COLUMN_GAP = 24
 /** The weapon panel's height in the middle column, the sets strip under the pieces. */
 export const ROW_WEAPON = 116
 export const ROW_SETS = 88
+/**
+ * Under the sets strip, the member's substat totals (the user's pick "T2"):
+ * each substat's total over the pieces and its roll count, CRIT first.
+ */
+export const ROW_TOTALS = 40
+export const ROW_TOTALS_GAP = 12
 /** The splash in a row: the build card's place, scaled (head and shoulders show). */
 export const ROW_SPLASH_SCALE = 0.62
 
 /** The most characters a card holds (the game's team size). */
 export const MAX_PICKS = 4
 
-/** The card's height for `count` rows: 156 + 462 per row (2 rows: 1080). */
+/** The card's height for `count` rows: 156 + 514 per row (2 rows: 1184). */
 export function teamCardHeight(count: number): number {
   const rows = Math.max(1, count)
   return (

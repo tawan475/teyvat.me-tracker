@@ -66,7 +66,7 @@ const weaponOptions = computed(() => [
   ...WEAPON_TYPES.map((w) => ({ value: w, label: WEAPON_TYPE_LABELS[w] })),
 ])
 
-/** What Next makes: "Build card · 1920 × 1080", "Team card · 1920 × 1542". */
+/** What Next makes: "Build card · 1920 × 1080", "Team card · 1920 × 1698". */
 const outcome = computed(() => {
   const n = picks.value.length
   if (n === 0) return ''

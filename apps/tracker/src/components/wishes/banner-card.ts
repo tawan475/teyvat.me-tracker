@@ -12,7 +12,7 @@
  */
 
 import { formatWishTime, parseWishTime } from '@gdt/shared'
-import type { EventBanner, Outcome, PullRow } from '@/data/wish-history'
+import { listedStart, type EventBanner, type Outcome, type PullRow } from '@/data/wish-history'
 import { locale, type Locale } from '@/i18n/locale'
 import { giCdnArt } from '@/lib/assets'
 import ART from '@/data/wish-banner-art.json'
@@ -274,8 +274,8 @@ export const LOCALIZED_ART_FROM = parseWishTime('2021-08-10 18:00:00')! - 8 * 36
 /**
  * The banner's official art on gi-cdn (`WishBanner_<C|W|R>_<YYYYMMDD>`, `_2`
  * the second banner of a double character run; gi-cdn's wish-banners.ts):
- * named by the start date on the banner's own clock (UTC+8 in the data; the
- * server-clock openings at 06:00 keep the same date there). In another
+ * named by the start date as the data lists it (`listedStart`: the same
+ * on every server). In another
  * language than English the art of that language (`_<code>`: HoYoLAB's
  * post there) is asked for; `bannerArtFallback` gives the English one when
  * it fails to load (a banner the post didn't picture in that language).
@@ -294,9 +294,7 @@ export function bannerArt(
   second = false,
   lang: Locale = locale.value,
 ): string {
-  const day = formatWishTime(banner.start + 8 * 3600)
-    .slice(0, 10)
-    .replaceAll('-', '')
+  const day = formatWishTime(listedStart(banner)).slice(0, 10).replaceAll('-', '')
   const base = `${ART_KIND[banner.kind]}_${day}${second ? '_2' : ''}`
   const languages = KNOWN_ART[base]
   if (languages === undefined) return ''

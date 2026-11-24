@@ -12,7 +12,7 @@ import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { useResource } from '@/data/use-resource'
 import { bannerTitle } from '@/data/wish-banner-names'
-import { parseRunKey, runRowKey } from '@/data/wish-run-key'
+import { parseRunKey, runRowKey, runStart } from '@/data/wish-run-key'
 import {
   announcedBy,
   bannerHistory,
@@ -156,7 +156,7 @@ const foursOf = (row: BannerHistoryRow) =>
 
 /** Banners opened into their pulls (until the kind or filters change). */
 const expanded = ref<ReadonlySet<string>>(new Set())
-const rowKey = (row: BannerHistoryRow) => `${row.banner.start}:${row.banner.name}`
+const rowKey = (row: BannerHistoryRow) => `${runStart(row.banner)}:${row.banner.name}`
 function toggle(row: BannerHistoryRow) {
   const next = new Set(expanded.value)
   if (!next.delete(rowKey(row))) next.add(rowKey(row))

@@ -177,6 +177,22 @@ describe('wish pity', () => {
     expect(weapon.fives.map((r) => r.outcome)).not.toContain('radiance')
   })
 
+  it('starts Capturing Radiance at the instant 5.0 went live, on every server', () => {
+    const names = ['Diluc', 'Furina', 'Qiqi', 'Furina', 'Furina'].flatMap((n) => [...filler(5), n])
+    const outcomes = (timezone: number, wall: string) =>
+      bannerStats(301, history(301, names, parseWishTime(wall)!), {
+        timezone,
+        banners: banners('character', ['Furina']),
+      })
+        .fives.map((r) => r.outcome)
+        .reverse()
+    // 23:00 on 08-27 in America is noon on 08-28 in UTC+8: 5.0 was live.
+    expect(outcomes(-5, '2024-08-27 23:00:00').at(-1)).toBe('radiance')
+    // The same wall clock in Asia was still 4.8.
+    expect(outcomes(8, '2024-08-27 23:00:00')).not.toContain('radiance')
+    expect(outcomes(8, '2024-08-28 12:00:00').at(-1)).toBe('radiance')
+  })
+
   it('tracks the 4★ guarantee from the featured three', () => {
     const pulls = history(301, [
       ...filler(9),
@@ -391,6 +407,65 @@ describe('banner data', () => {
       expect(on?.name).toBe('When Warm Winds Cavort')
       expect(on?.name400).toBe('Surging Ballad')
     }
+  })
+
+  // 7.1: "When Warm Winds Cavort" (Vesna) opens with the update and ends
+  // 2026-10-13 17:59:59; "Void Star's Advent" (Skirk) follows at 18:00 and
+  // ends 2026-11-03 14:59:59. 7.0's last banner (Flins) ends 2026-09-22 14:59.
+  const SERVERS = [8, 1, -5]
+  const onAt = (tz: number, wall: string) =>
+    bannerAt(eventBanners(file, tz).get('character')!, parseWishTime(wall)! - tz * 3600)
+
+  it("ends a phase and opens the next on each server's own clock", () => {
+    for (const tz of SERVERS) {
+      expect(onAt(tz, '2026-10-13 17:30:00')?.featured5).toContain('Vesna')
+      expect(onAt(tz, '2026-10-13 18:30:00')?.featured5).toContain('Skirk')
+      // A version's last hours, and the hours before its last banner closes.
+      expect(onAt(tz, '2026-11-03 14:30:00')?.featured5).toContain('Skirk')
+      expect(onAt(tz, '2026-09-22 14:30:00')?.featured5).toContain('Flins')
+    }
+  })
+
+  it("opens a version's first banner at one instant everywhere", () => {
+    // 2026-09-23 10:30 UTC+8, after the update: 21:30 the evening before in America.
+    const utc = parseWishTime('2026-09-23 10:30:00')! - 8 * 3600
+    for (const tz of SERVERS) {
+      const list = eventBanners(file, tz).get('character')!
+      expect(bannerAt(list, utc)?.featured5).toContain('Vesna')
+      const vesna = list.find((b) => b.name === 'When Warm Winds Cavort')!
+      expect(vesna.start).toBe(parseWishTime('2026-09-23 06:00:00')! - 8 * 3600)
+      expect(vesna.end).toBe(parseWishTime('2026-10-13 17:59:59')! - tz * 3600)
+      // What the game announces is the same on every server.
+      expect(vesna.listed).toEqual({
+        start: parseWishTime('2026-09-23 06:00:00')!,
+        end: parseWishTime('2026-10-13 17:59:59')!,
+      })
+    }
+  })
+
+  it("counts a featured 5★ pulled in a banner's last hours in America as won", () => {
+    // 17:25 on the banner's last day there: 13 hours after it closed in Asia.
+    const pulls = history(301, [...filler(5), 'Vesna'], parseWishTime('2026-10-13 17:20:00')!)
+    const stats = bannerStats(301, pulls, { timezone: -5, banners: eventBanners(file, -5) })
+    expect(stats.fives.map((r) => [r.outcome, r.on?.name])).toEqual([
+      ['won', 'When Warm Winds Cavort'],
+    ])
+    expect(stats.guaranteed5).toBe(false)
+  })
+
+  it('gives a featured 5★ to the banner next door when the clock is hours off', () => {
+    // A history whose clock is wrong: Vesna two hours after her banner closed.
+    const at = parseWishTime('2026-10-13 20:00:00')!
+    const stats = (name: string) =>
+      bannerStats(301, history(301, [name], at), { timezone: 8, banners: eventBanners(file, 8) })
+    expect(stats('Vesna').fives.map((r) => [r.outcome, r.on?.name])).toEqual([
+      ['won', 'When Warm Winds Cavort'],
+    ])
+    // A standard character, and a limited one no neighbouring banner features, stay lost.
+    expect(stats('Diluc').fives.map((r) => [r.outcome, r.on?.name])).toEqual([
+      ['lost', "Void Star's Advent"],
+    ])
+    expect(stats('Furina').fives[0]!.outcome).toBe('lost')
   })
 
   it('lists banners with known featured keys, oldest first', () => {

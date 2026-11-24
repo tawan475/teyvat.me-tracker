@@ -17,6 +17,10 @@
  * - Capturing Radiance (5.0+, character event): worked out from the
  *   50/50 chain since 5.0's first day (see `RADIANCE_FROM`); the history
  *   itself never says, so only certain ones are marked.
+ * - A 5★ character that is not the banner's featured one but is the
+ *   featured one of the banner just before or after (within a day) was
+ *   pulled there: a history whose clock is off by hours must not turn a
+ *   featured character into a lost 50/50.
  * Featured items come from banner data adapted from paimon.moe (MIT,
  * wish-banners.json, apps/tracker/scripts/wish-data.mjs). A pull outside
  * every known banner (one newer than the data) gets no outcome, and the
@@ -91,9 +95,15 @@ export type EventKind = 'character' | 'weapon' | 'chronicled'
 
 export interface EventBanner {
   kind: EventKind
-  /** UTC seconds. */
+  /** UTC seconds, for the account's server (see `eventBanners`). */
   start: number
   end: number
+  /**
+   * The times as the data lists them, read as wall-clock seconds: what the
+   * game announces, the same on every server (dates on screen, the art's
+   * file name). Absent on a banner built by hand: `listedStart` falls back.
+   */
+  listed?: { start: number; end: number }
   featured5: readonly string[]
   featured4: readonly string[]
   version: string
@@ -102,20 +112,39 @@ export interface EventBanner {
   name400: string
 }
 
+/** A banner's announced start and end as wall-clock seconds (the same on every server). */
+export function listedStart(banner: Pick<EventBanner, 'start' | 'listed'>): number {
+  return banner.listed?.start ?? banner.start + 8 * 3600
+}
+
+export function listedEnd(banner: Pick<EventBanner, 'end' | 'listed'>): number {
+  return banner.listed?.end ?? banner.end + 8 * 3600
+}
+
 export interface BannerFile {
   columns: string[]
+  /**
+   * `serverTime` (the 4th value) marks a version's first banners: the ones
+   * that open with the update, at one instant everywhere.
+   */
   banners: [EventKind, string, string, 0 | 1, string[], string[], string, string?, string?][]
 }
 
 /**
- * The banners in UTC: paimon.moe writes times in UTC+8, except the ones
- * that open on each server's own clock (`serverTime`), which `timezone`
- * places.
+ * The banners in UTC for an account whose server clock is `timezone` hours
+ * from UTC. The game runs banners on each server's own clock: a phase ends
+ * at 17:59 or 14:59 there and the next opens at 18:00 there. Only a
+ * version's first banners (`serverTime`, listed at 06:00) open at one
+ * instant everywhere, with the update: that time is UTC+8.
+ *
+ * Measured on the stored histories (2026-11-24, 1,015 limited 5★ pulled on
+ * Europe and America accounts): 12 came after a banner's end read as UTC+8
+ * and none after its end on the server's clock; 217 came before 06:00 on
+ * the server's clock of an update day and none before 06:00 UTC+8; none
+ * came before a second phase's 18:00 on the server's clock.
  */
 export function eventBanners(file: BannerFile, timezone: number): Map<EventKind, EventBanner[]> {
   const out = new Map<EventKind, EventBanner[]>()
-  const utc = (text: string, serverTime: boolean) =>
-    (parseWishTime(text) ?? 0) - (serverTime ? timezone : 8) * 3600
   for (const [
     kind,
     start,
@@ -127,12 +156,13 @@ export function eventBanners(file: BannerFile, timezone: number): Map<EventKind,
     name,
     name400,
   ] of file.banners) {
+    const listed = { start: parseWishTime(start) ?? 0, end: parseWishTime(end) ?? 0 }
     const list = out.get(kind) ?? []
     list.push({
       kind,
-      start: utc(start, serverTime === 1),
-      // A phase ends at one instant everywhere (UTC+8 in the data).
-      end: utc(end, false),
+      start: listed.start - (serverTime === 1 ? 8 : timezone) * 3600,
+      end: listed.end - timezone * 3600,
+      listed,
       featured5,
       featured4,
       version,
@@ -162,10 +192,27 @@ export function bannerAt(banners: readonly EventBanner[], utc: number): EventBan
     const b = banners[i]!
     if (b.start <= utc && utc <= b.end) return b
   }
-  // Between two banners: an update day, where a server's clock opens the
-  // next banner earlier than the data's start says. The one opening soon.
+  // Between two banners (the hours before an update): the one opening soon.
   const next = banners[found + 1]
   return next && next.start - utc < 86_400 ? next : null
+}
+
+/**
+ * The banner next to `on` in time (ended up to a day before `utc`, or
+ * opening up to a day after) that features `key` as a 5★, or null.
+ */
+function neighbourFeaturing(
+  banners: readonly EventBanner[],
+  on: EventBanner,
+  utc: number,
+  key: string,
+): EventBanner | null {
+  for (const b of banners) {
+    if (b === on || !b.featured5.includes(key)) continue
+    const away = utc > b.end ? utc - b.end : b.start > utc ? b.start - utc : 0
+    if (away <= 86_400) return b
+  }
+  return null
 }
 
 // ---------------------------------------------------------------- pity
@@ -179,13 +226,18 @@ export type Outcome = 'won' | 'lost' | 'guaranteed' | 'radiance'
 /**
  * Capturing Radiance (character event banners, since 5.0; never shown in the
  * history, so it is worked out): a counter 0-3 that every account started
- * at 1 on 5.0's first day. A lost 50/50 adds one, a won one takes one off;
+ * at 1 when 5.0 went live. A lost 50/50 adds one, a won one takes one off;
  * at 3 the next 50/50 is always the featured 5★ (that pull is the
- * radiance), and the counter goes back to 1. A win at 2 may also be one
- * (odds unknown, about half): not marked. Community analysis of ~4M pulls
- * (OneBST, 2024-12); the game publishes no rule.
+ * radiance), and the counter goes back to 1. A win below 3 may also be one
+ * (at 2 the 50/50 is won about 58% of the time): not marked, the history
+ * cannot tell. Community analysis of ~4M pulls (OneBST, 2024-12; their 2026
+ * second counter is a fitted guess); the stored histories agree (2026-11-24:
+ * 104 wins of 104 at 3). The game publishes only the three-in-a-row case.
+ *
+ * UTC seconds: 5.0's update, one instant on every server (2024-08-28 06:00
+ * UTC+8, when the servers closed for it; they opened hours later).
  */
-export const RADIANCE_FROM = parseWishTime('2024-08-28 06:00:00')!
+export const RADIANCE_FROM = parseWishTime('2024-08-27 22:00:00')!
 const RADIANCE_MAX = 3
 
 export interface PullRow {
@@ -376,7 +428,13 @@ export function bannerStats(
     pity5++
     pity4++
     const rank = pull.item.rank
-    const on = list ? bannerAt(list, pull.time - options.timezone * 3600) : null
+    const utc = pull.time - options.timezone * 3600
+    let on = list ? bannerAt(list, utc) : null
+    if (rank === 5 && banner === 301 && list && on && pull.item.key) {
+      if (!on.featured5.includes(pull.item.key)) {
+        on = neighbourFeaturing(list, on, utc, pull.item.key) ?? on
+      }
+    }
     let pity = 0
     let outcome: Outcome | null = null
     if (rank === 5 || rank === 4) {
@@ -394,7 +452,7 @@ export function bannerStats(
           outcome = 'lost'
           after = true
         }
-        if (rank === 5 && banner === 301 && pull.time >= RADIANCE_FROM && radiance !== -1) {
+        if (rank === 5 && banner === 301 && utc >= RADIANCE_FROM && radiance !== -1) {
           if (before === null || after === null) radiance = -1
           else if (!before) {
             radiance ??= 1

@@ -1,7 +1,14 @@
 import { characterImages, weaponImages } from '@gdt/game-data/images'
 import { formatWishTime, toGoodKey, type UigfGachaType, type WishItem } from '@gdt/shared'
 import { bannerTitle } from '@/data/wish-banner-names'
-import type { BannerRun, Outcome, PityBand, PullRow } from '@/data/wish-history'
+import {
+  listedEnd,
+  listedStart,
+  type BannerRun,
+  type Outcome,
+  type PityBand,
+  type PullRow,
+} from '@/data/wish-history'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
 import { imageUrl } from '@/lib/assets'
@@ -128,8 +135,8 @@ export function wishMonth(month: string): string {
 }
 
 export function runDates(run: BannerRun, open: boolean, year = thisYear()): string {
-  const start = run.banner.start + 8 * 3600
-  const end = run.banner.end + 8 * 3600
+  const start = listedStart(run.banner)
+  const end = listedEnd(run.banner)
   if (open) return t('wishes.date.range', { from: wishDay(start, year), to: t('wishes.date.now') })
   const endYear = new Date(end * 1000).getUTCFullYear()
   const startYear = new Date(start * 1000).getUTCFullYear()

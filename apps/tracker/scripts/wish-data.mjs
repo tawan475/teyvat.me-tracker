@@ -105,8 +105,9 @@ const keys = (ids) =>
     .filter(Boolean)
 
 /**
- * paimon.moe writes banner times in UTC+8 ("Asia"); `timezoneDependent`
- * ones are the server's own clock instead. Kept as written, with the flag.
+ * Banner times as paimon.moe writes them, with its `timezoneDependent`
+ * flag (a version's first banners). What the flag means for each server's
+ * clock is `eventBanners` in src/data/wish-history.ts.
  */
 const banner = (kind) => (b) => [
   kind,

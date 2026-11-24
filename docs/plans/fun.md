@@ -370,6 +370,16 @@ Later the same day, on randomizer A:
   deleted when it ends), with the user's own and already-shared accounts as
   quick picks and a pasted roster code as the no-server fallback.
 
+- **The party invite is a public link** (the user, later that day):
+  `https://teyvat.me/party/<code>`, a page outside `/app` that opens for
+  anyone, signed in or not, like `/link`. The code in it is the only key, so
+  it is long enough not to be guessed (8 characters, 31-letter alphabet),
+  joins are limited per IP, and the page is `noindex` and disallowed in
+  `robots.txt`. A signed-in visitor picks which of their Genshin accounts to
+  bring; a signed-out one is offered guest mode's roster or sign-in, and can
+  watch the board without joining. The link dies with the party. Typing the
+  code by hand stays possible ("Join by code" on the hub).
+
 ## Design phase
 
 Options A to D for the hub and for the team randomizer, at 390 px and

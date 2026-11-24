@@ -326,6 +326,28 @@ user's call).
 6. The section's name and place: "Fun" after Endgame, with a dice icon?
 7. Does phase 1 bump `y`?
 
+## Decisions
+
+2026-11-24, the user:
+
+- **Hub: A**, the card grid like Collections.
+- **Randomizer: A (stacked) as the base, not final.** The user says something
+  is missing and wants to talk it through first. Nothing is built until that
+  is settled.
+- **Role tags: the hand-kept list** in `genshin-game-data/overrides/`.
+- **Party mode means something else than section 6 assumed.** The user's
+  words: players link up, the randomizer has 1P, 2P, 3P, 4P and picks from
+  their pools; everyone sees which characters the others do not have; the
+  pool that remains is the characters **every** player has (AND); a click on
+  a character bans it. So the party's core is a **shared pool board**, not
+  four private rolls: each player's roster must reach the others. Section 6's
+  option C (a seed only) does not do that by itself. To redesign: how rosters
+  are exchanged (a pool code each player pastes, or a small room that holds up
+  to four roster bitsets), whether bans sync live or belong to the host, and
+  what a roll gives (one character per player, or teams from the common
+  pool). Cost it again once the shape is agreed; the exchange is a few
+  requests per party, far below a live room that stays awake.
+
 ## Design phase
 
 Options A to D for the hub and for the team randomizer, at 390 px and

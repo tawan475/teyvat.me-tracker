@@ -1,7 +1,9 @@
 import {
+  readDeviceAlerts,
   toBase64Url,
   type AccountCreatedResponse,
   type DeviceAlerts,
+  type ImportResponse,
   type PresenceResponse,
   type PresenceResponseForAccount,
   type PushConfigResponse,
@@ -10,15 +12,17 @@ import {
 import { env, runInDurableObject } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
 import { IDLE_NEXT_S, WATCHED_NEXT_S, liveHub, type LiveHub } from '../services/live'
-import { RESIN_STEP_MS } from '../services/alerts'
+import { RESIN_STEP_MS, alertMessage, type AccountFacts } from '../services/alerts'
 import { parseLiveEvent } from '@/live/policy'
 import { PRESENCE_TTL_MS as PAGE_TTL_MS, presenceOf, setPresence } from '@/live/presence-store'
 import {
   PRESENCE_REWRITE_MS,
   PRESENCE_TTL_MS,
+  addFacts,
   heartbeat,
   presenceFor,
   queueCommand,
+  schedule,
   type Heartbeat,
   type HubContext,
 } from '../services/alert-hub'
@@ -594,5 +598,188 @@ describe('Capture presence and commands', () => {
     const { importKey } = await setup()
     expect((await presence(importKey, { state: 'dancing' })).status).toBe(400)
     expect((await presence('gdt_import_nope', { state: 'running' })).status).toBe(401)
+  })
+})
+
+describe('alert facts from live batches', () => {
+  const SESSION = 'SESSIONFORTEST03'
+  const top = 812345678n << 32n
+
+  /** A Capture snapshot that opens the account's journal; then batches on it. */
+  async function liveCapture(importKey: string, takenAt: number) {
+    const good = sampleGood(sampleExtras())
+    const upload = await call(`${ORIGIN}/api/genshin-accounts-public/import-by-key`, {
+      method: 'POST',
+      headers: { 'x-import-key': importKey },
+      body: irminsulForm(
+        {
+          ...good,
+          artifacts: good.artifacts.map((a, i) => ({
+            ...a,
+            gi_guid: String(top + BigInt(100 + i)),
+          })),
+          weapons: good.weapons.map((w, i) => ({ ...w, gi_guid: String(top + BigInt(500 + i)) })),
+          gi_capture: { v: 1, reason: 'login', session: SESSION, world: 1, journal: { seq: 0 } },
+        },
+        takenAt,
+      ),
+    })
+    expect(upload.status).toBe(201)
+    const base = ((await upload.json()) as ImportResponse).live!.base
+    let seq = 0
+    /** One batch of `changes` built at `at`, waiting for what it does after answering. */
+    return async (changes: unknown[], at = Date.now()) => {
+      seq++
+      const sent = await call(`${ORIGIN}/api/irminsul/changes`, {
+        method: 'POST',
+        headers: { 'x-import-key': importKey, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          format: 'GOOD-X-delta',
+          v: 1,
+          uid: 812345678,
+          session: SESSION,
+          seq,
+          base,
+          at,
+          changes,
+        }),
+      })
+      expect(sent.status).toBe(200)
+      expect(await sent.json()).toMatchObject({ ok: true, seq })
+    }
+  }
+
+  /** What the user's hub was told since it woke, and the account's kept facts. */
+  const hubState = (userId: number, accountId: number) =>
+    runInDurableObject(liveHub(env, userId), async (hub: LiveHub, state) => ({
+      calls: hub.liveBatches,
+      facts: hub.factsTold,
+      notified: hub.notified,
+      kept: await state.storage.get<AccountFacts>(`facts:${accountId}`),
+    }))
+
+  const MORA = ['set', ['materials', 'Mora'], 123_456]
+  const resin = (value: number) => ['set', ['gi_player', 'resin'], value]
+
+  it('tells the hub only a batch with a fact, in one call, and a rename with the next fact', async () => {
+    const { client, me, account, importKey } = await setup()
+    await subscribe(client)
+    const batch = await liveCapture(importKey, Date.now() - 60_000)
+    const start = await hubState(me.id, account.id)
+    expect(start.kept).toMatchObject({ name: 'Main' })
+
+    // No page open, nothing an alert reads: no call to the hub at all.
+    await batch([MORA])
+    expect(await hubState(me.id, account.id)).toEqual(start)
+
+    // Renamed: the name waits for the next batch with a fact.
+    await client.fetch(`/api/accounts/${account.id}`, { method: 'PATCH', json: { name: 'Alt' } })
+    await batch([MORA])
+    expect((await hubState(me.id, account.id)).kept).toMatchObject({ name: 'Main' })
+
+    const now = Date.now()
+    await batch([MORA, resin(150)], now)
+    const told = await hubState(me.id, account.id)
+    expect(told).toMatchObject({ calls: start.calls + 1, facts: start.facts + 1 })
+    expect(told.kept).toMatchObject({ name: 'Alt', resin: { value: 150, at: now } })
+    // Resin full in 50 steps: the alarm is there.
+    const full = now + 50 * RESIN_STEP_MS
+    expect(await liveHub(env, me.id).alarmAt()).toBe(full)
+
+    // A page open: the event and the facts go in one call.
+    const tab = await client.fetch('/api/live', {
+      headers: { upgrade: 'websocket', origin: ORIGIN },
+    })
+    const socket = tab.webSocket!
+    socket.accept()
+    const before = await hubState(me.id, account.id)
+    // Nothing for alerts: the event alone, and no storage row changes.
+    await batch([MORA])
+    const quiet = await hubState(me.id, account.id)
+    expect(quiet).toMatchObject({
+      calls: before.calls + 1,
+      facts: before.facts,
+      notified: before.notified + 1,
+    })
+    expect(quiet.kept).toEqual(before.kept)
+    // A fact too: still one call.
+    await batch([resin(151)], now + RESIN_STEP_MS)
+    expect(await hubState(me.id, account.id)).toMatchObject({
+      calls: before.calls + 2,
+      facts: before.facts + 1,
+      notified: before.notified + 2,
+    })
+    socket.close()
+
+    // The same full time (151 one step later): the alarm stays where it was.
+    expect(await liveHub(env, me.id).alarmAt()).toBe(full)
+
+    // Due: sent, with the account's new name in its text.
+    const service = pushService()
+    const report = await runInDurableObject(liveHub(env, me.id), async (object: LiveHub) => {
+      object.clock = () => full + 1_000
+      object.fetcher = service.fetcher
+      return object.fireNow()
+    })
+    expect(report).toMatchObject({ sent: 1 })
+    const kept = (await hubState(me.id, account.id)).kept!
+    const message = alertMessage({ kind: 'resinFull', key: `resinFull:${full}`, at: full }, kept, {
+      lang: 'en',
+      tz: 'UTC',
+      accountId: account.id,
+      now: full + 1_000,
+    })
+    expect(message.body.startsWith('Alt · ')).toBe(true)
+  })
+
+  it('sets the alarm only when the time it should go off at moves', async () => {
+    let sets = 0
+    let deletes = 0
+    let alarm: number | null = null
+    const map = new Map<string, unknown>([
+      ['devices', [{ sid: 1, alerts: readDeviceAlerts({ resinFull: true }) }]],
+    ])
+    const clock = { now: 1_800_000_000_000 }
+    const storage = {
+      get: async (key: string) => structuredClone(map.get(key)),
+      put: async (key: string, value: unknown) => void map.set(key, structuredClone(value)),
+      delete: async (key: string) => map.delete(key),
+      list: async ({ prefix }: { prefix: string }) =>
+        new Map([...map].filter(([key]) => key.startsWith(prefix))),
+      getAlarm: async () => alarm,
+      setAlarm: async (at: number) => {
+        sets++
+        alarm = at
+      },
+      deleteAlarm: async () => {
+        deletes++
+        alarm = null
+      },
+    }
+    const hub = {
+      storage: storage as unknown as DurableObjectStorage,
+      db: env.DB,
+      vars: {},
+      now: () => clock.now,
+    } as unknown as HubContext
+    const start = clock.now
+    const full = start + 50 * RESIN_STEP_MS
+    await addFacts(hub, 7, { resin: { value: 150, at: start } })
+    expect(await schedule(hub)).toBe(full)
+    expect([sets, alarm]).toEqual([1, full])
+    // A count on the same grid, and time passing: the same full time, no write.
+    await addFacts(hub, 7, { resin: { value: 151, at: start + RESIN_STEP_MS } })
+    clock.now += 60_000
+    await schedule(hub)
+    expect(sets).toBe(1)
+    // Resin spent: later.
+    await addFacts(hub, 7, { resin: { value: 100, at: start + 2 * RESIN_STEP_MS } })
+    await schedule(hub)
+    expect([sets, alarm]).toEqual([2, start + 102 * RESIN_STEP_MS])
+    // Nothing coming (no device): cleared once, then left alone.
+    map.set('devices', [])
+    await schedule(hub)
+    await schedule(hub)
+    expect([deletes, alarm]).toEqual([1, null])
   })
 })

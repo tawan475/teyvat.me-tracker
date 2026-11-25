@@ -98,13 +98,15 @@ irminsul counts changes since its last batch and sends when (first match wins):
 | big | pending changes ≥ 2,000 (at once) |
 | normal | ≥ 15 s since the last batch **and** ≥ 5 changes |
 | important | ≥ 15 s **and** an important change (level, ascension, talent, constellation, refinement, a new 5★ item) |
-| someone watching | ≥ 15 s **and** ≥ 1 change, while the server says a tracker tab is open |
+| someone watching | ≥ 15 s **and** ≥ 1 change, while the server says a tracker page is in view (`watching`; see §13) |
 | lone change | ≥ 2 min **and** ≥ 1 change |
 
 **Teyvat.me Capture 1.18.0 (2026-11-20, Capture 9deb092):** while the tracker answers
 `watching: true`, batches are 5 s apart (not watched: 15 s as above), and a batch waits until
 the changes have rested 1 s (3 s at most). At most 12 batches a minute per account, inside
 `LIVE_LIMITER` (20/60 s); the 2,000 a day limit is unchanged. The wire format is unchanged.
+Since 2026-11-26 `watching` means a page is **in view**, not merely open: a forgotten
+background tab no longer triples the batches (§13).
 
 No change → no traffic: an AFK day sends nothing. "Changes" counts distinct keys (a
 material changed twice is one change), not packets.
@@ -389,7 +391,7 @@ struct LiveSender {
     last_sent: Instant,
     pending: usize,      // distinct keys touched since the last batch (cheap estimate)
     important: bool,     // a level/ascension/talent/const/refine/new 5★ since the last batch
-    watching: bool,      // the tracker's last answer: a tab is open
+    watching: bool,      // the tracker's last answer: a page is in view (§13)
     acked: Option<Acked>,
     retry: Backoff,      // 15 s → 2 min after a failure; changes stay pending
 }
@@ -557,8 +559,8 @@ export const liveChanges = new Hono<AppEnv>().post('/changes', async (c) => {
 
   const collapse =
     now - journal.opened_at > COLLAPSE_AFTER_MS && journal.changes > COLLAPSE_CHANGES
-  const watching = account.liveSince !== null           // users.live_since, read with the account
-  if (watching) notifyUser(c, account.userId, { type: 'live', accountId: account.id, seq: delta.seq })
+  // As built (§13): a page in view, not just open; the hubs that get the event answer it.
+  const watching = await tellLiveBatch(c, listeners, account.id, event, facts)
   return c.json({ ok: true, seq: delta.seq, collapse, watching })
 })
 ```
@@ -824,7 +826,7 @@ keys that vanish are `del` (never `set 0`). Answers:
 
 | answer | irminsul does |
 |---|---|
-| 200 `{ok: true, seq, collapse, watching}` | stored; `collapse: true` → snapshot (`collapse`) |
+| 200 `{ok: true, seq, collapse, watching}` | stored; `collapse: true` → snapshot (`collapse`); `watching: true` → batches 5 s apart (§3) |
 | 200 `{ok: true, duplicate: true, seq}` | a retry of a stored batch: carry on |
 | 200 `{ok: false, live: false}` | live sync is off: snapshot mode (snapshot now, `change`) |
 | 409 `resync` | snapshot (`resync`), then batches on its `live.base` |
@@ -832,6 +834,22 @@ keys that vanish are `del` (never `set 0`). Answers:
 | 429 `daily_live_limit` | snapshot mode until the next UTC day |
 | 429 `rate_limited`, 5xx, network | keep the changes pending, retry with backoff (15 s → 2 min) |
 | 401 / 403 | as for an import |
+
+`watching` (since 2026-11-26): a page of someone who can see the account is **in view**
+(a visible tab in any of their browsers), the same notion as the presence heartbeat's
+short `next` (`worker/services/live.ts` `IN_VIEW_MS`). The socket holder in each browser
+sends `shown` / `hidden` on its socket when the browser goes from a visible tab to none
+or back (each tab says `view` on the tab channel when shown, hidden or closed) and once
+per new socket, never on a timer; the hub keeps the word on the socket's attachment and
+stays hibernating. A socket counts while it has not said `hidden` and connected, said
+`shown` or pinged in the last 6 minutes (a visible tab pings every 5): out of view at once
+when the last tab hides or closes, at most 6 minutes after a browser dies while shown;
+browsers from before the message count by connect and ping times alone. The route learns
+it from the one hub call it makes per listening user (`LiveHub.liveBatch`, the event and
+any alert facts together), awaited; a failed call counts as not in view. Hidden tabs still
+get every batch on their socket and apply it, so a tab shown again is current with no read;
+a lost socket's reconnect `hello` carries the journals' places. The import answer's
+`live.watching` still says only that a page is open (it holds until the first batch's answer).
 
 The server checks `base` = the journal's base, `session` = the journal's session (the
 snapshot's `gi_capture.session`; a snapshot without one opens a journal any session may

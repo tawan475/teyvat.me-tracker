@@ -830,6 +830,11 @@ session's newest snapshot (§13.5, Capture 1.17.21).
 - **Reading**: `GET /api/accounts/:id/live` (merged changes, ETag
   base + seq), `GET /api/accounts/:id/points?from=&to=`; `DELETE` either.
   Live socket event `{type: "live", accountId, seq}`.
+- **`watching`** (a batch's answer; Capture then sends every 5 s, else 15 s):
+  a page is **in view**, not just open. Each browser's socket says `shown` /
+  `hidden` when it goes from a visible tab to none or back (never on a timer);
+  one hub call per listening user carries the event and any alert facts and
+  answers it (§13 of the plan). Hidden tabs still get every batch.
 
 </details>
 
@@ -1076,8 +1081,9 @@ Plan and contract: `docs/plans/capture-link.md`.
   picks what it gets (resin at an amount, resin full, expeditions back, Welkin
   ending, commissions not done at 22:00, nothing bought at Paimon's Bargains 3
   days before the month turns; quiet while playing). The user's `LiveHub`
-  keeps each account's facts (from imports, live batches and the Planner's
-  `POST /api/accounts/:id/alert-facts`) and one alarm at the earliest alert
+  keeps each account's facts (from imports, live batches that carry one, and
+  the Planner's `POST /api/accounts/:id/alert-facts`) and one alarm at the
+  earliest alert, moved only when that time changes
   (`worker/services/alerts.ts` when, `alert-hub.ts` storage and sending,
   `worker/lib/web-push.ts` RFC 8291/8292 by hand). Texts come from the site's
   own translations (`alert-text.json`, checked by a test). Off until the

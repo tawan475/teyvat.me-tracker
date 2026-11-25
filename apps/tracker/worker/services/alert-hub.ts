@@ -200,8 +200,18 @@ export async function schedule(hub: HubContext): Promise<number | null> {
       }
     }
   }
-  if (earliest === null) await hub.storage.deleteAlarm()
-  else await hub.storage.setAlarm(Math.max(earliest, now + 1_000))
+  // The alarm is set or cleared only when where it should be moves: most
+  // facts (a resin count on the same 8-minute grid, say) leave it in place.
+  const set = await hub.storage.getAlarm()
+  if (earliest === null) {
+    if (set !== null) await hub.storage.deleteAlarm()
+  } else {
+    const at = Math.max(earliest, now + 1_000)
+    // An alert already due: an alarm set to go off within the second does
+    // (one in the past, the alarm running now, is set again).
+    const firing = earliest <= now + 1_000 && set !== null && set >= now && set <= now + 1_000
+    if (set !== at && !firing) await hub.storage.setAlarm(at)
+  }
   return earliest
 }
 

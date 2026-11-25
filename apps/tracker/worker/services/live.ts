@@ -74,7 +74,18 @@ interface Attachment {
   sid?: number | null
   /** When it connected (ms); sockets from before this field count as connected long ago. */
   at?: number
+  /**
+   * What the browser last said of itself (`shown`: some tab of it is in
+   * view; `hidden`: none is), sent only when that changes; absent from
+   * browsers built before the message (they count by connect and ping times).
+   */
+  view?: 'shown' | 'hidden'
+  /** When `view` was said (ms). */
+  viewAt?: number
 }
+
+/** A browser's word on its tabs (src/live/policy.ts VIEW_SHOWN / VIEW_HIDDEN). */
+const VIEW_MESSAGES = new Set(['shown', 'hidden'])
 
 /**
  * Capture's heartbeat interval (s): short while a page is in view, so a
@@ -88,11 +99,16 @@ interface Attachment {
 export const WATCHED_NEXT_S = 60
 export const IDLE_NEXT_S = 600
 /**
- * A socket counts as in view while it connected or pinged this recently: a
- * visible tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden
- * one never.
+ * "A page is in view" (one notion for Capture's heartbeat `next` and a live
+ * batch's `watching`): some open socket whose browser has not said `hidden`
+ * since, and that connected, said `shown` or pinged this recently. A visible
+ * tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden one never,
+ * so a browser that crashed while shown counts at most this long after its
+ * last ping; one that hides its last tab says so at once, and a closed one's
+ * socket is gone. Browsers from before the `shown`/`hidden` message count by
+ * connect and ping times alone (in view up to this long after hiding).
  */
-const IN_VIEW_MS = 6 * 60_000
+export const IN_VIEW_MS = 6 * 60_000
 
 /** One user who can see an account (its owner or a member), as a write's batch read them. */
 export interface Listener {
@@ -324,9 +340,33 @@ export class LiveHub extends DurableObject<Env> {
 
   /** A write told the facts alerts are worked out from: keep them, move the alarm. */
   async alertFacts(userId: number, accountId: number, update: FactsUpdate): Promise<void> {
+    this.factsTold++
     await rememberUser(this.hub, userId)
     await addFacts(this.hub, accountId, update)
     await schedule(this.hub)
+  }
+
+  /** Alert facts this instance was told, and live batch calls it took, since it woke (tests). */
+  factsTold = 0
+  liveBatches = 0
+
+  /**
+   * A live batch (routes/live-sync.ts), in one call for both parts it may
+   * bring: its event for the sockets (`event`, sockets of a session older than
+   * `tokenVersion` closed instead) and the alert facts it carries (`facts`,
+   * only when it has some). Answers whether a page of the user's is in view
+   * (the batch's `watching`).
+   */
+  async liveBatch(
+    userId: number,
+    accountId: number,
+    input: { event?: LiveEvent; tokenVersion?: number; facts?: FactsUpdate },
+  ): Promise<{ inView: boolean }> {
+    this.liveBatches++
+    if (input.event) await this.notify(userId, input.event, input.tokenVersion)
+    const inView = this.inView()
+    if (input.facts) await this.alertFacts(userId, accountId, input.facts)
+    return { inView }
   }
 
   /** A device's alerts or push subscription changed: read them again, move the alarm. */
@@ -406,7 +446,21 @@ export class LiveHub extends DurableObject<Env> {
   }
 
   override async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
-    // Only the keep-alive is expected, and the auto-response normally answers it.
+    if (typeof message === 'string' && VIEW_MESSAGES.has(message)) {
+      // The browser's tabs went out of view, or one came back (sent only on
+      // that change): kept on the socket, what `inView` reads.
+      try {
+        socket.serializeAttachment({
+          ...attachment(socket),
+          view: message as 'shown' | 'hidden',
+          viewAt: Date.now(),
+        } satisfies Attachment)
+      } catch {
+        // Closing already.
+      }
+      return
+    }
+    // Otherwise only the keep-alive is expected, and the auto-response normally answers it.
     if (message !== 'ping') return
     try {
       socket.send('pong')
@@ -434,12 +488,14 @@ export class LiveHub extends DurableObject<Env> {
     await this.release(attachment(socket).userId, socket)
   }
 
-  /** Whether some page of the user's is in view (connected or pinged lately). */
-  private inView(): boolean {
+  /** Whether some page of the user's is in view (see IN_VIEW_MS). */
+  inView(): boolean {
     const since = Date.now() - IN_VIEW_MS
     return this.open().some((ws) => {
+      const { at, view, viewAt } = attachment(ws)
+      if (view === 'hidden') return false
       const pinged = this.ctx.getWebSocketAutoResponseTimestamp(ws)?.getTime() ?? 0
-      return Math.max(attachment(ws).at ?? 0, pinged) > since
+      return Math.max(at ?? 0, viewAt ?? 0, pinged) > since
     })
   }
 
@@ -612,6 +668,57 @@ export function tellAlertFacts(
         .catch((error: unknown) => console.warn('alert_facts_failed', String(error))),
     )
   }
+}
+
+/**
+ * A live batch's event and alert facts for everyone who can see the account
+ * (routes/live-sync.ts): one hub call per user that has a socket open or
+ * wants these facts, none for anyone else. `facts` is empty when the batch
+ * holds nothing an alert depends on; then no hub hears of it for alerts.
+ * Answers the batch's `watching`: whether a page of any listener is in view
+ * (docs/plans/live-sync.md §13). For that it waits for the hubs of users with
+ * a socket open (the call they always had, now awaited); a hub that fails
+ * counts as not in view and never fails the request. Facts-only calls run
+ * after the response.
+ */
+export async function tellLiveBatch(
+  c: Context<AppEnv>,
+  listeners: Listener[] | undefined,
+  accountId: number,
+  event: LiveEvent,
+  facts: FactsUpdate,
+): Promise<boolean> {
+  if (!c.env.LIVE || !listeners) return false
+  const withFacts = Object.keys(facts).length > 0
+  // The write's bookmarks: the page reads from a replica that has it.
+  const marked: LiveEvent = { ...event, ...requestBookmarks(c) }
+  const asked: Promise<boolean>[] = []
+  for (const listener of listeners) {
+    const send = listener.live
+    const tell = withFacts && listener.alerts === true
+    if (!send && !tell) continue
+    const call = liveHub(c.env, listener.userId).liveBatch(listener.userId, accountId, {
+      ...(send ? { event: marked, tokenVersion: listener.tokenVersion } : {}),
+      ...(tell ? { facts } : {}),
+    })
+    if (send) {
+      asked.push(
+        call.then(
+          (answer) => answer.inView,
+          (error: unknown) => {
+            console.warn('live_notify_failed', String(error))
+            return false
+          },
+        ),
+      )
+    } else {
+      afterResponse(
+        c,
+        call.catch((error: unknown) => console.warn('alert_facts_failed', String(error))),
+      )
+    }
+  }
+  return (await Promise.all(asked)).some(Boolean)
 }
 
 /**

@@ -27,7 +27,11 @@ Three parts, agreed with the user on 2026-10-31 ("do all"):
   next alert of any device.
 - Facts arrive from the writes that change them: snapshot imports (the newest
   only), live batches (`gi_player.resin`, `gi_tasks.*`), the resin set by hand
-  (account setting `resin`) and planner task ticks.
+  (account setting `resin`) and planner task ticks. A live batch tells the hub
+  only when it holds such a fact (since 2026-11-26; the account's name, UID and
+  server ride along with one, so a rename reaches the alert text at the next
+  real fact), in the same hub call as its socket event when the user has a page
+  open. The hub moves its alarm only when the time it should go off at changes.
 - Web Push: VAPID (RFC 8292) and `aes128gcm` payloads (RFC 8291) by hand with
   WebCrypto (`worker/lib/web-push.ts`). On only when both Worker secrets
   `VAPID_PUBLIC_KEY` (base64url, 65-byte uncompressed P-256 point) and
@@ -83,8 +87,9 @@ every `next` seconds. Answer (200):
 }
 ```
 
-- `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket that
-  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 600 (300 until 2026-11-26;
+- `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket whose
+  browser has not said `hidden` and that connected, said `shown` or pinged in the last 6 minutes; hidden tabs don't
+  ping; the same notion as a live batch's `watching`, live-sync.md §13), else 600 (300 until 2026-11-26;
   120 until 2026-11-02: still ~40% of the Worker's requests). Capture builds up to the one that
   raised its cap hold `next` to at most 300, so they keep beating every 300 s against 600.
   Before 2026-11-01 it was 15 while any socket was open, else 60

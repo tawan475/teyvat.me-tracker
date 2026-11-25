@@ -1,12 +1,14 @@
-import { SELF } from 'cloudflare:test'
+import { env, SELF } from 'cloudflare:test'
 import {
   asLeyline,
   catalogFromRows,
+  catalogRolls,
   decodeBundle,
   BlobDecoder,
   decodeSnapshot,
   holdsPartKeys,
   kindCode,
+  rollValue,
   storedSnapshotOf,
   type AccountResponse,
   type AccountSettingsResponse,
@@ -120,6 +122,7 @@ function decodedFiles(bundle: ArrayBuffer, rows: CatalogRow[]) {
             storedSnapshotOf(s, (key) => decoded.texts.get(key)!),
             catalog,
             MATERIALS,
+            catalogRolls(catalog),
           ),
         ),
       ),
@@ -644,6 +647,182 @@ describe('guest store', () => {
     ).rejects.toThrow('no')
     await one.ready()
     expect(one.state.has('c')).toBe(false)
+  })
+})
+
+describe('exact rolls in the guest store', () => {
+  type Loose = Record<string, any>
+  const KEYS = ['critRate_', 'critDMG_', 'atk_', 'eleMas'] as const
+  const shown = (key: string, n: number) =>
+    key.endsWith('_') ? Math.round(n * 10) / 10 : Math.round(n)
+  /** A made-up 5★ +20 and its gi_rolls, from `pairs` (line, tier) in game order. */
+  const piece = (pairs: [number, number][], slotKey: string): Loose => {
+    const substats = KEYS.map((key, line) => {
+      const tiers = pairs.filter(([l]) => l === line).map(([, t]) => t)
+      const sum = tiers.reduce((total, t) => total + rollValue(key, 5, t)!, 0)
+      return {
+        key,
+        value: shown(key, sum),
+        initialValue: shown(key, rollValue(key, 5, tiers[0]!)!),
+      }
+    })
+    return {
+      setKey: 'GladiatorsFinale',
+      slotKey,
+      level: 20,
+      rarity: 5,
+      mainStatKey: 'hp',
+      location: '',
+      lock: false,
+      astralMark: false,
+      elixirCrafted: false,
+      totalRolls: pairs.length,
+      substats,
+      unactivatedSubstats: [],
+      gi_rolls: pairs.map(([l, t]) => `${l}${t}`).join(''),
+    }
+  }
+  const pairs = (text: string) =>
+    text.match(/../g)!.map((p) => [Number(p[0]), Number(p[1])] as [number, number])
+  const P1 = piece(pairs('041322310412243314'), 'flower')
+  // P1 again, its rolls listed in another order across lines: the same piece.
+  const P1B = piece(pairs('041322311204243314'), 'flower')
+  const P2 = piece(pairs('011121310203142234'), 'plume')
+  const P3 = piece(pairs('031323333121110102'), 'sands')
+  const P4 = piece(pairs('021222320414243423'), 'goblet')
+  const bare = ({ gi_rolls: _, ...a }: Loose) => a
+  const big = bigGood()
+  const shot = (artifacts: Loose[], mora = 1): Good =>
+    ({
+      ...big,
+      artifacts: [...big.artifacts, ...artifacts],
+      materials: { ...big.materials, Mora: mora },
+    }) as Good
+
+  /** Each made-up piece's rolls in a catalog answer (the eleventh element), by slot. */
+  const rollsOf = (rows: CatalogRow[]) =>
+    Object.fromEntries(
+      rows.filter((r) => r[1] === 'GladiatorsFinale').map((r) => [r[2], r[10] ?? null]),
+    )
+
+  async function setSwitch(value: string | null): Promise<void> {
+    if (value === null) {
+      await env.DB.prepare("DELETE FROM site_settings WHERE key = 'rolls.store'").run()
+    } else {
+      await env.DB.prepare(
+        `INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', ?1, 0)
+         ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+      )
+        .bind(value)
+        .run()
+    }
+  }
+  afterEach(() => setSwitch(null))
+
+  it('stores, fills and exports rolls as the server does with its switch on', async () => {
+    expect(P1B.substats).toEqual(P1.substats)
+    expect(P1B.gi_rolls).not.toBe(P1.gi_rolls)
+    await setSwitch('1')
+    const { client, account, upload } = await serverAccount()
+    const steps: [Good, number, string][] = [
+      // New pieces: P1 with its rolls, P2 and P4 without.
+      [shot([P1, bare(P2), bare(P4)]), 1_000, 'created'],
+      // The same capture again, now with P2's rolls: a no-op, nothing filled.
+      [shot([P1, P2, bare(P4)]), 1_000, 'unchanged'],
+    ]
+    for (const [good, at, status] of steps) {
+      const [there, here] = [await upload(good, at), await importLocal(good, at)]
+      expect([here.status, there.status]).toEqual([status, status])
+    }
+    const afterRetry = await localJson<CatalogRow[]>('/catalog')
+    expect(rollsOf(afterRetry)).toEqual({ flower: P1.gi_rolls, plume: null, goblet: null })
+
+    // Seen again later with P2's rolls: filled.
+    const seen = shot([P1, P2, bare(P4)])
+    expect([(await importLocal(seen, 2_000)).status, (await upload(seen, 2_000)).status]).toEqual([
+      'unchanged',
+      'unchanged',
+    ])
+    const afterSeen = await localJson<CatalogRow[]>('/catalog')
+    expect(rollsOf(afterSeen)).toEqual({ flower: P1.gi_rolls, plume: P2.gi_rolls, goblet: null })
+    expect(afterSeen).toEqual(
+      (await client.json<CatalogRow[]>(`/api/accounts/${account.id}/catalog`)).map((r, i) => [
+        afterSeen[i]![0],
+        ...r.slice(1),
+      ]),
+    )
+    // A new capture: P4's rolls filled, P3 new with its own, and P1 listed in
+    // another order is never written over.
+    const next = shot([P1B, P2, P4, P3], 2)
+    expect([(await importLocal(next, 3_000)).status, (await upload(next, 3_000)).status]).toEqual([
+      'created',
+      'created',
+    ])
+    const [there, here] = [await serverExports(client, account.id), await localExports()]
+    expect(rollsOf(here.rows)).toEqual({
+      flower: P1.gi_rolls,
+      plume: P2.gi_rolls,
+      goblet: P4.gi_rolls,
+      sands: P3.gi_rolls,
+    })
+    expect(here.rows.map((r) => r.slice(1))).toEqual(there.rows.map((r) => r.slice(1)))
+    expect(here.goods).toEqual(there.goods)
+    expect(here.files).toEqual(there.files)
+    expect(here.files).toEqual(here.goods)
+    // The newest GOOD carries every piece's rolls, as the server's does.
+    const newest = JSON.parse(here.goods.at(-1)!) as Good
+    const given = Object.fromEntries(
+      newest.artifacts
+        .filter((a) => a.setKey === 'GladiatorsFinale')
+        .map((a) => [a.slotKey, a.gi_rolls]),
+    )
+    expect(given).toEqual({
+      flower: P1.gi_rolls,
+      plume: P2.gi_rolls,
+      goblet: P4.gi_rolls,
+      sands: P3.gi_rolls,
+    })
+  })
+
+  it('opens rows stored before rolls existed, and fills them later', async () => {
+    await importLocal(shot([bare(P1)]), 1_000)
+    // A row as written before this change: no rolls key at all.
+    const [row] = [
+      ...(store as unknown as { artifacts: Map<number, Loose> }).artifacts.values(),
+    ].filter((r) => r.identity.setKey === 'GladiatorsFinale')
+    expect(row).not.toHaveProperty('rolls')
+    const reopened = new LocalStore(
+      (store as unknown as { backend: unknown }).backend,
+    ) as unknown as { ready(): Promise<unknown>; artifacts: Map<number, Loose> }
+    await reopened.ready()
+    expect(reopened.artifacts.size).toBe(
+      (store as unknown as { artifacts: Map<number, Loose> }).artifacts.size,
+    )
+    await importLocal(shot([P1]), 2_000)
+    expect(rollsOf(await localJson<CatalogRow[]>('/catalog'))).toEqual({ flower: P1.gi_rolls })
+  })
+
+  it('names the guest only from gi_player with its own UID', async () => {
+    const [[good, at]] = sequence() as [[Good, number]]
+    const upload = (file: object, time: number) =>
+      guestModules.importLocal(store, { text: JSON.stringify(file), rawSize: 1, timestamp: time })
+    // gi_player without a UID (GGScanner's metadata.uid used instead): no name.
+    const { uid: _, ...noUid } = good.gi_player!
+    await upload(
+      { ...good, gi_player: { ...noUid, nickname: 'player01' }, metadata: { uid: '812345678' } },
+      at,
+    )
+    expect(await localJson<AccountResponse>('')).toMatchObject({ uid: '812345678', name: null })
+    // gi_player's own UID: named.
+    await upload(
+      {
+        ...good,
+        materials: { ...good.materials, Mora: 2 },
+        gi_player: { ...good.gi_player!, uid: 812345678, nickname: 'player01' },
+      },
+      at + 1,
+    )
+    expect(await localJson<AccountResponse>('')).toMatchObject({ name: 'player01' })
   })
 })
 

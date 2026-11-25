@@ -29,6 +29,7 @@ import {
   type Good,
   type KeyDictionary,
   type RawBlob,
+  type RollsText,
   type SnapshotResponse,
   type Slot,
 } from '@gdt/shared'
@@ -109,22 +110,26 @@ const substatRows = (list: ArtifactIdentity['substats']) =>
     s.initialValue === undefined ? [s.key, s.value] : [s.key, s.value, s.initialValue],
   ) as CatalogRow[6]
 
-/** The whole catalog, ordered by id. */
+/** The whole catalog, ordered by id; the eleventh element (rolls) only for a piece that has them. */
 export function catalogRows(store: LocalStore): CatalogRow[] {
   return [...store.artifacts.values()]
     .sort((a, b) => a.id - b.id)
-    .map(({ id, identity: a }) => [
-      id,
-      a.setKey,
-      a.slotKey,
-      a.level,
-      a.rarity,
-      a.mainStatKey,
-      substatRows(a.substats),
-      a.totalRolls,
-      a.elixirCrafted ? 1 : 0,
-      substatRows(a.unactivatedSubstats),
-    ])
+    .map(({ id, identity: a, rolls }) => {
+      const row: CatalogRow = [
+        id,
+        a.setKey,
+        a.slotKey,
+        a.level,
+        a.rarity,
+        a.mainStatKey,
+        substatRows(a.substats),
+        a.totalRolls,
+        a.elixirCrafted ? 1 : 0,
+        substatRows(a.unactivatedSubstats),
+      ]
+      if (rolls !== undefined) row.push(rolls)
+      return row
+    })
 }
 
 /** The base a delta-kind blob is a delta of (null when stored in full). */
@@ -259,11 +264,16 @@ export async function buildGood(
     ).map((entry) => entry[0]),
   )
   const catalog = new Map<number, ArtifactIdentity>()
+  const rolls = new Map<number, RollsText>()
   for (const id of used) {
     const entry = store.artifacts.get(id)
     if (entry) catalog.set(id, entry.identity)
+    if (entry?.rolls !== undefined) rolls.set(id, entry.rolls)
   }
-  return { good: asLeyline(decodeSnapshot(stored, catalog, materials)), takenAt: row.takenAt }
+  return {
+    good: asLeyline(decodeSnapshot(stored, catalog, materials, rolls)),
+    takenAt: row.takenAt,
+  }
 }
 
 /** Every blob the remaining snapshots need (bases included); the rest can go. */

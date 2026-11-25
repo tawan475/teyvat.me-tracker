@@ -17,6 +17,7 @@ import { liveVersions } from '@/live/journal'
 import {
   artifactRows,
   catalogFromRows,
+  catalogRolls,
   decodePlayer,
   decodeSnapshot,
   storedSnapshotOf,
@@ -27,6 +28,7 @@ import {
   type KeyDictionary,
   type LiveJournalResponse,
   type OffSection,
+  type RollsText,
   type SnapshotResponse,
   type SnapshotSummary,
 } from '@gdt/shared'
@@ -264,7 +266,20 @@ export function loadMaterialsDictionary(): Promise<KeyDictionary> {
   return materialsDictionary
 }
 
-/** Rebuilds the GOOD file for one snapshot of a full bundle. */
+const rollsCache = new WeakMap<ReadonlyMap<number, CatalogEntry>, Map<number, RollsText>>()
+
+/** The rolls a catalog knows, by id (made once per catalog: the catalogs are cached). */
+function rollsOf(catalog: ReadonlyMap<number, CatalogEntry>): Map<number, RollsText> {
+  let rolls = rollsCache.get(catalog)
+  if (!rolls) rollsCache.set(catalog, (rolls = catalogRolls(catalog)))
+  return rolls
+}
+
+/**
+ * Rebuilds the GOOD file for one snapshot of a full bundle: its artifacts
+ * carry `gi_rolls` where the catalog knows their rolls in game order, as the
+ * server's GOOD export does.
+ */
 export function decodeBundleSnapshot(
   snapshot: BundleSnapshot,
   bundle: DecodedBundle,
@@ -276,7 +291,7 @@ export function decodeBundleSnapshot(
     if (value === undefined) throw new Error(`Bundle is missing section ${hash}`)
     return value
   }
-  return decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, materials)
+  return decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, materials, rollsOf(catalog))
 }
 
 export interface Inventory {

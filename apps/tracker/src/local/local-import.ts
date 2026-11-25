@@ -21,6 +21,7 @@ import {
   encodeSnapshotMeta,
   encodeStaticSections,
   lastRemoval,
+  needsFill,
   planSnapshotV2,
   RECENT_ANCHORS,
   prepareSnapshot,
@@ -35,9 +36,10 @@ import {
   type KeyDictionary,
   type KnownBlob,
   type PreparedSnapshot,
+  type RollsText,
 } from '@gdt/shared'
 import { FolderForgottenError, LocalApiError, OtherUidError } from './errors'
-import type { BlobRow, LocalStore, SnapshotRow, Transaction } from './local-store'
+import type { ArtifactRow, BlobRow, LocalStore, SnapshotRow, Transaction } from './local-store'
 
 let materials: Promise<KeyDictionary> | null = null
 function materialsDictionary(): Promise<KeyDictionary> {
@@ -191,7 +193,9 @@ function fillAccount(tx: Transaction, prepared: PreparedSnapshot): void {
       account.server = server
       changed = true
     }
-    if (player?.nickname && !account.name) {
+    // The name only when the UID used is gi_player's own (as the Worker): a
+    // file whose UID came from GGScanner's metadata.uid names nothing.
+    if (player?.uid !== undefined && player.nickname && !account.name) {
       account.name = player.nickname.slice(0, 64)
       changed = true
     }
@@ -245,17 +249,33 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
 
     // Catalog ids: known identities by packed key, new ones numbered on.
     const identities = new Map<string, ArtifactIdentity>()
+    // Each identity's rolls: its first piece whose rolls passed the check
+    // (prepareSnapshot drops any that do not), as the Worker keeps them.
+    const incomingRolls = new Map<string, RollsText>()
     prepared.artifactHashes.forEach((hash, i) => {
-      if (!identities.has(hash)) identities.set(hash, prepared.good.artifacts[i]!.identity)
+      const artifact = prepared.good.artifacts[i]!
+      if (!identities.has(hash)) identities.set(hash, artifact.identity)
+      if (artifact.rolls !== undefined && !incomingRolls.has(hash)) {
+        incomingRolls.set(hash, artifact.rolls)
+      }
     })
     const artifactIds = new Map<string, number>()
-    const staged: { id: number; key: string; identity: ArtifactIdentity }[] = []
+    const staged: ArtifactRow[] = []
+    // Pieces the catalog has whose rolls this upload brings (needsFill): written
+    // where the Worker fills them, on a stored snapshot or a later sighting.
+    const fills: ArtifactRow[] = []
     for (const [hash, identity] of identities) {
       const key = artifactKeyString(identity)
+      const rolls = incomingRolls.get(hash)
       let id = store.artifactIds.get(key)
       if (id === undefined) {
         id = account.nextArtifactId++
-        staged.push({ id, key, identity })
+        // No switch here (the Worker's `rolls.store`): no reader of these rows
+        // predates rolls.
+        staged.push({ id, key, identity, ...(rolls !== undefined ? { rolls } : {}) })
+      } else {
+        const row = store.artifacts.get(id)
+        if (row && needsFill(row.rolls, rolls)) fills.push({ ...row, rolls })
       }
       artifactIds.set(hash, id)
     }
@@ -302,6 +322,7 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
     ) {
       account.nextArtifactId -= staged.length
       tx.putSnapshot({ ...latest, lastSeenAt: Math.max(latest.lastSeenAt, takenAt) })
+      for (const row of fills) tx.putArtifact(row)
       fillAccount(tx, prepared)
       tx.bumpVersion()
       return response('unchanged', latest.id)
@@ -352,6 +373,7 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
       tx.putBlob(row)
     }
     for (const entry of staged) tx.putArtifact(entry)
+    for (const row of fills) tx.putArtifact(row)
 
     const id = account.nextSnapshotId++
     tx.putSnapshot({

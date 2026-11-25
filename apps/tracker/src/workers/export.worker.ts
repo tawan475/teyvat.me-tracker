@@ -9,6 +9,7 @@
 
 import {
   catalogFromRows,
+  catalogRolls,
   openBundle,
   sectionHashesOf,
   type CatalogRow,
@@ -151,9 +152,11 @@ async function run({ root, ids, level, live: withLive }: ExportStart) {
   const texts = await bundle.sections.many(new Set(snapshots.flatMap(sectionHashesOf)))
   const rows = JSON.parse(new TextDecoder().decode(catalogBytes)) as CatalogRow[]
   const catalog = catalogFromRows(rows)
+  // Every file's artifacts carry gi_rolls where the server's export gives them.
+  const rolls = catalogRolls(catalog)
 
   const decode = (snapshot: (typeof snapshots)[number]) =>
-    decodeFromSections(snapshot, texts, catalog, MATERIALS)
+    decodeFromSections(snapshot, texts, catalog, MATERIALS, rolls)
   let extra: ReturnType<typeof liveFiles> = []
   if (liveData) {
     const { live, points } = await liveData

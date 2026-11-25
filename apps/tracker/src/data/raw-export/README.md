@@ -11,7 +11,7 @@ decoder is bundled inside it) to turn everything into readable JSON in
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `inflated/snapshots/leyline-<time>.json` | Each snapshot whole, as a Leyline file (GOOD + `gi_*`): the same content the site's Download gives. Captures that share a second get `_<id>` appended. |
 | `inflated/sections/<id>.json`            | Each stored section decoded to its canonical value (names as dictionary ids; a delta holds only what changed against its keyframe).                    |
-| `inflated/catalog.json`                  | Every artifact identity, by catalog id.                                                                                                                |
+| `inflated/catalog.json`                  | Every artifact identity, by catalog id, with its `rolls` when they are stored.                                                                         |
 
 Short arrays and objects stay on one line, so the files read well in an
 editor. Whole snapshots are large: about 1 MB of JSON each, against a few
@@ -51,9 +51,21 @@ collections, collections2, wardrobe, exploration, progress, extras. A delta
 
 ## Catalog chunks
 
-Byte 0: `1` stored, `2` raw DEFLATE. Inside: a count, the artifact ids as
-zigzag varint deltas, then each identity packed (layout at the top of
+Byte 0: `1` stored, `2` raw DEFLATE, `3` stored with rolls, `4` raw DEFLATE
+with rolls. Inside: a count, the artifact ids as zigzag varint deltas, then
+each identity packed (layout at the top of
 `packages/shared/src/codec/catalog-binary.ts`).
+
+Formats `3` and `4` add a rolls block after the identities: one record per
+artifact, in the same order. A record is a varint head, `0` for an artifact
+whose rolls are not known; otherwise the number of rolls and whether their
+order across substats is known, then the rolls packed a nibble each (substat
+line and tier). The exact layout is in the header of `catalog-binary.ts`.
+The rolls are never part of the packed identity. A snapshot's artifacts
+carry them as `gi_rolls` (two digits per roll, line then tier, in the game's
+order) when their order is known; `inflated/catalog.json` lists them as
+`rolls` (a text that starts with `~` holds each line's rolls without the
+order across lines).
 
 ## Sources
 

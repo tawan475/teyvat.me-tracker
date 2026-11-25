@@ -9,7 +9,8 @@
  *                                           indented
  *   inflated/sections/<id>.json             each stored section decoded (a
  *                                           delta holds only its changes)
- *   inflated/catalog.json                   every artifact identity by id
+ *   inflated/catalog.json                   every artifact identity by id,
+ *                                           with its rolls when stored
  *
  * Pure apart from `io`: the raw-export test runs it on a zip the Worker made.
  */
@@ -20,6 +21,7 @@ import {
   decodeCatalogChunk,
   decodeSnapshot,
   kindCode,
+  needsFill,
   openBundle,
   sectionHashesOf,
   storedSnapshotOf,
@@ -29,6 +31,7 @@ import {
   type CatalogRow,
   type GoodSubstat,
   type RawBlob,
+  type RollsText,
   type SectionKind,
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
@@ -164,16 +167,34 @@ export async function inflateAll(io: InflateIo): Promise<Inflated> {
     done.sections++
   }
 
+  // As the server reads its catalog (worker/services/export.ts loadCatalog):
+  // one id in two chunks (an old merge) keeps the last copy's identity and
+  // the better copy's rolls (needsFill); a pending row has none, and stands
+  // only for an id no chunk gave rolls.
   const catalog = new Map<number, ArtifactIdentity>()
+  const rolls = new Map<number, RollsText>()
   const raw = json<{ chunks: { file: string }[]; pending: CatalogRow[] }>('catalog.json')
   for (const chunk of raw.chunks) {
     const data = io.read(chunk.file)
     done.bytesIn += data.length
-    for (const { id, identity } of decodeCatalogChunk(data)) catalog.set(id, identity)
+    for (const entry of decodeCatalogChunk(data)) {
+      catalog.set(entry.id, entry.identity)
+      if (needsFill(rolls.get(entry.id), entry.rolls)) rolls.set(entry.id, entry.rolls!)
+    }
   }
-  for (const row of raw.pending) catalog.set(...identityOfRow(row))
+  for (const row of raw.pending) {
+    if (!rolls.has(row[0])) catalog.set(...identityOfRow(row))
+  }
   const ids = [...catalog.keys()].sort((a, b) => a - b)
-  write('inflated/catalog.json', pretty(ids.map((id) => ({ id, ...catalog.get(id)! }))))
+  write(
+    'inflated/catalog.json',
+    pretty(
+      ids.map((id) => {
+        const text = rolls.get(id)
+        return { id, ...catalog.get(id)!, ...(text !== undefined ? { rolls: text } : {}) }
+      }),
+    ),
+  )
   done.artifacts = ids.length
 
   // Each snapshot whole, named like the site's Download.
@@ -186,7 +207,9 @@ export async function inflateAll(io: InflateIo): Promise<Inflated> {
       if (value === undefined) throw new Error(`Snapshot ${snapshot.id} is missing section ${key}`)
       return value
     }
-    const good = asLeyline(decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, MATERIALS))
+    const good = asLeyline(
+      decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, MATERIALS, rolls),
+    )
     write(`inflated/snapshots/${names.get(snapshot.id)}`, pretty(good))
     done.snapshots++
   }

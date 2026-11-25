@@ -21,6 +21,7 @@ import {
   type GoodWeapon,
   type KeyRef,
 } from '@gdt/shared'
+import { checkRolls, rollsOrdered } from '@gdt/shared/rolls'
 import { yieldToMain } from '@/lib/yield'
 import {
   accountCacheKey,
@@ -71,6 +72,34 @@ export interface BuildIndex {
 
 const LOCK = 1
 const ASTRAL_MARK = 2
+
+/**
+ * A catalog piece as the GOOD artifact a capture had on `location`, its lock
+ * and astral mark from the capture's `flags`. It carries `gi_rolls` when the
+ * catalog knows its rolls in game order and they still fit it, as the
+ * snapshot decode gives them: the roll bars read them.
+ */
+export function wornArtifact(piece: CatalogEntry, location: string, flags: number): GoodArtifact {
+  return {
+    setKey: piece.setKey,
+    slotKey: piece.slotKey,
+    level: piece.level,
+    rarity: piece.rarity,
+    mainStatKey: piece.mainStatKey,
+    location,
+    lock: (flags & LOCK) !== 0,
+    substats: piece.substats,
+    totalRolls: piece.totalRolls,
+    astralMark: (flags & ASTRAL_MARK) !== 0,
+    elixirCrafted: piece.elixirCrafted,
+    unactivatedSubstats: piece.unactivatedSubstats,
+    ...(piece.rolls !== undefined &&
+    rollsOrdered(piece.rolls) &&
+    checkRolls(piece, piece.rolls) !== undefined
+      ? { gi_rolls: piece.rolls }
+      : {}),
+  }
+}
 
 /** GOOD names the Traveler by element (`TravelerCryo`) but their gear's location plainly `Traveler`. */
 function wearerKey(key: string, has: (location: string) => boolean): string {
@@ -126,21 +155,7 @@ function indexOf(
       gear.pieces.forEach((id, i) => {
         const piece = id === null ? undefined : catalog.get(id)
         if (!piece) return
-        const flags = worn?.flags[i] ?? 0
-        artifacts.push({
-          setKey: piece.setKey,
-          slotKey: piece.slotKey,
-          level: piece.level,
-          rarity: piece.rarity,
-          mainStatKey: piece.mainStatKey,
-          location: key,
-          lock: (flags & LOCK) !== 0,
-          substats: piece.substats,
-          totalRolls: piece.totalRolls,
-          astralMark: (flags & ASTRAL_MARK) !== 0,
-          elixirCrafted: piece.elixirCrafted,
-          unactivatedSubstats: piece.unactivatedSubstats,
-        })
+        artifacts.push(wornArtifact(piece, key, worn?.flags[i] ?? 0))
       })
       const extra = s.extras.get(key)
       return (

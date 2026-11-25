@@ -12,7 +12,7 @@
  * ROLL_TIERS in @gdt/shared/rolls.
  */
 
-import { ROLL_TIERS as TIERS } from '@gdt/shared/rolls'
+import { checkRolls, rollsByLine, rollsOrdered, ROLL_TIERS as TIERS } from '@gdt/shared/rolls'
 
 type Tiers = readonly number[]
 
@@ -199,15 +199,47 @@ export interface RollSource {
   level: number
   substats: readonly { key: string; value: number; initialValue?: number }[]
   totalRolls?: number
+  /**
+   * Every roll as the game lists them (`gi_rolls`, Teyvat.me Capture). Used
+   * only when it passes `checkRolls` against this artifact; live-sync items
+   * reach the browser unchecked, so whatever is here may be anything.
+   */
+  gi_rolls?: string
+}
+
+/**
+ * The artifact's own rolls (`gi_rolls`), in the shape the inference returns:
+ * per substat, highest tier first. Null when it has none, or none that pass
+ * the reader's checks (a malformed or stale list is ignored, never trusted).
+ */
+function exactRolls(artifact: RollSource): InferredRoll[][] | null {
+  const text = artifact.gi_rolls
+  if (text === undefined) return null
+  // gi_rolls is digits only: the `~` form is never read from a file.
+  const checked = checkRolls(artifact, text)
+  if (checked === undefined || !rollsOrdered(checked)) return null
+  const { rarity, substats } = artifact
+  return rollsByLine(checked, substats.length).map((tiers, line) => {
+    const key = substats[line]!.key
+    // Highest first, as the inference orders a line (combos walk down).
+    return toRolls(
+      key,
+      rarity,
+      [...tiers].sort((a, b) => b - a).map((tier) => tier - 1),
+    )
+  })
 }
 
 /**
  * Rolls for every substat of an artifact (same order as `substats`; an empty
- * list where the value cannot be decomposed). Where a substat alone is
- * ambiguous (3 high rolls or 4 low ones), the artifact's total roll count
+ * list where the value cannot be decomposed). Exact when the artifact carries
+ * rolls that fit it (`gi_rolls`); otherwise inferred: where a substat alone
+ * is ambiguous (3 high rolls or 4 low ones), the artifact's total roll count
  * decides.
  */
 export function inferArtifactRolls(artifact: RollSource): InferredRoll[][] {
+  const exact = exactRolls(artifact)
+  if (exact) return exact
   const { rarity, substats } = artifact
   const options = substats.map((s) => rollOptions(s.key, s.value, rarity, s.initialValue))
   const totals = possibleTotals(rarity, artifact.level, substats.length, artifact.totalRolls)

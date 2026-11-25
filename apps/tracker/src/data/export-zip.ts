@@ -18,6 +18,7 @@ import {
   type BundleSnapshot,
   type Good,
   type KeyDictionary,
+  type RollsText,
 } from '@gdt/shared'
 
 /** "leyline-2026-06-20T14-05-43": the server's name for a download, minus `.json`. */
@@ -51,19 +52,25 @@ export function zipEntryNames(
   return names
 }
 
-/** Rebuilds one snapshot's Leyline file (`leyline` set) from decoded bundle sections. */
+/**
+ * Rebuilds one snapshot's Leyline file (`leyline` set) from decoded bundle
+ * sections. `rolls` = what the catalog knows of each id's rolls
+ * (`catalogRolls`): its artifacts carry `gi_rolls` exactly where the
+ * server's GOOD export gives them.
+ */
 export function decodeFromSections(
   snapshot: BundleSnapshot,
   texts: ReadonlyMap<string, string>,
   catalog: ReadonlyMap<number, ArtifactIdentity>,
   materials: KeyDictionary,
+  rolls?: ReadonlyMap<number, RollsText>,
 ): Good & { leyline: number } {
   const text = (hash: string) => {
     const value = texts.get(hash)
     if (value === undefined) throw new Error(`Snapshot ${snapshot.id} is missing section ${hash}`)
     return value
   }
-  return asLeyline(decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, materials))
+  return asLeyline(decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, materials, rolls))
 }
 
 export interface ZipProgress {

@@ -12,7 +12,7 @@
  * (BroadcastChannel `gdt-guest`), which re-read it before their next read.
  */
 
-import type { ArtifactIdentity, GenshinServer } from '@gdt/shared'
+import type { ArtifactIdentity, GenshinServer, RollsText } from '@gdt/shared'
 import { writeStorage } from '@/lib/storage'
 import {
   indexedDbBackend,
@@ -66,11 +66,16 @@ export interface SnapshotRow {
   meta: Uint8Array
 }
 
-/** A catalog entry: its id, packed key (artifactKeyString) and identity. */
+/**
+ * A catalog entry: its id, packed key (artifactKeyString) and identity, and
+ * the piece's rolls when known (checked, never part of the identity). Rows
+ * stored before rolls existed simply have none.
+ */
 export interface ArtifactRow {
   id: number
   key: string
   identity: ArtifactIdentity
+  rolls?: RollsText
 }
 
 const CHANNEL = 'gdt-guest'

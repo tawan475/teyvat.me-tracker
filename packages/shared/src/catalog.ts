@@ -1,4 +1,4 @@
-import { calculateCV, calculateRV, type ArtifactIdentity } from './artifact'
+import { artifactIdentityText, calculateCV, calculateRV, type ArtifactIdentity } from './artifact'
 import type { GoodSubstat } from './good'
 import { isRollsText, needsFill, type RollsText } from './rolls'
 
@@ -52,19 +52,33 @@ export interface CatalogEntry extends ArtifactIdentity {
 }
 
 /**
+ * The rolls an id keeps when a later copy of it is read (one id in two
+ * chunks after an old merge, or a v1 row beside a chunk): the later copy's
+ * identity stands, as it always did, and the earlier copy's rolls count only
+ * when its identity is the same (then the better of the two by `needsFill`:
+ * ordered beats `~`, `~` beats none, ordered is never replaced). Rolls go
+ * only with the identity they were checked against.
+ */
+export function laterCopyRolls(
+  earlier: { identity: ArtifactIdentity; rolls?: RollsText | undefined } | undefined,
+  later: { identity: ArtifactIdentity; rolls?: RollsText | undefined },
+): RollsText | undefined {
+  if (earlier?.rolls === undefined) return later.rolls
+  if (artifactIdentityText(earlier.identity) !== artifactIdentityText(later.identity)) {
+    return later.rolls
+  }
+  return needsFill(earlier.rolls, later.rolls) ? later.rolls : earlier.rolls
+}
+
+/**
  * The catalog by id. One id can come twice (two chunks after an old merge):
- * the identity is the last row's; the rolls the better of the two by
- * `needsFill` (ordered beats `~`, `~` beats none, ordered is never replaced).
+ * the identity is the last row's; its rolls as `laterCopyRolls` keeps them.
  */
 export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, CatalogEntry> {
   const catalog = new Map<number, CatalogEntry>()
   for (const r of rows) {
-    const previous = catalog.get(r[0])?.rolls
-    const incoming = isRollsText(r[10]) ? r[10] : undefined
-    const rolls = needsFill(previous, incoming) ? incoming : previous
     const substats = expandSubstats(r[6])
-    catalog.set(r[0], {
-      id: r[0],
+    const identity: ArtifactIdentity = {
       setKey: r[1],
       slotKey: r[2],
       level: r[3],
@@ -74,6 +88,15 @@ export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, Catalo
       totalRolls: r[7],
       elixirCrafted: r[8] === 1,
       unactivatedSubstats: expandSubstats(r[9]),
+    }
+    const previous = catalog.get(r[0])
+    const rolls = laterCopyRolls(previous && { identity: previous, rolls: previous.rolls }, {
+      identity,
+      rolls: isRollsText(r[10]) ? r[10] : undefined,
+    })
+    catalog.set(r[0], {
+      id: r[0],
+      ...identity,
       // Derived on read, never stored, so a formula change applies everywhere.
       cv: calculateCV(substats),
       rv: calculateRV(substats),

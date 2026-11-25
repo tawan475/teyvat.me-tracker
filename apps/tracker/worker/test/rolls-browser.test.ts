@@ -8,6 +8,8 @@ import {
   catalogFromRows,
   catalogRolls,
   decodeBundle,
+  decodeCatalogChunk,
+  encodeCatalogChunk,
   rollValue,
   type AccountResponse,
   type CatalogEntry,
@@ -204,6 +206,50 @@ describe('exact rolls in the browser', () => {
       catalog.filter((a) => a.setKey === 'GladiatorsFinale').map((a) => [a.slotKey, a.rolls]),
     )
     expect(listed).toEqual({ flower: P1.gi_rolls, plume: P2.gi_rolls, sands: undefined })
+  })
+
+  it("gives a copy of an id with another identity none of the other copy's rolls (raw download)", async () => {
+    const { bundle, raw } = await stored()
+    const b64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes))
+    const unb64 = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0))
+    const x = raw.chunks
+      .flatMap((chunk) => decodeCatalogChunk(unb64(chunk.data)))
+      .find((e) => e.rolls === P1.gi_rolls)!
+    const other = { ...x.identity, level: 16 }
+    const inflate = async (extra: { identity: typeof other; rolls?: string }) => {
+      const data = encodeCatalogChunk([{ id: x.id, ...extra }])
+      const catalog = {
+        ...raw,
+        chunks: [...raw.chunks, { first: x.id, last: x.id, count: 1, data: b64(data) }],
+      }
+      const files = rawExportFiles({ bundle: new Uint8Array(bundle), catalog, ids: null })
+      const read = new Map(files.map((f) => [f.name, f.data]))
+      const written = new Map<string, unknown>()
+      await inflateAll({
+        read: (path) => read.get(path)!,
+        write: (path, bytes) => {
+          if (path.startsWith('inflated/snapshots/') || path === 'inflated/catalog.json') {
+            written.set(path, JSON.parse(new TextDecoder().decode(bytes)))
+          }
+        },
+      })
+      const [snapshot] = [...written].filter(([path]) => path.startsWith('inflated/snapshots/'))
+      const listed = (written.get('inflated/catalog.json') as Loose[]).find((a) => a.id === x.id)
+      const flower = (snapshot![1] as Good).artifacts.find(
+        (a) => a.setKey === 'GladiatorsFinale' && a.slotKey === 'flower',
+      )!
+      return { listed, flower }
+    }
+    // Another identity read last: it stands, without the first copy's rolls.
+    const changed = await inflate({ identity: other })
+    expect(changed.listed).toMatchObject({ level: 16 })
+    expect(changed.listed).not.toHaveProperty('rolls')
+    expect(changed.flower.level).toBe(16)
+    expect(changed.flower).not.toHaveProperty('gi_rolls')
+    // The same identity without rolls read last: the rolls stay.
+    const same = await inflate({ identity: x.identity })
+    expect(same.listed).toMatchObject({ level: 20, rolls: P1.gi_rolls })
+    expect(same.flower.gi_rolls).toBe(P1.gi_rolls)
   })
 
   it('gives past builds the rolls that still fit their piece', async () => {

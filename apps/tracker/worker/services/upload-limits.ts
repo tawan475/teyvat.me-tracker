@@ -48,14 +48,23 @@ export const UPLOAD_SETTING_KEYS: Readonly<Record<keyof UploadLimits, string>> =
 
 /**
  * The `site_settings` key of the switch that lets imports store exact
- * artifact rolls (README "Exact artifact rolls"): the text `1` turns it on,
- * anything else or no row leaves it off (the default). Read in the import's
+ * artifact rolls (README "Exact artifact rolls"): the text `1` (spaces
+ * around it ignored) turns it on, anything else or no row leaves it off
+ * (the default). Read in the import's
  * lookup batch with the limits. While off, nothing writes rolls, so no
  * catalog chunk of format 3 or 4 comes to exist; reading them works either
  * way. Once on, the Worker must never go back to a build that cannot read
  * those formats.
  */
 export const ROLLS_STORE_KEY = 'rolls.store'
+
+/**
+ * SQL that is true while the `rolls.store` switch is on: the one reading of
+ * it, used by `usageStatement` and by the held-list mark's query, so the two
+ * can never disagree about a value.
+ */
+export const ROLLS_STORE_ON_SQL = `EXISTS (SELECT 1 FROM site_settings
+  WHERE key = '${ROLLS_STORE_KEY}' AND trim(value) = '1')`
 
 /** Days of `user_upload_days` maintenance keeps. */
 export const UPLOAD_DAYS_KEPT = 90
@@ -85,7 +94,7 @@ export function secondsToNextUtcDay(now: number): number {
   return Math.max(1, Math.ceil((next - now) / 1000))
 }
 
-const SETTING_KEYS_SQL = [...Object.values(UPLOAD_SETTING_KEYS), ROLLS_STORE_KEY]
+const SETTING_KEYS_SQL = Object.values(UPLOAD_SETTING_KEYS)
   .map((key) => `'${key}'`)
   .join(', ')
 
@@ -112,7 +121,8 @@ export function usageStatement(
            AS stored_bytes,
          coalesce(d.snapshots, 0) AS day_snapshots, coalesce(d.stored_bytes, 0) AS day_bytes,
          (SELECT json_group_object(s.key, s.value) FROM site_settings AS s
-          WHERE s.key IN (${SETTING_KEYS_SQL})) AS settings
+          WHERE s.key IN (${SETTING_KEYS_SQL})) AS settings,
+         ${ROLLS_STORE_ON_SQL} AS rolls_store
        FROM genshin_accounts AS a JOIN users AS u ON u.id = a.user_id
        LEFT JOIN user_upload_days AS d ON d.user_id = u.id AND d.day = ?2
        WHERE a.id = ?1`,
@@ -136,7 +146,7 @@ export function readUsage(row: Record<string, unknown> | undefined): UploadUsage
     dayBytes: Number(row.day_bytes),
     storedBytes: Number(row.stored_bytes),
     limits,
-    storeRolls: String(settings[ROLLS_STORE_KEY] ?? '').trim() === '1',
+    storeRolls: Number(row.rolls_store) === 1,
   }
 }
 

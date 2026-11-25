@@ -678,16 +678,22 @@ describe('one id in two rows, as the wire gives it', () => {
   const ordered = '04122133'
   const grouped = '~04122133'
 
-  it("shows the last row's identity and the better rolls", () => {
+  it("shows the last row's identity and the better rolls of rows with that identity", () => {
     const cases: [CatalogRow[], string | undefined][] = [
-      [[row(1, ordered), row(2, grouped)], ordered], // ordered then `~`
-      [[row(1, grouped), row(2, ordered)], ordered], // `~` then ordered
-      [[row(1, ordered), row(2)], ordered], // rolls then none
-      [[row(1), row(2, ordered)], ordered], // none then rolls
-      [[row(1, grouped), row(2)], grouped],
-      [[row(1), row(2, grouped)], grouped],
-      [[row(1, ordered), row(2, '01020304')], ordered], // ordered never replaced
-      [[row(1), row(2)], undefined],
+      [[row(2, ordered), row(2, grouped)], ordered], // ordered then `~`
+      [[row(2, grouped), row(2, ordered)], ordered], // `~` then ordered
+      [[row(2, ordered), row(2)], ordered], // rolls then none
+      [[row(2), row(2, ordered)], ordered], // none then rolls
+      [[row(2, grouped), row(2)], grouped],
+      [[row(2), row(2, grouped)], grouped],
+      [[row(2, ordered), row(2, '01020304')], ordered], // ordered never replaced
+      [[row(2), row(2)], undefined],
+      // Another identity under the id: only the last row's own rolls (D47).
+      [[row(1, ordered), row(2, grouped)], grouped],
+      [[row(1, grouped), row(2, ordered)], ordered],
+      [[row(1, ordered), row(2)], undefined],
+      [[row(1), row(2, ordered)], ordered],
+      [[row(1, ordered), row(2, '01020304')], '01020304'],
     ]
     for (const [rows, rolls] of cases) {
       const entry = catalogFromRows(rows).get(7)!

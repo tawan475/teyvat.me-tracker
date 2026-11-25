@@ -78,6 +78,7 @@ import {
   assertCanStore,
   countUploadStatement,
   readUsage,
+  ROLLS_STORE_ON_SQL,
   usageStatement,
   utcDay,
 } from './upload-limits'
@@ -533,9 +534,13 @@ async function importOnce(
   const fills = planned.fills.map((fill) => fillStatement(d1, accountId, fill))
   // The held-list mark says "this list is dealt with": not while a fill rides
   // in the batch (a lost swap would leave the list held, its rolls unwritten)
-  // nor while the switch keeps rolls out that a fill would write.
+  // or rows are left for a later upload (FILLS_PER_BATCH). While the switch
+  // keeps out rolls a fill or a new chunk would write, the mark is written
+  // flagged (`withheld`): it holds the list only while the switch stays off
+  // (HELD_ARTIFACTS_SQL), so the first upload after turning it on is read in
+  // full and fills. A mark written while on is never flagged.
   const withheld = !storeRolls && (planned.pending || rollsWithheld)
-  const markList = !!deferred && !held && fills.length === 0 && !withheld
+  const markList = !!deferred && !held && fills.length === 0 && !planned.deferred
 
   if (
     latest &&
@@ -570,12 +575,13 @@ async function importOnce(
           sectionHash: encoded.artifacts.hash,
           figures: prepared.summary,
           snapshot: { id: latest.id },
+          withheld,
           now,
         }),
       )
     }
     const results = await meter.batch(d1, 'seen', seen)
-    logLostFills(accountId, results, fillsAt, fills.length)
+    logFills(accountId, results, fillsAt, planned.fills)
     const [, bumped, listening] = results
     return response('unchanged', latest.id, 0, dataVersionOf(bumped) ?? null, listenerOf(listening))
   }
@@ -641,6 +647,7 @@ async function importOnce(
         sectionHash: encoded.artifacts.hash,
         figures: prepared.summary,
         snapshot: { takenAt, contentKey: key },
+        withheld,
         now,
       }),
     )
@@ -674,7 +681,7 @@ async function importOnce(
     }
     throw error
   }
-  logLostFills(accountId, results, fillsAt, fills.length)
+  logFills(accountId, results, fillsAt, planned.fills)
   const inserted = results[snapshotIndex]!.results[0] as { id: number } | undefined
   // A section it points at was collected in between, or another upload added
   // to the catalog since this one read it (its chunk may hold a piece this
@@ -818,10 +825,15 @@ function fillAccountStatements(
  * The stored artifacts section made from the list with fingerprint `?2`, for
  * account `?1`: its blob (which must still be there), its full hash and the
  * figures the summary takes from the list. No row: the list has to be read.
+ * A mark written while the `rolls.store` switch kept rolls out (`w` in its
+ * info) holds only while the switch is off: once on, that list is read in
+ * full so its rolls are filled. Ordinary marks never read `site_settings`.
  */
 const HELD_ARTIFACTS_SQL = `SELECT m.blob_id AS blobId, hex(m.section_hash) AS sectionHash, m.info
   FROM part_marks AS m JOIN section_blobs AS b ON b.id = m.blob_id AND b.account_id = m.account_id
-  WHERE m.account_id = ?1 AND m.part = 'artifacts' AND m.fingerprint = unhex(?2)`
+  WHERE m.account_id = ?1 AND m.part = 'artifacts' AND m.fingerprint = unhex(?2)
+    AND (CASE WHEN json_valid(m.info) THEN json_extract(m.info, '$.w') END IS NULL
+         OR NOT ${ROLLS_STORE_ON_SQL})`
 
 interface HeldArtifacts {
   blobId: number
@@ -867,6 +879,8 @@ function markArtifactsStatement(
     sectionHash: string
     figures: ArtifactFigures
     snapshot: { takenAt: number; contentKey: number } | { id: number }
+    /** The `rolls.store` switch kept out rolls this list brought: `w` (see HELD_ARTIFACTS_SQL). */
+    withheld: boolean
     now: number
   },
 ): D1PreparedStatement {
@@ -875,6 +889,7 @@ function markArtifactsStatement(
     n: mark.figures.artifacts,
     a3: mark.figures.artifact3,
     a4: mark.figures.artifact4,
+    ...(mark.withheld ? { w: 1 } : {}),
   })
   const { snapshot } = mark
   const [which, params] =
@@ -951,53 +966,68 @@ interface ChunkFill {
   id: number
   old: Uint8Array
   data: Uint8Array
+  /** How many of the row's entries get rolls. */
+  pieces: number
 }
+
+/**
+ * Fill statements one batch carries at most: each binds a chunk row's old
+ * and new bytes, so a first fill of a long history is spread over uploads
+ * (no mark is written until none is left).
+ */
+export const FILLS_PER_BATCH = 16
 
 /**
  * What the rolls of an upload (`rollsByKey`: packed identity to checked
  * rolls) would write onto the chunk rows read: `pending` when some entry
  * there lacks them (`needsFill`), `fills` the new bytes per row when
  * `store` (the `rolls.store` switch) allows writing, each verified before
- * it is used; `conflicts` the entries whose stored rolls differ (kept).
+ * it is used, at most FILLS_PER_BATCH of them (`deferred`: rows left for a
+ * later upload); `conflicts` the entries whose stored rolls differ (kept).
  */
 function planFills(
   rows: readonly ChunkRow[],
   rollsByKey: ReadonlyMap<string, RollsText>,
   store: boolean,
   accountId: number,
-): { fills: ChunkFill[]; pending: boolean; conflicts: number } {
+): { fills: ChunkFill[]; pending: boolean; deferred: boolean; conflicts: number } {
   const fills: ChunkFill[] = []
   let pending = false
+  let deferred = false
   let conflicts = 0
-  if (rollsByKey.size === 0) return { fills, pending, conflicts }
+  if (rollsByKey.size === 0) return { fills, pending, deferred, conflicts }
   for (const row of rows) {
-    let wants = false
+    let pieces = 0
     for (const entry of row.parts.entries) {
       const incoming = rollsByKey.get(entry.key)
       if (incoming === undefined) continue
-      if (needsFill(entry.rolls, incoming)) wants = true
+      if (needsFill(entry.rolls, incoming)) pieces++
       else if (entry.rolls !== incoming) conflicts++
     }
-    if (!wants) continue
+    if (pieces === 0) continue
     pending = true
     if (!store) continue
+    if (fills.length >= FILLS_PER_BATCH) {
+      deferred = true
+      continue
+    }
     const data = fillCatalogChunk(row.data, rollsByKey)
     if (data !== row.data && fillVerified(row.parts, data, rollsByKey)) {
-      fills.push({ id: row.id, old: row.data, data })
+      fills.push({ id: row.id, old: row.data, data, pieces })
     } else {
       console.warn('rolls_fill_mismatch', JSON.stringify({ accountId, chunk: row.id }))
     }
   }
-  return { fills, pending, conflicts }
+  return { fills, pending, deferred, conflicts }
 }
 
 /**
  * True when `data` is `before` with exactly the intended rolls added: the
  * same bytes up to the rolls block (count, ids, packed identities), the same
  * ids and keys in the same order, every stored roll kept unless `needsFill`
- * lets the incoming one replace it.
+ * lets the incoming one replace it. (Exported for tests.)
  */
-function fillVerified(
+export function fillVerified(
   before: CatalogChunkParts,
   data: Uint8Array,
   rollsByKey: ReadonlyMap<string, RollsText>,
@@ -1032,16 +1062,30 @@ function fillStatement(d1: D1Database, accountId: number, fill: ChunkFill): D1Pr
     .bind(accountId, fill.id, fill.old, fill.data)
 }
 
-/** Logs the fills of a batch that found their row changed (not retried: the next read fills). */
-function logLostFills(
+/**
+ * Logs the fills of a batch (`fills`, from result index `from`): those that
+ * found their row changed (`rolls_fill_lost`; not retried, the next read
+ * fills) and those that landed (`rolls_filled`: rows and pieces). Numbers only.
+ */
+function logFills(
   accountId: number,
   results: readonly D1Result<Record<string, unknown>>[],
   from: number,
-  count: number,
+  fills: readonly ChunkFill[],
 ): void {
   let lost = 0
-  for (let i = from; i < from + count; i++) if (results[i]!.results.length === 0) lost++
+  let rows = 0
+  let pieces = 0
+  fills.forEach((fill, i) => {
+    if (results[from + i]!.results.length === 0) {
+      lost++
+    } else {
+      rows++
+      pieces += fill.pieces
+    }
+  })
   if (lost > 0) console.warn('rolls_fill_lost', JSON.stringify({ accountId, lost }))
+  if (rows > 0) console.log('rolls_filled', JSON.stringify({ accountId, rows, pieces }))
 }
 
 /** What a store batch needs to know that the catalog is still as this upload read it. */

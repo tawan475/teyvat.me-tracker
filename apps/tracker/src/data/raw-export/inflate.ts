@@ -21,7 +21,7 @@ import {
   decodeCatalogChunk,
   decodeSnapshot,
   kindCode,
-  needsFill,
+  laterCopyRolls,
   openBundle,
   sectionHashesOf,
   storedSnapshotOf,
@@ -168,23 +168,28 @@ export async function inflateAll(io: InflateIo): Promise<Inflated> {
   }
 
   // As the server reads its catalog (worker/services/export.ts loadCatalog):
-  // one id in two chunks (an old merge) keeps the last copy's identity and
-  // the better copy's rolls (needsFill); a pending row has none, and stands
-  // only for an id no chunk gave rolls.
+  // one id in two chunks (an old merge) keeps the last copy's identity, a
+  // pending (v1) row read last, and the rolls laterCopyRolls keeps: another
+  // copy's only when its identity is the same.
   const catalog = new Map<number, ArtifactIdentity>()
   const rolls = new Map<number, RollsText>()
+  const setCopy = (id: number, identity: ArtifactIdentity, own: RollsText | undefined) => {
+    const earlier = catalog.get(id)
+    const kept = laterCopyRolls(earlier && { identity: earlier, rolls: rolls.get(id) }, {
+      identity,
+      rolls: own,
+    })
+    catalog.set(id, identity)
+    if (kept === undefined) rolls.delete(id)
+    else rolls.set(id, kept)
+  }
   const raw = json<{ chunks: { file: string }[]; pending: CatalogRow[] }>('catalog.json')
   for (const chunk of raw.chunks) {
     const data = io.read(chunk.file)
     done.bytesIn += data.length
-    for (const entry of decodeCatalogChunk(data)) {
-      catalog.set(entry.id, entry.identity)
-      if (needsFill(rolls.get(entry.id), entry.rolls)) rolls.set(entry.id, entry.rolls!)
-    }
+    for (const entry of decodeCatalogChunk(data)) setCopy(entry.id, entry.identity, entry.rolls)
   }
-  for (const row of raw.pending) {
-    if (!rolls.has(row[0])) catalog.set(...identityOfRow(row))
-  }
+  for (const row of raw.pending) setCopy(...identityOfRow(row), undefined)
   const ids = [...catalog.keys()].sort((a, b) => a - b)
   write(
     'inflated/catalog.json',

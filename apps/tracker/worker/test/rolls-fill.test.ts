@@ -25,8 +25,13 @@ import { env, SELF } from 'cloudflare:test'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { D1Meter } from '../lib/meter'
 import { loadCatalog } from '../services/export'
-import { catalogChunkStatements, importSnapshot } from '../services/import'
-import { mergeChunkStatements } from '../services/repack'
+import {
+  FILLS_PER_BATCH,
+  catalogChunkStatements,
+  fillVerified,
+  importSnapshot,
+} from '../services/import'
+import { chunkMatches, mergeChunkStatements } from '../services/repack'
 import { toBytes } from '../services/storage'
 import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
 
@@ -181,6 +186,33 @@ async function markOf(accountId: number) {
     .first<{ fingerprint: string }>()
 }
 
+/** The held-list mark's info (null: no mark). */
+async function markInfo(accountId: number): Promise<Record<string, unknown> | null> {
+  const row = await env.DB.prepare(
+    "SELECT info FROM part_marks WHERE account_id = ?1 AND part = 'artifacts'",
+  )
+    .bind(accountId)
+    .first<{ info: string }>()
+  return row ? (JSON.parse(row.info) as Record<string, unknown>) : null
+}
+
+/** Imports `good` directly (no rate limit): its status, whether the list was held, the cost. */
+async function importNow(accountId: number, good: unknown, timestamp: number) {
+  const meter = new D1Meter()
+  const result = await importSnapshot(
+    env.DB,
+    { id: accountId, uid: String(UID) },
+    asUpload(good, timestamp),
+    meter,
+  )
+  return {
+    status: result.response.status,
+    held: result.heldArtifacts,
+    roundTrips: meter.roundTrips,
+    rowsWritten: meter.rowsWritten,
+  }
+}
+
 const fingerprintOf = async (good: unknown) =>
   (
     await prepareSnapshot(good, { materials: MATERIALS, deferArtifacts: true })
@@ -217,7 +249,7 @@ async function rollsOfKeys(accountId: number): Promise<Map<string, string | unde
 // ------------------------------------------------------------------- switch
 
 describe('the rolls.store switch', () => {
-  it('is off by default: rolls are read and dropped, only formats 1/2, no mark', async () => {
+  it('is off by default: rolls are read and dropped, only formats 1/2, a flagged mark', async () => {
     const { client } = await signUp()
     const { account, importKey } = await newAccount(client)
     const good = capture(rolledPieces(40))
@@ -225,14 +257,16 @@ describe('the rolls.store switch', () => {
     expect(first.status).toBe('created')
     expect((await formats(account.id)).every((f) => f === 1 || f === 2)).toBe(true)
     expect([...(await storedRolls(account.id)).values()].every((r) => r === undefined)).toBe(true)
-    // A fill was withheld (the new pieces' rolls): the list is not marked held.
-    expect(await markOf(account.id)).toBeNull()
-    // Again later: seen, still nothing written onto the catalog, still no mark.
+    // Rolls were withheld (the new pieces'): the list is marked, flagged.
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(good))
+    expect(await markInfo(account.id)).toMatchObject({ w: 1 })
+    // Again later: held (two round trips), nothing written onto the catalog.
     const before = await chunkRows(account.id)
-    const again = await upload(importKey, { ...good }, 2_000)
+    const again = await importNow(account.id, good, 2_000)
     expect(again.status).toBe('unchanged')
+    expect(again.held).toBe(true)
+    expect(again.roundTrips).toBe(2)
     expect(await chunkRows(account.id)).toEqual(before)
-    expect(await markOf(account.id)).toBeNull()
 
     // Anything but the text "1" is off.
     for (const value of ['0', 'on', 'true', ' ']) {
@@ -263,6 +297,86 @@ describe('the rolls.store switch', () => {
   })
 })
 
+describe('marks written while the switch is off', () => {
+  it('hold while off, are read once after turning on, then the list is marked again', async () => {
+    const { client } = await signUp()
+    const { account, importKey } = await newAccount(client)
+    const good = capture(rolledPieces(30, 11))
+    // Off: the first upload is read in full and marked, flagged.
+    expect((await upload(importKey, good, 1_000)).status).toBe('created')
+    expect(await markInfo(account.id)).toMatchObject({ w: 1 })
+    // From the second one on, held: two round trips, the catalog not read.
+    for (const at of [2_000, 3_000]) {
+      expect(await importNow(account.id, good, at)).toMatchObject({
+        status: 'unchanged',
+        held: true,
+        roundTrips: 2,
+      })
+    }
+    expect([...(await storedRolls(account.id)).values()].filter(Boolean)).toHaveLength(0)
+
+    // On: the flagged mark no longer holds. Read in full, filled, no mark yet.
+    await setSwitch('1')
+    const filled = await importNow(account.id, good, 4_000)
+    expect(filled).toMatchObject({ status: 'unchanged', held: false, roundTrips: 2 })
+    expect([...(await storedRolls(account.id)).values()].filter(Boolean)).toHaveLength(30)
+    expect(await markInfo(account.id)).toMatchObject({ w: 1 })
+    // Read in full again, nothing left to fill: the mark, unflagged.
+    const marked = await importNow(account.id, good, 5_000)
+    expect(marked.held).toBe(false)
+    expect(await markInfo(account.id)).not.toHaveProperty('w')
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(good))
+    // And held from then on.
+    expect(await importNow(account.id, good, 6_000)).toMatchObject({
+      status: 'unchanged',
+      held: true,
+      roundTrips: 2,
+    })
+  })
+
+  it('are not flagged when nothing was pending: on, fill, off, the same bag', async () => {
+    await setSwitch('1')
+    const { client } = await signUp()
+    const { account, importKey } = await newAccount(client)
+    const pieces = rolledPieces(30, 12)
+    await upload(importKey, capture(withoutRolls(pieces)), 1_000)
+    const rolled = capture(pieces)
+    await upload(importKey, rolled, 2_000) // fills, no mark
+    expect([...(await storedRolls(account.id)).values()].filter(Boolean)).toHaveLength(30)
+    expect((await markOf(account.id))!.fingerprint).not.toBe(await fingerprintOf(rolled))
+    // Off (the kill switch), the same bag: read in full, nothing pending, marked.
+    await setSwitch('0')
+    const off = await importNow(account.id, rolled, 3_000)
+    expect(off.held).toBe(false)
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(rolled))
+    expect(await markInfo(account.id)).not.toHaveProperty('w')
+    // So turning it back on keeps the list held.
+    await setSwitch('1')
+    expect((await importNow(account.id, rolled, 4_000)).held).toBe(true)
+  })
+
+  it('are not flagged when the only rolls are refused or conflicting', async () => {
+    await setSwitch('1')
+    const { client } = await signUp()
+    const { account, importKey } = await newAccount(client)
+    const pieces = rolledPieces(10, 13)
+    const [a, b] = twins()
+    const [bare] = withoutRolls(rolledPieces(1, 98))
+    await upload(importKey, capture([...pieces, a, bare!]), 1_000)
+    const stored = await rollsOfKeys(account.id)
+    await setSwitch(null)
+    // b conflicts with a's stored rolls; bare's rolls are refused by the check.
+    const next = capture([...pieces, b, { ...bare, gi_rolls: '04'.repeat(9) }], 1, 7000)
+    const seen = await importNow(account.id, next, 2_000)
+    expect(seen).toMatchObject({ status: 'unchanged', held: false })
+    expect(await rollsOfKeys(account.id)).toEqual(stored)
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(next))
+    expect(await markInfo(account.id)).not.toHaveProperty('w')
+    await setSwitch('1')
+    expect((await importNow(account.id, next, 3_000)).held).toBe(true)
+  })
+})
+
 // --------------------------------------------------------------------- fill
 
 describe('filling the rolls of pieces the catalog has', () => {
@@ -282,7 +396,14 @@ describe('filling the rolls of pieces the catalog has', () => {
 
     // The same bag with rolls: no new snapshot, the same ids, rolls stored.
     const rolled = capture(pieces)
+    const log = vi.spyOn(console, 'log')
     const filled = await upload(importKey, rolled, 2_000)
+    // Success is logged too: rows that landed and the pieces they gave rolls.
+    expect(log).toHaveBeenCalledWith(
+      'rolls_filled',
+      JSON.stringify({ accountId: account.id, rows: 2, pieces: 600 }),
+    )
+    log.mockRestore()
     expect(filled.status).toBe('unchanged')
     expect(filled.cost['round-trips']).toBe(2)
     // The seen batch (last_seen_at, data version) and one row per chunk (two chunks).
@@ -466,6 +587,116 @@ describe('which rolls win', () => {
   })
 })
 
+describe('a first fill of a long history', () => {
+  it('writes at most FILLS_PER_BATCH rows per upload and marks only when none is left', async () => {
+    expect(FILLS_PER_BATCH).toBe(16)
+    await setSwitch('1')
+    const { client } = await signUp()
+    const { account } = await newAccount(client)
+    // 20 captures, each adding 3 pieces: 20 chunk rows of new pieces (plus
+    // the first one's sampleGood pair), the current bag spread across them all.
+    const pieces = rolledPieces(60, 21)
+    for (let i = 1; i <= 20; i++) {
+      const stored = await importNow(
+        account.id,
+        capture(withoutRolls(pieces.slice(0, 3 * i)), i),
+        i * 1_000,
+      )
+      expect(stored.status).toBe('created')
+    }
+    expect(await chunkRows(account.id)).toHaveLength(20)
+    const rolled = capture(pieces, 20)
+    const changedRows = async (before: { id: number; data: Uint8Array }[]) => {
+      const now = new Map((await chunkRows(account.id)).map((r) => [r.id, r.data]))
+      return before.filter((r) => String(now.get(r.id)) !== String(r.data)).length
+    }
+
+    // First: 16 rows (the seen batch's two rows plus one per fill), no mark.
+    const markBefore = await markOf(account.id)
+    let before = await chunkRows(account.id)
+    const first = await importNow(account.id, rolled, 30_000)
+    expect(first).toMatchObject({ status: 'unchanged', held: false, roundTrips: 2 })
+    expect(first.rowsWritten).toBe(2 + 16)
+    expect(await changedRows(before)).toBe(16)
+    expect(await markOf(account.id)).toEqual(markBefore)
+    expect([...(await storedRolls(account.id)).values()].filter(Boolean)).toHaveLength(48)
+
+    // Second: the 4 rows left, still no mark.
+    before = await chunkRows(account.id)
+    const second = await importNow(account.id, rolled, 31_000)
+    expect(second.rowsWritten).toBe(2 + 4)
+    expect(await changedRows(before)).toBe(4)
+    expect(await markOf(account.id)).toEqual(markBefore)
+    expect([...(await storedRolls(account.id)).values()].filter(Boolean)).toHaveLength(60)
+
+    // Third: nothing left, the mark. Fourth: held.
+    before = await chunkRows(account.id)
+    const third = await importNow(account.id, rolled, 32_000)
+    expect(third.rowsWritten).toBe(2 + 1)
+    expect(await changedRows(before)).toBe(0)
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(rolled))
+    expect(await importNow(account.id, rolled, 33_000)).toMatchObject({
+      status: 'unchanged',
+      held: true,
+      roundTrips: 2,
+    })
+  })
+})
+
+describe('fillVerified', () => {
+  it('accepts exactly the intended splice and nothing else', async () => {
+    const entries = (await prepareSnapshot(capture(rolledPieces(6, 31)), { materials: MATERIALS }))
+      .good.artifacts
+    const unique = [...new Map(entries.map((a) => [artifactKeyString(a.identity), a])).values()]
+    const chunk = encodeCatalogChunk(unique.map((a, i) => ({ id: 100 + i, identity: a.identity })))
+    const parts = readCatalogChunk(chunk)
+    const want = new Map(
+      unique.filter((a) => a.rolls).map((a) => [artifactKeyString(a.identity), a.rolls!]),
+    )
+    const good = fillCatalogChunk(chunk, want)
+    expect(fillVerified(parts, good, want)).toBe(true)
+
+    // Wrong rolls: another piece's under each key.
+    const texts = [...want.values()]
+    const swapped = new Map([...want.keys()].map((key, i) => [key, texts[(i + 1) % texts.length]!]))
+    expect(fillVerified(parts, fillCatalogChunk(chunk, swapped), want)).toBe(false)
+    // Rolls only on some of the pieces meant to get them.
+    const fewer = new Map([...want].slice(1))
+    expect(fillVerified(parts, fillCatalogChunk(chunk, fewer), want)).toBe(false)
+    // Other ids (a changed prefix).
+    const otherIds = encodeCatalogChunk(
+      unique.map((a, i) => ({ id: 200 + i, identity: a.identity })),
+    )
+    expect(fillVerified(parts, fillCatalogChunk(otherIds, want), want)).toBe(false)
+    // Other identities (other keys): the same pieces less one.
+    const shorter = encodeCatalogChunk(
+      unique.slice(1).map((a, i) => ({ id: 101 + i, identity: a.identity })),
+    )
+    expect(fillVerified(parts, fillCatalogChunk(shorter, want), want)).toBe(false)
+    // Bytes that do not read as a chunk.
+    expect(fillVerified(parts, good.subarray(0, good.length - 3), want)).toBe(false)
+    // A stored roll the incoming one may not replace (ordered rolls stay).
+    const stored = readCatalogChunk(good)
+    expect(fillVerified(stored, good, swapped)).toBe(true)
+    expect(fillVerified(stored, fillCatalogChunk(chunk, swapped), swapped)).toBe(false)
+  })
+})
+
+describe('chunkMatches', () => {
+  it('compares rolls: a merged chunk that dropped one does not match', async () => {
+    const entries = (await prepareSnapshot(capture(rolledPieces(4, 32)), { materials: MATERIALS }))
+      .good.artifacts
+    const moved = [...new Map(entries.map((a) => [artifactKeyString(a.identity), a])).values()].map(
+      (a, i) => ({ id: 300 + i, identity: a.identity, ...(a.rolls ? { rolls: a.rolls } : {}) }),
+    )
+    expect(moved.filter((e) => e.rolls)).toHaveLength(4)
+    expect(chunkMatches(encodeCatalogChunk(moved), moved)).toBe(true)
+    const one = moved.find((e) => e.rolls)!
+    const dropped = moved.map((e) => (e === one ? { id: e.id, identity: e.identity } : e))
+    expect(chunkMatches(encodeCatalogChunk(dropped), moved)).toBe(false)
+  })
+})
+
 // ------------------------------------------------------------- races, marks
 
 /** env.DB whose `at`-th batch first runs `hook` (another writer getting in between). */
@@ -558,6 +789,8 @@ describe('the held-list mark around fills', () => {
     await upload(importKey, more, 5_000)
     const moreRolled = capture([...pieces, ...newer], 10)
     const before = await markOf(account.id)
+    const storeWarn = vi.spyOn(console, 'warn')
+    const storeLog = vi.spyOn(console, 'log')
     const stored = await importSnapshot(
       racing(2, () => touchChunks(account.id)),
       { id: account.id, uid: String(UID) },
@@ -565,6 +798,14 @@ describe('the held-list mark around fills', () => {
     )
     expect(stored.response.status).toBe('created')
     expect(await markOf(account.id)).toEqual(before)
+    // Read from the store batch's own results, at the fills' index.
+    expect(storeWarn).toHaveBeenCalledWith(
+      'rolls_fill_lost',
+      JSON.stringify({ accountId: account.id, lost: 1 }),
+    )
+    expect(storeLog).not.toHaveBeenCalledWith('rolls_filled', expect.anything())
+    storeWarn.mockRestore()
+    storeLog.mockRestore()
   })
 })
 
@@ -675,6 +916,68 @@ describe('the daily merge of small chunks', () => {
     const now = await chunkRows(account.id)
     expect(now.map((r) => r.id)).toEqual(rows.map((r) => r.id))
     expect(now[1]!.data).toEqual(filled)
+  })
+
+  it('deletes nothing when its insert was skipped, even beside a look-alike chunk', async () => {
+    const { account, rows, good } = await twoChunks()
+    const plan = mergeChunkStatements(env.DB, account.id, rows)
+    expect(plan.merged).toBe(2)
+    const merged = [...rows.flatMap((r) => decodeCatalogChunk(r.data))].sort((a, b) => a.id - b.id)
+    // A fill lands on the second part (so the insert is skipped)...
+    const filled = fillCatalogChunk(rows[1]!.data, await rollsByKey(good))
+    await env.DB.prepare('UPDATE artifact_chunks SET data = ?2 WHERE id = ?1')
+      .bind(rows[1]!.id, filled)
+      .run()
+    // ...and an unrelated row of exactly the merged range and count exists.
+    await env.DB.prepare(
+      `INSERT INTO artifact_chunks (account_id, first_id, last_id, count, data)
+       VALUES (?1, ?2, ?3, ?4, ?5)`,
+    )
+      .bind(account.id, merged[0]!.id, merged.at(-1)!.id, merged.length, rows[0]!.data)
+      .run()
+    const before = await chunkRows(account.id)
+    expect(before).toHaveLength(3)
+    await env.DB.batch(plan.statements)
+    // The unchanged first part is not deleted: nothing was merged.
+    expect(await chunkRows(account.id)).toEqual(before)
+  })
+
+  it('deletes its parts only beside the merged row it inserted (id above every part)', async () => {
+    const { account, rows } = await twoChunks()
+    const plan = mergeChunkStatements(env.DB, account.id, rows)
+    const merged = [...rows.flatMap((r) => decodeCatalogChunk(r.data))].sort((a, b) => a.id - b.id)
+    // A row of the merged range and count below the parts' ids; the delete alone.
+    await env.DB.prepare(
+      `INSERT INTO artifact_chunks (id, account_id, first_id, last_id, count, data)
+       VALUES (-7, ?1, ?2, ?3, ?4, ?5)`,
+    )
+      .bind(account.id, merged[0]!.id, merged.at(-1)!.id, merged.length, rows[0]!.data)
+      .run()
+    const before = await chunkRows(account.id)
+    await plan.statements[1]!.run()
+    expect(await chunkRows(account.id)).toEqual(before)
+  })
+
+  it('leaves a group unmerged where one id has two identities, and logs it', async () => {
+    const { account, rows } = await twoChunks()
+    const [first] = decodeCatalogChunk(rows[0]!.data)
+    // A copy of the first chunk's first id with another identity, in a small chunk after.
+    const other = { ...first!.identity, level: first!.identity.level - 4 }
+    await env.DB.prepare(
+      `INSERT INTO artifact_chunks (account_id, first_id, last_id, count, data)
+       VALUES (?1, ?2, ?2, 1, ?3)`,
+    )
+      .bind(account.id, first!.id, encodeCatalogChunk([{ id: first!.id, identity: other }]))
+      .run()
+    const read = await chunkRows(account.id)
+    const warn = vi.spyOn(console, 'warn')
+    const plan = mergeChunkStatements(env.DB, account.id, read)
+    expect(warn).toHaveBeenCalledWith(
+      'rolls_merge_clash',
+      JSON.stringify({ accountId: account.id, groups: 1 }),
+    )
+    warn.mockRestore()
+    expect(plan).toMatchObject({ merged: 0, statements: [] })
   })
 
   it('carries rolls through, and keeps the copy with rolls of an id held twice', async () => {
@@ -805,6 +1108,87 @@ describe('reading the rolls back', () => {
     await env.DB.prepare('DELETE FROM artifact_chunks WHERE id = ?1').bind(row!.id).run()
     await insert(row!.data) // the roll-less copy now after the one with rolls
     await check()
+  })
+
+  it('gives a copy of an id with another identity none of the other copy’s rolls', async () => {
+    await setSwitch('1')
+    const { client } = await signUp()
+    const { account, importKey } = await newAccount(client)
+    const pieces = rolledPieces(10, 6)
+    await upload(importKey, capture(pieces), 1_000)
+    const [row] = await chunkRows(account.id)
+    const entries = decodeCatalogChunk(row!.data)
+    const x = entries.find((e) => e.rolls)!
+    const other = { ...x.identity, level: x.identity.level - 4 }
+    // An old merge left x's id a second time, with another identity and no rolls, read last.
+    await env.DB.prepare(
+      `INSERT INTO artifact_chunks (account_id, first_id, last_id, count, data)
+       VALUES (?1, ?2, ?2, 1, ?3)`,
+    )
+      .bind(account.id, x.id, encodeCatalogChunk([{ id: x.id, identity: other }]))
+      .run()
+    const catalog = await loadCatalog(env.DB, account.id, null)
+    // The identity read last stands, as before rolls; x's rolls do not go with it.
+    expect(catalog.get(x.id)).toEqual(other)
+    expect([...catalog.values()].filter((e) => e.rolls)).toHaveLength(9)
+    const base = `/api/accounts/${account.id}`
+    const rows = await client.json<CatalogRow[]>(`${base}/catalog`)
+    const xRow = rows.find((r) => r[0] === x.id)!
+    expect(xRow).toHaveLength(10)
+    expect(xRow[3]).toBe(other.level)
+    expect(rows.filter((r) => r.length === 11)).toHaveLength(9)
+    const [snapshot] = await client.json<SnapshotResponse[]>(`${base}/snapshots`)
+    const good = await client.json<Good>(`${base}/snapshots/${snapshot!.id}/good`)
+    expect(good.artifacts.filter((a) => a.gi_rolls)).toHaveLength(9)
+    expect(good.artifacts.filter((a) => a.level === other.level && !a.gi_rolls)).toHaveLength(1)
+
+    // A v1 row of that id is read last, as it always was: its identity
+    // stands; the chunk copy's rolls go with it only when the identity is the same.
+    const v1 = (identity: ArtifactIdentity) =>
+      env.DB.prepare(
+        `INSERT INTO artifacts (id, account_id, hash, set_key, slot_key, level, rarity,
+           main_stat_key, substats, unactivated_substats, total_rolls, elixer_crafted, created_at)
+         VALUES (?1, ?2, 'v1-x', ?3, ?4, ?5, ?6, ?7, ?8, '[]', ?9, 0, 0)`,
+      )
+        .bind(
+          x.id,
+          account.id,
+          identity.setKey,
+          identity.slotKey,
+          identity.level,
+          identity.rarity,
+          identity.mainStatKey,
+          JSON.stringify(
+            identity.substats.map((s) =>
+              s.initialValue === undefined ? [s.key, s.value] : [s.key, s.value, s.initialValue],
+            ),
+          ),
+          identity.totalRolls,
+        )
+        .run()
+    const y = entries.filter((e) => e.rolls)[1]!
+    await env.DB.prepare('DELETE FROM artifact_chunks WHERE account_id = ?1 AND count = 1')
+      .bind(account.id)
+      .run()
+    await v1(other)
+    const withV1 = await loadCatalog(env.DB, account.id, null)
+    expect(withV1.get(x.id)).toEqual(other)
+    await env.DB.prepare('DELETE FROM artifacts WHERE id = ?1').bind(x.id).run()
+    await v1(x.identity)
+    expect((await loadCatalog(env.DB, account.id, null)).get(x.id)!.rolls).toBe(x.rolls)
+    expect((await loadCatalog(env.DB, account.id, null)).get(y.id)!.rolls).toBe(y.rolls)
+    await env.DB.prepare('DELETE FROM artifacts WHERE id = ?1').bind(x.id).run()
+
+    // In the browser's reading of catalog rows alike: another identity takes
+    // none of the earlier rolls, the same identity keeps them.
+    const full = rows.find((r) => r.length === 11)!
+    const bare = full.slice(0, 10) as CatalogRow
+    const changed = [...bare] as CatalogRow
+    changed[3] = bare[3] - 4
+    expect(catalogFromRows([full, changed]).get(full[0])).not.toHaveProperty('rolls')
+    expect(catalogFromRows([full, changed]).get(full[0])!.level).toBe(changed[3])
+    expect(catalogFromRows([full, bare]).get(full[0])!.rolls).toBe(full[10])
+    expect(catalogFromRows([changed, full]).get(full[0])!.rolls).toBe(full[10])
   })
 })
 

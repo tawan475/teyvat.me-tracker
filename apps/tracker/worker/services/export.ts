@@ -20,8 +20,8 @@ import {
   deflateRaw,
   expandSubstats,
   exportedOff,
+  laterCopyRolls,
   leylineFileStem,
-  needsFill,
   storedSnapshotOf,
   v1SnapshotOf,
   writeBundle,
@@ -554,15 +554,20 @@ function identityOfRow(r: Record<string, unknown>): ArtifactIdentity {
   }
 }
 
-/** A catalog identity with its rolls, when the catalog knows them (never part of the identity). */
+/**
+ * A catalog identity with its rolls, when the catalog knows them (never part
+ * of the identity). The object carries `rolls` beside the identity fields:
+ * never pack, hash or store it whole; pick the identity's fields by name.
+ */
 export type CatalogIdentity = ArtifactIdentity & { rolls?: RollsText }
 
 /**
  * Catalog identities by id: v1 rows (all of the account's, or only `ids`)
  * and every compact chunk, which is where nearly all of them are. One id can
- * sit in two chunks (an old merge), read in no fixed order: its rolls are the
- * better copy's by `needsFill`, so a copy without rolls never replaces one
- * with them, whatever the order.
+ * sit in two chunks (an old merge), read in no fixed order: the identity is
+ * the last copy read (v1 rows last), as it always was, and its rolls as
+ * `laterCopyRolls` keeps them: another copy's only when its identity is the
+ * same, then a copy without rolls never replaces one with them.
  */
 export async function loadCatalog(
   d1: D1Database,
@@ -583,19 +588,27 @@ export async function loadCatalog(
   for (const row of chunks!.results) {
     for (const entry of decodeCatalogChunk(toBytes(row.data))) {
       if (wanted && !wanted.has(entry.id)) continue
-      // The identity is the last copy's, as ever; the rolls the better copy's.
-      const kept = catalog.get(entry.id)?.rolls
-      const rolls = needsFill(kept, entry.rolls) ? entry.rolls : kept
-      catalog.set(entry.id, rolls === undefined ? entry.identity : { ...entry.identity, rolls })
+      setCopy(catalog, entry.id, entry.identity, entry.rolls)
     }
   }
-  // v1 rows (pieces not in a chunk yet) have no rolls.
-  for (const row of rows!.results) {
-    if (catalog.get(row.id as number)?.rolls === undefined) {
-      catalog.set(row.id as number, identityOfRow(row))
-    }
-  }
+  // v1 rows (pieces not in a chunk yet) have no rolls of their own.
+  for (const row of rows!.results) setCopy(catalog, row.id as number, identityOfRow(row), undefined)
   return catalog
+}
+
+/** Reads one more copy of `id` into `catalog`: its identity stands, with the rolls laterCopyRolls keeps. */
+function setCopy(
+  catalog: Map<number, CatalogIdentity>,
+  id: number,
+  identity: ArtifactIdentity,
+  own: RollsText | undefined,
+): void {
+  const earlier = catalog.get(id)
+  const rolls = laterCopyRolls(earlier && { identity: earlier, rolls: earlier.rolls }, {
+    identity,
+    rolls: own,
+  })
+  catalog.set(id, rolls === undefined ? identity : { ...identity, rolls })
 }
 
 /**

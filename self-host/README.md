@@ -153,6 +153,18 @@ from `SITE_URL`.
   Stygian and Lunar Arcana cards) carry `SITE_URL`'s host, for example
   `tracker.example`, where teyvat.me's carry `teyvat.me`. Both are fixed
   when the image is built: change `.env`, then `docker compose up -d --build`.
+- **Exact artifact rolls** (the main README, "Exact artifact rolls"): the
+  tracker stores them only once the `rolls.store` setting is `1`. A new
+  self-host, which never ran an older tracker, may set it at install:
+
+  ```sh
+  docker compose exec tracker wrangler d1 execute DB --local --persist-to /data \
+    --config /app/apps/tracker/dist/genshin_data_tracker/wrangler.json --command \
+    "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1', unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value"
+  ```
+
+  Once it has been on, never go back to a tracker release from before exact
+  rolls (it cannot read the catalog any more).
 - **Capture against your copy:** in Teyvat.me Capture, under Advanced, set
   the tracker address to `SITE_URL` followed by `/api` (for example
   `https://tracker.example/api`), then sign in as usual. Supported for

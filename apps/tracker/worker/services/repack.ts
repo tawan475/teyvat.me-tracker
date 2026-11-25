@@ -602,8 +602,8 @@ interface MovedEntry {
   rolls?: RollsText
 }
 
-/** True when the chunk decodes to exactly these entries, rolls included. */
-function chunkMatches(data: Uint8Array, entries: readonly MovedEntry[]): boolean {
+/** True when the chunk decodes to exactly these entries, rolls included. (Exported for tests.) */
+export function chunkMatches(data: Uint8Array, entries: readonly MovedEntry[]): boolean {
   const decoded = decodeCatalogChunk(data)
   return (
     decoded.length === entries.length &&
@@ -678,8 +678,11 @@ async function mergeSmallChunks(d1: D1Database, limit: number): Promise<number> 
 /**
  * The statements that merge an account's small chunk rows (as read, by
  * first id) into chunks of up to CATALOG_CHUNK_SIZE, and how many rows they
- * replace. Rolls go with their entries; when one id sits in two rows, the
- * copy with the better rolls (`needsFill`) is kept. Each merge is written
+ * replace. Rolls go with their entries. When one id sits in two rows, the
+ * first copy (by first id) is kept, as it always was, with the better rolls
+ * (`needsFill`) of the copies whose identity is the same as its own; a group
+ * where one id has two different identities is left unmerged (merging would
+ * have to drop one) and counted in `rolls_merge_clash`. Each merge is written
  * only while every part row still holds the bytes read here, so a fill that
  * lands in between is never overwritten by a copy without it.
  */
@@ -690,6 +693,7 @@ export function mergeChunkStatements(
 ): { statements: D1PreparedStatement[]; merged: number } {
   const statements: D1PreparedStatement[] = []
   let merged = 0
+  let clashes = 0
   let group: { parts: { id: number; data: Uint8Array }[]; entries: MovedEntry[] } = {
     parts: [],
     entries: [],
@@ -697,15 +701,26 @@ export function mergeChunkStatements(
   const flush = () => {
     if (group.parts.length > 1) {
       const byId = new Map<number, MovedEntry>()
+      let clash = false
       for (const entry of group.entries) {
         const kept = byId.get(entry.id)
-        if (!kept || needsFill(kept.rolls, entry.rolls)) byId.set(entry.id, entry)
+        if (!kept) {
+          byId.set(entry.id, entry)
+        } else if (artifactIdentityText(kept.identity) !== artifactIdentityText(entry.identity)) {
+          clash = true
+        } else if (needsFill(kept.rolls, entry.rolls)) {
+          byId.set(entry.id, { id: kept.id, identity: kept.identity, rolls: entry.rolls! })
+        }
       }
       const entries = [...byId.values()].sort((a, b) => a.id - b.id)
-      const data = encodeCatalogChunk(entries)
-      if (chunkMatches(data, entries)) {
-        statements.push(...mergeStatements(d1, accountId, group.parts, entries, data))
-        merged += group.parts.length
+      if (clash) {
+        clashes++
+      } else {
+        const data = encodeCatalogChunk(entries)
+        if (chunkMatches(data, entries)) {
+          statements.push(...mergeStatements(d1, accountId, group.parts, entries, data))
+          merged += group.parts.length
+        }
       }
     }
     group = { parts: [], entries: [] }
@@ -724,13 +739,18 @@ export function mergeChunkStatements(
     group.entries.push(...entries)
   }
   flush()
+  if (clashes > 0) {
+    console.warn('rolls_merge_clash', JSON.stringify({ accountId, groups: clashes }))
+  }
   return { statements, merged }
 }
 
 /**
  * One merged chunk in place of `parts`, only while all of them are still
  * there holding the bytes they were read with; the parts are deleted only
- * when they still hold them and the merged chunk is there.
+ * when all of them still hold them and the merged chunk this batch inserted
+ * is there (a row of that range whose id is above every part's: the insert
+ * comes after them all).
  */
 function mergeStatements(
   d1: D1Database,
@@ -756,10 +776,18 @@ function mergeStatements(
     d1
       .prepare(
         `DELETE FROM artifact_chunks WHERE account_id = ?1 AND id IN (${unchanged})
+         AND (SELECT count(*) FROM (${unchanged})) = ?6
          AND EXISTS (SELECT 1 FROM artifact_chunks WHERE account_id = ?1 AND first_id = ?3
-                     AND last_id = ?4 AND count = ?5
-                     AND id NOT IN (SELECT json_extract(value, '$[0]') FROM json_each(?2)))`,
+                     AND last_id = ?4 AND count = ?5 AND id > ?7)`,
       )
-      .bind(accountId, read, first, last, entries.length),
+      .bind(
+        accountId,
+        read,
+        first,
+        last,
+        entries.length,
+        parts.length,
+        Math.max(...parts.map((part) => part.id)),
+      ),
   ]
 }

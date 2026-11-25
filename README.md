@@ -203,12 +203,24 @@ byte for byte). An import writes them on new pieces, and onto pieces the
 catalog already has by a compare-and-swap of each chunk row
 (`UPDATE … WHERE data = <the bytes read> RETURNING id`) in the batch that
 stores the snapshot or records it as seen again; the swap copies the
-identity bytes untouched and rewrites only the rolls block. A swap that
-finds its row changed is dropped (logged `rolls_fill_lost`); no held-list
-mark is written in a batch that carries a fill, so the next upload of the
-list reads it in full and fills again. The daily maintenance carries rolls
-through when it merges small chunks and writes a merge only while every part
-still holds the bytes it read. The catalog route gives a piece's rolls as
+identity bytes untouched and rewrites only the rolls block. One batch
+carries at most 16 such swaps (`FILLS_PER_BATCH`): a first fill of a long
+history is spread over the next uploads. Swaps that land are logged
+`rolls_filled` (rows, pieces); a swap that finds its row changed is dropped
+(logged `rolls_fill_lost`). No held-list mark is written in a batch that
+carries a fill or leaves rows for later, so the next upload of the list
+reads it in full: after a lost swap it fills again, after a full fill it
+finds nothing left and writes the mark. A fill that fails its own check
+before it is sent is left out (logged `rolls_fill_mismatch`) and does not
+keep the list unmarked. Pieces still in the v1 `artifacts` table (not yet
+in a chunk) get no rolls. The daily maintenance carries rolls through when
+it merges small chunks and writes a merge (and deletes its parts) only
+while every part still holds the bytes it read. Where one id sits in two
+chunks (an old merge), a copy's rolls go only with its own identity: the
+identity read is the one read before rolls existed, and another copy's
+rolls are taken only when that copy's identity is the same (the merge
+leaves a group with two different identities under one id unmerged, logged
+`rolls_merge_clash`). The catalog route gives a piece's rolls as
 the row's eleventh element and the GOOD export as `gi_rolls`, checked again
 on the way out. Two pieces identical in every stored value (set, slot,
 level, main stat, every substat and starting value) are one catalog entry,
@@ -217,17 +229,34 @@ another (the import logs how many such conflicts it saw as
 `rolls_conflict`, a count).
 - **The switch.** Writing rolls is off until the `site_settings` row
   `rolls.store` is `1` (read in the import's first batch; nothing else
-  turns it on, no UI). While off, uploads are read and checked as ever,
-  nothing writes rolls and no format 3/4 chunk comes to exist; it is also
-  the kill switch. To turn it on (or off: `'0'`, or delete the row):
+  turns it on, no UI). It is also the kill switch. Off stops new rolls from
+  being stored, nothing more: uploads are read and checked as ever, no
+  chunk gets rolls written onto it and, as long as it has never been on, no
+  format 3/4 chunk comes to exist; rolls already stored keep being read,
+  exported and carried through the daily merge. A list whose rolls the
+  switch kept out is still marked held while off, with a flag (`w` in the
+  mark's info), so uploads of it stay cheap; the moment the switch is on, a
+  flagged mark no longer holds, so the first upload of such a list after
+  turning it on is read in full once and filled. To turn it on (or off:
+  `'0'`, or delete the row):
   `pnpm --filter @gdt/tracker exec wrangler d1 execute gdt --remote --command
   "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1',
   unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value,
   updated_at = excluded.updated_at"` (local: `--local`).
-- **No rollback past it.** Every import and export decodes every chunk of
-  the account, and a Worker from before rolls throws on formats 3 and 4.
-  Once the switch has been on, the Worker must never be rolled back to a
-  build that cannot read those formats.
+- **Turning it on, a checklist.** (1) Set the row as above. (2) Upload one
+  account that carries `gi_rolls`. (3) Read that account's catalog route
+  (`GET /api/accounts/<id>/catalog`): filled pieces have an eleventh
+  element. (4) Watch the Worker's logs for a day: `rolls_filled` (fills
+  landing), `rolls_fill_lost` and `rolls_fill_mismatch` (should stay rare).
+  (5) Only then release a capture app that sends `gi_rolls`. Until this has
+  been done once, the compare-and-swap (`data = <the bytes read>`) has run
+  only on the local D1 engine (the tests), never on the production database.
+- **No rollback past it.** Exports, catalog requests and every import that
+  reads the artifact list decode every chunk of the account, and a Worker
+  from before rolls throws on formats 3 and 4. Once the switch has been on,
+  the Worker must never be rolled back to a build that cannot read those
+  formats (a self-hosted site that never ran an older Worker may set the row
+  at install: `self-host/README.md`).
 - **When a piece's rolls never arrive.** The exact re-upload of a capture
   (same capture time) writes nothing, fills included, so rolls are lost for
   good only for pieces that left the bag before an ordinary upload could

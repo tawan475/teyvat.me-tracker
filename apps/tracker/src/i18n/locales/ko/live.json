@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "실시간 동기화가 {size} 더 보관 중 (gdt-live)",
-  "presence": {
-    "seen": "마지막 수신 {time}",
-    "playing": "{device}에서 플레이 중",
-    "running": "{device}에서 게임 실행 중",
-    "wishes": "기원 동기화",
-    "wishesTitle": "Teyvat.me Capture가 지금 기원 기록을 동기화합니다(먼저 게임에서 기원 → 기록을 한 번 여세요)",
-    "snapshot": "데이터 보내기",
-    "snapshotTitle": "Teyvat.me Capture가 지금 최신 데이터를 보냅니다",
-    "waiting": "Capture 기다리는 중…",
-    "sent": {
-      "wishes": "Capture에 기원 동기화를 요청했습니다",
-      "snapshot": "Capture에 데이터 전송을 요청했습니다"
-    },
-    "notSent": "보내지 못했습니다"
-  },
   "justSynced": {
     "mark": "동기화 {time}",
     "title": "{time}에 실시간 동기화로 완료됨. 필터를 바꿀 때까지 표시됩니다",

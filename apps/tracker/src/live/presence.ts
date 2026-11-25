@@ -1,11 +1,10 @@
 /**
  * Teyvat.me Capture playing an account now (docs/plans/capture-link.md): what
  * `GET /api/accounts/:id/presence` and the live `presence` event say, kept per
- * account for the pages that show it (the store and its 25-minute expiry are
- * in presence-store.ts).
+ * account for the pages that read it (the Planner's resin lock; the store and
+ * its 25-minute expiry are in presence-store.ts).
  */
 
-import type { CaptureCommandKind } from '@gdt/shared'
 import { api } from '@/api'
 import { setPresence } from './presence-store'
 
@@ -26,9 +25,4 @@ export function loadPresence(accountId: number): Promise<void> {
     loading.set(accountId, pending)
   }
   return pending
-}
-
-/** Asks that Capture to act; the answer (and its later event) say what waits. */
-export async function sendCommand(accountId: number, kind: CaptureCommandKind): Promise<void> {
-  setPresence(accountId, await api.captureCommand(accountId, kind))
 }

@@ -64,7 +64,7 @@ Errors are RFC 9457 problem details (`application/problem+json`). `code` is the 
 | 401 | `token_invalid`, `token_expired`, `unauthenticated` | No usable token |
 | 403 | `scope_missing`, `account_not_in_token`, `forbidden`, `account_suspended` | Not allowed |
 | 404 | `not_found` | No such thing, or not yours |
-| 409 | `uid_taken`, `capture_changed`, `not_playing` | The state doesn’t allow it now |
+| 409 | `uid_taken`, `capture_changed` | The state doesn’t allow it now |
 | 413 / 422 / 429 | `storage_quota`, `too_many_items`, `daily_upload_limit` | Upload limits |
 | 429 | `rate_limited` | A rate limit: wait `Retry-After` seconds |
 
@@ -4619,7 +4619,7 @@ Errors: `not_found`, `rate_limited`.
 
 ### GET /api/v1/accounts/{id}/presence
 
-Is Capture playing it. Teyvat.me Capture’s presence for the account, and commands waiting for it.
+Is Capture playing it. Teyvat.me Capture’s presence for the account (`pending` is always empty).
 
 - Scope: capture · Read
 
@@ -4643,57 +4643,6 @@ Answer `data`:
  "description": "`presence` (null: Capture is not playing it) and `pending` commands"
 }
 ```
-
-### POST /api/v1/accounts/{id}/capture-commands
-
-Ask Capture to sync. `wishes` (sync the wish history) or `snapshot` (send a full capture). 409 `not_playing` when Capture isn’t on the account.
-
-- Scope: capture · Write
-
-- Bucket: `write` (10 / min free, 30 / min supporter, per account)
-
-Body:
-```json
-{
- "$schema": "https://json-schema.org/draft/2020-12/schema",
- "type": "object",
- "properties": {
-  "kind": {
-   "type": "string",
-   "enum": [
-    "wishes",
-    "snapshot"
-   ]
-  }
- },
- "required": [
-  "kind"
- ]
-}
-```
-
-Example:
-```bash
-curl -X POST "https://teyvat.me/api/v1/accounts/12/capture-commands" \
-  -H "Authorization: Bearer $TEYVAT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"kind":"snapshot"}'
-```
-
-Answer `data`:
-```json
-{
- "$schema": "https://json-schema.org/draft/2020-12/schema",
- "type": "object",
- "propertyNames": {
-  "type": "string"
- },
- "additionalProperties": {},
- "description": "The presence after the command"
-}
-```
-
-Errors: `not_playing`, `rate_limited`.
 
 ## Game events
 

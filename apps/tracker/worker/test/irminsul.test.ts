@@ -822,6 +822,9 @@ describe('D1 cost', () => {
     expect(first.trips).toBe(1)
     expect(first.body.whoami).toMatchObject({ scope: 'uid' })
     expect(first.body.alerts).toBeNull()
+    // No website commands any more (2026-11-26), and always the idle beat.
+    expect(first.body.commands).toEqual([])
+    expect(first.body.next).toBe(600)
     // This device's alerts come from that same row.
     await env.DB.prepare(
       `UPDATE user_sessions SET alerts = ?2 WHERE user_id = ?1 AND method = 'irminsul'`,

@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "Live sync keeps {size} more (gdt-live)",
-  "presence": {
-    "seen": "Last heard {time}",
-    "playing": "Playing now on {device}",
-    "running": "Game open on {device}",
-    "wishes": "Sync wishes",
-    "wishesTitle": "Teyvat.me Capture syncs your wish history now (open Wish → History in game once first)",
-    "snapshot": "Send a capture",
-    "snapshotTitle": "Teyvat.me Capture sends a fresh capture now",
-    "waiting": "Waiting for Capture…",
-    "sent": {
-      "wishes": "Asked Capture to sync wishes",
-      "snapshot": "Asked Capture to send a capture"
-    },
-    "notSent": "Not sent"
-  },
   "justSynced": {
     "mark": "Synced {time}",
     "title": "Finished by live sync at {time}; it stays until the filters change",

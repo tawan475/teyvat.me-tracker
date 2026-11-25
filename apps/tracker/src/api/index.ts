@@ -10,7 +10,6 @@ import type {
   ApiTokenCreate,
   ApiTokenCreatedResponse,
   ApiTokensResponse,
-  CaptureCommandKind,
   DeviceAlerts,
   DeviceAlertsPatch,
   PresenceResponseForAccount,
@@ -290,11 +289,6 @@ export const api = {
   capturePresence: (accountId: number) =>
     requestJson<PresenceResponseForAccount>(`/api/accounts/${accountId}/presence`, {
       cache: 'no-store',
-    }),
-  captureCommand: (accountId: number, kind: CaptureCommandKind) =>
-    requestJson<PresenceResponseForAccount>(`/api/accounts/${accountId}/capture-command`, {
-      method: 'POST',
-      json: { kind },
     }),
   alertFacts: (accountId: number, facts: Record<string, unknown>) =>
     accountWrite(

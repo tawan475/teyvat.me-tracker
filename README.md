@@ -1193,15 +1193,27 @@ Plan and contract: `docs/plans/capture-link.md`.
   Worker has **both** secrets `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY`
   (`GET /api/push/config`).
 - **Capture presence.** Teyvat.me Capture posts `POST /api/irminsul/presence`
-  while the game runs; Overview and the Planner show "Playing now on <PC>"
-  with Sync wishes / Send a capture (editors), delivered at its next
-  heartbeat. Live event `{type: "presence"}`. A beat costs one D1 round
-  trip; the hub stores it only when it changes or the kept one is 4.5
-  minutes old (every beat while two Captures play one account), so "last
-  seen" can lag by that much; each stored beat is told to the owner's open
-  pages (a shared account's members are not told: their "Playing now" ends
-  25 minutes after their page read it). Capture beats every 60 s while a page is in view, else
-  every 600 s; presence expires 25 minutes after the last stored beat.
+  while the game runs; the answer carries whoami and this device's alert
+  settings, and the hub keeps the "game is running" signal that alerts' "Not
+  while playing", the Planner's resin lock and the staff Online table read
+  (`GET /api/accounts/:id/presence`, live event `{type: "presence"}`). A
+  beat costs one D1 round trip and one hub call; the hub stores it only when
+  it changes or the kept one is 4.5 minutes old (every beat while two
+  Captures play one account); each stored beat is told to the owner's open
+  pages (a shared account's members are not told: their copy ends 25
+  minutes after their page read it). Capture beats every 600 s (`next`,
+  whether or not a page is in view; builds that cap it at 300 s beat every
+  300 s), so the resin lock and "Not while playing" follow the game within
+  one beat: up to 5 minutes on released builds, 10 on the next. Presence
+  expires 25 minutes after the last stored beat.
+- **Removed on 2026-11-26 (the owner's decision):** the "Playing now" card
+  on Overview and the Planner, and the website commands (Sync wishes / Send
+  a capture) with their queue. The heartbeat's `commands` is always `[]` and
+  the presence read's `pending` always `[]` (both kept for released builds
+  and cached pages); `POST /api/accounts/:id/capture-command` answers 409
+  `not_playing`, which an old cached page shows as its "Not sent" toast. The
+  in-view speed-up (60 s beats) went with them; `/api/v1` lost
+  `POST /accounts/{id}/capture-commands`.
 
 **Setup:** make a P-256 key pair once (base64url: the 65-byte public point,
 the 32-byte private scalar), then from `apps/tracker`:

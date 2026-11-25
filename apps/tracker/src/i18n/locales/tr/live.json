@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "Canlı senkronizasyon {size} daha tutuyor (gdt-live)",
-  "presence": {
-    "seen": "Son sinyal {time}",
-    "playing": "Şu an {device} cihazında oynanıyor",
-    "running": "Oyun {device} cihazında açık",
-    "wishes": "Dilekleri eşitle",
-    "wishesTitle": "Teyvat.me Capture dilek geçmişini şimdi eşitler (önce oyunda bir kez Dilek → Geçmiş'i açın)",
-    "snapshot": "Veri gönder",
-    "snapshotTitle": "Teyvat.me Capture şimdi yeni veri gönderir",
-    "waiting": "Capture bekleniyor…",
-    "sent": {
-      "wishes": "Capture'dan dilekleri eşitlemesi istendi",
-      "snapshot": "Capture'dan veri göndermesi istendi"
-    },
-    "notSent": "Gönderilmedi"
-  },
   "justSynced": {
     "mark": "Eşitlendi {time}",
     "title": "{time} saatinde canlı eşitlemeyle tamamlandı; filtreler değişene kadar görünür",

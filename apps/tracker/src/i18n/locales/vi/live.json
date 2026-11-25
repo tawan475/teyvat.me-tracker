@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "Đồng bộ trực tiếp lưu thêm {size} (gdt-live)",
-  "presence": {
-    "seen": "Lần cuối {time}",
-    "playing": "Đang chơi trên {device}",
-    "running": "Game đang mở trên {device}",
-    "wishes": "Đồng bộ cầu nguyện",
-    "wishesTitle": "Teyvat.me Capture đồng bộ lịch sử cầu nguyện ngay (mở Cầu Nguyện → Lịch Sử trong game một lần trước)",
-    "snapshot": "Gửi dữ liệu",
-    "snapshotTitle": "Teyvat.me Capture gửi dữ liệu mới ngay bây giờ",
-    "waiting": "Đang chờ Capture…",
-    "sent": {
-      "wishes": "Đã nhờ Capture đồng bộ cầu nguyện",
-      "snapshot": "Đã nhờ Capture gửi dữ liệu"
-    },
-    "notSent": "Chưa gửi được"
-  },
   "justSynced": {
     "mark": "Đã đồng bộ {time}",
     "title": "Hoàn thành qua đồng bộ trực tiếp lúc {time}; vẫn hiện cho đến khi đổi bộ lọc",

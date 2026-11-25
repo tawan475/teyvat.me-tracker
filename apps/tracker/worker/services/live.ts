@@ -33,7 +33,6 @@
 
 import {
   LIVE_SESSION_ENDED_CLOSE,
-  type CaptureCommandKind,
   type LiveAccount,
   type LiveEvent,
   type PresenceResponseForAccount,
@@ -48,12 +47,10 @@ import {
   fire,
   heartbeat,
   presenceFor,
-  queueCommand,
   reloadDevices,
   rememberUser,
   schedule,
   sendTest,
-  type Command,
   type FireReport,
   type Heartbeat,
   type HubContext,
@@ -88,19 +85,17 @@ interface Attachment {
 const VIEW_MESSAGES = new Set(['shown', 'hidden'])
 
 /**
- * Capture's heartbeat interval (s): short while a page is in view, so a
- * command from the site is picked up soon; long otherwise (most of the day a
- * tab sits in the background: every 15 s was 6,000 requests a day per PC;
- * 120 s idle was still ~40% of the Worker's requests, 2026-11-02; 30 s in
- * view was still 16%, 2026-11-06: a command now waits up to a minute; idle
- * 300 s until 2026-11-26. Capture builds that cap `next` at 300 s keep
- * beating every 300 s against 600).
+ * Capture's heartbeat interval (s), always (every 15 s was 6,000 requests a
+ * day per PC; 120 s idle was still ~40% of the Worker's requests, 2026-11-02).
+ * It was 60 s while a page was in view, so a website command was picked up
+ * soon; website commands were removed on 2026-11-26 and the speed-up with
+ * them. Capture builds that cap `next` at 300 s keep beating every 300 s.
+ * The stored presence (alerts' "Not while playing", the Planner's resin lock)
+ * follows the game within one beat.
  */
-export const WATCHED_NEXT_S = 60
 export const IDLE_NEXT_S = 600
 /**
- * "A page is in view" (one notion for Capture's heartbeat `next` and a live
- * batch's `watching`): some open socket whose browser has not said `hidden`
+ * "A page is in view" (a live batch's `watching`): some open socket whose browser has not said `hidden`
  * since, and that connected, said `shown` or pinged this recently. A visible
  * tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden one never,
  * so a browser that crashed while shown counts at most this long after its
@@ -408,47 +403,24 @@ export class LiveHub extends DurableObject<Env> {
   }
 
   /**
-   * A Capture's heartbeat: kept, and the commands waiting for it handed
-   * over. Pages showing an account whose presence changed are told.
-   * `next`: seconds to its next heartbeat (sooner while a page is in view).
+   * A Capture's heartbeat: kept. Pages showing an account whose presence
+   * changed are told (the Planner's resin lock follows it).
    */
-  async presence(
-    userId: number,
-    beat: Heartbeat,
-  ): Promise<{ commands: Pick<Command, 'id' | 'kind'>[]; next: number }> {
-    const { commands, changed } = await heartbeat(this.hub, beat)
+  async presence(userId: number, beat: Heartbeat): Promise<void> {
+    const { changed } = await heartbeat(this.hub, beat)
     for (const accountId of changed) await this.tellPresence(userId, accountId)
-    return {
-      commands: commands.map(({ id, kind }) => ({ id, kind })),
-      next: this.inView() ? WATCHED_NEXT_S : IDLE_NEXT_S,
-    }
   }
 
   async presenceOf(accountId: number): Promise<PresenceResponseForAccount> {
     return presenceFor(this.hub, accountId)
   }
 
-  /** The website asks the Capture playing `accountId` to do something; null when none plays it. */
-  async command(
-    userId: number,
-    accountId: number,
-    kind: CaptureCommandKind,
-  ): Promise<PresenceResponseForAccount | null> {
-    const answer = await queueCommand(this.hub, accountId, kind)
-    if (answer) await this.tellPresence(userId, accountId, answer)
-    return answer
-  }
-
-  private async tellPresence(
-    userId: number,
-    accountId: number,
-    state?: PresenceResponseForAccount,
-  ): Promise<void> {
+  private async tellPresence(userId: number, accountId: number): Promise<void> {
     if (this.open().length === 0) return
     await this.notify(userId, {
       type: 'presence',
       accountId,
-      ...(state ?? (await presenceFor(this.hub, accountId))),
+      ...(await presenceFor(this.hub, accountId)),
     })
   }
 

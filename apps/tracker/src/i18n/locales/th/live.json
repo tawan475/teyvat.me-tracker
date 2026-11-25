@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "ซิงก์สดเก็บเพิ่มอีก {size} (gdt-live)",
-  "presence": {
-    "seen": "ติดต่อล่าสุด {time}",
-    "playing": "กำลังเล่นบน {device}",
-    "running": "เปิดเกมอยู่บน {device}",
-    "wishes": "ซิงก์ประวัติอธิษฐาน",
-    "wishesTitle": "Teyvat.me Capture จะซิงก์ประวัติการอธิษฐานตอนนี้ (เปิด อธิษฐาน → ประวัติ ในเกมก่อนหนึ่งครั้ง)",
-    "snapshot": "ส่งข้อมูล",
-    "snapshotTitle": "Teyvat.me Capture จะส่งข้อมูลล่าสุดตอนนี้",
-    "waiting": "กำลังรอ Capture…",
-    "sent": {
-      "wishes": "ขอให้ Capture ซิงก์ประวัติอธิษฐานแล้ว",
-      "snapshot": "ขอให้ Capture ส่งข้อมูลแล้ว"
-    },
-    "notSent": "ส่งไม่สำเร็จ"
-  },
   "justSynced": {
     "mark": "ซิงก์ {time}",
     "title": "เสร็จด้วยการซิงก์สดเมื่อ {time} จะแสดงอยู่จนกว่าจะเปลี่ยนตัวกรอง",

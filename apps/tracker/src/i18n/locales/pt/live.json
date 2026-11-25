@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "A sincronização ao vivo guarda mais {size} (gdt-live)",
-  "presence": {
-    "seen": "Último sinal {time}",
-    "playing": "Jogando agora em {device}",
-    "running": "Jogo aberto em {device}",
-    "wishes": "Sincronizar orações",
-    "wishesTitle": "O Teyvat.me Capture sincroniza seu histórico de orações agora (abra Oração → Histórico no jogo uma vez antes)",
-    "snapshot": "Enviar captura",
-    "snapshotTitle": "O Teyvat.me Capture envia uma captura nova agora",
-    "waiting": "Aguardando o Capture…",
-    "sent": {
-      "wishes": "Pedido ao Capture para sincronizar orações",
-      "snapshot": "Pedido ao Capture para enviar uma captura"
-    },
-    "notSent": "Não enviado"
-  },
   "justSynced": {
     "mark": "Sincronizado {time}",
     "title": "Concluído pela sincronização ao vivo às {time}; fica visível até mudar os filtros",

@@ -11,7 +11,7 @@ import {
 } from '@gdt/shared'
 import { env, runInDurableObject } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
-import { IDLE_NEXT_S, WATCHED_NEXT_S, liveHub, type LiveHub } from '../services/live'
+import { IDLE_NEXT_S, liveHub, type LiveHub } from '../services/live'
 import { RESIN_STEP_MS, alertMessage, type AccountFacts } from '../services/alerts'
 import { parseLiveEvent } from '@/live/policy'
 import { PRESENCE_TTL_MS as PAGE_TTL_MS, presenceOf, setPresence } from '@/live/presence-store'
@@ -22,7 +22,6 @@ import {
   addFacts,
   heartbeat,
   presenceFor,
-  queueCommand,
   schedule,
   type Heartbeat,
   type HubContext,
@@ -355,9 +354,9 @@ describe('alerts on every device', () => {
   })
 })
 
-describe('Capture presence and commands', () => {
-  it('shows who plays, hands over the website commands once, and ends on stop', async () => {
-    const { client, account, importKey } = await setup()
+describe('Capture presence', () => {
+  it('shows who plays, takes no website commands, and ends on stop', async () => {
+    const { client, me, account, importKey } = await setup()
     const first = (await (
       await presence(importKey, {
         state: 'decoding',
@@ -378,19 +377,29 @@ describe('Capture presence and commands', () => {
       platform: 'windows',
     })
 
-    const asked = await client.json<PresenceResponseForAccount>(
-      `/api/accounts/${account.id}/capture-command`,
-      { method: 'POST', json: { kind: 'snapshot' } },
-    )
-    expect(asked.pending).toEqual(['snapshot'])
+    // Old cached pages still read `pending`: always empty.
+    expect(shown.pending).toEqual([])
+
+    // Website commands were removed (2026-11-26): an old cached page's button
+    // gets the refusal it already shows as "not sent", while Capture plays too.
+    const asked = await client.fetch(`/api/accounts/${account.id}/capture-command`, {
+      method: 'POST',
+      json: { kind: 'snapshot' },
+    })
+    expect(asked.status).toBe(409)
+    expect(await asked.json()).toMatchObject({ error: { code: 'not_playing' } })
     const beat = (await (
       await presence(importKey, { state: 'decoding', uid: 812345678 })
     ).json()) as PresenceResponse
-    expect(beat.commands.map((c) => c.kind)).toEqual(['snapshot'])
-    const next = (await (
-      await presence(importKey, { state: 'decoding', uid: 812345678 })
-    ).json()) as PresenceResponse
-    expect(next.commands).toEqual([])
+    expect(beat).toEqual({ next: IDLE_NEXT_S, commands: [], alerts: null })
+    // Nothing was queued in the hub.
+    const commandKeys = await runInDurableObject(
+      liveHub(env, me.id),
+      async (_hub: LiveHub, state) => [
+        ...(await state.storage.list({ prefix: 'commands:' })).keys(),
+      ],
+    )
+    expect(commandKeys).toEqual([])
 
     await presence(importKey, { state: 'stopped', uid: 812345678 })
     const gone = await client.json<PresenceResponseForAccount>(
@@ -404,18 +413,15 @@ describe('Capture presence and commands', () => {
     expect(refused.status).toBe(409)
   })
 
-  it('beats sooner only while a page is in view', async () => {
-    const { client, me, importKey } = await setup()
+  it('answers the idle beat with and without a page in view', async () => {
+    const { client, account, importKey } = await setup()
     const beat = async () =>
-      (
-        (await (
-          await presence(importKey, { state: 'decoding', uid: 812345678 })
-        ).json()) as PresenceResponse
-      ).next
+      (await (
+        await presence(importKey, { state: 'decoding', uid: 812345678 })
+      ).json()) as PresenceResponse
     // Nobody looking: the idle beat, ten minutes.
     expect(IDLE_NEXT_S).toBe(600)
-    expect(WATCHED_NEXT_S).toBe(60)
-    expect(await beat()).toBe(IDLE_NEXT_S)
+    expect(await beat()).toMatchObject({ next: IDLE_NEXT_S, commands: [] })
 
     const response = await client.fetch('/api/live', {
       headers: { upgrade: 'websocket', origin: ORIGIN },
@@ -423,16 +429,12 @@ describe('Capture presence and commands', () => {
     expect(response.status).toBe(101)
     const socket = response.webSocket!
     socket.accept()
-    // Just connected: in view.
-    expect(await beat()).toBe(WATCHED_NEXT_S)
-
-    // Connected long ago and never pinged since: a hidden tab.
-    await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {
-      for (const ws of state.getWebSockets()) {
-        ws.serializeAttachment({ ...ws.deserializeAttachment(), at: Date.now() - 7 * 60_000 })
-      }
-    })
-    expect(await beat()).toBe(IDLE_NEXT_S)
+    // Just connected (in view): still the idle beat, and the presence is still kept.
+    expect(await beat()).toMatchObject({ next: IDLE_NEXT_S, commands: [] })
+    const shown = await client.json<PresenceResponseForAccount>(
+      `/api/accounts/${account.id}/presence`,
+    )
+    expect(shown).toMatchObject({ presence: { state: 'decoding' }, pending: [] })
     socket.close()
   })
 
@@ -475,13 +477,11 @@ describe('Capture presence and commands', () => {
       3, 4,
     ])
     expect(puts()).toBe(5)
-    // A command waits in its own key and still reaches the next beat, which writes nothing.
-    expect(await queueCommand(hub, 4, 'wishes')).toMatchObject({ pending: ['wishes'] })
-    expect(puts()).toBe(6)
+    // The same beat a second later writes nothing (and no command key: none are kept).
     clock.now += 1_000
-    const next = await beat({ state: 'running', app: '1.18.5', accountId: 4 })
-    expect(next.commands.map((c) => c.kind)).toEqual(['wishes'])
-    expect(puts()).toBe(6)
+    await beat({ state: 'running', app: '1.18.5', accountId: 4 })
+    expect(puts()).toBe(5)
+    expect(await hub.storage.get('commands:7')).toBeUndefined()
     // An unwritten beat never makes the entry look gone: it expires PRESENCE_TTL_MS
     // after the last written one, as before.
     const written = clock.now - 1_000
@@ -560,26 +560,22 @@ describe('Capture presence and commands', () => {
       expect(presenceOf(account.id, clock.now)?.presence?.at ?? null).toBe(at)
     }
 
-    expect(await beat()).toBe(WATCHED_NEXT_S)
+    expect(await beat()).toBe(IDLE_NEXT_S)
     // The page loads it once.
     setPresence(
       account.id,
       await client.json<PresenceResponseForAccount>(`/api/accounts/${account.id}/presence`),
     )
     await shows(start)
-    // Ten minutes in view (60 s beats), then twenty more of idle beats (600 s): nothing changes.
-    for (let minute = 1; minute <= 10; minute++) {
+    // Half an hour of idle beats (600 s) with the page in view: nothing changes.
+    for (const minute of [10, 20, 30]) {
       clock.now = start + minute * 60_000
-      await beat()
-    }
-    for (const minute of [20, 30]) {
-      clock.now = start + minute * 60_000
-      await beat()
+      expect(await beat()).toBe(IDLE_NEXT_S)
     }
     await shows(start + 30 * 60_000)
     // Half an hour later it still plays; the page asked nothing, it was told the rewrites only.
     expect(presenceOf(account.id, clock.now)?.presence?.state).toBe('decoding')
-    expect(told).toBeLessThan(12)
+    expect(told).toBeLessThan(5)
 
     // The app crashes: no word, gone after the expiry, on the page and on the server.
     const last = clock.now
@@ -592,6 +588,14 @@ describe('Capture presence and commands', () => {
       `/api/accounts/${account.id}/presence`,
     )
     expect(server.presence).toBeNull()
+
+    // It comes back, then the game closes: the page hears both at once (what
+    // the Planner's resin lock reads: `state === 'decoding'`).
+    await beat()
+    await shows(clock.now)
+    expect(presenceOf(account.id, clock.now)?.presence?.state).toBe('decoding')
+    await beat('stopped')
+    await shows(null)
     socket.close()
   })
 
@@ -843,30 +847,35 @@ describe('presence review cases', () => {
     await presenceFor(hub, 3)
     expect(await hub.storage.get('presence:2')).toBeDefined()
   })
-  it('an entry deleted that way takes its queued commands with it; a live one keeps its own', async () => {
+  it('a command left from before commands were removed goes with its entry or at stop, never handed over', async () => {
     const { hub, clock } = fakeHub()
-    const beat = (sid: number, accountId: number) =>
+    const beat = (sid: number, accountId: number, state: Heartbeat['state'] = 'decoding') =>
       heartbeat(hub, {
         sid,
         device: `PC-0${sid}`,
-        state: 'decoding',
+        state,
         accountId,
         uid: '812345678',
         platform: 'windows',
         app: '1.18.4',
       })
-    // 1 plays account 3, 2 plays account 4; each gets a command queued.
+    // 1 plays account 3, 2 plays account 4; each has a command queued by an older build.
     await beat(1, 3)
-    expect(await queueCommand(hub, 3, 'wishes')).toMatchObject({ pending: ['wishes'] })
-    expect(await hub.storage.get('commands:1')).toBeDefined()
-    clock.now += PRESENCE_FORGET_MS + 1_000
     await beat(2, 4)
-    // 1 is a day past its end: the next listing (this queueing) drops it and its queue.
-    expect(await queueCommand(hub, 4, 'snapshot')).toMatchObject({ pending: ['snapshot'] })
-    expect((await presenceFor(hub, 4)).pending).toEqual(['snapshot'])
+    const left = [{ id: 'k3f9', kind: 'wishes' }]
+    await hub.storage.put('commands:1', [{ ...left[0], accountId: 3 }])
+    await hub.storage.put('commands:2', [{ ...left[0], accountId: 4 }])
+    // A beat hands nothing over and leaves it; the read's `pending` stays empty.
+    expect(await beat(2, 4)).toEqual({ changed: [] })
+    expect((await presenceFor(hub, 4)).pending).toEqual([])
+    // 2 stops: its leftover goes with it.
+    await beat(2, 4, 'stopped')
+    expect(await hub.storage.get('commands:2')).toBeUndefined()
+    // 1 is a day past its end: the next listing drops it and its leftover.
+    clock.now += PRESENCE_FORGET_MS + 1_000
+    expect((await presenceFor(hub, 3)).presence).toBeNull()
     expect(await hub.storage.get('presence:1')).toBeUndefined()
     expect(await hub.storage.get('commands:1')).toBeUndefined()
-    expect(await hub.storage.get('commands:2')).toMatchObject([{ kind: 'snapshot', accountId: 4 }])
   })
   it('two Captures on one account: a dead one never wins past the live one’s next beat', async () => {
     const { hub, clock } = fakeHub()
@@ -882,7 +891,8 @@ describe('presence review cases', () => {
       })
     const start = clock.now
     const at = (s: number) => (clock.now = start + s * 1000)
-    // B plays from 0, A from 230; both beat every 60 s (a page in view).
+    // B plays from 0, A from 230; both beat every 60 s (faster than any build
+    // beats now: the rule must hold for beats under the rewrite limit).
     for (let s = 0; s <= 470; s += 10) {
       at(s)
       if (s % 60 === 0) await beat(2)
@@ -894,11 +904,8 @@ describe('presence review cases', () => {
     expect((await presenceFor(hub, 3)).presence?.sid).toBe(1)
     at(480)
     await beat(2)
-    // Within one beat of B: the page shows B, and a command goes to B.
+    // Within one beat of B: the page shows B.
     expect((await presenceFor(hub, 3)).presence).toMatchObject({ sid: 2, at: start + 480_000 })
-    expect(await queueCommand(hub, 3, 'wishes')).toMatchObject({ pending: ['wishes'] })
-    at(540)
-    expect((await beat(2)).commands.map((c) => c.kind)).toEqual(['wishes'])
     // Once A expires, B is alone again: its repeats are skipped as before.
     const { hub: alone, puts, clock: c2 } = fakeHub()
     c2.now = start
@@ -940,26 +947,12 @@ describe('presence review cases', () => {
     const shown = async () =>
       (await client.json<PresenceResponseForAccount>(`/api/accounts/${account.id}/presence`))
         .presence
-    // A page in view: 60 s beats, the first one written.
-    const tab = await client.fetch('/api/live', {
-      headers: { upgrade: 'websocket', origin: ORIGIN },
-    })
-    const socket = tab.webSocket!
-    socket.accept()
+    // The first beat is written.
     at(0)
-    expect(await beat()).toBe(WATCHED_NEXT_S)
+    expect(await beat()).toBe(IDLE_NEXT_S)
     // The page loads it (its copy says last seen at 0).
     setPresence(account.id, { presence: (await shown())!, pending: [] })
-    for (const s of [60, 120, 180, 240]) {
-      at(s)
-      expect(await beat()).toBe(WATCHED_NEXT_S)
-    }
-    // The page goes out of view (its socket closes); the next beat, just under
-    // the rewrite limit, is skipped and answered with the idle beat.
-    socket.close()
-    for (let i = 0; i < 100 && (await liveHub(env, me.id).sockets()) > 0; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 20))
-    }
+    // A repeat just under the rewrite limit (a Capture restarted, say) is skipped.
     at(PRESENCE_REWRITE_MS / 1000 - 1)
     expect(await beat()).toBe(IDLE_NEXT_S)
     expect((await shown())?.at).toBe(start)

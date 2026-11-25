@@ -160,7 +160,6 @@ import { formatDate, formatNumber } from '@/lib/format'
 import { readStorage, writeStorage } from '@/lib/storage'
 import { useFeedback } from '@/stores/feedback'
 import { materialName } from '@/utils/materials'
-import CapturePresence from '@/components/live/CapturePresence.vue'
 import { loadPresence, presenceOf } from '@/live/presence'
 import { alertFactsOf } from '@/components/planner/alert-facts'
 import { useAlertFacts } from '@/components/planner/alert-facts-send'
@@ -1841,12 +1840,6 @@ watch([editorShown, itemEditorShown, doneOpen], (now, before) => {
       v-if="!travel && tasks?.tasks.value && (!hasGoals || tab === 'farm')"
       class="mb-3 flex flex-col gap-3"
     >
-      <CapturePresence
-        v-if="!demo && !guest"
-        :account-id="account.id"
-        :now="now"
-        :can-act="!presenceReadOnly && presenceAccess !== 'viewer'"
-      />
       <ResinTracker
         :reading="reading"
         :condensed="condensed.count"

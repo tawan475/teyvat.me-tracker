@@ -5931,7 +5931,7 @@
           "Capture"
         ],
         "summary": "Is Capture playing it",
-        "description": "Teyvat.me Capture’s presence for the account, and commands waiting for it.\n\nScope: capture · Read. Bucket `read`: global only.",
+        "description": "Teyvat.me Capture’s presence for the account (`pending` is always empty).\n\nScope: capture · Read. Bucket `read`: global only.",
         "parameters": [
           {
             "name": "id",
@@ -5969,88 +5969,6 @@
           },
           "default": {
             "description": "Error (rate_limited)",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/accounts/{id}/capture-commands": {
-      "post": {
-        "operationId": "sendCaptureCommand",
-        "tags": [
-          "Capture"
-        ],
-        "summary": "Ask Capture to sync",
-        "description": "`wishes` (sync the wish history) or `snapshot` (send a full capture). 409 `not_playing` when Capture isn’t on the account.\n\nScope: capture · Write. Bucket `write`: 10 / min free, 30 / min supporter, per account.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "kind": {
-                    "type": "string",
-                    "enum": [
-                      "wishes",
-                      "snapshot"
-                    ]
-                  }
-                },
-                "required": [
-                  "kind"
-                ]
-              },
-              "example": {
-                "kind": "snapshot"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "$schema": "https://json-schema.org/draft/2020-12/schema",
-                      "type": "object",
-                      "propertyNames": {
-                        "type": "string"
-                      },
-                      "additionalProperties": {},
-                      "description": "The presence after the command"
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error (rate_limited, not_playing)",
             "content": {
               "application/problem+json": {
                 "schema": {

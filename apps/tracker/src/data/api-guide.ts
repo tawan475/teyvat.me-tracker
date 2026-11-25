@@ -130,11 +130,7 @@ export const API_GUIDE: GuideSection[] = [
               'Not allowed',
             ],
             ['404', '`not_found`', 'No such thing, or not yours'],
-            [
-              '409',
-              '`uid_taken`, `capture_changed`, `not_playing`',
-              'The state doesn’t allow it now',
-            ],
+            ['409', '`uid_taken`, `capture_changed`', 'The state doesn’t allow it now'],
             [
               '413 / 422 / 429',
               '`storage_quota`, `too_many_items`, `daily_upload_limit`',

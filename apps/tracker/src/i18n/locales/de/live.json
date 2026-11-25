@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "Live-Sync speichert zusätzlich {size} (gdt-live)",
-  "presence": {
-    "seen": "Zuletzt gemeldet {time}",
-    "playing": "Spielt gerade auf {device}",
-    "running": "Spiel offen auf {device}",
-    "wishes": "Gebete synchronisieren",
-    "wishesTitle": "Teyvat.me Capture synchronisiert jetzt deinen Gebetsverlauf (im Spiel zuerst einmal Gebet → Verlauf öffnen)",
-    "snapshot": "Erfassung senden",
-    "snapshotTitle": "Teyvat.me Capture sendet jetzt eine neue Erfassung",
-    "waiting": "Warte auf Capture …",
-    "sent": {
-      "wishes": "Capture soll die Gebete synchronisieren",
-      "snapshot": "Capture soll eine Erfassung senden"
-    },
-    "notSent": "Nicht gesendet"
-  },
   "justSynced": {
     "mark": "Synchronisiert {time}",
     "title": "Um {time} per Live-Sync erledigt; bleibt sichtbar, bis sich die Filter ändern",

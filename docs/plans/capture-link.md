@@ -5,9 +5,14 @@ Three parts, agreed with the user on 2026-10-31 ("do all"):
 1. **Alerts on every device.** The tracker works out when resin reaches a
    device's amount (and the other timers below) and sends a Web Push to every
    device that turned alerts on, with or without a tab open.
-2. **The tracker knows when Capture is live.** Capture reports its state; the
-   website shows "Playing now on <PC>", phone alerts hold while the game runs,
-   and two buttons act on the running Capture (sync wishes, send a capture).
+2. **The tracker knows when Capture is live.** Capture reports its state;
+   phone alerts hold while the game runs, the Planner's resin tracker locks
+   while Capture decodes the game, and staff Metrics lists it. The website's
+   "Playing now on <PC>" card and its two buttons acting on the running
+   Capture (sync wishes, send a capture) were **removed on 2026-11-26** by the
+   owner's decision ("I just care about recent uploads and live syncs"); the
+   heartbeat stays for whoami, the alert settings and that "game is running"
+   signal.
 3. ~~**The tracker's plan inside Capture.**~~ Built and dropped the same day
    (the user: it didn't look good; discarded). The Planner no longer
    publishes it and `GET /api/irminsul/today` is gone (404, which Capture
@@ -23,7 +28,9 @@ Three parts, agreed with the user on 2026-10-31 ("do all"):
 - The user's `LiveHub` Durable Object keeps, per account the user can see,
   the facts alerts are worked out from (resin reading, expeditions, Welkin,
   commissions, Bargains, hand ticks), the devices' settings and its alarm; and
-  Capture's presence and pending commands. One alarm per hub: the earliest
+  Capture's presence (`presence:<sid>`; the `commands:<sid>` queue is no
+  longer written since 2026-11-26, and a leftover one goes with its entry or at
+  `stopped`). One alarm per hub: the earliest
   next alert of any device.
 - Facts arrive from the writes that change them: snapshot imports (the newest
   only), live batches (`gi_player.resin`, `gi_tasks.*`), the resin set by hand
@@ -81,22 +88,26 @@ every `next` seconds. Answer (200):
 
 ```json
 {
-  "next": 60,
-  "commands": [{ "id": "k3f9", "kind": "wishes" }],
+  "next": 600,
+  "commands": [],
   "alerts": { "resin": 160, "resinFull": true }
 }
 ```
 
-- `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket whose
-  browser has not said `hidden` and that connected, said `shown` or pinged in the last 6 minutes; hidden tabs don't
-  ping; the same notion as a live batch's `watching`, live-sync.md §13), else 600 (300 until 2026-11-26;
-  120 until 2026-11-02: still ~40% of the Worker's requests). Capture builds up to the one that
-  raised its cap hold `next` to at most 300, so they keep beating every 300 s against 600.
-  Before 2026-11-01 it was 15 while any socket was open, else 60
-  (a background tab made that ~6,000 beats a day).
-- `commands`: each delivered once. `wishes`: run the wish history sync now
-  (skip when there is no wish key this login). `snapshot`: send a full
-  snapshot now (reason `manual`), when there is data.
+- `next`: seconds to the next heartbeat: 600, always, since 2026-11-26. Before
+  that it was 60 (30 until 2026-11-06) while a page of the user's was in view,
+  so a website command was picked up soon, else 600 (300 until 2026-11-26; 120
+  until 2026-11-02: still ~40% of the Worker's requests; before 2026-11-01, 15
+  while any socket was open, else 60). The speed-up went with the website
+  commands. Capture builds up to the one that raised its cap hold `next` to at
+  most 300, so they keep beating every 300 s; the next build beats every 600 s.
+  The stored presence (alerts' `quiet`, the Planner's resin lock) therefore
+  follows the game within one beat: up to 5 minutes on released builds, 10 on
+  the next.
+- `commands`: **always `[]`** since 2026-11-26 (website commands removed; the
+  field stays because released builds read it). Builds before then understood
+  `{ "id", "kind" }` entries, `wishes` (run the wish history sync now) and
+  `snapshot` (send a full snapshot now, reason `manual`); none are sent now.
 - `alerts`: this device's alert settings (signed in only; null with an import
   key or when never set). Capture's own resin notification uses
   `alerts.resin` (and `resinFull`) when present, in place of its local amount,
@@ -112,16 +123,16 @@ The presence expires 25 minutes after the last written heartbeat (12 until 2026-
 2026-11-02, 3 before 2026-11-01), on the server and on the website alike.
 Since 2026-11-26 the user's hub writes a heartbeat to its storage only when it says something
 new (state, account, UID, device, program, platform) or the kept one is 4.5 minutes old
-(`PRESENCE_REWRITE_MS`): every idle beat is still written, about one in five in-view beats is.
+(`PRESENCE_REWRITE_MS`): every 300 s or 600 s beat is still written, a sooner repeat is not.
 While more than one Capture plays the same account, every beat is written (the newest stored
-time decides which one the pages show and which one gets a command, so a dead app never wins
+time decides which one the pages show, so a dead app never wins
 for longer than a beat).
 So the presence's `at` ("last seen") can lag by up to 4.5 minutes; the expiry counts from the
 last written beat. Every written beat is told to the user's open pages as a `presence` event,
 a time-only rewrite too: the owner's pages load presence once and then only hear events, so
 their copy is never older than the rewrite limit plus one beat. A member of a shared account
 is not kept fresh: its page reads presence from the owner's hub once, but its socket is on its
-own hub, so no `presence` event reaches it, and "Playing now" there ends 25 minutes after that
+own hub, so no `presence` event reaches it, and its copy there ends 25 minutes after that
 read even while the owner's Capture runs (12 minutes before 2026-11-26; open, the owner's call). The route reads the session's device name,
 alerts and program in the same D1 batch as the session itself: one round trip per beat (two before).
 
@@ -132,6 +143,11 @@ alerts and program in the same D1 batch as the session itself: one round trip pe
   test". Capture rows edit what Capture's own notification uses.
 - The Planner's resin tracker: the amount is this device's `alerts.resin`
   once push is on here (the old in-tab timer stays for browsers without push).
-- Presence: the live event `{type: "presence", accountId, …}`; the Overview's
-  live strip and the resin tracker show "Playing now on <PC>" with Sync wishes
-  and Send a capture (editors only).
+- Presence: `GET /api/accounts/:id/presence` (`pending` always `[]` since
+  2026-11-26) and the live event `{type: "presence", accountId, …}`; the
+  Planner's resin tracker locks its buttons while Capture decodes the game.
+  The "Playing now on <PC>" card with Sync wishes / Send a capture on Overview
+  and the Planner was removed on 2026-11-26 (the owner's decision).
+  `POST /api/accounts/:id/capture-command` answers 409 `not_playing` (an old
+  cached page shows its "Not sent" toast), and `/api/v1` no longer has
+  `POST /accounts/{id}/capture-commands`.

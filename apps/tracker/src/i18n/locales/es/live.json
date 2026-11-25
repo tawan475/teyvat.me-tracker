@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "La sincronización en vivo guarda {size} más (gdt-live)",
-  "presence": {
-    "seen": "Último contacto {time}",
-    "playing": "Jugando ahora en {device}",
-    "running": "Juego abierto en {device}",
-    "wishes": "Sincronizar gachapón",
-    "wishesTitle": "Teyvat.me Capture sincroniza tu historial de gachapón ahora (abre antes Gachapón → Historial en el juego)",
-    "snapshot": "Enviar captura",
-    "snapshotTitle": "Teyvat.me Capture envía una captura nueva ahora",
-    "waiting": "Esperando a Capture…",
-    "sent": {
-      "wishes": "Se pidió a Capture sincronizar el gachapón",
-      "snapshot": "Se pidió a Capture enviar una captura"
-    },
-    "notSent": "No enviado"
-  },
   "justSynced": {
     "mark": "Sincronizado {time}",
     "title": "Completado por la sincronización en vivo a las {time}; sigue visible hasta que cambien los filtros",

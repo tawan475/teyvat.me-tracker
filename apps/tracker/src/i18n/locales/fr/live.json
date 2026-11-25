@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "La synchro en direct conserve {size} de plus (gdt-live)",
-  "presence": {
-    "seen": "Dernier signal {time}",
-    "playing": "En jeu sur {device}",
-    "running": "Jeu ouvert sur {device}",
-    "wishes": "Synchroniser les vœux",
-    "wishesTitle": "Teyvat.me Capture synchronise votre historique de vœux maintenant (ouvrez d'abord Vœux → Historique en jeu)",
-    "snapshot": "Envoyer une capture",
-    "snapshotTitle": "Teyvat.me Capture envoie une nouvelle capture maintenant",
-    "waiting": "En attente de Capture…",
-    "sent": {
-      "wishes": "Capture doit synchroniser les vœux",
-      "snapshot": "Capture doit envoyer une capture"
-    },
-    "notSent": "Non envoyé"
-  },
   "justSynced": {
     "mark": "Synchronisé {time}",
     "title": "Terminé par la synchro en direct à {time} ; reste visible jusqu’au changement de filtres",

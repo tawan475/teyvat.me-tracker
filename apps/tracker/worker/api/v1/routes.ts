@@ -11,7 +11,6 @@ import {
   achievementMarksPatch,
   anecdoteMarksPatch,
   buildUigf,
-  captureCommandRequest,
   compactRequest,
   decodeWishChunk,
   formatWishTime,
@@ -1175,7 +1174,7 @@ export const V1_ROUTES: V1Route[] = [
     path: '/accounts/{id}/presence',
     resource: 'Capture',
     summary: 'Is Capture playing it',
-    description: 'Teyvat.me Capture’s presence for the account, and commands waiting for it.',
+    description: 'Teyvat.me Capture’s presence for the account (`pending` is always empty).',
     area: 'capture',
     access: 'read',
     bucket: 'read',
@@ -1184,30 +1183,6 @@ export const V1_ROUTES: V1Route[] = [
     handler: async ({ c, accountId }) => ({
       data: (await inner<Record<string, unknown>>(c, 'GET', `/accounts/${accountId}/presence`))
         .data,
-    }),
-  },
-  {
-    id: 'sendCaptureCommand',
-    method: 'POST',
-    path: '/accounts/{id}/capture-commands',
-    resource: 'Capture',
-    summary: 'Ask Capture to sync',
-    description:
-      '`wishes` (sync the wish history) or `snapshot` (send a full capture). 409 `not_playing` when Capture isn’t on the account.',
-    area: 'capture',
-    access: 'write',
-    bucket: 'write',
-    accountParam,
-    body: captureCommandRequest,
-    response: s.loose('The presence after the command'),
-    errors: ['not_playing'],
-    example: { body: { kind: 'snapshot' } },
-    handler: async ({ c, accountId, body }) => ({
-      data: (
-        await inner<Record<string, unknown>>(c, 'POST', `/accounts/${accountId}/capture-command`, {
-          json: body,
-        })
-      ).data,
     }),
   },
 

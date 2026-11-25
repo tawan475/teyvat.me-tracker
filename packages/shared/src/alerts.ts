@@ -143,16 +143,19 @@ export const presenceRequest = z.object({
 })
 export type PresenceRequest = z.infer<typeof presenceRequest>
 
-/** A request from the website to the running Capture, delivered once. */
+/**
+ * The website's requests to the running Capture. Removed on 2026-11-26 (the
+ * owner's decision): kept only as the wire type of the always-empty
+ * `commands` / `pending` lists that released builds still read.
+ */
 export const CAPTURE_COMMANDS = ['wishes', 'snapshot'] as const
 export type CaptureCommandKind = (typeof CAPTURE_COMMANDS)[number]
-
-export const captureCommandRequest = z.object({ kind: z.enum(CAPTURE_COMMANDS) })
 
 /** The answer Capture reads. */
 export interface PresenceResponse {
   /** Seconds to the next heartbeat. */
   next: number
+  /** Always empty since 2026-11-26 (website commands removed); kept for released builds. */
   commands: { id: string; kind: CaptureCommandKind }[]
   /** This device's alerts (signed in only; null with an import key or when never set). */
   alerts: DeviceAlerts | null
@@ -180,6 +183,6 @@ export interface CapturePresence {
 /** `GET /api/accounts/:id/presence`; also the live event's `presence`. */
 export interface PresenceResponseForAccount {
   presence: CapturePresence | null
-  /** Commands sent and not yet picked up. */
+  /** Always empty since 2026-11-26 (website commands removed); kept for old cached pages. */
   pending: CaptureCommandKind[]
 }

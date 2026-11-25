@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "即時同步另占 {size}（gdt-live）",
-  "presence": {
-    "seen": "最後連線 {time}",
-    "playing": "正在 {device} 上遊玩",
-    "running": "遊戲已在 {device} 上開啟",
-    "wishes": "同步祈願",
-    "wishesTitle": "Teyvat.me Capture 立即同步祈願紀錄（需先在遊戲中開啟一次 祈願 → 歷史紀錄）",
-    "snapshot": "傳送資料",
-    "snapshotTitle": "Teyvat.me Capture 立即傳送一份最新資料",
-    "waiting": "等待 Capture…",
-    "sent": {
-      "wishes": "已請 Capture 同步祈願",
-      "snapshot": "已請 Capture 傳送資料"
-    },
-    "notSent": "未傳送"
-  },
   "justSynced": {
     "mark": "已同步 {time}",
     "title": "於 {time} 透過即時同步完成；在變更篩選前保持顯示",

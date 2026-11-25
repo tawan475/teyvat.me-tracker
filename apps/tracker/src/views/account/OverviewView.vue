@@ -53,9 +53,7 @@ import { travelerGender } from '@/data/traveler'
 import { loadProfileArt, buildProfileCard } from '@/data/profile-card'
 import type { AccountRef } from '@/data/account-data'
 import { useAccounts } from '@/stores/accounts'
-import CapturePresence from '@/components/live/CapturePresence.vue'
 import {
-  useAccess,
   useAccount,
   useAccountLink,
   useAccountRoute,
@@ -71,7 +69,6 @@ import {
  */
 const account = useAccount()
 const accounts = useAccounts()
-const access = useAccess()
 // Relative times ("3 hours ago") move on once a minute.
 const nowMs = shallowRef(Date.now())
 /** Time travel: the capture travelled to, whose own clock the Abyss check reads. */
@@ -390,14 +387,6 @@ const importRoute = computed(() => accountLink('account-import'))
   </PageHeader>
 
   <NotSharedStrip all />
-
-  <CapturePresence
-    v-if="!demo && !guest && !travel"
-    class="mb-3"
-    :account-id="account.id"
-    :now="nowMs"
-    :can-act="!readOnly && access !== 'viewer'"
-  />
 
   <!-- Guest mode: Watch a folder beside Import, where the browser has the folder picker. -->
   <FolderEmpty v-if="!account.latest && guest" :import-route="importRoute" :read-only="readOnly" />

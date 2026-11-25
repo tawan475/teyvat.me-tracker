@@ -15,7 +15,6 @@ import {
   IN_VIEW_MS,
   LIVE_BATCH_WAIT_MS,
   SESSION_ENDED_CLOSE,
-  WATCHED_NEXT_S,
   liveHub,
   type LiveHub,
 } from '../services/live'
@@ -691,9 +690,11 @@ describe('a page in view (watching)', () => {
     await say(me.id, tab, 'shown')
     expect(await batch()).toBe(true)
     expect(((await tab.next()) as LiveEvent).type).toBe('live')
-    expect(await beat()).toBe(WATCHED_NEXT_S)
+    // The heartbeat no longer beats sooner for a page in view (website commands
+    // were removed on 2026-11-26): the idle beat either way.
+    expect(await beat()).toBe(IDLE_NEXT_S)
 
-    // Its last tab hidden: out of view at once, for batches and the heartbeat alike.
+    // Its last tab hidden: out of view at once.
     await say(me.id, tab, 'hidden')
     expect(await batch()).toBe(false)
     expect(((await tab.next()) as LiveEvent).type).toBe('live')

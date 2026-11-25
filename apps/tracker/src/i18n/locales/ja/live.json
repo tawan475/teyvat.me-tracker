@@ -42,21 +42,6 @@
     }
   },
   "staffBytes": "ライブ同期の追加保存 {size}（gdt-live）",
-  "presence": {
-    "seen": "最終受信 {time}",
-    "playing": "{device} でプレイ中",
-    "running": "{device} でゲーム起動中",
-    "wishes": "祈願を同期",
-    "wishesTitle": "Teyvat.me Capture が今すぐ祈願履歴を同期します（先にゲーム内で 祈願 → 履歴 を一度開いてください）",
-    "snapshot": "データを送信",
-    "snapshotTitle": "Teyvat.me Capture が今すぐ最新データを送信します",
-    "waiting": "Capture を待っています…",
-    "sent": {
-      "wishes": "Capture に祈願の同期を依頼しました",
-      "snapshot": "Capture にデータ送信を依頼しました"
-    },
-    "notSent": "送信できませんでした"
-  },
   "justSynced": {
     "mark": "同期 {time}",
     "title": "{time} にライブ同期で完了。フィルターを変えるまで表示されます",

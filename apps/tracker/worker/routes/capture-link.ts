@@ -4,18 +4,20 @@
  * - `/api/push/*` (signed-in browser): the VAPID key, this browser's push
  *   subscription, a test notification.
  * - `/api/irminsul/presence` (Capture: Bearer or `x-import-key`, like
- *   `/irminsul/changes`): the heartbeat that says the game runs (and picks
- *   up the website's commands and this device's alerts).
- * - `/api/accounts/:id/presence|capture-command|alert-facts` (website): who
- *   plays the account now, asking that Capture to act, and the facts alerts
- *   are worked out from as the Planner sees them (the resin set by hand,
- *   tasks ticked, and what was known before alerts were turned on).
+ *   `/irminsul/changes`): the heartbeat that says the game runs (what alerts'
+ *   "Not while playing", the Planner's resin lock and staff Metrics read),
+ *   answering whoami and this device's alerts.
+ * - `/api/accounts/:id/presence|alert-facts` (website): who plays the account
+ *   now, and the facts alerts are worked out from as the Planner sees them
+ *   (the resin set by hand, tasks ticked, and what was known before alerts
+ *   were turned on).
+ * - `/api/accounts/:id/capture-command`: website commands were removed on
+ *   2026-11-26 (the owner's decision); old cached pages get 409 `not_playing`.
  *
  * A device's alerts are set with `PATCH /api/auth/sessions/:id` (routes/auth).
  */
 
 import {
-  captureCommandRequest,
   presenceRequest,
   pushSubscriptionRequest,
   readDeviceAlerts,
@@ -38,6 +40,7 @@ import { whoamiOf } from '../services/irminsul'
 import type { FactsUpdate } from '../services/alerts'
 import {
   devicesChanged,
+  IDLE_NEXT_S,
   liveHub,
   listenerOf,
   listenerStatement,
@@ -191,7 +194,7 @@ export const captureLink = new Hono<AppEnv>().post('/presence', async (c) => {
   const uid = body.uid ? String(body.uid) : null
   const account = accountOf(owner, uid)
   const userId = uploaderUserId(owner)
-  const { commands, next } = await liveHub(c.env, userId).presence(userId, {
+  await liveHub(c.env, userId).presence(userId, {
     sid,
     device,
     state: body.state,
@@ -201,7 +204,14 @@ export const captureLink = new Hono<AppEnv>().post('/presence', async (c) => {
     app: body.app ?? null,
   })
   c.header('Cache-Control', 'no-store')
-  return c.json<PresenceResponse>({ next, commands, alerts, ...(whoami ? { whoami } : {}) })
+  // `commands` is always empty (website commands were removed on 2026-11-26);
+  // released Capture builds still read the field.
+  return c.json<PresenceResponse>({
+    next: IDLE_NEXT_S,
+    commands: [],
+    alerts,
+    ...(whoami ? { whoami } : {}),
+  })
 })
 
 // ------------------------------------------------------------------ the website, per account
@@ -245,14 +255,13 @@ export const accountLink = new Hono<AppEnv>()
     return c.json<PresenceResponseForAccount>(await liveHub(c.env, owner).presenceOf(account.id))
   })
 
-  /** Asks the Capture playing the account to sync wishes or send a capture. 409 `not_playing`. */
-  .post('/:id/capture-command', async (c) => {
-    const account = await loadAccount(getDb(c.env.DB), c.get('userId'), idParam(c, 'id'), 'edit')
-    await rateLimit(c.env.IMPORT_LIMITER, `capture-command:${account.id}`)
-    const { kind } = await parseJson(c, captureCommandRequest)
-    const answer = await liveHub(c.env, account.userId).command(account.userId, account.id, kind)
-    if (!answer) throw new ApiError(409, 'not_playing', 'Capture is not playing this account')
-    return c.json<PresenceResponseForAccount>(answer)
+  /**
+   * Website commands were removed on 2026-11-26 (the owner's decision). An old
+   * cached page's "Sync wishes" / "Take snapshot" gets the refusal it already
+   * knew (its "not sent" toast); nothing is queued.
+   */
+  .post('/:id/capture-command', () => {
+    throw new ApiError(409, 'not_playing', 'Capture is not playing this account')
   })
 
   /** What the Planner knows about the account, for alerts (only hubs that want it hear). */

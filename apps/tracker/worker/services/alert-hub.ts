@@ -9,8 +9,10 @@
  * - `devices`: the user's devices that get alerts by push, as last read from
  *   D1 (only for scheduling; a send reads D1 again).
  * - `sent`: alerts sent (`<sid>|<key>` → when), kept 8 days.
- * - `presence:<sid>`: a Capture's last heartbeat; `commands:<sid>` what the
- *   website asked it to do.
+ * - `presence:<sid>`: a Capture's last heartbeat (what alerts' "Not while
+ *   playing", the Planner's resin lock and staff Metrics read).
+ * - `commands:<sid>`: no longer written (website commands were removed on
+ *   2026-11-26); a leftover one goes with its presence entry or at `stopped`.
  *
  * One alarm: the earliest alert any device has coming. Sends run in the
  * alarm and only there, so an alert is never sent twice.
@@ -19,7 +21,6 @@
 import {
   anyAlert,
   readDeviceAlerts,
-  type CaptureCommandKind,
   type CapturePresence,
   type DeviceAlerts,
   type PresenceResponseForAccount,
@@ -73,12 +74,6 @@ interface PushRow extends DeviceRow, PushTarget {
 export interface PresenceEntry extends CapturePresence {
   accountId: number | null
   uid: string | null
-}
-
-export interface Command {
-  id: string
-  kind: CaptureCommandKind
-  accountId: number
 }
 
 /** What the hub needs from its object (its storage, D1, the secrets, the clock). */
@@ -360,10 +355,10 @@ export async function sendTest(
 
 /**
  * Every kept presence entry by key. One that expired more than a day ago is
- * deleted on the way: nothing reads an expired entry (a Capture's queued
- * commands are kept under `commands:<sid>`, its alerts in D1), and only
- * `stopped` deleted them before, so a user's every past Capture stayed.
- * Its queued commands (`commands:<slot>`, same slot) go with it.
+ * deleted on the way: nothing reads an expired entry (its alerts are in D1),
+ * and only `stopped` deleted them before, so a user's every past Capture
+ * stayed. A leftover `commands:<slot>` (same slot, from before website
+ * commands were removed on 2026-11-26) goes with it.
  */
 async function presenceEntries(hub: HubContext, now: number): Promise<Map<string, PresenceEntry>> {
   const all = await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })
@@ -422,13 +417,10 @@ export interface Heartbeat {
 }
 
 /**
- * Keeps a heartbeat and hands over the commands waiting for that Capture.
- * Answers which accounts' presence changed (their pages are told).
+ * Keeps a heartbeat. Answers which accounts' presence changed (their pages
+ * are told: the Planner's resin lock follows it).
  */
-export async function heartbeat(
-  hub: HubContext,
-  beat: Heartbeat,
-): Promise<{ commands: Command[]; changed: number[] }> {
+export async function heartbeat(hub: HubContext, beat: Heartbeat): Promise<{ changed: number[] }> {
   const slot = beat.sid ?? 'key'
   const key = `presence:${slot}`
   const now = hub.now()
@@ -437,6 +429,8 @@ export async function heartbeat(
   const changed = new Set<number>()
   if (beat.state === 'stopped') {
     if (before) await hub.storage.delete(key)
+    // A command queued before website commands were removed (2026-11-26).
+    await hub.storage.delete(`commands:${slot}`)
     if (was?.accountId != null) changed.add(was.accountId)
   } else {
     const entry: PresenceEntry = {
@@ -450,10 +444,11 @@ export async function heartbeat(
       uid: beat.uid,
     }
     // A storage write only when the entry says something new, or its time is
-    // getting old: most beats while a page is in view repeat the last one.
+    // getting old: a beat sooner than the rewrite limit (a state or UID change
+    // sends one at once) repeats the last one.
     // Not while another Capture plays the same account: the newest stored
-    // time picks which one the pages show and commands go to, so each beat is
-    // written (else a dead one could win for up to the rewrite limit).
+    // time picks which one the pages show, so each beat is written (else a
+    // dead one could win for up to the rewrite limit).
     if (
       !was ||
       !sameBeat(was, entry) ||
@@ -468,17 +463,14 @@ export async function heartbeat(
     }
     if (was?.accountId != null && was.accountId !== entry.accountId) changed.add(was.accountId)
   }
-  const commandKey = `commands:${slot}`
-  const waiting = (await hub.storage.get<Command[]>(commandKey)) ?? []
-  if (waiting.length) {
-    await hub.storage.delete(commandKey)
-    for (const c of waiting) changed.add(c.accountId)
-  }
-  // A Capture that stopped takes no commands; they are dropped above.
-  return { commands: beat.state === 'stopped' ? [] : waiting, changed: [...changed] }
+  return { changed: [...changed] }
 }
 
-/** The Capture playing `accountId` now (the newest heartbeat) and what waits for it. */
+/**
+ * The Capture playing `accountId` now (the newest heartbeat). `pending` is
+ * always empty (website commands were removed on 2026-11-26; old cached
+ * pages still read the field).
+ */
 export async function presenceFor(
   hub: HubContext,
   accountId: number,
@@ -488,31 +480,8 @@ export async function presenceFor(
     .sort((a, b) => b.at - a.at)
   const current = list[0]
   if (!current) return { presence: null, pending: [] }
-  const waiting =
-    (await hub.storage.get<Command[]>(`commands:${current.sid ?? 'key'}`))?.filter(
-      (c) => c.accountId === accountId,
-    ) ?? []
   const { accountId: _account, uid: _uid, ...presence } = current
-  return { presence, pending: waiting.map((c) => c.kind) }
-}
-
-/** Queues a command for the Capture playing `accountId`; null when none is. */
-export async function queueCommand(
-  hub: HubContext,
-  accountId: number,
-  kind: CaptureCommandKind,
-): Promise<PresenceResponseForAccount | null> {
-  const current = (await presences(hub))
-    .filter((p) => p.accountId === accountId)
-    .sort((a, b) => b.at - a.at)[0]
-  if (!current) return null
-  const key = `commands:${current.sid ?? 'key'}`
-  const waiting = (await hub.storage.get<Command[]>(key)) ?? []
-  if (!waiting.some((c) => c.kind === kind && c.accountId === accountId)) {
-    waiting.push({ id: crypto.randomUUID().slice(0, 8), kind, accountId })
-    await hub.storage.put(key, waiting)
-  }
-  return presenceFor(hub, accountId)
+  return { presence, pending: [] }
 }
 
 function parseJson(text: string): unknown {

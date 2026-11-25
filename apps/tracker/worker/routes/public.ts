@@ -58,6 +58,6 @@ export const publicImport = new Hono<AppEnv>()
     const owner = await keyOwner(c, c.env.KEY_IMPORT_LIMITER)
     return uploadAs(c, owner, await readUpload(c), {
       uidRequired:
-        "This file has no UID (gi_player.uid or metadata.uid), so your all-accounts key can't tell which account it is. Update Teyvat.me Capture, or use the account's own import key.",
+        "This file has no UID (gi_player.uid or metadata.uid), so your all-accounts key can't tell which account it is. Use the account's own import key, or a tool that writes the UID (an up-to-date Teyvat.me Capture does).",
     })
   })

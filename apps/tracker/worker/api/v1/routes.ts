@@ -561,7 +561,7 @@ export const V1_ROUTES: V1Route[] = [
     resource: 'Snapshots',
     summary: 'Upload a GOOD file',
     description:
-      'Send the file as `application/json` (gzip with `Content-Encoding: gzip`) or `multipart/form-data` with a `file` part. `?timestamp=` (Unix ms or ISO 8601) dates it when the file does not. The same data again is `unchanged` and stores nothing. Daily snapshot and storage quotas apply. The file’s UID is `gi_player.uid`, or `metadata.uid` when the file has no `gi_player.uid` (as GGScanner writes it); `gi_player.uid` wins when both are there. It fills the account’s UID when the account has none; a different one is stored anyway, with a `uid_mismatch` warning.',
+      'Send the file as `application/json` (gzip with `Content-Encoding: gzip`) or `multipart/form-data` with a `file` part. `?timestamp=` (Unix ms or ISO 8601) dates it when the file does not. The same data again is `unchanged` and stores nothing. Daily snapshot and storage quotas apply. The file’s UID is `gi_player.uid`, or `metadata.uid` when the file has no `gi_player.uid` (as GGScanner writes it); `gi_player.uid` wins when both are there. It fills the account’s UID when the account has none and no other account of yours has that UID; a different one is stored anyway, with a `uid_mismatch` warning.',
     area: 'snapshots',
     access: 'write',
     bucket: 'upload',

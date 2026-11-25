@@ -27,6 +27,7 @@ import {
   resolveImportTimestamp,
   sameOff,
   serverFromUid,
+  uploadUid,
   type ArtifactIdentity,
   type BlobRef,
   type GiCapture,
@@ -169,12 +170,16 @@ function knownBlobs(store: LocalStore, ids: readonly (number | null)[]): Map<num
   return known
 }
 
-/** Fills what the account lacks from the capture's `gi_player` (never replaces what is set). */
+/**
+ * Fills what the account lacks from the capture: the UID (`uploadUid`), then
+ * the server and the in-game name (`gi_player` only). Never replaces what is set.
+ */
 function fillAccount(tx: Transaction, prepared: PreparedSnapshot): void {
   const player = prepared.good.player
-  if (player?.uid === undefined) return
+  const fileUid = uploadUid(prepared.good)
+  if (fileUid === undefined) return
   const account = tx.account()
-  const uid = String(player.uid)
+  const uid = String(fileUid)
   let changed = false
   if (!account.uid) {
     account.uid = uid
@@ -186,7 +191,7 @@ function fillAccount(tx: Transaction, prepared: PreparedSnapshot): void {
       account.server = server
       changed = true
     }
-    if (player.nickname && !account.name) {
+    if (player?.nickname && !account.name) {
       account.name = player.nickname.slice(0, 64)
       changed = true
     }
@@ -224,18 +229,16 @@ export async function importLocal(store: LocalStore, upload: LocalUpload): Promi
     const now = Date.now()
     const takenAt = resolveImportTimestamp(upload.timestamp, prepared.good.timestamp, now)
     const account = tx.account()
-    const fileUid = prepared.good.player?.uid
+    const fileUid = uploadUid(prepared.good)
     if (upload.folder && fileUid !== undefined && account.uid && account.uid !== String(fileUid)) {
       throw new OtherUidError(String(fileUid), account.uid)
     }
     const warnings =
-      prepared.good.player?.uid !== undefined &&
-      account.uid &&
-      account.uid !== String(prepared.good.player.uid)
+      fileUid !== undefined && account.uid && account.uid !== String(fileUid)
         ? [
             {
               code: 'uid_mismatch' as const,
-              message: `This file is UID ${prepared.good.player.uid}, but the account is UID ${account.uid}. Stored anyway.`,
+              message: `This file is UID ${fileUid}, but the account is UID ${account.uid}. Stored anyway.`,
             },
           ]
         : []

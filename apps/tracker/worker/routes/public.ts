@@ -8,8 +8,9 @@
  * the `account` it went to.
  *
  * Two kinds of key: an account's own key uploads to that account; a user's
- * key uploads to the user's account whose UID is the file's `gi_player.uid`,
- * making that account on the first upload of a new UID.
+ * key uploads to the user's account whose UID is the file's `gi_player.uid`
+ * (else `metadata.uid`, GGScanner's), making that account on the first upload
+ * of a new UID.
  *
  * Limits (irminsul shows the message of any refusal): 20 uploads a minute
  * per key (KEY_IMPORT_LIMITER; irminsul uploads at most every few seconds,
@@ -57,6 +58,6 @@ export const publicImport = new Hono<AppEnv>()
     const owner = await keyOwner(c, c.env.KEY_IMPORT_LIMITER)
     return uploadAs(c, owner, await readUpload(c), {
       uidRequired:
-        "This file has no UID (gi_player.uid), so your all-accounts key can't tell which account it is. Update Teyvat.me Capture, or use the account's own import key.",
+        "This file has no UID (gi_player.uid or metadata.uid), so your all-accounts key can't tell which account it is. Update Teyvat.me Capture, or use the account's own import key.",
     })
   })

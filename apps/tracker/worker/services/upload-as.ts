@@ -4,9 +4,10 @@
  * answer the same: the import's response with the `account` it went to.
  *
  * An account owner uploads to that account, which takes the file's
- * `gi_player.uid` when it differs (`takeAccountUid`); a user owner to the
- * user's account whose UID is the file's, made on the first upload of a new
- * UID (422 `uid_required` for a file without one).
+ * `gi_player.uid` (else GGScanner's `metadata.uid`, `uploadUid`) when it
+ * differs (`takeAccountUid`); a user owner to the user's account whose UID is
+ * the file's, made on the first upload of a new UID (422 `uid_required` for a
+ * file without one).
  */
 
 import {
@@ -14,6 +15,7 @@ import {
   itemIndexKey,
   preparedItemIndex,
   resolveDeferredArtifacts,
+  uploadUid,
   type ImportResponse,
   type PreparedSnapshot,
 } from '@gdt/shared'
@@ -44,7 +46,7 @@ export async function uploadAs(
     account = owner.account
     userId = owner.userId
     parsed = await parseUpload(upload.text)
-    const uid = parsed.good.player?.uid
+    const uid = uploadUid(parsed.good)
     const was = account.uid
     if (uid !== undefined && (await takeAccountUid(c.env.DB, meter, account, String(uid)))) {
       uidWas = was
@@ -52,7 +54,7 @@ export async function uploadAs(
   } else {
     userId = owner.user.id
     parsed = await parseUpload(upload.text)
-    const uid = parsed.good.player?.uid
+    const uid = uploadUid(parsed.good)
     if (uid === undefined) throw new ApiError(422, 'uid_required', text.uidRequired)
     ;({ account, created } = await accountForUid(
       c.env.DB,

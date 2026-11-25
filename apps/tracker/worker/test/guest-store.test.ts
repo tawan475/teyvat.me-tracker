@@ -239,6 +239,43 @@ describe('guest store', () => {
     expect(byHand.warnings?.[0]?.code).toBe('uid_mismatch')
   })
 
+  it("reads a file's metadata.uid (GGScanner) like gi_player.uid", async () => {
+    const [[big, at], [played, later]] = sequence() as [[Good, number], [Good, number]]
+    const scanned = (good: Good, uid: unknown) => {
+      const { gi_player: _, ...rest } = good
+      return { ...rest, source: 'yas-GOODScanner', metadata: { uid, nickname: 'player01' } }
+    }
+    const upload = (good: object, time: number, folder: boolean) =>
+      guestModules.importLocal(store, {
+        text: JSON.stringify(good),
+        rawSize: 1,
+        timestamp: time,
+        folder,
+      })
+    // The first file gives the guest its UID and the server; not the name.
+    expect(await upload(scanned(big, '812345678'), at, true)).toMatchObject({ status: 'created' })
+    expect(await localJson<AccountResponse>('')).toMatchObject({
+      uid: '812345678',
+      server: 'ASIA',
+    })
+    expect((await localJson<AccountResponse>('')).name).not.toBe('player01')
+    // Another UID: refused from the folder, stored with the warning by hand.
+    await expect(upload(scanned(played, 712345678), later, true)).rejects.toMatchObject({
+      code: 'guest_other_uid',
+      uid: '712345678',
+      own: '812345678',
+    })
+    const byHand = await upload(scanned(played, 712345678), later, false)
+    expect(byHand.status).toBe('created')
+    expect(byHand.warnings?.[0]).toMatchObject({
+      code: 'uid_mismatch',
+      message: expect.stringContaining('UID 712345678'),
+    })
+    // A malformed one is no UID at all: no warning.
+    const odd = await upload(scanned(played, '7123456789012'), later + 1, false)
+    expect(odd).not.toHaveProperty('warnings')
+  })
+
   it("gives the guest a watched folder's wish file's UID, so a later file of another UID is refused", async () => {
     const [[big, at]] = sequence() as [[Good, number]]
     const wishUid = '712345678'

@@ -95,6 +95,14 @@ export interface NormalizedGood {
    * file had none (older Capture builds, website imports).
    */
   off?: string[]
+  /**
+   * The UID another scanner (GGScanner) writes as a GOOD extension,
+   * `metadata.uid`, held to `gi_player.uid`'s range. Routing only: never
+   * stored in a section, never part of a hash or summary, never exported.
+   * Read it through `uploadUid`, which prefers `gi_player.uid`. Absent when
+   * the file had none that passed.
+   */
+  fileUid?: number
   /** `gi_tasks`, the parts that pass their checks whole (see toTasks). */
   tasks: GiTasks | null
   /** `gi_collections`, the parts that pass their checks whole (see toCollections). */
@@ -209,6 +217,8 @@ export function normalizeGood(input: unknown, options: NormalizeOptions = {}): N
   const itemGuids = toItemGuids(input)
   if (itemGuids) good.itemGuids = itemGuids
   if (input.gi_capture !== undefined) good.capture = readCapture(input.gi_capture)
+  const fileUid = toFileUid(input.metadata)
+  if (fileUid !== undefined) good.fileUid = fileUid
   const off = readOff(input.gi_off)
   if (off) {
     good.off = off
@@ -559,6 +569,26 @@ function toPlayer(raw: unknown): GiPlayer | null {
   // A key that only names the game data says nothing about the account.
   const known = Object.keys(player).filter((key) => key !== 'gameData')
   return known.length > 0 ? (player as GiPlayer) : null
+}
+
+/**
+ * `metadata.uid` (GGScanner's GOOD extension): a string of 9 or 10 digits, or
+ * a JSON number, within `gi_player.uid`'s range; anything else is ignored.
+ */
+function toFileUid(metadata: unknown): number | undefined {
+  if (!isObject(metadata)) return undefined
+  const raw = metadata.uid
+  const value = typeof raw === 'string' && /^[1-9]\d{8,9}$/.test(raw) ? Number(raw) : raw
+  const [, min, max] = PLAYER_FIELDS[0]!
+  return isIntIn(value, min, max) ? value : undefined
+}
+
+/**
+ * The UID an upload is routed, checked and filled by: `gi_player.uid`, else
+ * the file's `metadata.uid` (NormalizedGood.fileUid).
+ */
+export function uploadUid(good: Pick<NormalizedGood, 'player' | 'fileUid'>): number | undefined {
+  return good.player?.uid ?? good.fileUid
 }
 
 function toAchievementTimes(raw: unknown): [number, number][] | null {

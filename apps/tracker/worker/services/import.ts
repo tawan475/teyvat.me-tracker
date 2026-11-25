@@ -49,6 +49,7 @@ import {
   sameOff,
   shortHashHex,
   storedPlayer,
+  uploadUid,
   BlobDecoder,
   type ArtifactFigures,
   type ArtifactIdentity,
@@ -672,13 +673,14 @@ export async function parseUpload(text: string): Promise<PreparedSnapshot> {
 }
 
 /**
- * A capture whose `gi_player.uid` is not the account's UID is probably another
+ * A capture whose UID (`uploadUid`: `gi_player.uid`, else `metadata.uid`) is
+ * not the account's UID is probably another
  * account's inventory. It is stored anyway (the key decides where an upload
  * goes, and irminsul warns its user too); the response and the log say so.
  * An account without a UID has nothing to compare.
  */
 function uidWarnings(account: ImportTarget, prepared: PreparedSnapshot): ImportWarning[] {
-  const captured = prepared.good.player?.uid
+  const captured = uploadUid(prepared.good)
   const linked = account.uid?.trim()
   if (captured === undefined || !linked || linked === String(captured)) return []
   console.warn('uid_mismatch', JSON.stringify({ accountId: account.id, linked, captured }))
@@ -691,10 +693,11 @@ function uidWarnings(account: ImportTarget, prepared: PreparedSnapshot): ImportW
 }
 
 /**
- * Fills what the account lacks from the capture's `gi_player`: the UID (unless
+ * Fills what the account lacks from the capture: the UID (`uploadUid`; unless
  * another of the owner's accounts has it), then, when the account's UID is
- * the capture's, the server it implies and the in-game name. Never replaces
- * what is set. Rides in the import's own batch: no extra round trip.
+ * the capture's, the server it implies and the in-game name (`gi_player`
+ * only). Never replaces what is set. Rides in the import's own batch: no
+ * extra round trip.
  */
 function fillAccountStatements(
   d1: D1Database,
@@ -702,8 +705,9 @@ function fillAccountStatements(
   prepared: PreparedSnapshot,
 ): D1PreparedStatement[] {
   const player = prepared.good.player
-  if (player?.uid === undefined) return []
-  const uid = String(player.uid)
+  const fileUid = uploadUid(prepared.good)
+  if (fileUid === undefined) return []
+  const uid = String(fileUid)
   // After the UID statement: only an account that is (now) this UID's.
   const sameUid = 'uid = ?2'
   const statements = [
@@ -725,7 +729,7 @@ function fillAccountStatements(
         .bind(accountId, uid, server),
     )
   }
-  if (player.nickname) {
+  if (player?.nickname) {
     statements.push(
       d1
         .prepare(

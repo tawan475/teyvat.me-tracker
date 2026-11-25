@@ -1117,6 +1117,88 @@ describe('user import key', () => {
         .returning(),
     ).resolves.toHaveLength(1)
   })
+
+  describe("a file's metadata.uid (GGScanner)", () => {
+    /** A GOOD file as GGScanner writes it: no gi_player, the UID under `metadata`. */
+    const scanned = (uid: unknown, overrides: Partial<Good> = {}) => ({
+      ...sampleGood(overrides),
+      source: 'yas-GOODScanner',
+      metadata: { uid, nickname: 'player01' },
+    })
+
+    it('routes a user-key upload to the account with that UID, or makes one', async () => {
+      const { client } = await signUp()
+      const { account: main } = await createAccount(client) // UID 812345678
+      const key = await newUserKey(client)
+
+      const own = await upload(key, scanned('812345678'), 1_000)
+      expect(own.status).toBe(201)
+      expect(own.body.account).toEqual({
+        id: main.id,
+        name: 'Main',
+        uid: '812345678',
+        created: false,
+      })
+      expect(own.body).not.toHaveProperty('warnings')
+
+      const fresh = await upload(key, scanned(712345678), 1_000)
+      expect(fresh.status).toBe(201)
+      expect(fresh.body.account).toMatchObject({ name: null, uid: '712345678', created: true })
+      const list = await client.json<AccountResponse[]>('/api/accounts')
+      // The UID fills the server; metadata.nickname is not the in-game name.
+      expect(list.map((a) => [a.uid, a.name, a.server, a.snapshotCount])).toEqual([
+        ['812345678', 'Main', 'ASIA', 1],
+        ['712345678', null, 'EUROPE', 1],
+      ])
+
+      // gi_player.uid wins over metadata.uid.
+      const both = await upload(
+        key,
+        { ...scanned('712345678', { materials: { Mora: 1 } }), ...sampleExtras(812345678) },
+        2_000,
+      )
+      expect(both.body.account).toMatchObject({ id: main.id, created: false })
+    })
+
+    it('still refuses a user-key upload with neither, or with a malformed one', async () => {
+      const { client } = await signUp()
+      const key = await newUserKey(client)
+      for (const uid of ['81234567', '81234567890', 'player01', { uid: 812345678 }]) {
+        const response = await importByKey(key, scanned(uid), 1_000)
+        expect(response.status).toBe(422)
+        expect(await response.json()).toMatchObject({ error: { code: 'uid_required' } })
+      }
+      expect(await client.json<AccountResponse[]>('/api/accounts')).toEqual([])
+    })
+
+    it("gives an account key's account that UID like gi_player.uid, and warns the same", async () => {
+      const { client } = await signUp()
+      const { account, importKey } = await createAccount(client) // UID 812345678
+      const other = await upload(importKey, scanned('711111111'), 1_000)
+      expect(other.status).toBe(201)
+      expect(other.body.warnings).toEqual([
+        { code: 'uid_changed', message: expect.stringContaining('was 812345678') },
+      ])
+      expect(await client.json<AccountResponse>(`/api/accounts/${account.id}`)).toMatchObject({
+        uid: '711111111',
+        server: 'EUROPE',
+      })
+
+      // Another of the owner's accounts has the UID: stored with uid_mismatch.
+      await client.json<AccountCreatedResponse>('/api/accounts', {
+        method: 'POST',
+        json: { name: 'Alt', uid: '812345678' },
+      })
+      const clash = await upload(importKey, scanned('812345678', { materials: { Mora: 2 } }), 2_000)
+      expect(clash.status).toBe(201)
+      expect(clash.body.warnings).toEqual([
+        { code: 'uid_mismatch', message: expect.stringContaining('UID 812345678') },
+      ])
+      expect((await client.json<AccountResponse>(`/api/accounts/${account.id}`)).uid).toBe(
+        '711111111',
+      )
+    })
+  })
 })
 
 describe('delta storage', () => {
@@ -1282,6 +1364,35 @@ describe('D1 cost', () => {
     expect(small.status).toBe(201)
     expect(small.cost['round-trips']).toBeLessThanOrEqual(3)
     expect(small.cost['rows-read']).toBeLessThan(150)
+  })
+
+  // GGScanner's metadata.uid routes a user-key upload like gi_player.uid: no
+  // round trip more for either.
+  it('routes by metadata.uid at the same cost as by gi_player.uid', async () => {
+    const { client } = await signUp()
+    const key = (await client.json<ImportKeyResponse>('/api/me/import-key', { method: 'POST' }))
+      .importKey
+    const byPlayer = await costedImport(key, sampleGood(sampleExtras(712345678)), 1_000)
+    const byMetadata = await costedImport(
+      key,
+      { ...sampleGood(), source: 'yas-GOODScanner', metadata: { uid: '612345678' } },
+      1_000,
+    )
+    expect([byPlayer.status, byMetadata.status]).toEqual([201, 201])
+    expect(byMetadata.cost['round-trips']).toBe(byPlayer.cost['round-trips'])
+    // Into an account that exists now.
+    const again = await costedImport(
+      key,
+      { ...sampleGood({ materials: { Mora: 1 } }), metadata: { uid: '612345678' } },
+      2_000,
+    )
+    const againPlayer = await costedImport(
+      key,
+      sampleGood({ ...sampleExtras(712345678), materials: { Mora: 1 } }),
+      2_000,
+    )
+    expect([again.status, againPlayer.status]).toEqual([201, 201])
+    expect(again.cost['round-trips']).toBe(againPlayer.cost['round-trips'])
   })
 
   // docs/plans/storage-efficiency.md §2: blob lookups by id used to scan the

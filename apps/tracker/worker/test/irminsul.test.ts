@@ -5,6 +5,7 @@ import {
   type IrminsulDiscovery,
   type IrminsulTokenResponse,
   type IrminsulWhoami,
+  type PresenceResponse,
   type SessionResponse,
   type UploadTarget,
 } from '@gdt/shared'
@@ -794,6 +795,42 @@ describe('D1 cost', () => {
       expect(token.trips).toBe(key.trips)
       expect(token.metered).toBe(key.metered)
     }
+  })
+
+  it('a presence heartbeat reads its session in one round trip', async () => {
+    const { client, me } = await signUp()
+    const tokens = await signIn(client, { mode: 'uid' }, 'PC-01')
+    const { db, counter } = countingDb()
+    const transport = withEnv({ DB: db })
+    const beat = async () => {
+      counter.trips = 0
+      const response = await bearer(
+        '/api/irminsul/presence',
+        tokens.access_token,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ v: 1, state: 'running', uid: 812345678 }),
+        },
+        transport,
+      )
+      expect(response.status).toBe(200)
+      return { trips: counter.trips, body: (await response.json()) as PresenceResponse }
+    }
+    const first = await beat()
+    // The session and the user's accounts in one batch; the session's own columns with it.
+    expect(first.trips).toBe(1)
+    expect(first.body.whoami).toMatchObject({ scope: 'uid' })
+    expect(first.body.alerts).toBeNull()
+    // This device's alerts come from that same row.
+    await env.DB.prepare(
+      `UPDATE user_sessions SET alerts = ?2 WHERE user_id = ?1 AND method = 'irminsul'`,
+    )
+      .bind(me.id, JSON.stringify({ resin: 160 }))
+      .run()
+    const second = await beat()
+    expect(second.trips).toBe(1)
+    expect(second.body.alerts).toMatchObject({ resin: 160 })
   })
 })
 

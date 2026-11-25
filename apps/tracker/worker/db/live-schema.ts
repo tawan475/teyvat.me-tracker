@@ -76,6 +76,12 @@ export const liveJournals = sqliteTable(
      * building it again (migration 0003).
      */
     itemsKey: bytes('items_key'),
+    /**
+     * Unix ms (server clock) when a batch marked `end` closed the session; 0
+     * while open. A later batch on the journal (a hand-over) or a snapshot
+     * opens it again (migration 0004).
+     */
+    endedAt: integer('ended_at').notNull().default(0),
   },
   (t) => [index('live_journals_user').on(t.userId)],
 )

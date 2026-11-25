@@ -1184,6 +1184,8 @@ export interface LiveJournalResponse {
   items?: ['artifacts' | 'weapons', string, number][]
   /** Bytes the journal keeps. */
   bytes?: number
+  /** Unix ms (server clock) when a batch marked `end` closed the session; absent while open. */
+  endedAt?: number
 }
 
 /** `GET /api/accounts/:id/points`: chart points per UTC day, decoded. */
@@ -1222,6 +1224,8 @@ export interface LiveBatchPush {
   figures: SnapshotSummary
   updatedAt: number
   bytes: number
+  /** The batch was marked `end` (LiveJournalResponse `endedAt`); absent otherwise. */
+  endedAt?: number
 }
 
 /** An account as the live `hello` describes it. */
@@ -1267,9 +1271,12 @@ export interface VerifyKeyResponse {
  * nothing of this to one that does not say so; absent = plain only.
  * - `gzip`: the multipart `file` part may be gzip (named `*.gz` or typed
  *   application/gzip).
+ * - `finalBatch`: Capture may end a session with a batch marked `end`
+ *   instead of a logout snapshot (not answered yet: UPLOAD_SUPPORT).
  */
 export interface UploadSupport {
   gzip: true
+  finalBatch?: true
 }
 
 export const UPLOAD_SUPPORT: UploadSupport = { gzip: true }

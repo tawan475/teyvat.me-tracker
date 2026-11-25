@@ -41,8 +41,22 @@ import {
   type FactsUpdate,
 } from './alerts'
 
-/** A heartbeat older than this: Capture (or the game) is gone (more than two idle beats). */
-export const PRESENCE_TTL_MS = 12 * 60_000
+/**
+ * A heartbeat older than this: Capture (or the game) is gone (more than two
+ * idle beats of 600 s; 12 minutes while the idle beat was 300 s). The website
+ * uses the same value (src/live/presence.ts).
+ */
+export const PRESENCE_TTL_MS = 25 * 60_000
+/**
+ * A heartbeat that repeats the kept one is written again only once the kept
+ * time is this old, so `at` ("last seen") lags by up to this much. Below both
+ * idle beats Capture builds use (300 s for builds that cap `next` there, 600 s
+ * from services/live.ts IDLE_NEXT_S): every idle beat is still written, so
+ * one lost beat never lets an entry pass PRESENCE_TTL_MS.
+ */
+export const PRESENCE_REWRITE_MS = 270_000
+/** An entry expired for more than a day is deleted by the next listing (`presenceEntries`). */
+export const PRESENCE_FORGET_MS = PRESENCE_TTL_MS + 24 * 3_600_000
 /** Sent keys are forgotten after this. */
 const SENT_TTL_MS = 8 * 24 * 3_600_000
 
@@ -188,8 +202,18 @@ export async function schedule(hub: HubContext): Promise<number | null> {
       }
     }
   }
-  if (earliest === null) await hub.storage.deleteAlarm()
-  else await hub.storage.setAlarm(Math.max(earliest, now + 1_000))
+  // The alarm is set or cleared only when where it should be moves: most
+  // facts (a resin count on the same 8-minute grid, say) leave it in place.
+  const set = await hub.storage.getAlarm()
+  if (earliest === null) {
+    if (set !== null) await hub.storage.deleteAlarm()
+  } else {
+    const at = Math.max(earliest, now + 1_000)
+    // An alert already due: an alarm set to go off within the second does
+    // (one in the past, the alarm running now, is set again).
+    const firing = earliest <= now + 1_000 && set !== null && set >= now && set <= now + 1_000
+    if (set !== at && !firing) await hub.storage.setAlarm(at)
+  }
   return earliest
 }
 
@@ -334,15 +358,57 @@ export async function sendTest(
 
 // ------------------------------------------------------------------ presence
 
+/**
+ * Every kept presence entry by key. One that expired more than a day ago is
+ * deleted on the way: nothing reads an expired entry (a Capture's queued
+ * commands are kept under `commands:<sid>`, its alerts in D1), and only
+ * `stopped` deleted them before, so a user's every past Capture stayed.
+ * Its queued commands (`commands:<slot>`, same slot) go with it.
+ */
+async function presenceEntries(hub: HubContext, now: number): Promise<Map<string, PresenceEntry>> {
+  const all = await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })
+  for (const [key, p] of all) {
+    if (p.at > now - PRESENCE_FORGET_MS) continue
+    await hub.storage.delete(key)
+    await hub.storage.delete(`commands:${key.slice('presence:'.length)}`)
+    all.delete(key)
+  }
+  return all
+}
+
 async function presences(hub: HubContext): Promise<PresenceEntry[]> {
   const now = hub.now()
-  return [...(await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })).values()].filter(
-    (p) => p.at > now - PRESENCE_TTL_MS,
-  )
+  return [...(await presenceEntries(hub, now)).values()].filter((p) => p.at > now - PRESENCE_TTL_MS)
 }
 
 function playing(list: PresenceEntry[], accountId: number, now: number): boolean {
   return list.some((p) => p.accountId === accountId && p.at > now - PRESENCE_TTL_MS)
+}
+
+/** Whether a live presence entry other than `key` plays `accountId`. */
+async function othersPlaying(
+  hub: HubContext,
+  key: string,
+  accountId: number,
+  now: number,
+): Promise<boolean> {
+  for (const [other, p] of await presenceEntries(hub, now)) {
+    if (other !== key && p.accountId === accountId && p.at > now - PRESENCE_TTL_MS) return true
+  }
+  return false
+}
+
+/** Everything but the time alike. */
+function sameBeat(a: PresenceEntry, b: PresenceEntry): boolean {
+  return (
+    a.sid === b.sid &&
+    a.device === b.device &&
+    a.state === b.state &&
+    a.platform === b.platform &&
+    a.app === b.app &&
+    a.accountId === b.accountId &&
+    a.uid === b.uid
+  )
 }
 
 export interface Heartbeat {
@@ -383,11 +449,24 @@ export async function heartbeat(
       accountId: beat.accountId,
       uid: beat.uid,
     }
-    await hub.storage.put(key, entry)
-    if (!was || was.state !== entry.state || was.accountId !== entry.accountId) {
-      if (was?.accountId != null) changed.add(was.accountId)
+    // A storage write only when the entry says something new, or its time is
+    // getting old: most beats while a page is in view repeat the last one.
+    // Not while another Capture plays the same account: the newest stored
+    // time picks which one the pages show and commands go to, so each beat is
+    // written (else a dead one could win for up to the rewrite limit).
+    if (
+      !was ||
+      !sameBeat(was, entry) ||
+      was.at <= now - PRESENCE_REWRITE_MS ||
+      (entry.accountId !== null && (await othersPlaying(hub, key, entry.accountId, now)))
+    ) {
+      await hub.storage.put(key, entry)
+      // Pages hold the presence they loaded and hear only events: every write
+      // is told, a time-only one too, so their copy never ages past the
+      // rewrite limit plus one beat and never expires under a live Capture.
       if (entry.accountId != null) changed.add(entry.accountId)
     }
+    if (was?.accountId != null && was.accountId !== entry.accountId) changed.add(was.accountId)
   }
   const commandKey = `commands:${slot}`
   const waiting = (await hub.storage.get<Command[]>(commandKey)) ?? []

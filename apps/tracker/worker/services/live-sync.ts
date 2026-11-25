@@ -122,9 +122,10 @@ export async function openJournal(live: D1Database, start: JournalStart): Promis
     live
       .prepare(
         `INSERT INTO live_journals (account_id, user_id, base_key, base_snapshot_id, session,
-           last_seq, opened_at, updated_at, changes, bytes, figures, items, base_off, items_key)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9, ?10, unhex(?11))
-         ON CONFLICT (account_id) DO UPDATE SET user_id = excluded.user_id,
+           last_seq, opened_at, updated_at, changes, bytes, figures, items, base_off, items_key,
+           ended_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 0, 0, ?8, ?9, ?10, unhex(?11), 0)
+         ON CONFLICT (account_id) DO UPDATE SET user_id = excluded.user_id, ended_at = 0,
            base_key = excluded.base_key, base_snapshot_id = excluded.base_snapshot_id,
            session = excluded.session, last_seq = 0, opened_at = excluded.opened_at,
            updated_at = excluded.updated_at, changes = 0, bytes = 0,
@@ -187,6 +188,8 @@ interface JournalRow {
   points: unknown
   /** The base snapshot's `gi_off` as offMask (0: none, or a journal from before the column). */
   base_off: number | null
+  /** Unix ms an `end` batch closed the session, 0 while open (only `SELECT *` reads it). */
+  ended_at?: number
 }
 
 /** The journal row as a batch reads it: the item index only when `?2` is true. */
@@ -324,6 +327,7 @@ export async function storeBatch(
       ? decodePoints(today, toBytes(pointsRow.data))
       : []
   const points = addPoint(before, { at: now, figures })
+  const endedAt = delta.end ? now : 0
   const flushDay = !sameDay && journal.points !== null && journal.points_day !== ''
 
   // The extras run first, while the journal is still where this batch read
@@ -366,7 +370,7 @@ export async function storeBatch(
         `UPDATE live_journals SET last_seq = ?4, updated_at = ?5, changes = changes + ?6,
            bytes = bytes + ?7, figures = ?8, day = ?9, day_batches = ?10,
            tail_from = ?11, tail_at = ?12, tail_changes = ?13, tail = ?14,
-           points_day = ?9, points = ?15
+           points_day = ?9, points = ?15, ended_at = ?16
          WHERE account_id = ?1 AND base_key = ?2 AND last_seq = ?3`,
       )
       .bind(
@@ -385,6 +389,9 @@ export async function storeBatch(
         paths,
         tail,
         encodePoints(today, points),
+        // The session's last batch closes it; any other (a later batch on the
+        // same journal, as after a hand-over) opens it again.
+        endedAt,
       ),
   )
   const results = await live.batch(statements)
@@ -394,14 +401,16 @@ export async function storeBatch(
   }
   const journalChanges = journal.changes + addedPaths
   const journalBytes = journal.bytes + addedBytes
+  // No collapse after the session's last batch: nothing would send the snapshot.
   const collapse =
-    (now - journal.opened_at > COLLAPSE_AFTER_MS && journalChanges > COLLAPSE_CHANGES) ||
-    journalBytes > COLLAPSE_BYTES
+    !delta.end &&
+    ((now - journal.opened_at > COLLAPSE_AFTER_MS && journalChanges > COLLAPSE_CHANGES) ||
+      journalBytes > COLLAPSE_BYTES)
   return {
     seq: delta.seq,
     collapse,
     duplicate: false,
-    batch: pushOf(journal, sent, touched, figures, now, journalBytes),
+    batch: pushOf(journal, sent, touched, figures, now, journalBytes, endedAt),
   }
 }
 
@@ -413,6 +422,7 @@ function pushOf(
   figures: Figures,
   now: number,
   bytes: number,
+  endedAt: number,
 ): LiveBatchPush | undefined {
   const items: LiveBatchPush['items'] = []
   // The item index is read (and decoded) only when the batch touches a base item.
@@ -432,6 +442,7 @@ function pushOf(
     figures,
     updatedAt: now,
     bytes,
+    ...(endedAt > 0 ? { endedAt } : {}),
   }
   return JSON.stringify(batch).length <= PUSH_MAX_BYTES ? batch : undefined
 }
@@ -497,6 +508,7 @@ export async function readJournal(
       changes,
       items,
       bytes: journal.bytes,
+      ...((journal.ended_at ?? 0) > 0 ? { endedAt: journal.ended_at } : {}),
     },
     // `changes`: a part removed from history (remove-part.ts) rewrites the
     // rows without moving the seq.

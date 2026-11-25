@@ -132,26 +132,15 @@ async function captureOf(c: Context<AppEnv>, limiter: RateLimit | undefined, buc
   if (claims === 'expired') throw new ApiError(401, 'token_expired', 'Access token expired')
   if (claims === 'invalid') throw new ApiError(401, 'invalid_token', 'Not an irminsul token')
   await rateLimit(limiter, `irminsul-${bucket}:${claims.sid}`)
-  const [{ owner, session }, row] = await Promise.all([
-    sessionOwnerWith(c, claims),
-    c.env.DB.prepare(
-      'SELECT device_name, alerts, client_version, client_platform FROM user_sessions WHERE id = ?1',
-    )
-      .bind(claims.sid)
-      .first<{
-        device_name: string | null
-        alerts: string | null
-        client_version: string | null
-        client_platform: string | null
-      }>(),
-  ])
+  // The session's own columns come with the owner's lookup: one round trip.
+  const { owner, session } = await sessionOwnerWith(c, claims)
   return {
     owner,
     sid: claims.sid,
-    device: row?.device_name || 'Capture',
-    alerts: row?.alerts ? readDeviceAlerts(JSON.parse(row.alerts)) : null,
+    device: session.device_name || 'Capture',
+    alerts: session.alerts ? readDeviceAlerts(JSON.parse(session.alerts)) : null,
     // What the row says of the program, to tell when a heartbeat says otherwise.
-    known: row ? { version: row.client_version, platform: row.client_platform } : null,
+    known: { version: session.client_version, platform: session.client_platform },
     // What GET /whoami answers, from the row read anyway: Capture needs no whoami poll.
     whoami: whoamiOf(pageOrigin(c.env, c.req.url), claims.sid, session),
   }

@@ -69,6 +69,12 @@ export interface GoodDelta {
    * the changes alone tell it).
    */
   sum?: SnapshotSummary
+  /**
+   * The session's last batch: the game connection ended; no more batches
+   * follow on this journal (sent only to a tracker whose `upload` answer has
+   * `finalBatch`).
+   */
+  end?: true
 }
 
 /**
@@ -110,6 +116,7 @@ export const goodDeltaSchema = z.object({
     )
     .max(MAX_DELTA_CHANGES),
   sum: snapshotSummarySchema.optional(),
+  end: z.literal(true).optional(),
 })
 
 /** A GOOD item as the journal sees it: the game's guid when it is known. */

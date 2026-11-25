@@ -17,6 +17,7 @@ import {
   reconnectDelay,
   shouldCatchUp,
   shouldPing,
+  viewToSend,
   type KnownAccounts,
   type MergeInput,
 } from '../policy'
@@ -94,6 +95,27 @@ describe('reconnecting', () => {
     // An event while hidden: read, unless a tab read the list after it (and shared it).
     expect(shouldCatchUp({ ...quiet, staleSince: 5_000, lastReadAt: 4_000 })).toBe(true)
     expect(shouldCatchUp({ ...quiet, staleSince: 5_000, lastReadAt: 6_000 })).toBe(false)
+  })
+})
+
+describe('telling the hub this browser is in view', () => {
+  it('says it once per socket, then only when it changes', () => {
+    // A new socket: always told, shown or hidden.
+    expect(viewToSend({ visible: true, viewers: 0, sent: null })).toBe('shown')
+    expect(viewToSend({ visible: false, viewers: 0, sent: null })).toBe('hidden')
+    // Unchanged: nothing.
+    expect(viewToSend({ visible: true, viewers: 0, sent: true })).toBeNull()
+    expect(viewToSend({ visible: false, viewers: 0, sent: false })).toBeNull()
+    // The last visible tab hidden, or one shown again.
+    expect(viewToSend({ visible: false, viewers: 0, sent: true })).toBe('hidden')
+    expect(viewToSend({ visible: true, viewers: 0, sent: false })).toBe('shown')
+  })
+
+  it("counts another tab's view: the holder hidden while one is visible is in view", () => {
+    expect(viewToSend({ visible: false, viewers: 1, sent: null })).toBe('shown')
+    expect(viewToSend({ visible: false, viewers: 2, sent: true })).toBeNull()
+    // That tab hidden or closed: the browser is out of view.
+    expect(viewToSend({ visible: false, viewers: 0, sent: true })).toBe('hidden')
   })
 })
 

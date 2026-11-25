@@ -29,6 +29,13 @@
       "when": 1795163849443,
       "tag": "0003_journal_items_key",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1795634890983,
+      "tag": "0004_journal_ended",
+      "breakpoints": true
     }
   ]
 }

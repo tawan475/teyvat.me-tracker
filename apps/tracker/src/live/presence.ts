@@ -1,17 +1,16 @@
 /**
  * Teyvat.me Capture playing an account now (docs/plans/capture-link.md): what
  * `GET /api/accounts/:id/presence` and the live `presence` event say, kept per
- * account for the pages that show it. A heartbeat older than 5 minutes counts
- * as gone (Capture closed without saying so).
+ * account for the pages that show it (the store and its 25-minute expiry are
+ * in presence-store.ts).
  */
 
-import type { CaptureCommandKind, PresenceResponseForAccount } from '@gdt/shared'
-import { shallowReactive } from 'vue'
+import type { CaptureCommandKind } from '@gdt/shared'
 import { api } from '@/api'
+import { setPresence } from './presence-store'
 
-export const PRESENCE_TTL_MS = 12 * 60_000
+export { PRESENCE_TTL_MS, presenceOf, setPresence } from './presence-store'
 
-const byAccount = shallowReactive(new Map<number, PresenceResponseForAccount>())
 const loading = new Map<number, Promise<void>>()
 
 /** Pages ask once per account; later changes arrive as live events. */
@@ -20,25 +19,13 @@ export function loadPresence(accountId: number): Promise<void> {
   if (!pending) {
     pending = api
       .capturePresence(accountId)
-      .then((answer) => void byAccount.set(accountId, answer))
+      .then((answer) => setPresence(accountId, answer))
       .catch(() => {
         loading.delete(accountId)
       })
     loading.set(accountId, pending)
   }
   return pending
-}
-
-/** A live `presence` event. */
-export function setPresence(accountId: number, state: PresenceResponseForAccount): void {
-  byAccount.set(accountId, state)
-}
-
-/** The Capture playing the account at `now`, or null. */
-export function presenceOf(accountId: number, now: number): PresenceResponseForAccount | null {
-  const state = byAccount.get(accountId)
-  if (!state?.presence || state.presence.at < now - PRESENCE_TTL_MS) return null
-  return state
 }
 
 /** Asks that Capture to act; the answer (and its later event) say what waits. */

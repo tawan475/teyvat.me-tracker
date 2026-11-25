@@ -928,6 +928,16 @@ session's newest snapshot (§13.5, Capture 1.17.21).
 - **Reading**: `GET /api/accounts/:id/live` (merged changes, ETag
   base + seq), `GET /api/accounts/:id/points?from=&to=`; `DELETE` either.
   Live socket event `{type: "live", accountId, seq}`.
+- **`watching`** (a batch's answer; Capture then sends every 5 s, else 15 s):
+  a page is **in view**, not just open. Each browser's socket says `shown` /
+  `hidden` when it goes from a visible tab to none or back (never on a timer);
+  one hub call per listening user carries the event and any alert facts and
+  answers it (§13 of the plan). Hidden tabs still get every batch.
+- **Last batch**: the tracker accepts a batch marked `end: true` (the session
+  ended; stored even with no changes, never answered `collapse`) and shows it as
+  `endedAt` on `/live` and the tab push, but does not announce `finalBatch` in
+  its `upload` answer yet, so no capture app sends it and nothing on the site
+  reads `endedAt` yet (§13 of the plan).
 
 </details>
 
@@ -1174,8 +1184,9 @@ Plan and contract: `docs/plans/capture-link.md`.
   picks what it gets (resin at an amount, resin full, expeditions back, Welkin
   ending, commissions not done at 22:00, nothing bought at Paimon's Bargains 3
   days before the month turns; quiet while playing). The user's `LiveHub`
-  keeps each account's facts (from imports, live batches and the Planner's
-  `POST /api/accounts/:id/alert-facts`) and one alarm at the earliest alert
+  keeps each account's facts (from imports, live batches that carry one, and
+  the Planner's `POST /api/accounts/:id/alert-facts`) and one alarm at the
+  earliest alert, moved only when that time changes
   (`worker/services/alerts.ts` when, `alert-hub.ts` storage and sending,
   `worker/lib/web-push.ts` RFC 8291/8292 by hand). Texts come from the site's
   own translations (`alert-text.json`, checked by a test). Off until the
@@ -1184,7 +1195,13 @@ Plan and contract: `docs/plans/capture-link.md`.
 - **Capture presence.** Teyvat.me Capture posts `POST /api/irminsul/presence`
   while the game runs; Overview and the Planner show "Playing now on <PC>"
   with Sync wishes / Send a capture (editors), delivered at its next
-  heartbeat. Live event `{type: "presence"}`.
+  heartbeat. Live event `{type: "presence"}`. A beat costs one D1 round
+  trip; the hub stores it only when it changes or the kept one is 4.5
+  minutes old (every beat while two Captures play one account), so "last
+  seen" can lag by that much; each stored beat is told to the owner's open
+  pages (a shared account's members are not told: their "Playing now" ends
+  25 minutes after their page read it). Capture beats every 60 s while a page is in view, else
+  every 600 s; presence expires 25 minutes after the last stored beat.
 
 **Setup:** make a P-256 key pair once (base64url: the 65-byte public point,
 the 32-byte private scalar), then from `apps/tracker`:

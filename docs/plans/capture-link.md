@@ -27,7 +27,11 @@ Three parts, agreed with the user on 2026-10-31 ("do all"):
   next alert of any device.
 - Facts arrive from the writes that change them: snapshot imports (the newest
   only), live batches (`gi_player.resin`, `gi_tasks.*`), the resin set by hand
-  (account setting `resin`) and planner task ticks.
+  (account setting `resin`) and planner task ticks. A live batch tells the hub
+  only when it holds such a fact (since 2026-11-26; the account's name, UID and
+  server ride along with one, so a rename reaches the alert text at the next
+  real fact), in the same hub call as its socket event when the user has a page
+  open. The hub moves its alarm only when the time it should go off at changes.
 - Web Push: VAPID (RFC 8292) and `aes128gcm` payloads (RFC 8291) by hand with
   WebCrypto (`worker/lib/web-push.ts`). On only when both Worker secrets
   `VAPID_PUBLIC_KEY` (base64url, 65-byte uncompressed P-256 point) and
@@ -83,9 +87,12 @@ every `next` seconds. Answer (200):
 }
 ```
 
-- `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket that
-  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 300 (120 until 2026-11-02:
-  still ~40% of the Worker's requests). Before 2026-11-01 it was 15 while any socket was open, else 60
+- `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket whose
+  browser has not said `hidden` and that connected, said `shown` or pinged in the last 6 minutes; hidden tabs don't
+  ping; the same notion as a live batch's `watching`, live-sync.md §13), else 600 (300 until 2026-11-26;
+  120 until 2026-11-02: still ~40% of the Worker's requests). Capture builds up to the one that
+  raised its cap hold `next` to at most 300, so they keep beating every 300 s against 600.
+  Before 2026-11-01 it was 15 while any socket was open, else 60
   (a background tab made that ~6,000 beats a day).
 - `commands`: each delivered once. `wishes`: run the wish history sync now
   (skip when there is no wish key this login). `snapshot`: send a full
@@ -101,7 +108,22 @@ every `next` seconds. Answer (200):
   and when an answer lacks it (an import key, an older tracker). Before, it
   polled `whoami` every 5 minutes and on focus (~2,250 requests a day).
 
-The presence expires 12 minutes after the last heartbeat (5 until 2026-11-02, 3 before 2026-11-01).
+The presence expires 25 minutes after the last written heartbeat (12 until 2026-11-26, 5 until
+2026-11-02, 3 before 2026-11-01), on the server and on the website alike.
+Since 2026-11-26 the user's hub writes a heartbeat to its storage only when it says something
+new (state, account, UID, device, program, platform) or the kept one is 4.5 minutes old
+(`PRESENCE_REWRITE_MS`): every idle beat is still written, about one in five in-view beats is.
+While more than one Capture plays the same account, every beat is written (the newest stored
+time decides which one the pages show and which one gets a command, so a dead app never wins
+for longer than a beat).
+So the presence's `at` ("last seen") can lag by up to 4.5 minutes; the expiry counts from the
+last written beat. Every written beat is told to the user's open pages as a `presence` event,
+a time-only rewrite too: the owner's pages load presence once and then only hear events, so
+their copy is never older than the rewrite limit plus one beat. A member of a shared account
+is not kept fresh: its page reads presence from the owner's hub once, but its socket is on its
+own hub, so no `presence` event reaches it, and "Playing now" there ends 25 minutes after that
+read even while the owner's Capture runs (12 minutes before 2026-11-26; open, the owner's call). The route reads the session's device name,
+alerts and program in the same D1 batch as the session itself: one round trip per beat (two before).
 
 ## Website
 

@@ -24,6 +24,11 @@
  * - Keep-alive: a ping every five minutes while some tab is visible (none
  *   while all are hidden), and at once when a tab is shown or the network
  *   comes back; no pong within 10 s means a dead socket.
+ * - In view: the leader tells the hub `shown` / `hidden` when this browser
+ *   goes from having a visible tab to none or back (each tab says `view` on
+ *   the channel when it is shown, hidden or closed), and once on each new
+ *   socket. Only on a change: the hub stays asleep in between. Capture sends
+ *   live batches faster only while a page is in view (`watching`).
  * - The socket stays open while tabs are hidden: an idle hibernating socket
  *   costs nothing. A hidden tab only notes changes (and keeps what other tabs
  *   read) and applies them when shown, so background tabs do not re-download
@@ -65,6 +70,7 @@ import {
   reconnectDelay,
   shouldCatchUp,
   shouldPing,
+  viewToSend,
   type PingReason,
 } from './policy'
 
@@ -96,6 +102,10 @@ export function useLiveUpdates(): void {
   let lastPingAt = 0
   let lastPongAt = 0
   let pongTimer: Timer
+  /** What this socket was last told of the browser being in view (null: nothing yet). */
+  let viewSent: boolean | null = null
+  /** The other tabs of this browser that said they are visible. */
+  const viewers = new Set<string>()
 
   // What every tab knows of the socket (the leader's own, or as it said).
   let linkUp = true
@@ -230,7 +240,8 @@ export function useLiveUpdates(): void {
       return
     }
     if (event.type === 'presence') {
-      // Capture started, stopped or picked up a command: the pages showing it update.
+      // Capture started, stopped, picked up a command or had its heartbeat kept
+      // again (a newer time only): the pages showing it update.
       setPresence(event.accountId, { presence: event.presence, pending: event.pending })
       return
     }
@@ -288,6 +299,8 @@ export function useLiveUpdates(): void {
       opened = true
       failedConnects = 0
       lastPongAt = Date.now()
+      viewSent = null
+      sendView()
       setLink(true)
       // The `hello` that follows says whether anything was missed.
     })
@@ -384,6 +397,31 @@ export function useLiveUpdates(): void {
     }, PONG_TIMEOUT_MS)
   }
 
+  /** Tells the hub whether this browser has a tab in view, when that changed (leader). */
+  function sendView() {
+    const ws = socket
+    if (!leader || !ws || ws.readyState !== WebSocket.OPEN) return
+    const message = viewToSend({ visible: visible(), viewers: viewers.size, sent: viewSent })
+    if (message === null) return
+    try {
+      ws.send(message)
+    } catch {
+      return
+    }
+    viewSent = message === 'shown'
+  }
+
+  /** This tab's visibility, for the leader (itself, or by message). */
+  function tellView(shown = visible()) {
+    post({ type: 'view', tab: TAB_ID, visible: shown })
+    sendView()
+  }
+
+  /** The page is going away: it counts as hidden from now on. */
+  function onPageHide() {
+    tellView(false)
+  }
+
   /** A tab was shown, the beat while some tab is visible, or the network is back. */
   function onNudge(reason: PingReason) {
     if (!leader || !running) return
@@ -450,6 +488,7 @@ export function useLiveUpdates(): void {
   }
 
   function onVisibility() {
+    tellView()
     if (!visible()) {
       stopTick()
       return
@@ -514,6 +553,15 @@ export function useLiveUpdates(): void {
         if (visible()) applyRows(message.rows)
         else stashRows.push(...message.rows)
         return
+      case 'view':
+        if (message.tab === TAB_ID) return
+        if (message.visible) viewers.add(message.tab)
+        else viewers.delete(message.tab)
+        sendView()
+        return
+      case 'view?':
+        post({ type: 'view', tab: TAB_ID, visible: visible() })
+        return
     }
     lastReadAt = Math.max(lastReadAt, message.startedAt)
     // That read began after the events this tab wanted one for, so it covers them.
@@ -549,21 +597,28 @@ export function useLiveUpdates(): void {
     me = session.me?.id ?? null
     document.addEventListener('visibilitychange', onVisibility)
     window.addEventListener('online', onOnline)
+    window.addEventListener('pagehide', onPageHide)
     unsubscribe.push(
       // A dialog's "Refresh": apply what waits, dialogs or not.
       onApplyPending(() => announce(accounts.applyPending(true))),
     )
     if (visible()) startTick()
-    // Followers learn the socket's state from the leader.
+    // Followers learn the socket's state from the leader; every tab learns
+    // which others are in view, and says whether it is.
     post({ type: 'link?' })
+    post({ type: 'view?' })
+    tellView()
     resign = requestLeadership(`gdt-live:${me}`, lead, !tabsCanTalk())
   }
 
   function stop() {
     if (!running) return
     running = false
+    // This tab no longer counts for the browser being in view.
+    post({ type: 'view', tab: TAB_ID, visible: false })
     document.removeEventListener('visibilitychange', onVisibility)
     window.removeEventListener('online', onOnline)
+    window.removeEventListener('pagehide', onPageHide)
     while (unsubscribe.length > 0) unsubscribe.pop()!()
     clearTimeout(reconnectTimer)
     clearTimeout(readTimer)
@@ -590,6 +645,8 @@ export function useLiveUpdates(): void {
     stash = null
     stashRows = []
     wantedSince = null
+    viewers.clear()
+    viewSent = null
   }
 
   // Listens while mounted, running or not (see onMessage).

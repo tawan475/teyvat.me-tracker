@@ -70,6 +70,30 @@ export function shouldPing(
   return state.now - Math.max(state.lastPongAt, state.lastPingAt) >= RECENT_PONG_MS
 }
 
+/**
+ * What the socket's holder tells the hub about this browser: `shown` while
+ * some tab of it is visible, `hidden` while none is (the hub's "a page is in
+ * view", worker/services/live.ts IN_VIEW_MS: Capture's `watching` and its
+ * heartbeat). Sent once per socket and then only on a change, never on a timer.
+ */
+export const VIEW_SHOWN = 'shown'
+export const VIEW_HIDDEN = 'hidden'
+
+/**
+ * The view message to send now, or null: the browser is in view when this
+ * tab is visible or another tab said it is (`viewers`), and the socket was
+ * told `sent` last (null: nothing yet on this socket).
+ */
+export function viewToSend(state: {
+  visible: boolean
+  viewers: number
+  sent: boolean | null
+}): typeof VIEW_SHOWN | typeof VIEW_HIDDEN | null {
+  const inView = state.visible || state.viewers > 0
+  if (state.sent === inView) return null
+  return inView ? VIEW_SHOWN : VIEW_HIDDEN
+}
+
 /** How long until the list may be re-read, given the last read and the recent events. */
 export function fetchDelay(
   now: number,

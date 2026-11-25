@@ -34,12 +34,11 @@ import { requireUser } from '../lib/session'
 import { uploaderAccount, uploaderOf, uploaderUserId } from '../lib/uploader'
 import { loadAccount } from '../services/accounts'
 import {
-  anyListening,
   listenerOf,
   listenerStatement,
   notifyAccount,
   notifyAccountLater,
-  tellAlertFacts,
+  tellLiveBatch,
 } from '../services/live'
 import { deltaFacts } from '../services/alerts'
 import { attachEndgame } from '../services/attach'
@@ -126,20 +125,28 @@ export const liveChanges = new Hono<AppEnv>().post('/changes', async (c) => {
     return c.json<LiveChangesResponse>({ ok: true, duplicate: true, seq: stored.seq })
   }
   const listeners = listenerOf(listening)
-  const watching = anyListening(listeners)
-  tellAlertFacts(c, listeners, account.id, {
-    ...deltaFacts(delta.changes, delta.at, undefined),
-    name: account.name,
-    uid: account.uid,
-    server: account.server,
-  })
-  if (watching)
-    notifyAccount(c, listeners, {
+  // Alert facts only when the batch has one; the account's name, UID and
+  // server ride along with it (a rename reaches the alert text at the next
+  // real fact).
+  const found = deltaFacts(delta.changes, delta.at, undefined)
+  const facts =
+    Object.keys(found).length > 0
+      ? { ...found, name: account.name, uid: account.uid, server: account.server }
+      : {}
+  // `watching`: a page of someone who can see the account is in view (not
+  // just open in a hidden tab); the hubs that hear the batch say so.
+  const watching = await tellLiveBatch(
+    c,
+    listeners,
+    account.id,
+    {
       type: 'live',
       accountId: account.id,
       seq: stored.seq,
       ...(stored.batch ? { batch: stored.batch } : {}),
-    })
+    },
+    facts,
+  )
   return c.json<LiveChangesResponse>({
     ok: true,
     seq: stored.seq,

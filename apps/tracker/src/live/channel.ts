@@ -15,6 +15,9 @@
  * - `rows`: a tab re-read accounts itself (after an import or a delete there).
  * - `bye`: this browser signed out (its cookies are gone): every tab lets go
  *   of live updates, the leader closes the socket.
+ * - `view`: a tab became visible or hidden (or closes, or starts); the
+ *   leader tells the hub whether any tab of this browser is in view. `view?`
+ *   asks every tab to say (a new tab, so it knows the others).
  * Scoped by user id: a tab signed in as someone else ignores them. Without
  * BroadcastChannel every tab holds its own socket and reads for itself.
  */
@@ -37,6 +40,8 @@ export type TabMessage =
     }
   | { type: 'rows'; userId: number; rows: AccountResponse[] }
   | { type: 'bye'; userId: number }
+  | { type: 'view'; userId: number; tab: string; visible: boolean }
+  | { type: 'view?'; userId: number }
 
 const NAME = 'gdt:live'
 

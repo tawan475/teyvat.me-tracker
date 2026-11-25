@@ -3,12 +3,22 @@ import type {
   AccountResponse,
   ImportKeyResponse,
   ImportResponse,
+  LiveChangesResponse,
   LiveEvent,
+  PresenceResponse,
   SessionResponse,
 } from '@gdt/shared'
 import { env, runInDurableObject, SELF } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
-import { SESSION_ENDED_CLOSE, liveHub, type LiveHub } from '../services/live'
+import {
+  IDLE_NEXT_S,
+  IN_VIEW_MS,
+  LIVE_BATCH_WAIT_MS,
+  SESSION_ENDED_CLOSE,
+  WATCHED_NEXT_S,
+  liveHub,
+  type LiveHub,
+} from '../services/live'
 import {
   Client,
   ORIGIN,
@@ -591,5 +601,313 @@ describe('account list', () => {
     const theirs = await other.client.fetch('/api/accounts', { headers: { 'if-none-match': etag } })
     expect(theirs.status).toBe(200)
     expect(await theirs.json()).toEqual([])
+  })
+})
+
+describe('a page in view (watching)', () => {
+  const SESSION = 'SESSIONFORTEST02'
+  const top = 812345678n << 32n
+
+  /** An account with an open journal: a Capture snapshot. */
+  async function liveAccount(client: Client) {
+    const { account, importKey } = await createAccount(client)
+    const good = sampleGood(sampleExtras())
+    const answer = (await (
+      await importByKey(
+        importKey,
+        {
+          ...good,
+          artifacts: good.artifacts.map((a, i) => ({
+            ...a,
+            gi_guid: String(top + BigInt(100 + i)),
+          })),
+          weapons: good.weapons.map((w, i) => ({ ...w, gi_guid: String(top + BigInt(500 + i)) })),
+          gi_capture: { v: 1, reason: 'login', session: SESSION, world: 1, journal: { seq: 0 } },
+        },
+        1_000,
+      )
+    ).json()) as ImportResponse
+    const base = answer.live!.base
+    let seq = 0
+    /** One batch (a Mora count); answers its `watching`. */
+    const batch = async () => {
+      seq++
+      const sent = await SELF.fetch(`${ORIGIN}/api/irminsul/changes`, {
+        method: 'POST',
+        headers: { 'x-import-key': importKey, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          format: 'GOOD-X-delta',
+          v: 1,
+          uid: 812345678,
+          session: SESSION,
+          seq,
+          base,
+          at: 1_792_000_000_000 + seq,
+          changes: [['set', ['materials', 'Mora'], 1_000 + seq]],
+        }),
+      })
+      expect(sent.status).toBe(200)
+      const answer = (await sent.json()) as LiveChangesResponse
+      expect(answer).toMatchObject({ ok: true, seq })
+      return (answer as { watching: boolean }).watching
+    }
+    /** A Capture heartbeat; answers its `next`. */
+    const beat = async () => {
+      const response = await SELF.fetch(`${ORIGIN}/api/irminsul/presence`, {
+        method: 'POST',
+        headers: { 'x-import-key': importKey, 'content-type': 'application/json' },
+        body: JSON.stringify({ v: 1, state: 'decoding', uid: 812345678 }),
+      })
+      return ((await response.json()) as PresenceResponse).next
+    }
+    return { account, base, batch, beat }
+  }
+
+  /** What the hub keeps of each socket's word on its browser. */
+  const views = (userId: number) =>
+    runInDurableObject(liveHub(env, userId), (_hub: LiveHub, state) =>
+      state.getWebSockets().map((ws) => (ws.deserializeAttachment() as { view?: string }).view),
+    )
+
+  /** Waits for the pong, past the events before it. */
+  async function pong(tab: Tab) {
+    while ((await tab.next()) !== 'pong');
+  }
+
+  /** The browser (the user's only socket) says `word`; waits until the hub keeps it. */
+  async function say(userId: number, tab: Tab, word: 'shown' | 'hidden') {
+    tab.socket.send(word)
+    await eventually(async () => (await views(userId)).join() === word)
+  }
+
+  it('is false with no socket and with only hidden tabs, true with one in view', async () => {
+    const { client, me } = await signUp()
+    const { batch, beat } = await liveAccount(client)
+    expect(await batch()).toBe(false)
+    expect(await beat()).toBe(IDLE_NEXT_S)
+
+    const tab = await openTab(client)
+    // A browser in view (as it says when its socket opens).
+    await say(me.id, tab, 'shown')
+    expect(await batch()).toBe(true)
+    expect(((await tab.next()) as LiveEvent).type).toBe('live')
+    expect(await beat()).toBe(WATCHED_NEXT_S)
+
+    // Its last tab hidden: out of view at once, for batches and the heartbeat alike.
+    await say(me.id, tab, 'hidden')
+    expect(await batch()).toBe(false)
+    expect(((await tab.next()) as LiveEvent).type).toBe('live')
+    expect(await beat()).toBe(IDLE_NEXT_S)
+    // A ping changes nothing while the browser says it is hidden.
+    tab.socket.send('ping')
+    await pong(tab)
+    expect(await batch()).toBe(false)
+    tab.socket.close(1000)
+  })
+
+  it('goes false within the bound once the last tab in view is closed or goes silent', async () => {
+    const { client, me } = await signUp()
+    const { batch } = await liveAccount(client)
+
+    // Closed: its socket is gone, and the view with it.
+    const closing = await openTab(client)
+    await say(me.id, closing, 'shown')
+    expect(await batch()).toBe(true)
+    closing.socket.close(1000)
+    await closing.closed
+    await eventually(async () => (await liveHub(env, me.id).sockets()) === 0)
+    expect(await batch()).toBe(false)
+
+    // Silent (the browser died while shown): IN_VIEW_MS without a ping ends it.
+    const silent = await openTab(client)
+    await say(me.id, silent, 'shown')
+    expect(await batch()).toBe(true)
+    await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {
+      const old = Date.now() - IN_VIEW_MS - 1_000
+      for (const ws of state.getWebSockets()) {
+        ws.serializeAttachment({ ...ws.deserializeAttachment(), at: old, viewAt: old })
+      }
+    })
+    expect(await batch()).toBe(false)
+    // Its next ping (a visible tab pings every 5 minutes) brings it back.
+    silent.socket.send('ping')
+    await pong(silent)
+    expect(await batch()).toBe(true)
+    silent.socket.close(1000)
+    await silent.closed
+    await eventually(async () => (await liveHub(env, me.id).sockets()) === 0)
+
+    // A browser from before the message: in view up to IN_VIEW_MS after it connected.
+    const old = await openTab(client)
+    expect(await batch()).toBe(true)
+    await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {
+      for (const ws of state.getWebSockets()) {
+        ws.serializeAttachment({ ...ws.deserializeAttachment(), at: Date.now() - IN_VIEW_MS - 1 })
+      }
+    })
+    expect(await batch()).toBe(false)
+    old.socket.close(1000)
+  })
+
+  it('two browsers: in view while either one is', async () => {
+    const { client, me } = await signUp()
+    const { batch } = await liveAccount(client)
+    const home = await openTab(client)
+    const work = await openTab(client)
+    home.socket.send('hidden')
+    work.socket.send('shown')
+    await eventually(async () => {
+      const kept = await views(me.id)
+      return kept.includes('hidden') && kept.includes('shown')
+    })
+    expect(await batch()).toBe(true)
+    // Both get the batch, the hidden one too.
+    expect(((await home.next()) as LiveEvent).type).toBe('live')
+    expect(((await work.next()) as LiveEvent).type).toBe('live')
+    work.socket.send('hidden')
+    await eventually(async () => (await views(me.id)).every((v) => v === 'hidden'))
+    expect(await batch()).toBe(false)
+    home.socket.send('shown')
+    await eventually(async () => (await views(me.id)).includes('shown'))
+    expect(await batch()).toBe(true)
+    home.socket.close(1000)
+    work.socket.close(1000)
+  })
+
+  it('a hidden tab still gets every batch, so shown again it has nothing to read', async () => {
+    const { client, me } = await signUp()
+    const { account, base, batch } = await liveAccount(client)
+    const tab = await openTab(client)
+    await say(me.id, tab, 'hidden')
+    // Hidden: Capture hears nobody watches, but each batch still reaches the
+    // socket with what it changed, applied by the page as it comes
+    // (data/live-known.ts): no /live or /points read, as before.
+    expect(await batch()).toBe(false)
+    expect(await batch()).toBe(false)
+    for (const seq of [1, 2]) {
+      expect(await tab.next()).toMatchObject({
+        type: 'live',
+        accountId: account.id,
+        seq,
+        batch: { base, prev: seq - 1, changes: [['set', ['materials', 'Mora'], 1_000 + seq]] },
+      })
+    }
+    // Shown again: the hub only notes it and sends nothing (nothing was missed).
+    await say(me.id, tab, 'shown')
+    await tab.quiet()
+    expect(await batch()).toBe(true)
+    // Had the socket been lost while hidden, the reconnect's hello says where
+    // the journal stands, so the page re-reads only a journal that moved.
+    tab.socket.close(1000)
+    const again = await openTab(client)
+    expect(again.hello).toMatchObject({ journals: [{ id: account.id, base, seq: 3 }] })
+    again.socket.close(1000)
+  })
+
+  it('answers within the bound when the hub hangs, and the hub still gets the batch', async () => {
+    const { client, me } = await signUp()
+    const { account, batch } = await liveAccount(client)
+    const tab = await openTab(client)
+    await say(me.id, tab, 'shown')
+    // A prompt hub: in view, at once.
+    expect(await batch()).toBe(true)
+    expect(await tab.next()).toMatchObject({ type: 'live', seq: 1 })
+
+    // The hub hangs on the batch's event until released.
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    await runInDurableObject(liveHub(env, me.id), (hub: LiveHub) => {
+      const notify = hub.notify.bind(hub)
+      hub.notify = async (...args: Parameters<LiveHub['notify']>) => {
+        await gate
+        return notify(...args)
+      }
+    })
+    const started = Date.now()
+    // 200, `watching: false` (checked in `batch`), after the bound and not much later.
+    expect(await batch()).toBe(false)
+    const took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+    await tab.quiet(100)
+
+    // Released: the call the answer stopped waiting for still delivers its event.
+    release()
+    expect(await tab.next()).toMatchObject({ type: 'live', accountId: account.id, seq: 2 })
+    await runInDurableObject(liveHub(env, me.id), (hub: LiveHub) => {
+      delete (hub as { notify?: unknown }).notify
+    })
+    expect(await batch()).toBe(true)
+    expect(await tab.next()).toMatchObject({ type: 'live', seq: 3 })
+    tab.socket.close(1000)
+  })
+
+  it('a shared account: a hub that answered in view in time counts though another hangs', async () => {
+    const owner = await signUp()
+    const member = await signUp()
+    const { account, batch } = await liveAccount(owner.client)
+    const invited = await owner.client.fetch(`/api/accounts/${account.id}/members`, {
+      method: 'POST',
+      json: { username: member.username, role: 'viewer' },
+    })
+    expect(invited.status).toBe(201)
+    const accepted = await member.client.fetch(`/api/invitations/${account.id}/accept`, {
+      method: 'POST',
+    })
+    expect(accepted.status).toBe(204)
+    const mine = await openTab(owner.client)
+    const theirs = await openTab(member.client)
+    await say(owner.me.id, mine, 'shown')
+    await say(member.me.id, theirs, 'shown')
+    expect(await batch()).toBe(true)
+
+    // A hub that hangs on the batch's event until released.
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const hang = (userId: number) =>
+      runInDurableObject(liveHub(env, userId), (hub: LiveHub) => {
+        const notify = hub.notify.bind(hub)
+        hub.notify = async (...args: Parameters<LiveHub['notify']>) => {
+          await gate
+          return notify(...args)
+        }
+      })
+    const unhang = (userId: number) =>
+      runInDurableObject(liveHub(env, userId), (hub: LiveHub) => {
+        delete (hub as { notify?: unknown }).notify
+      })
+
+    // The member's hub hangs, the owner's answers in view at once: true, at the bound.
+    await hang(member.me.id)
+    let started = Date.now()
+    expect(await batch()).toBe(true)
+    let took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+
+    // Both hang: false, within the bound.
+    await hang(owner.me.id)
+    started = Date.now()
+    expect(await batch()).toBe(false)
+    took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+
+    release()
+    await unhang(owner.me.id)
+    await unhang(member.me.id)
+    mine.socket.close(1000)
+    theirs.socket.close(1000)
+  })
+
+  it('adds no timer: the word is kept on the socket, and the hub sleeps between', async () => {
+    const { client, me } = await signUp()
+    const tab = await openTab(client)
+    await say(me.id, tab, 'hidden')
+    await runInDurableObject(liveHub(env, me.id), async (_hub: LiveHub, state) => {
+      expect(await state.storage.getAlarm()).toBeNull()
+      expect(state.getWebSockets()[0]!.deserializeAttachment()).toMatchObject({ view: 'hidden' })
+    })
+    tab.socket.close(1000)
   })
 })

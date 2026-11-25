@@ -75,7 +75,7 @@
     "too_large": "檔案過大",
     "too_many_items": "檔案中的項目過多",
     "uid_mismatch": "檔案的 UID 與此帳號不符",
-    "uid_required": "此檔案沒有 UID，請更新 Teyvat.me Capture",
+    "uid_required": "此檔案沒有 UID（gi_player.uid 或 metadata.uid），全帳號金鑰無法判斷它屬於哪個帳號。請使用該帳號自己的匯入金鑰，或使用會寫入 UID 的工具",
     "uid_taken": "你的另一個帳號已使用此 UID",
     "unauthenticated": "未登入",
     "unsupported_grant_type": "不支援的授權類型",

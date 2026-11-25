@@ -25,7 +25,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { GUEST_ACCOUNT_ID } from '@/local/guest-id'
 import { zipDecoder } from '@/data/export-zip'
 import { toBytes } from '../services/storage'
-import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
+import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp, withEnv } from './client'
 import { loadGuestModules, type GuestStore } from './guest-modules'
 
 const UID = 812345678
@@ -313,6 +313,48 @@ describe("GGScanner's roll lists, given back", () => {
     // And the guest store reads the same export to the same rolls.
     await importGuest(exported, 1_000)
     expect(rollsOf(await guestRows())).toEqual(await storedBySlot(first.id))
+  })
+
+  it('keeps gi_rolls and per-substat lists in /api/v1 answers (the schemas let them through)', async () => {
+    await setSwitch('1')
+    const server = await serverAccount()
+    await server.upload(file([listed(A), ordered(C, 'sands')]), 1_000)
+    const [snapshot] = await server.client.json<SnapshotResponse[]>(
+      `/api/accounts/${server.id}/snapshots`,
+    )
+    const site = JSON.parse(
+      await (
+        await server.client.fetch(`/api/accounts/${server.id}/snapshots/${snapshot!.id}/good`)
+      ).text(),
+    ) as Good
+    const mine = (artifacts: GoodArtifact[]) =>
+      artifacts.filter((a) => a.setKey === 'GladiatorsFinale')
+    const want = mine(site.artifacts)
+    expect(want.find((a) => a.slotKey === 'sands')!.gi_rolls).toBe(C)
+    expect(want.find((a) => a.slotKey === 'flower')!.substats.every((s) => s.rolls)).toBe(true)
+
+    const made = await server.client.fetch('/api/auth/api-tokens', {
+      method: 'POST',
+      json: { name: 'Bot' },
+    })
+    expect(made.status).toBe(201)
+    const { secret } = (await made.json()) as { secret: string }
+    const allow: RateLimit = { limit: async () => ({ success: true }) }
+    const unlimited = withEnv(
+      Object.fromEntries(
+        ['RL_2', 'RL_6', 'RL_10', 'RL_20', 'RL_30', 'RL_60', 'RL_INVALID'].map((n) => [n, allow]),
+      ),
+    )
+    const v1 = async <T>(path: string) => {
+      const response = await unlimited(`${ORIGIN}/api/v1/accounts/${server.id}${path}`, {
+        headers: { authorization: `Bearer ${secret}`, 'cf-connecting-ip': '2001:db8:aa::1' },
+      })
+      expect(response.status, path).toBe(200)
+      return ((await response.json()) as { data: T }).data
+    }
+    expect(mine((await v1<Good>('/good')).artifacts)).toEqual(want)
+    expect(mine((await v1<Good>(`/snapshots/${snapshot!.id}/good`)).artifacts)).toEqual(want)
+    expect(mine(await v1<GoodArtifact[]>('/artifacts?key=GladiatorsFinale'))).toEqual(want)
   })
 })
 

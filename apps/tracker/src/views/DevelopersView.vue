@@ -316,7 +316,9 @@ const languageOpen = ref(false)
                     <code>x-import-key</code>. An account's key (<code>gdt_ik_…</code>, on its
                     Import page) uploads to that account. The all-accounts key
                     (<code>gdt_uk_…</code>, Settings) uploads to the account whose UID is
-                    <code>gi_player.uid</code>, making it on the first upload; without a UID, 422
+                    <code>gi_player.uid</code>, or <code>metadata.uid</code> when the file has no
+                    <code>gi_player.uid</code> (as GGScanner writes it; <code>gi_player.uid</code>
+                    wins when both are there), making it on the first upload; without a UID, 422
                     <code>uid_required</code>.
                   </p>
                   <p>

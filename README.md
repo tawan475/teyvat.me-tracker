@@ -284,6 +284,10 @@ rolls back as a `rolls` list on each substat (tier values), not as
   fills per batch (`FILLS_PER_BATCH`) and the piece left the bag before a
   later upload filled that row.
 
+On each artifact the tracker also reads `gi_rolls` (Teyvat.me Capture's) and
+GGScanner's per-substat `rolls` lists, both optional ("Exact artifact rolls"
+above); GOOD exports and `/api/v1`'s GOOD answers give them back the same way.
+
 The capture app's own top-level keys are sections of their own, each optional and
 range-checked again on import: `gi_player` (AR, World Level, UID… as read at
 login) as `player`, `gi_achievement_times` (finish times, unix seconds) as
@@ -617,7 +621,9 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   success; 401/403 makes the capture app re-verify. Re-uploading a capture is a no-op
   (also when it was first stored before the extra keys were kept). Responses
   only gain fields: an upload to a picked account (an account key, or a
-  device set to one account) whose `gi_player.uid` is not the account's UID
+  device set to one account) whose UID (`gi_player.uid`, or `metadata.uid`
+  when the file has no `gi_player.uid`, as GGScanner writes it;
+  `gi_player.uid` wins when both are there) is not the account's UID
   gives the account that UID (the server follows) and answers with
   `warnings: [{code: "uid_changed", …}]`, except when another of the owner's
   accounts has it or the account is shared with the uploader: then it is
@@ -627,7 +633,8 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   /api/accounts/:id/import-key`) always uploads to its account. A user key
   (`gdt_uk_…`, one per user: `POST /api/me/import-key` makes or replaces it,
   `DELETE` revokes; `hasImportKey` on `/auth/me`) uploads to the user's account
-  whose UID is the file's `gi_player.uid`, and a
+  whose UID is the file's (`gi_player.uid`, or `metadata.uid` when the file
+  has no `gi_player.uid`; `gi_player.uid` wins when both are there), and a
   new UID makes a new account (no name, server read off the UID). A file
   without that UID is a 422 `uid_required`. A key is looked up among accounts,
   then users, in one round trip. Imports by key answer with the `account`
@@ -1088,7 +1095,7 @@ shared with the capture app; responses only gain fields. Code:
    changed (`PATCH /api/auth/sessions/:id {upload: {mode: "uid"} | {mode:
    "account", account_id}}`, capture app rows only). The import is
    `import-by-key`'s, shared code and all (`services/upload-as.ts`): uid mode
-   is a user key (by `gi_player.uid`, new UIDs make an account, 422
+   is a user key (by `gi_player.uid`, else `metadata.uid`, new UIDs make an account, 422
    `uid_required` without one), account mode an account key (409
    `upload_target_missing` once that account is deleted); the same file
    limits, daily and storage quotas, warnings and live notify; 20 uploads a

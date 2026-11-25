@@ -5,6 +5,7 @@ import {
   goodDeltaSchema,
   normalizeGood,
   OFF_SWITCHES,
+  rollValue,
   type LiveGood,
 } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
@@ -45,6 +46,7 @@ describe('the developer page', () => {
       'gi_miliastra',
       'gi_off',
       'gi_player',
+      'gi_rolls',
       'gi_tasks',
       'gi_teapot',
       'gi_wardrobe',
@@ -52,12 +54,12 @@ describe('the developer page', () => {
   })
 
   it('shows examples the tracker keeps whole', () => {
-    // gi_off has its own test below: it says what a file leaves out.
+    // gi_off and gi_rolls have their own tests below: what a file leaves
+    // out, and a key on each artifact.
     const top = Object.fromEntries(
-      KEY_DOCS.filter((d) => !d.key.includes(',') && d.key !== 'gi_off').map((d) => [
-        d.key,
-        d.example,
-      ]),
+      KEY_DOCS.filter(
+        (d) => !d.key.includes(',') && d.key !== 'gi_off' && d.key !== 'gi_rolls',
+      ).map((d) => [d.key, d.example]),
     )
     const good = normalizeGood({ ...FILE_EXAMPLE, ...top, weapons: [doc('gi_guid, gi_exp')] })
     expect(good.player).toEqual(doc('gi_player'))
@@ -104,6 +106,29 @@ describe('the developer page', () => {
     expect(exportedOff(off)).toEqual(off)
     expect(exportedOff([])).toBeUndefined()
     expect(exportedOff(undefined)).toBeUndefined()
+  })
+
+  it('shows a gi_rolls the tracker keeps, and reads per-substat rolls lists as the note says', () => {
+    const shown = doc('gi_rolls') as Record<string, any>
+    const artifact: Record<string, any> = {
+      ...shown,
+      mainStatKey: 'atk_',
+      location: '',
+      lock: false,
+      astralMark: false,
+      elixirCrafted: false,
+      unactivatedSubstats: [],
+    }
+    const read = (a: unknown) => normalizeGood({ ...FILE_EXAMPLE, artifacts: [a] }).artifacts[0]!
+    expect(read(artifact).rolls).toBe(shown.gi_rolls)
+    // The same rolls as per-substat lists (display units): tiers per line, no order across.
+    const pairs = (shown.gi_rolls as string).match(/../g)!.map((p) => [+p[0]!, +p[1]!])
+    const { gi_rolls: _, ...listed } = artifact
+    listed.substats = shown.substats.map((s: { key: string }, line: number) => ({
+      ...s,
+      rolls: pairs.filter(([l]) => l === line).map(([, t]) => rollValue(s.key, 5, t!)!),
+    }))
+    expect(read(listed).rolls).toMatch(/^~/)
   })
 
   it('quotes the file limits the tracker enforces', () => {

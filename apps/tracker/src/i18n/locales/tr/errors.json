@@ -75,7 +75,7 @@
     "too_large": "Dosya çok büyük",
     "too_many_items": "Dosyada çok fazla öğe var",
     "uid_mismatch": "Dosyanın UID'si bu hesaba ait değil",
-    "uid_required": "Bu dosyada UID yok; Teyvat.me Capture'u güncelle",
+    "uid_required": "Bu dosyada UID (gi_player.uid veya metadata.uid) yok, bu yüzden tüm hesaplar anahtarı hangi hesaba ait olduğunu anlayamaz. Hesabın kendi içe aktarma anahtarını ya da UID'yi yazan bir araç kullan",
     "uid_taken": "Başka bir hesabın zaten bu UID'ye sahip",
     "unauthenticated": "Giriş yapılmadı",
     "unsupported_grant_type": "grant_type, authorization_code veya refresh_token olmalı",

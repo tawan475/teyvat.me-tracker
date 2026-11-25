@@ -39,6 +39,7 @@ Every success is an object with `data`; lists add `meta`. Fields are camelCase a
 
 - Raw first: answers are the data as stored. Only the wish summary and the farm plan are computed.
 - One field can be absent: `off` on a snapshot and on an account’s `latest`. It is there only when Teyvat.me Capture left parts out of that capture, and names them (`characters`, `materials`, `gi_achievements`…). The counts beside it stay as stored: 0 for a part named in `off` means not shared, not none.
+- Artifacts in GOOD answers (`/good`, `/artifacts`, a snapshot’s `/good`) may carry `gi_rolls` (every substat roll, in the order the game applied them) or, when the rolls are known only per substat, a `rolls` list on each substat (that substat’s roll values). Both are optional.
 - Every answer has `X-Request-Id`; quote it in a bug report.
 - `ETag` on reads: send it back as `If-None-Match` and an unchanged account answers 304 at once.
 
@@ -1868,7 +1869,7 @@ Errors: `not_found`, `rate_limited`.
 
 ### POST /api/v1/accounts/{id}/snapshots
 
-Upload a GOOD file. Send the file as `application/json` (gzip with `Content-Encoding: gzip`) or `multipart/form-data` with a `file` part. `?timestamp=` (Unix ms or ISO 8601) dates it when the file does not. The same data again is `unchanged` and stores nothing. Daily snapshot and storage quotas apply.
+Upload a GOOD file. Send the file as `application/json` (gzip with `Content-Encoding: gzip`) or `multipart/form-data` with a `file` part. `?timestamp=` (Unix ms or ISO 8601) dates it when the file does not. The same data again is `unchanged` and stores nothing. Daily snapshot and storage quotas apply. The file’s UID is `gi_player.uid`, or `metadata.uid` when the file has no `gi_player.uid` (as GGScanner writes it); `gi_player.uid` wins when both are there. It fills the account’s UID when the account has none; a different one is stored anyway, with a `uid_mismatch` warning.
 
 - Scope: snapshots · Write
 

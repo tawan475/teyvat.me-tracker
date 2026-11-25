@@ -75,7 +75,7 @@
     "too_large": "O arquivo é grande demais",
     "too_many_items": "O arquivo tem itens demais",
     "uid_mismatch": "O UID do arquivo não é o desta conta",
-    "uid_required": "Este arquivo não tem UID; atualize o Teyvat.me Capture",
+    "uid_required": "Este arquivo não tem UID (gi_player.uid ou metadata.uid), então a chave de todas as contas não consegue saber de qual conta ele é. Use a chave de importação da própria conta ou uma ferramenta que grave o UID",
     "uid_taken": "Outra das suas contas já tem este UID",
     "unauthenticated": "Não conectado",
     "unsupported_grant_type": "grant_type deve ser authorization_code ou refresh_token",

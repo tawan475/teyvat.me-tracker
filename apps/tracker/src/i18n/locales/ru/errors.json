@@ -75,7 +75,7 @@
     "too_large": "Файл слишком большой",
     "too_many_items": "В файле слишком много предметов",
     "uid_mismatch": "UID файла не совпадает с UID аккаунта",
-    "uid_required": "В файле нет UID; обновите Teyvat.me Capture",
+    "uid_required": "В файле нет UID (gi_player.uid или metadata.uid), поэтому ключ всех аккаунтов не может определить, к какому аккаунту он относится. Используйте ключ импорта самого аккаунта или программу, которая записывает UID",
     "uid_taken": "Этот UID уже есть у другого вашего аккаунта",
     "unauthenticated": "Вход не выполнен",
     "unsupported_grant_type": "grant_type должен быть authorization_code или refresh_token",

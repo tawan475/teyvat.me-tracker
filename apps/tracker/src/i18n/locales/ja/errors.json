@@ -75,7 +75,7 @@
     "too_large": "ファイルが大きすぎます",
     "too_many_items": "ファイルのアイテムが多すぎます",
     "uid_mismatch": "ファイルのUIDがこのアカウントのものではありません",
-    "uid_required": "このファイルにはUIDがありません。Teyvat.me Captureを更新してください",
+    "uid_required": "このファイルにはUID（gi_player.uid または metadata.uid）がないため、全アカウント用キーではどのアカウントか判断できません。そのアカウント自身のインポートキーを使うか、UIDを書き込むツールを使ってください",
     "uid_taken": "このUIDはすでに別のアカウントにあります",
     "unauthenticated": "ログインしていません",
     "unsupported_grant_type": "grant_typeはauthorization_codeまたはrefresh_tokenである必要があります",

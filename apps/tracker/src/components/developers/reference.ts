@@ -11,6 +11,7 @@
  */
 
 import type {
+  GoodArtifact,
   GoodWeapon,
   ItemExtras,
   Leyline,
@@ -65,7 +66,7 @@ export const KEY_DOCS: KeyDoc[] = [
       profilePicture: { id: 1, frameId: 1 },
       birthday: { month: 1, day: 1 },
     } satisfies NonNullable<Leyline['gi_player']>,
-    note: 'An upload with an all-accounts key goes to the account whose UID is gi_player.uid.',
+    note: 'An upload with an all-accounts key goes to the account whose UID is gi_player.uid, or metadata.uid when the file has no gi_player.uid (as GGScanner writes it). gi_player.uid wins when both are there.',
   },
   {
     key: 'gi_achievements',
@@ -364,6 +365,31 @@ Figure = { value: number; by?: CharacterKey }`,
       },
     } satisfies NonNullable<Leyline['gi_endgame']>,
     note: 'Each of the three parts is kept only when all of it is in range. Each is as the game last sent it: the Theater at login, the other two when their menu is opened.',
+  },
+  {
+    key: 'gi_rolls',
+    what: 'On each artifact: every substat roll it has received, in the order the game applied them.',
+    shape: `{ gi_rolls?: string }   // beside GOOD’s own fields
+// Two digits a roll: the line (index into substats), then the tier
+// (1 = the lowest value that stat can roll at this rarity).
+// 2 × totalRolls digits.`,
+    // gi_rolls is typed here until the page's leyline.d.ts copy (Capture's
+    // docs/leyline.d.ts) carries it on GoodArtifact.
+    example: {
+      setKey: 'EmblemOfSeveredFate',
+      slotKey: 'sands',
+      rarity: 5,
+      level: 20,
+      substats: [
+        { key: 'critRate_', value: 9.7, initialValue: 3.9 },
+        { key: 'critDMG_', value: 21, initialValue: 6.2 },
+        { key: 'enerRech_', value: 4.5, initialValue: 4.5 },
+        { key: 'atk_', value: 11.1, initialValue: 5.2 },
+      ],
+      totalRolls: 9,
+      gi_rolls: '041221331401133402',
+    } satisfies Partial<GoodArtifact> & { gi_rolls?: string },
+    note: 'Absent when the capture app does not know one of the rolls: never a partial list. In uploads, in saved files and in live sync changes. The tracker also reads a rolls list on each substat, as GGScanner’s packet capture writes it: that substat’s roll values in display units (3.89, not 0.0389). Those give the tiers of each substat but no order across substats; an artifact whose rolls are known only that way is exported the same way, a rolls list on each substat and no gi_rolls.',
   },
   {
     key: 'gi_capture',

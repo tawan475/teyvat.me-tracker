@@ -75,7 +75,7 @@
     "too_large": "Tệp quá lớn",
     "too_many_items": "Tệp có quá nhiều vật phẩm",
     "uid_mismatch": "UID trong tệp không phải của tài khoản này",
-    "uid_required": "Tệp này không có UID; hãy cập nhật Teyvat.me Capture",
+    "uid_required": "Tệp này không có UID (gi_player.uid hoặc metadata.uid), nên khóa mọi tài khoản không biết đó là tài khoản nào. Hãy dùng khóa nhập của chính tài khoản đó, hoặc một công cụ có ghi UID",
     "uid_taken": "Một tài khoản khác của bạn đã có UID này",
     "unauthenticated": "Chưa đăng nhập",
     "unsupported_grant_type": "grant_type phải là authorization_code hoặc refresh_token",

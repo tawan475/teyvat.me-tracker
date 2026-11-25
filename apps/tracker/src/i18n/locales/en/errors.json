@@ -75,7 +75,7 @@
     "too_large": "The file is too large",
     "too_many_items": "The file has too many items",
     "uid_mismatch": "The file's UID is not this account's",
-    "uid_required": "This file has no UID; update Teyvat.me Capture",
+    "uid_required": "This file has no UID (gi_player.uid or metadata.uid), so an all-accounts key can't tell which account it is. Use the account's own import key, or a tool that writes the UID",
     "uid_taken": "Another of your accounts already has this UID",
     "unauthenticated": "Not signed in",
     "unsupported_grant_type": "grant_type must be authorization_code or refresh_token",

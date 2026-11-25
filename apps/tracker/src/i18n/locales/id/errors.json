@@ -75,7 +75,7 @@
     "too_large": "File terlalu besar",
     "too_many_items": "File berisi terlalu banyak item",
     "uid_mismatch": "UID file bukan UID akun ini",
-    "uid_required": "File ini tidak memiliki UID; perbarui Teyvat.me Capture",
+    "uid_required": "File ini tidak memiliki UID (gi_player.uid atau metadata.uid), jadi kunci semua akun tidak bisa mengetahui akun mana pemiliknya. Gunakan kunci impor milik akun itu sendiri, atau alat yang menulis UID",
     "uid_taken": "Akunmu yang lain sudah memiliki UID ini",
     "unauthenticated": "Belum masuk",
     "unsupported_grant_type": "grant_type harus authorization_code atau refresh_token",

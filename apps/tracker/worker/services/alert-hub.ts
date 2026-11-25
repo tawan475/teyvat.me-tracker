@@ -55,6 +55,8 @@ export const PRESENCE_TTL_MS = 25 * 60_000
  * one lost beat never lets an entry pass PRESENCE_TTL_MS.
  */
 export const PRESENCE_REWRITE_MS = 270_000
+/** An entry expired for more than a day is deleted by the next listing (`presenceEntries`). */
+export const PRESENCE_FORGET_MS = PRESENCE_TTL_MS + 24 * 3_600_000
 /** Sent keys are forgotten after this. */
 const SENT_TTL_MS = 8 * 24 * 3_600_000
 
@@ -356,11 +358,25 @@ export async function sendTest(
 
 // ------------------------------------------------------------------ presence
 
+/**
+ * Every kept presence entry by key. One that expired more than a day ago is
+ * deleted on the way: nothing reads an expired entry (a Capture's queued
+ * commands are kept under `commands:<sid>`, its alerts in D1), and only
+ * `stopped` deleted them before, so a user's every past Capture stayed.
+ */
+async function presenceEntries(hub: HubContext, now: number): Promise<Map<string, PresenceEntry>> {
+  const all = await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })
+  for (const [key, p] of all) {
+    if (p.at > now - PRESENCE_FORGET_MS) continue
+    await hub.storage.delete(key)
+    all.delete(key)
+  }
+  return all
+}
+
 async function presences(hub: HubContext): Promise<PresenceEntry[]> {
   const now = hub.now()
-  return [...(await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })).values()].filter(
-    (p) => p.at > now - PRESENCE_TTL_MS,
-  )
+  return [...(await presenceEntries(hub, now)).values()].filter((p) => p.at > now - PRESENCE_TTL_MS)
 }
 
 function playing(list: PresenceEntry[], accountId: number, now: number): boolean {
@@ -374,7 +390,7 @@ async function othersPlaying(
   accountId: number,
   now: number,
 ): Promise<boolean> {
-  for (const [other, p] of await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })) {
+  for (const [other, p] of await presenceEntries(hub, now)) {
     if (other !== key && p.accountId === accountId && p.at > now - PRESENCE_TTL_MS) return true
   }
   return false

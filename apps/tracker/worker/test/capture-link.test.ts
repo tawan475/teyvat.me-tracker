@@ -16,6 +16,7 @@ import { RESIN_STEP_MS, alertMessage, type AccountFacts } from '../services/aler
 import { parseLiveEvent } from '@/live/policy'
 import { PRESENCE_TTL_MS as PAGE_TTL_MS, presenceOf, setPresence } from '@/live/presence-store'
 import {
+  PRESENCE_FORGET_MS,
   PRESENCE_REWRITE_MS,
   PRESENCE_TTL_MS,
   addFacts,
@@ -645,7 +646,9 @@ describe('alert facts from live batches', () => {
         }),
       })
       expect(sent.status).toBe(200)
-      expect(await sent.json()).toMatchObject({ ok: true, seq })
+      const answer = (await sent.json()) as { ok: boolean; seq: number; watching?: boolean }
+      expect(answer).toMatchObject({ ok: true, seq })
+      return answer
     }
   }
 
@@ -732,6 +735,28 @@ describe('alert facts from live batches', () => {
     expect(message.body.startsWith('Alt · ')).toBe(true)
   })
 
+  it('a facts write that fails leaves `watching` as the view says', async () => {
+    const { client, me, importKey } = await setup()
+    await subscribe(client)
+    const batch = await liveCapture(importKey, Date.now() - 60_000)
+    // A page in view (just connected), and a hub whose facts write throws.
+    const tab = await client.fetch('/api/live', {
+      headers: { upgrade: 'websocket', origin: ORIGIN },
+    })
+    const socket = tab.webSocket!
+    socket.accept()
+    await runInDurableObject(liveHub(env, me.id), (object: LiveHub) => {
+      object.alertFacts = async () => {
+        throw new Error('storage down')
+      }
+    })
+    expect((await batch([resin(150)])).watching).toBe(true)
+    await runInDurableObject(liveHub(env, me.id), (object: LiveHub) => {
+      delete (object as { alertFacts?: unknown }).alertFacts
+    })
+    socket.close()
+  })
+
   it('sets the alarm only when the time it should go off at moves', async () => {
     let sets = 0
     let deletes = 0
@@ -785,6 +810,39 @@ describe('alert facts from live batches', () => {
 })
 
 describe('presence review cases', () => {
+  it('a listing deletes an entry expired for more than a day, and keeps the rest', async () => {
+    const { hub, clock } = fakeHub()
+    const beat = (sid: number) =>
+      heartbeat(hub, {
+        sid,
+        device: `PC-0${sid}`,
+        state: 'decoding',
+        accountId: 3,
+        uid: '812345678',
+        platform: 'windows',
+        app: '1.18.4',
+      })
+    const end = clock.now + PRESENCE_FORGET_MS + 1_000
+    // 1: a day and a second past its end. 2: an hour past its end. 3: live.
+    await beat(1)
+    clock.now = end - PRESENCE_TTL_MS - 3_600_000
+    await beat(2)
+    clock.now = end - 1_000
+    await beat(3)
+    clock.now = end
+    const kept = () =>
+      Promise.all(
+        [1, 2, 3].map(async (sid) => (await hub.storage.get(`presence:${sid}`)) !== undefined),
+      )
+    expect(await kept()).toEqual([true, true, true])
+    // The next listing (the page's read) shows the live one and drops the old one.
+    expect((await presenceFor(hub, 3)).presence).toMatchObject({ sid: 3 })
+    expect(await kept()).toEqual([false, true, true])
+    // Just short of a day past its end: kept.
+    clock.now = end - PRESENCE_TTL_MS - 3_600_000 + PRESENCE_FORGET_MS - 1
+    await presenceFor(hub, 3)
+    expect(await hub.storage.get('presence:2')).toBeDefined()
+  })
   it('two Captures on one account: a dead one never wins past the live one’s next beat', async () => {
     const { hub, clock } = fakeHub()
     const beat = (sid: number) =>

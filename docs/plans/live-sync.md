@@ -846,10 +846,19 @@ stays hibernating. A socket counts while it has not said `hidden` and connected,
 when the last tab hides or closes, at most 6 minutes after a browser dies while shown;
 browsers from before the message count by connect and ping times alone. The route learns
 it from the one hub call it makes per listening user (`LiveHub.liveBatch`, the event and
-any alert facts together), awaited; a failed call counts as not in view. Hidden tabs still
+any alert facts together), awaited for at most 1.5 s (`LIVE_BATCH_WAIT_MS`); a failed or
+slower call counts as not in view (a slow one is logged `live_batch_slow`) and never fails
+the request. The call itself runs in `waitUntil`, so its event and facts still arrive when the
+answer has gone; a failed facts write is logged on its own (`alert_facts_failed`) and leaves
+the view's answer as it is. Hidden tabs still
 get every batch on their socket and apply it, so a tab shown again is current with no read;
-a lost socket's reconnect `hello` carries the journals' places. The import answer's
-`live.watching` still says only that a page is open (it holds until the first batch's answer).
+a lost socket's reconnect `hello` carries the journals' places.
+
+Known limits, accepted: a tab that crashes (or whose browser dies) while shown keeps its
+browser "in view" for up to 6 minutes after its last ping, and that holds for the browser as
+a whole, so a sibling tab hidden later in the same browser is still counted as in view until
+then. The import answer's `live.watching` still means "a page is open" (any socket, hidden
+tabs too): Capture holds it only until the first batch's answer, which says "in view".
 
 The server checks `base` = the journal's base, `session` = the journal's session (the
 snapshot's `gi_capture.session`; a snapshot without one opens a journal any session may

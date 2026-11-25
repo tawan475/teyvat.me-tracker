@@ -365,7 +365,14 @@ export class LiveHub extends DurableObject<Env> {
     this.liveBatches++
     if (input.event) await this.notify(userId, input.event, input.tokenVersion)
     const inView = this.inView()
-    if (input.facts) await this.alertFacts(userId, accountId, input.facts)
+    if (input.facts) {
+      // Its own failure: the batch's `watching` is still what the view says.
+      try {
+        await this.alertFacts(userId, accountId, input.facts)
+      } catch (error) {
+        console.warn('alert_facts_failed', String(error))
+      }
+    }
     return { inView }
   }
 
@@ -670,6 +677,9 @@ export function tellAlertFacts(
   }
 }
 
+/** How long a live batch's answer waits for the hubs' `inView` before saying "not in view". */
+export const LIVE_BATCH_WAIT_MS = 1_500
+
 /**
  * A live batch's event and alert facts for everyone who can see the account
  * (routes/live-sync.ts): one hub call per user that has a socket open or
@@ -677,9 +687,10 @@ export function tellAlertFacts(
  * holds nothing an alert depends on; then no hub hears of it for alerts.
  * Answers the batch's `watching`: whether a page of any listener is in view
  * (docs/plans/live-sync.md §13). For that it waits for the hubs of users with
- * a socket open (the call they always had, now awaited); a hub that fails
- * counts as not in view and never fails the request. Facts-only calls run
- * after the response.
+ * a socket open, at most LIVE_BATCH_WAIT_MS: a hub that fails or is slower
+ * counts as not in view and never fails or holds the request. Every call runs
+ * in `waitUntil`, so its event and facts are delivered whether or not the
+ * request still waits for it.
  */
 export async function tellLiveBatch(
   c: Context<AppEnv>,
@@ -701,24 +712,32 @@ export async function tellLiveBatch(
       ...(send ? { event: marked, tokenVersion: listener.tokenVersion } : {}),
       ...(tell ? { facts } : {}),
     })
-    if (send) {
-      asked.push(
-        call.then(
-          (answer) => answer.inView,
-          (error: unknown) => {
-            console.warn('live_notify_failed', String(error))
-            return false
-          },
-        ),
-      )
-    } else {
-      afterResponse(
-        c,
-        call.catch((error: unknown) => console.warn('alert_facts_failed', String(error))),
-      )
-    }
+    const settled = call.then(
+      (answer) => answer.inView,
+      (error: unknown) => {
+        console.warn(send ? 'live_notify_failed' : 'alert_facts_failed', String(error))
+        return false
+      },
+    )
+    afterResponse(c, settled)
+    if (send) asked.push(settled)
   }
-  return (await Promise.all(asked)).some(Boolean)
+  if (asked.length === 0) return false
+  let timer: ReturnType<typeof setTimeout> | null = null
+  const late = new Promise<'late'>((resolve) => {
+    timer = setTimeout(() => resolve('late'), LIVE_BATCH_WAIT_MS)
+  })
+  const started = Date.now()
+  const answer = await Promise.race([Promise.all(asked), late])
+  clearTimeout(timer)
+  if (answer === 'late') {
+    console.warn(
+      'live_batch_slow',
+      JSON.stringify({ hubs: asked.length, waitedMs: Date.now() - started }),
+    )
+    return false
+  }
+  return answer.some(Boolean)
 }
 
 /**

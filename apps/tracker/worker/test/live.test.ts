@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest'
 import {
   IDLE_NEXT_S,
   IN_VIEW_MS,
+  LIVE_BATCH_WAIT_MS,
   SESSION_ENDED_CLOSE,
   WATCHED_NEXT_S,
   liveHub,
@@ -801,6 +802,44 @@ describe('a page in view (watching)', () => {
     const again = await openTab(client)
     expect(again.hello).toMatchObject({ journals: [{ id: account.id, base, seq: 3 }] })
     again.socket.close(1000)
+  })
+
+  it('answers within the bound when the hub hangs, and the hub still gets the batch', async () => {
+    const { client, me } = await signUp()
+    const { account, batch } = await liveAccount(client)
+    const tab = await openTab(client)
+    await say(me.id, tab, 'shown')
+    // A prompt hub: in view, at once.
+    expect(await batch()).toBe(true)
+    expect(await tab.next()).toMatchObject({ type: 'live', seq: 1 })
+
+    // The hub hangs on the batch's event until released.
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    await runInDurableObject(liveHub(env, me.id), (hub: LiveHub) => {
+      const notify = hub.notify.bind(hub)
+      hub.notify = async (...args: Parameters<LiveHub['notify']>) => {
+        await gate
+        return notify(...args)
+      }
+    })
+    const started = Date.now()
+    // 200, `watching: false` (checked in `batch`), after the bound and not much later.
+    expect(await batch()).toBe(false)
+    const took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+    await tab.quiet(100)
+
+    // Released: the call the answer stopped waiting for still delivers its event.
+    release()
+    expect(await tab.next()).toMatchObject({ type: 'live', accountId: account.id, seq: 2 })
+    await runInDurableObject(liveHub(env, me.id), (hub: LiveHub) => {
+      delete (hub as { notify?: unknown }).notify
+    })
+    expect(await batch()).toBe(true)
+    expect(await tab.next()).toMatchObject({ type: 'live', seq: 3 })
+    tab.socket.close(1000)
   })
 
   it('adds no timer: the word is kept on the socket, and the hub sleeps between', async () => {

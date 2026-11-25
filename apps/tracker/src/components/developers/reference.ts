@@ -11,6 +11,7 @@
  */
 
 import type {
+  ArtifactRolls,
   GoodArtifact,
   GoodWeapon,
   ItemExtras,
@@ -373,8 +374,6 @@ Figure = { value: number; by?: CharacterKey }`,
 // Two digits a roll: the line (index into substats), then the tier
 // (1 = the lowest value that stat can roll at this rarity).
 // 2 × totalRolls digits.`,
-    // gi_rolls is typed here until the page's leyline.d.ts copy (Capture's
-    // docs/leyline.d.ts) carries it on GoodArtifact.
     example: {
       setKey: 'EmblemOfSeveredFate',
       slotKey: 'sands',
@@ -388,7 +387,7 @@ Figure = { value: number; by?: CharacterKey }`,
       ],
       totalRolls: 9,
       gi_rolls: '041221331401133402',
-    } satisfies Partial<GoodArtifact> & { gi_rolls?: string },
+    } satisfies Partial<GoodArtifact> & ArtifactRolls,
     note: 'Absent when the capture app cannot give every roll exactly: never a partial list. In uploads, in saved files and in live sync changes. The tracker also reads a rolls list on each substat, as GGScanner’s packet capture writes it: that substat’s roll values in display units (3.89, not 0.0389). Those give the tiers of each substat but no order across substats; an artifact whose rolls are known only that way is exported the same way, a rolls list on each substat and no gi_rolls.',
   },
   {

@@ -842,6 +842,64 @@ describe('a page in view (watching)', () => {
     tab.socket.close(1000)
   })
 
+  it('a shared account: a hub that answered in view in time counts though another hangs', async () => {
+    const owner = await signUp()
+    const member = await signUp()
+    const { account, batch } = await liveAccount(owner.client)
+    const invited = await owner.client.fetch(`/api/accounts/${account.id}/members`, {
+      method: 'POST',
+      json: { username: member.username, role: 'viewer' },
+    })
+    expect(invited.status).toBe(201)
+    const accepted = await member.client.fetch(`/api/invitations/${account.id}/accept`, {
+      method: 'POST',
+    })
+    expect(accepted.status).toBe(204)
+    const mine = await openTab(owner.client)
+    const theirs = await openTab(member.client)
+    await say(owner.me.id, mine, 'shown')
+    await say(member.me.id, theirs, 'shown')
+    expect(await batch()).toBe(true)
+
+    // A hub that hangs on the batch's event until released.
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const hang = (userId: number) =>
+      runInDurableObject(liveHub(env, userId), (hub: LiveHub) => {
+        const notify = hub.notify.bind(hub)
+        hub.notify = async (...args: Parameters<LiveHub['notify']>) => {
+          await gate
+          return notify(...args)
+        }
+      })
+    const unhang = (userId: number) =>
+      runInDurableObject(liveHub(env, userId), (hub: LiveHub) => {
+        delete (hub as { notify?: unknown }).notify
+      })
+
+    // The member's hub hangs, the owner's answers in view at once: true, at the bound.
+    await hang(member.me.id)
+    let started = Date.now()
+    expect(await batch()).toBe(true)
+    let took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+
+    // Both hang: false, within the bound.
+    await hang(owner.me.id)
+    started = Date.now()
+    expect(await batch()).toBe(false)
+    took = Date.now() - started
+    expect(took).toBeGreaterThanOrEqual(LIVE_BATCH_WAIT_MS - 50)
+    expect(took).toBeLessThan(LIVE_BATCH_WAIT_MS + 8_000)
+
+    release()
+    await unhang(owner.me.id)
+    await unhang(member.me.id)
+    mine.socket.close(1000)
+    theirs.socket.close(1000)
+  })
+
   it('adds no timer: the word is kept on the socket, and the hub sleeps between', async () => {
     const { client, me } = await signUp()
     const tab = await openTab(client)

@@ -835,6 +835,11 @@ session's newest snapshot (§13.5, Capture 1.17.21).
   `hidden` when it goes from a visible tab to none or back (never on a timer);
   one hub call per listening user carries the event and any alert facts and
   answers it (§13 of the plan). Hidden tabs still get every batch.
+- **Last batch**: the tracker accepts a batch marked `end: true` (the session
+  ended; stored even with no changes, never answered `collapse`) and shows it as
+  `endedAt` on `/live` and the tab push, but does not announce `finalBatch` in
+  its `upload` answer yet, so no capture app sends it and nothing on the site
+  reads `endedAt` yet (§13 of the plan).
 
 </details>
 

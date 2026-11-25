@@ -843,6 +843,31 @@ describe('presence review cases', () => {
     await presenceFor(hub, 3)
     expect(await hub.storage.get('presence:2')).toBeDefined()
   })
+  it('an entry deleted that way takes its queued commands with it; a live one keeps its own', async () => {
+    const { hub, clock } = fakeHub()
+    const beat = (sid: number, accountId: number) =>
+      heartbeat(hub, {
+        sid,
+        device: `PC-0${sid}`,
+        state: 'decoding',
+        accountId,
+        uid: '812345678',
+        platform: 'windows',
+        app: '1.18.4',
+      })
+    // 1 plays account 3, 2 plays account 4; each gets a command queued.
+    await beat(1, 3)
+    expect(await queueCommand(hub, 3, 'wishes')).toMatchObject({ pending: ['wishes'] })
+    expect(await hub.storage.get('commands:1')).toBeDefined()
+    clock.now += PRESENCE_FORGET_MS + 1_000
+    await beat(2, 4)
+    // 1 is a day past its end: the next listing (this queueing) drops it and its queue.
+    expect(await queueCommand(hub, 4, 'snapshot')).toMatchObject({ pending: ['snapshot'] })
+    expect((await presenceFor(hub, 4)).pending).toEqual(['snapshot'])
+    expect(await hub.storage.get('presence:1')).toBeUndefined()
+    expect(await hub.storage.get('commands:1')).toBeUndefined()
+    expect(await hub.storage.get('commands:2')).toMatchObject([{ kind: 'snapshot', accountId: 4 }])
+  })
   it('two Captures on one account: a dead one never wins past the live one’s next beat', async () => {
     const { hub, clock } = fakeHub()
     const beat = (sid: number) =>

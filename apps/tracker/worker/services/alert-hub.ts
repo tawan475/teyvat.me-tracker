@@ -363,12 +363,14 @@ export async function sendTest(
  * deleted on the way: nothing reads an expired entry (a Capture's queued
  * commands are kept under `commands:<sid>`, its alerts in D1), and only
  * `stopped` deleted them before, so a user's every past Capture stayed.
+ * Its queued commands (`commands:<slot>`, same slot) go with it.
  */
 async function presenceEntries(hub: HubContext, now: number): Promise<Map<string, PresenceEntry>> {
   const all = await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })
   for (const [key, p] of all) {
     if (p.at > now - PRESENCE_FORGET_MS) continue
     await hub.storage.delete(key)
+    await hub.storage.delete(`commands:${key.slice('presence:'.length)}`)
     all.delete(key)
   }
   return all

@@ -688,7 +688,8 @@ export const LIVE_BATCH_WAIT_MS = 1_500
  * Answers the batch's `watching`: whether a page of any listener is in view
  * (docs/plans/live-sync.md §13). For that it waits for the hubs of users with
  * a socket open, at most LIVE_BATCH_WAIT_MS: a hub that fails or is slower
- * counts as not in view and never fails or holds the request. Every call runs
+ * counts as not in view and never fails or holds the request; past the bound
+ * the answer is still true when a hub that did answer said in view. Every call runs
  * in `waitUntil`, so its event and facts are delivered whether or not the
  * request still waits for it.
  */
@@ -704,6 +705,8 @@ export async function tellLiveBatch(
   // The write's bookmarks: the page reads from a replica that has it.
   const marked: LiveEvent = { ...event, ...requestBookmarks(c) }
   const asked: Promise<boolean>[] = []
+  // Each hub's answer as it arrives: a timeout still answers what came in time.
+  let seen = false
   for (const listener of listeners) {
     const send = listener.live
     const tell = withFacts && listener.alerts === true
@@ -713,7 +716,11 @@ export async function tellLiveBatch(
       ...(tell ? { facts } : {}),
     })
     const settled = call.then(
-      (answer) => answer.inView,
+      (answer: { inView?: unknown } | undefined) => {
+        const inView = answer?.inView === true
+        if (send && inView) seen = true
+        return inView
+      },
       (error: unknown) => {
         console.warn(send ? 'live_notify_failed' : 'alert_facts_failed', String(error))
         return false
@@ -735,7 +742,7 @@ export async function tellLiveBatch(
       'live_batch_slow',
       JSON.stringify({ hubs: asked.length, waitedMs: Date.now() - started }),
     )
-    return false
+    return seen
   }
   return answer.some(Boolean)
 }

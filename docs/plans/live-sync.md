@@ -848,7 +848,8 @@ browsers from before the message count by connect and ping times alone. The rout
 it from the one hub call it makes per listening user (`LiveHub.liveBatch`, the event and
 any alert facts together), awaited for at most 1.5 s (`LIVE_BATCH_WAIT_MS`); a failed or
 slower call counts as not in view (a slow one is logged `live_batch_slow`) and never fails
-the request. The call itself runs in `waitUntil`, so its event and facts still arrive when the
+the request; at the bound the answer is still `true` when a hub that did answer in time
+said in view (a shared account: the owner's tab in view, a member's hub hanging). The call itself runs in `waitUntil`, so its event and facts still arrive when the
 answer has gone; a failed facts write is logged on its own (`alert_facts_failed`) and leaves
 the view's answer as it is. Hidden tabs still
 get every batch on their socket and apply it, so a tab shown again is current with no read;
@@ -878,6 +879,20 @@ sends them, and the batch is answered as stored either way. The journal row keep
 snapshot's `gi_off` as one number (`base_off`, `offMask`; migrations-live 0002), set
 when the snapshot opens the journal, so a batch reads nothing more for it. `sum` is
 taken as sent.
+
+**The session's last batch** (2026-11-26, accepted, not announced yet): a batch may carry
+`end: true` (`GoodDelta.end`): the game connection ended and no more batches follow on
+this journal, in place of a logout snapshot. Such a batch is stored like any other, also
+with `changes: []` (its `sum` still makes a chart point), counts toward the daily limit,
+and never answers `collapse: true` (nothing would send that snapshot). The journal keeps
+when it ended: `endedAt` (unix ms, server clock) on the `GET /api/accounts/:id/live`
+answer (`LiveJournalResponse`) and on the tab push of that batch (`LiveBatchPush`);
+absent while the journal is open. A later batch on the same journal (a hand-over to the
+next Capture start) or a new snapshot clears it. Capture may send `end` only to a
+tracker whose `upload` answer (`UploadSupport`, in `verify-key`, `whoami` and the import
+answer) has the word `finalBatch`. **The tracker accepts `end` but does not announce
+`finalBatch` yet** (`UPLOAD_SUPPORT` is `{gzip: true}`), so no Capture sends it today,
+and nothing on the site reads `endedAt` yet.
 
 **Item guids in the browser**: stored snapshots keep no guids. At each snapshot the
 tracker stores the file's guid → fingerprint index (`itemIndexOf`, ~10 B per item) on

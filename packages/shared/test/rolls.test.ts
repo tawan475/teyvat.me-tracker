@@ -15,6 +15,7 @@ import {
   fillCatalogChunk,
   hashArtifactIdentity,
   hexToBytes,
+  isStorableRolls,
   needsFill,
   normalizeGood,
   prepareSnapshot,
@@ -29,6 +30,7 @@ import {
   type Good,
   type StoredSnapshot,
 } from '../src'
+import { ByteWriter } from '../src/codec/bytes'
 import { inflate } from '../src/codec/deflate'
 import { MATERIALS } from '../src/dictionary/materials'
 import cases from './fixtures/gi-rolls-cases.json'
@@ -245,10 +247,10 @@ describe('catalog chunks with rolls', () => {
     const texts = [
       ...cases.valid.map((c) => c.artifact.gi_rolls),
       '~040102121413213334',
-      '0151', // a line past 3: the digit layout
+      '0134', // line 0 and line 3, tiers 1 and 4: the edges of the layout
       '~0102',
       '01',
-      '0'.repeat(32),
+      '01'.repeat(16),
       '~' + '34'.repeat(16),
     ]
     const entries: CatalogEntryBytes[] = list.map((identity, i) => ({
@@ -274,10 +276,27 @@ describe('catalog chunks with rolls', () => {
     }
   })
 
-  it('refuses rolls that are not a RollsText when encoding', () => {
+  it('refuses rolls that are not of the storable shape when encoding', () => {
     const [identity] = identities()
-    for (const rolls of ['', '0', 'ab', '~', '01'.repeat(17), '~~01']) {
+    const refused = [
+      ...['', '0', 'ab', '~', '01'.repeat(17), '~~01'],
+      // RollsTexts no artifact's checked rolls can be:
+      '0151', // a line past 3
+      '91', // line 9
+      '00', // tier 0
+      '05', // tier 5
+      '0'.repeat(32), // tier 0, sixteen times
+      '~1101', // a `~` text whose lines go down
+      '~011201', // a `~` text whose lines are not grouped
+    ]
+    for (const rolls of refused) {
+      expect(isStorableRolls(rolls)).toBe(false)
       expect(() => encodeCatalogChunk([{ id: 1, identity: identity!, rolls }])).toThrow(RangeError)
+      const data = encodeCatalogChunk([{ id: 1, identity: identity! }])
+      const fills = new Map([[artifactKeyString(identity!), rolls]])
+      if (needsFill(undefined, rolls))
+        expect(() => fillCatalogChunk(data, fills)).toThrow(RangeError)
+      else expect(fillCatalogChunk(data, fills)).toBe(data)
     }
   })
 
@@ -301,8 +320,9 @@ describe('catalog chunks with rolls', () => {
       chunk(0, 1 + 2 * 0), // head of 0 rolls
       chunk(0, 1 + 2 * (2 * 9), 1, 2), // nine rolls, two bytes
       chunk(0, 1 + 2 * (2 * 1), 0x10), // a spare nibble that is not 0
-      chunk(0, 2 + 2 * (2 * 1), 0xaf), // digit layout, line 10
-      chunk(0, 2 + 2 * (2 * 1), 0x1c), // digit layout, tier 12
+      chunk(0, 2 + 2 * (2 * 1), 0xaf), // the old digit layout (line 10): no such layout
+      chunk(0, 2 + 2 * (2 * 1), 0x01), // the old digit layout, even for a sound "01"
+      chunk(0, 1 + 2 * (1 + 2 * 2), 0x04), // "~1101": a `~` text whose lines go down
       chunk(0, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80), // a varint that never ends
     ]
     for (const data of damaged) expect(() => decodeCatalogChunk(data)).toThrow(CorruptDataError)
@@ -373,6 +393,16 @@ describe('rolls through storage and back', () => {
     const unordered = new Map([...rolls].map(([id]) => [id, '~040102121413213334']))
     const loose = decodeSnapshot(stored, catalog, MATERIALS, unordered)
     expect(loose.artifacts.some((a) => 'gi_rolls' in a)).toBe(false)
+    // A stored text checked again on the way out: one that no longer fits its
+    // piece (here another piece's rolls) is left out, the others kept.
+    const ids1 = [...rolls.keys()]
+    const swapped = new Map(rolls)
+    swapped.set(ids1[0]!, rolls.get(ids1[1]!)!)
+    const checked = decodeSnapshot(stored, catalog, MATERIALS, swapped)
+    expect(checked.artifacts.filter((a) => 'gi_rolls' in a)).toHaveLength(rolls.size - 1)
+    for (const artifact of checked.artifacts) {
+      if (artifact.gi_rolls) expect(checkRolls(artifact, artifact.gi_rolls)).toBe(artifact.gi_rolls)
+    }
   })
 
   it('reads the wire row with and without its eleventh element', () => {
@@ -623,5 +653,141 @@ describe('one id in two copies', () => {
       expect(catalogFromRows(order).get(7)!.rolls).toBe('01112131')
     }
     expect('rolls' in catalogFromRows([row(), row()]).get(7)!).toBe(false)
+  })
+})
+
+describe('one id in two rows, as the wire gives it', () => {
+  const row = (level: number, rolls?: string): CatalogRow =>
+    [
+      7,
+      'GladiatorsFinale',
+      'flower',
+      level,
+      5,
+      'hp',
+      [],
+      4,
+      0,
+      [],
+      ...(rolls ? [rolls] : []),
+    ] as never
+  const ordered = '04122133'
+  const grouped = '~04122133'
+
+  it("shows the last row's identity and the better rolls", () => {
+    const cases: [CatalogRow[], string | undefined][] = [
+      [[row(1, ordered), row(2, grouped)], ordered], // ordered then `~`
+      [[row(1, grouped), row(2, ordered)], ordered], // `~` then ordered
+      [[row(1, ordered), row(2)], ordered], // rolls then none
+      [[row(1), row(2, ordered)], ordered], // none then rolls
+      [[row(1, grouped), row(2)], grouped],
+      [[row(1), row(2, grouped)], grouped],
+      [[row(1, ordered), row(2, '01020304')], ordered], // ordered never replaced
+      [[row(1), row(2)], undefined],
+    ]
+    for (const [rows, rolls] of cases) {
+      const entry = catalogFromRows(rows).get(7)!
+      expect(entry.level).toBe(2)
+      expect(entry.rolls).toBe(rolls)
+      expect('rolls' in entry).toBe(rolls !== undefined)
+    }
+  })
+})
+
+describe('a fill is a splice, not a repack', () => {
+  it('keeps identity bytes the packer would not write, byte for byte', () => {
+    // A valid identity in the JSON layout, spaced and ordered as no packer
+    // writes it: decoding and packing again would change these bytes.
+    const json =
+      '{ "slotKey": "flower", "setKey": "GladiatorsFinale", "level": 20.5, "rarity": 5,\n' +
+      '  "mainStatKey": "hp", "substats": [], "totalRolls": 4, "elixirCrafted": false,\n' +
+      '  "unactivatedSubstats": [] }'
+    const w = new ByteWriter()
+    w.uint(2).int(5).int(3) // two entries: ids 5 and 8
+    w.uint(0).string(json)
+    w.uint(0).string(json.replace('20.5', '16.5'))
+    const data = new Uint8Array([1, ...w.finish()])
+    const before = readCatalogChunk(data)
+    const fills = new Map(before.entries.map((e) => [e.key, '01112131']))
+    const after = readCatalogChunk(fillCatalogChunk(data, fills))
+    const prefix = (parts: typeof before) => bytesToHex(parts.body.subarray(0, parts.identitiesEnd))
+    expect(prefix(after)).toBe(prefix(before))
+    expect(after.entries.map((e) => [e.id, e.key, e.rolls])).toEqual(
+      before.entries.map((e) => [e.id, e.key, '01112131']),
+    )
+    // What a decode-and-repack would have written: other identity bytes.
+    const repacked = readCatalogChunk(
+      encodeCatalogChunk(before.entries.map(({ id, identity }) => ({ id, identity }))),
+    )
+    expect(prefix(repacked)).not.toBe(prefix(before))
+  })
+})
+
+describe('checkRolls tolerances, at their edges', () => {
+  // One roll of tier 1: 5★ Crit Rate 2.72, 5★ HP 209.13.
+  const one = (key: string, value: number, initialValue?: number) =>
+    checkRolls(
+      {
+        rarity: 5,
+        totalRolls: 1,
+        substats: [{ key, value, ...(initialValue === undefined ? {} : { initialValue }) }],
+      },
+      '01',
+    )
+
+  it('adds up within 0.051 for percentages and 0.54 for flat stats, no further', () => {
+    for (const sign of [1, -1]) {
+      expect(one('critRate_', 2.72 + sign * 0.0505)).toBe('01')
+      expect(one('critRate_', 2.72 + sign * 0.0515)).toBeUndefined()
+      expect(one('hp', 209.13 + sign * 0.535)).toBe('01')
+      expect(one('hp', 209.13 + sign * 0.545)).toBeUndefined()
+    }
+  })
+
+  it('matches the first roll to initialValue within the same tolerances, no further', () => {
+    for (const sign of [1, -1]) {
+      expect(one('critRate_', 2.72, 2.72 + sign * 0.0505)).toBe('01')
+      expect(one('critRate_', 2.72, 2.72 + sign * 0.0515)).toBeUndefined()
+      expect(one('hp', 209.13, 209.13 + sign * 0.535)).toBe('01')
+      expect(one('hp', 209.13, 209.13 + sign * 0.545)).toBeUndefined()
+    }
+  })
+})
+
+describe('what the catalog can store, both ways', () => {
+  it('encodes a RollsText exactly when it is of the storable shape', () => {
+    const rand = random(29)
+    const [identity] = identities()
+    let stored = 0
+    let refused = 0
+    for (let i = 0; i < 4000; i++) {
+      const count = int(rand, 1, 16)
+      const pairs = Array.from({ length: count }, () => [
+        int(rand, 0, rand() < 0.8 ? 3 : 9),
+        int(rand, rand() < 0.9 ? 1 : 0, rand() < 0.8 ? 4 : 9),
+      ])
+      if (rand() < 0.5) pairs.sort((a, b) => a[0]! - b[0]!)
+      const text = `${rand() < 0.5 ? '~' : ''}${pairs.map(([l, t]) => `${l}${t}`).join('')}`
+      const encode = () => encodeCatalogChunk([{ id: 1, identity: identity!, rolls: text }])
+      if (isStorableRolls(text)) {
+        stored++
+        expect(decodeCatalogChunk(encode())[0]!.rolls).toBe(text)
+        // The shape, said again without the function under test.
+        for (const [line, tier] of rollPairs(text)) {
+          expect(line).toBeLessThanOrEqual(3)
+          expect(tier).toBeGreaterThanOrEqual(1)
+          expect(tier).toBeLessThanOrEqual(4)
+        }
+        if (text.startsWith('~')) {
+          const lines = rollPairs(text).map(([line]) => line)
+          expect(lines).toEqual([...lines].sort((a, b) => a - b))
+        }
+      } else {
+        refused++
+        expect(encode).toThrow(RangeError)
+      }
+    }
+    expect(stored).toBeGreaterThan(500)
+    expect(refused).toBeGreaterThan(500)
   })
 })

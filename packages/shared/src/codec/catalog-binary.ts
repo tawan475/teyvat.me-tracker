@@ -33,16 +33,17 @@
  * entry's rolls (a RollsText, see ../rolls) or none. The rolls are never part
  * of the identity bytes, so an entry's key is the same in every format. A
  * chunk none of whose entries has rolls is written as format 1/2.
- *   uint  head      0: no rolls, else 1 + layout + 2 * (unordered + 2 * count)
- *                   where unordered is 1 for a `~` text and count (1 to
- *                   MAX_ROLLS) the number of rolls
- *   layout 0 (every line 0-3 and tier 1-4): ceil(count / 2) bytes, a roll
- *     per nibble, low nibble first: line << 2 | (tier - 1); a spare high
- *     nibble is 0
- *   layout 1 (anything else): count bytes, line << 4 | tier (digits 0-9)
- * Nine rolls of four lines take 6 bytes before deflate. Every text
- * `checkRolls` accepts (at most MAX_ROLL_LINES lines, tiers 1-4) takes
- * layout 0; layout 1 keeps any other RollsText lossless.
+ *   uint  head      0: no rolls, else 1 + 2 * (unordered + 2 * count) where
+ *                   unordered is 1 for a `~` text and count (1 to MAX_ROLLS)
+ *                   the number of rolls (an even head above 0, whose low
+ *                   bit would name another layout, is corrupt)
+ *   then ceil(count / 2) bytes, a roll per nibble, low nibble first:
+ *   line << 2 | (tier - 1); a spare high nibble is 0
+ * Nine rolls of four lines take 6 bytes before deflate. Only a text of the
+ * storable shape (`isStorableRolls`: lines 0-3, tiers 1-4, a `~` text's lines
+ * grouped and ascending) has a record: the shape of every text `checkRolls`
+ * can accept. The encoder throws RangeError on any other; the decoder reads a
+ * record that does not decode to one as CorruptDataError.
  * `fillCatalogChunk` adds rolls to a chunk by rewriting only this block.
  *
  * A storage format: append to the key lists, add layouts under new format
@@ -52,7 +53,7 @@
 import type { ArtifactIdentity } from '../artifact'
 import type { GoodSubstat } from '../good'
 import {
-  isRollsText,
+  isStorableRolls,
   MAX_ROLLS,
   needsFill,
   rollPairs,
@@ -293,59 +294,43 @@ const CHUNK_DEFLATED = 2
 const CHUNK_ROLLS_STORED = 3
 const CHUNK_ROLLS_DEFLATED = 4
 
-const PACKED_ROLLS = 0
-const DIGIT_ROLLS = 1
-
 const rollNibble = ([line, tier]: [number, number]) => (line << 2) | (tier - 1)
 
-/** One record of the rolls block (see the header). */
+/** One record of the rolls block (see the header): only a storable text. */
 function writeRolls(w: ByteWriter, rolls: RollsText | undefined): void {
   if (rolls === undefined) {
     w.uint(0)
     return
   }
-  if (!isRollsText(rolls)) throw new RangeError(`Invalid rolls ${JSON.stringify(rolls)}`)
+  if (!isStorableRolls(rolls)) throw new RangeError(`Invalid rolls ${JSON.stringify(rolls)}`)
   const pairs = rollPairs(rolls)
-  const packed = pairs.every(([line, tier]) => line <= 3 && tier >= 1 && tier <= 4)
   const unordered = rollsOrdered(rolls) ? 0 : 1
-  w.uint(1 + (packed ? PACKED_ROLLS : DIGIT_ROLLS) + 2 * (unordered + 2 * pairs.length))
-  if (packed) {
-    for (let i = 0; i < pairs.length; i += 2) {
-      const next = pairs[i + 1]
-      w.byte(rollNibble(pairs[i]!) | (next ? rollNibble(next) << 4 : 0))
-    }
-  } else {
-    for (const [line, tier] of pairs) w.byte((line << 4) | tier)
+  w.uint(1 + 2 * (unordered + 2 * pairs.length))
+  for (let i = 0; i < pairs.length; i += 2) {
+    const next = pairs[i + 1]
+    w.byte(rollNibble(pairs[i]!) | (next ? rollNibble(next) << 4 : 0))
   }
 }
 
-/** One record of the rolls block; a count or byte no writer makes is CorruptDataError. */
+/** One record of the rolls block; anything no writer makes is CorruptDataError. */
 function readRolls(r: ByteReader): RollsText | undefined {
   const head = r.uint()
   if (head === 0) return undefined
   const code = head - 1
-  const layout = code % 2
+  if (code % 2 !== 0) throw new CorruptDataError('Unknown rolls layout')
   const unordered = Math.floor(code / 2) % 2
   const count = Math.floor(code / 4)
   if (count < 1 || count > MAX_ROLLS) throw new CorruptDataError(`Invalid roll count ${count}`)
   let text = unordered ? UNORDERED_ROLLS : ''
-  if (layout === PACKED_ROLLS) {
-    const bytes = r.bytes(Math.ceil(count / 2))
-    for (let i = 0; i < count; i++) {
-      const nibble = (bytes[i >> 1]! >> ((i & 1) * 4)) & 0x0f
-      text += `${nibble >> 2}${(nibble & 3) + 1}`
-    }
-    if (count % 2 === 1 && bytes[bytes.length - 1]! >> 4 !== 0) {
-      throw new CorruptDataError('Invalid rolls padding')
-    }
-  } else {
-    for (const byte of r.bytes(count)) {
-      const line = byte >> 4
-      const tier = byte & 0x0f
-      if (line > 9 || tier > 9) throw new CorruptDataError('Invalid roll')
-      text += `${line}${tier}`
-    }
+  const bytes = r.bytes(Math.ceil(count / 2))
+  for (let i = 0; i < count; i++) {
+    const nibble = (bytes[i >> 1]! >> ((i & 1) * 4)) & 0x0f
+    text += `${nibble >> 2}${(nibble & 3) + 1}`
   }
+  if (count % 2 === 1 && bytes[bytes.length - 1]! >> 4 !== 0) {
+    throw new CorruptDataError('Invalid rolls padding')
+  }
+  if (!isStorableRolls(text)) throw new CorruptDataError('Invalid rolls order')
   return text
 }
 

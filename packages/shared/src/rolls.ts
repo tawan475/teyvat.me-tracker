@@ -129,6 +129,24 @@ export function rollsOrdered(text: RollsText): boolean {
   return !text.startsWith(UNORDERED_ROLLS)
 }
 
+/**
+ * Whether the catalog can store `value` (its one rolls record layout): a
+ * RollsText of 1 to MAX_ROLLS rolls, every line 0 to MAX_ROLL_LINES - 1 and
+ * every tier 1 to 4, and for a `~` text its lines grouped and ascending.
+ * Every text `checkRolls` accepts has this shape; nothing else can be stored.
+ */
+export function isStorableRolls(value: unknown): value is RollsText {
+  if (!isRollsText(value)) return false
+  const ordered = rollsOrdered(value)
+  let previous = 0
+  for (const [line, tier] of rollPairs(value)) {
+    if (line >= MAX_ROLL_LINES || tier < 1 || tier > 4) return false
+    if (!ordered && line < previous) return false
+    previous = line
+  }
+  return true
+}
+
 /** Every roll as [line, tier], in the text's order. */
 export function rollPairs(text: RollsText): [number, number][] {
   const start = rollsOrdered(text) ? 0 : 1

@@ -12,7 +12,7 @@
 
 import type { ArtifactIdentity, ArtifactState } from '../artifact'
 import { CHARACTERS, WEAPONS, fromRef, toRef, type KeyDictionary, type KeyRef } from '../dictionary'
-import { rollsOrdered, type RollsText } from '../rolls'
+import { checkRolls, rollsOrdered, type RollsText } from '../rolls'
 import type {
   ArchiveTab,
   GiAbyssRecord,
@@ -316,8 +316,12 @@ export function decodeArtifacts(
     }
     // `~` rolls (order within each line only) are not written as gi_rolls,
     // which promises the game's order: a later reader gives them back in
-    // another shape, here.
-    if (text !== undefined && rollsOrdered(text)) artifact.gi_rolls = text
+    // another shape, here. A stored text is checked against the piece again
+    // (a damaged chunk, a later change to the tier table): one that no
+    // longer fits is left out, never exported as fact.
+    if (text !== undefined && rollsOrdered(text) && checkRolls(identity, text) === text) {
+      artifact.gi_rolls = text
+    }
     return artifact
   })
 }

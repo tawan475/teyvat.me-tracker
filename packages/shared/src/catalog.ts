@@ -1,6 +1,6 @@
 import { calculateCV, calculateRV, type ArtifactIdentity } from './artifact'
 import type { GoodSubstat } from './good'
-import { isRollsText, type RollsText } from './rolls'
+import { isRollsText, needsFill, type RollsText } from './rolls'
 
 /**
  * A substat as stored in the artifact catalog and sent on the wire:
@@ -53,12 +53,15 @@ export interface CatalogEntry extends ArtifactIdentity {
 
 /**
  * The catalog by id. One id can come twice (two chunks after an old merge):
- * a copy without rolls never replaces one with them.
+ * the identity is the last row's; the rolls the better of the two by
+ * `needsFill` (ordered beats `~`, `~` beats none, ordered is never replaced).
  */
 export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, CatalogEntry> {
   const catalog = new Map<number, CatalogEntry>()
   for (const r of rows) {
-    if (catalog.get(r[0])?.rolls !== undefined && !isRollsText(r[10])) continue
+    const previous = catalog.get(r[0])?.rolls
+    const incoming = isRollsText(r[10]) ? r[10] : undefined
+    const rolls = needsFill(previous, incoming) ? incoming : previous
     const substats = expandSubstats(r[6])
     catalog.set(r[0], {
       id: r[0],
@@ -74,7 +77,7 @@ export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, Catalo
       // Derived on read, never stored, so a formula change applies everywhere.
       cv: calculateCV(substats),
       rv: calculateRV(substats),
-      ...(isRollsText(r[10]) ? { rolls: r[10] } : {}),
+      ...(rolls !== undefined ? { rolls } : {}),
     })
   }
   return catalog

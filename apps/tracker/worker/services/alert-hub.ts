@@ -41,12 +41,17 @@ import {
   type FactsUpdate,
 } from './alerts'
 
-/** A heartbeat older than this: Capture (or the game) is gone (more than two idle beats). */
-export const PRESENCE_TTL_MS = 12 * 60_000
+/**
+ * A heartbeat older than this: Capture (or the game) is gone (more than two
+ * idle beats of 600 s; 12 minutes while the idle beat was 300 s). The website
+ * uses the same value (src/live/presence.ts).
+ */
+export const PRESENCE_TTL_MS = 25 * 60_000
 /**
  * A heartbeat that repeats the kept one is written again only once the kept
- * time is this old, so `at` ("last seen") lags by up to this much. Under the
- * idle beat (services/live.ts IDLE_NEXT_S) every beat is still written, so
+ * time is this old, so `at` ("last seen") lags by up to this much. Below both
+ * idle beats Capture builds use (300 s for builds that cap `next` there, 600 s
+ * from services/live.ts IDLE_NEXT_S): every idle beat is still written, so
  * one lost beat never lets an entry pass PRESENCE_TTL_MS.
  */
 export const PRESENCE_REWRITE_MS = 270_000
@@ -407,11 +412,12 @@ export async function heartbeat(
     // getting old: most beats while a page is in view repeat the last one.
     if (!was || !sameBeat(was, entry) || was.at <= now - PRESENCE_REWRITE_MS) {
       await hub.storage.put(key, entry)
-    }
-    if (!was || was.state !== entry.state || was.accountId !== entry.accountId) {
-      if (was?.accountId != null) changed.add(was.accountId)
+      // Pages hold the presence they loaded and hear only events: every write
+      // is told, a time-only one too, so their copy never ages past the
+      // rewrite limit plus one beat and never expires under a live Capture.
       if (entry.accountId != null) changed.add(entry.accountId)
     }
+    if (was?.accountId != null && was.accountId !== entry.accountId) changed.add(was.accountId)
   }
   const commandKey = `commands:${slot}`
   const waiting = (await hub.storage.get<Command[]>(commandKey)) ?? []

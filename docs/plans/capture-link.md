@@ -84,8 +84,10 @@ every `next` seconds. Answer (200):
 ```
 
 - `next`: seconds to the next heartbeat: 60 (30 until 2026-11-06) while a page of the user's is in view (a socket that
-  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 300 (120 until 2026-11-02:
-  still ~40% of the Worker's requests). Before 2026-11-01 it was 15 while any socket was open, else 60
+  connected or pinged in the last 6 minutes; hidden tabs don't ping), else 600 (300 until 2026-11-26;
+  120 until 2026-11-02: still ~40% of the Worker's requests). Capture builds up to the one that
+  raised its cap hold `next` to at most 300, so they keep beating every 300 s against 600.
+  Before 2026-11-01 it was 15 while any socket was open, else 60
   (a background tab made that ~6,000 beats a day).
 - `commands`: each delivered once. `wishes`: run the wish history sync now
   (skip when there is no wish key this login). `snapshot`: send a full
@@ -101,13 +103,16 @@ every `next` seconds. Answer (200):
   and when an answer lacks it (an import key, an older tracker). Before, it
   polled `whoami` every 5 minutes and on focus (~2,250 requests a day).
 
-The presence expires 12 minutes after the last heartbeat (5 until 2026-11-02, 3 before 2026-11-01).
+The presence expires 25 minutes after the last written heartbeat (12 until 2026-11-26, 5 until
+2026-11-02, 3 before 2026-11-01), on the server and on the website alike.
 Since 2026-11-26 the user's hub writes a heartbeat to its storage only when it says something
 new (state, account, UID, device, program, platform) or the kept one is 4.5 minutes old
 (`PRESENCE_REWRITE_MS`): every idle beat is still written, about one in five in-view beats is.
 So the presence's `at` ("last seen") can lag by up to 4.5 minutes; the expiry counts from the
-last written beat. The route reads the session's device name, alerts and program in the same
-D1 batch as the session itself: one round trip per beat (two before).
+last written beat. Every written beat is told to the user's open pages as a `presence` event,
+a time-only rewrite too: a page loads presence once and then only hears events, so its copy is
+never older than the rewrite limit plus one beat. The route reads the session's device name,
+alerts and program in the same D1 batch as the session itself: one round trip per beat (two before).
 
 ## Website
 

@@ -81,10 +81,12 @@ interface Attachment {
  * command from the site is picked up soon; long otherwise (most of the day a
  * tab sits in the background: every 15 s was 6,000 requests a day per PC;
  * 120 s idle was still ~40% of the Worker's requests, 2026-11-02; 30 s in
- * view was still 16%, 2026-11-06: a command now waits up to a minute).
+ * view was still 16%, 2026-11-06: a command now waits up to a minute; idle
+ * 300 s until 2026-11-26. Capture builds that cap `next` at 300 s keep
+ * beating every 300 s against 600).
  */
 export const WATCHED_NEXT_S = 60
-export const IDLE_NEXT_S = 300
+export const IDLE_NEXT_S = 600
 /**
  * A socket counts as in view while it connected or pinged this recently: a
  * visible tab pings every 5 minutes (src/live/policy.ts PING_MS), a hidden

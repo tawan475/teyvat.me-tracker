@@ -230,7 +230,8 @@ export function useLiveUpdates(): void {
       return
     }
     if (event.type === 'presence') {
-      // Capture started, stopped or picked up a command: the pages showing it update.
+      // Capture started, stopped, picked up a command or had its heartbeat kept
+      // again (a newer time only): the pages showing it update.
       setPresence(event.accountId, { presence: event.presence, pending: event.pending })
       return
     }

@@ -4640,7 +4640,7 @@ Answer `data`:
   "type": "string"
  },
  "additionalProperties": {},
- "description": "`presence` (null: Capture is not playing it) and `pending` commands"
+ "description": "`presence` (null: Capture is not playing it) and `pending`, always empty"
 }
 ```
 

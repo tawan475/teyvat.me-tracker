@@ -1203,9 +1203,10 @@ Plan and contract: `docs/plans/capture-link.md`.
   pages (a shared account's members are not told: their copy ends 25
   minutes after their page read it). Capture beats every 600 s (`next`,
   whether or not a page is in view; builds that cap it at 300 s beat every
-  300 s), so the resin lock and "Not while playing" follow the game within
-  one beat: up to 5 minutes on released builds, 10 on the next. Presence
-  expires 25 minutes after the last stored beat.
+  300 s), and at once on every change of state and when the game closes, so
+  the resin lock and "Not while playing" follow the game at once; only a
+  Capture that goes silent (a crash, a sleeping PC) is left to the expiry,
+  25 minutes after the last stored beat.
 - **Removed on 2026-11-26 (the owner's decision):** the "Playing now" card
   on Overview and the Planner, and the website commands (Sync wishes / Send
   a capture) with their queue. The heartbeat's `commands` is always `[]` and

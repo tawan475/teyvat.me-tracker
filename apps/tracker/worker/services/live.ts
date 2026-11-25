@@ -91,7 +91,9 @@ const VIEW_MESSAGES = new Set(['shown', 'hidden'])
  * soon; website commands were removed on 2026-11-26 and the speed-up with
  * them. Capture builds that cap `next` at 300 s keep beating every 300 s.
  * The stored presence (alerts' "Not while playing", the Planner's resin lock)
- * follows the game within one beat.
+ * follows the game at once: Capture beats on every change of state and when
+ * the game closes. Only a Capture that goes silent (a crash, a sleeping PC)
+ * is left to the 25-minute expiry.
  */
 export const IDLE_NEXT_S = 600
 /**

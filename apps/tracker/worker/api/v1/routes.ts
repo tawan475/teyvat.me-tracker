@@ -1179,7 +1179,7 @@ export const V1_ROUTES: V1Route[] = [
     access: 'read',
     bucket: 'read',
     accountParam,
-    response: s.loose('`presence` (null: Capture is not playing it) and `pending` commands'),
+    response: s.loose('`presence` (null: Capture is not playing it) and `pending`, always empty'),
     handler: async ({ c, accountId }) => ({
       data: (await inner<Record<string, unknown>>(c, 'GET', `/accounts/${accountId}/presence`))
         .data,

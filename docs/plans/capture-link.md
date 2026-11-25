@@ -101,9 +101,10 @@ every `next` seconds. Answer (200):
   while any socket was open, else 60). The speed-up went with the website
   commands. Capture builds up to the one that raised its cap hold `next` to at
   most 300, so they keep beating every 300 s; the next build beats every 600 s.
-  The stored presence (alerts' `quiet`, the Planner's resin lock) therefore
-  follows the game within one beat: up to 5 minutes on released builds, 10 on
-  the next.
+  Capture also beats at once on every change of state and when the game
+  closes, so the stored presence (alerts' `quiet`, the Planner's resin lock)
+  follows the game at once; only a Capture that goes silent (a crash, a
+  sleeping PC) is left to the 25-minute expiry.
 - `commands`: **always `[]`** since 2026-11-26 (website commands removed; the
   field stays because released builds read it). Builds before then understood
   `{ "id", "kind" }` entries, `wishes` (run the wish history sync now) and

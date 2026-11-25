@@ -13,7 +13,9 @@ import { sha256Hex128 } from '../hash'
  * What `toArtifact` and `encodeArtifacts` make of a list, as a number: raise
  * it whenever either reads an artifact differently (a new field kept, a
  * default changed), so every stored fingerprint stops matching and each
- * account's next upload is read in full once.
+ * account's next upload is read in full once. That includes the rolls
+ * (`gi_rolls`, kept since 2): raise it too when `checkRolls`, its
+ * tolerances or the tier table (`ROLL_TIERS`, ../rolls) change.
  */
 const ARTIFACTS_READING = 2
 

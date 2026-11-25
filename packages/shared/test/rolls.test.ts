@@ -12,12 +12,16 @@ import {
   decodeSnapshot,
   encodeCatalogChunk,
   encodeSnapshot,
+  fillCatalogChunk,
   hashArtifactIdentity,
   hexToBytes,
+  needsFill,
   normalizeGood,
   prepareSnapshot,
+  readCatalogChunk,
   rollPairs,
   rollsByLine,
+  rollTiers,
   rollValue,
   type ArtifactIdentity,
   type CatalogEntryBytes,
@@ -28,7 +32,7 @@ import {
 import { inflate } from '../src/codec/deflate'
 import { MATERIALS } from '../src/dictionary/materials'
 import cases from './fixtures/gi-rolls-cases.json'
-import { syntheticGood } from './synthetic'
+import { int, pick, random, syntheticGood } from './synthetic'
 
 type Case = (typeof cases.valid)[number]
 
@@ -380,5 +384,244 @@ describe('rolls through storage and back', () => {
     expect(catalog.get(8)!.rolls).toBe('041221331401133402')
     expect('rolls' in catalog.get(9)!).toBe(false)
     expect([...catalogRolls(catalog)]).toEqual([[8, '041221331401133402']])
+  })
+})
+
+// ------------------------------------------------- what checkRolls accepts
+
+const ROLL_KEYS = [
+  'hp',
+  'atk',
+  'def',
+  'hp_',
+  'atk_',
+  'def_',
+  'eleMas',
+  'enerRech_',
+  'critRate_',
+  'critDMG_',
+]
+
+/** A made-up artifact with rolls in first-appearance order, its values as the game shows them. */
+function rolledArtifact(rand: () => number) {
+  const rarity = int(rand, 1, 5)
+  const lines = int(rand, 1, 4)
+  const keys = [...ROLL_KEYS].sort(() => rand() - 0.5).slice(0, lines)
+  const count = int(rand, lines, Math.min(9, lines + 5))
+  const pairs: [number, number][] = keys.map((key, line) => [
+    line,
+    int(rand, 1, rollTiers(key, rarity).length),
+  ])
+  while (pairs.length < count) {
+    const line = int(rand, 0, lines - 1)
+    pairs.push([line, int(rand, 1, rollTiers(keys[line]!, rarity).length)])
+  }
+  // Keep each line's first roll first, shuffle the upgrades.
+  const upgrades = pairs.slice(lines).sort(() => rand() - 0.5)
+  const ordered = [...pairs.slice(0, lines), ...upgrades]
+  const shown = (key: string, n: number) =>
+    key.endsWith('_') ? Math.round(n * 10) / 10 : Math.round(n)
+  const substats = keys.map((key, line) => {
+    const tiers = ordered.filter(([l]) => l === line).map(([, t]) => t)
+    const sum = tiers.reduce((total, t) => total + rollValue(key, rarity, t)!, 0)
+    return {
+      key,
+      value: shown(key, sum),
+      initialValue: shown(key, rollValue(key, rarity, tiers[0]!)!),
+    }
+  })
+  const text = ordered.map(([l, t]) => `${l}${t}`).join('')
+  const grouped = `~${[...ordered]
+    .sort((a, b) => a[0] - b[0])
+    .map(([l, t]) => `${l}${t}`)
+    .join('')}`
+  return { artifact: { rarity, totalRolls: count, substats }, text, grouped }
+}
+
+describe('what checkRolls accepts, the catalog stores', () => {
+  it('refuses an artifact with more than four substat lines', () => {
+    const substats = ['hp', 'atk', 'def', 'eleMas', 'critRate_'].map((key) => ({
+      key,
+      value: Math.round(rollValue(key, 5, 1)! * 10) / 10,
+    }))
+    expect(
+      checkRolls({ rarity: 5, totalRolls: 4, substats: substats.slice(0, 4) }, '01112131'),
+    ).toBe('01112131')
+    expect(checkRolls({ rarity: 5, totalRolls: 5, substats }, '0111213141')).toBeUndefined()
+  })
+
+  it('keeps every accepted text, `~` ones too, through encode and decode unchanged', () => {
+    const rand = random(11)
+    const [identity] = identities()
+    const accepted: string[] = []
+    for (let i = 0; i < 3000; i++) {
+      const { artifact, text, grouped } = rolledArtifact(rand)
+      for (const candidate of [text, grouped]) {
+        const kept = checkRolls(artifact, candidate)
+        if (kept !== undefined) accepted.push(kept)
+      }
+      // Random digits against the same piece: whatever passes must store too.
+      const noise = Array.from(
+        { length: artifact.totalRolls },
+        () => `${int(rand, 0, 9)}${int(rand, 0, 9)}`,
+      )
+      const kept = checkRolls(artifact, noise.join(''))
+      if (kept !== undefined) accepted.push(kept)
+    }
+    expect(accepted.filter((t) => t.startsWith('~')).length).toBeGreaterThan(1000)
+    expect(accepted.filter((t) => !t.startsWith('~')).length).toBeGreaterThan(1000)
+    for (let i = 0; i < accepted.length; i += 400) {
+      const part = accepted.slice(i, i + 400)
+      const entries = part.map((rolls, j) => ({ id: j + 1, identity: identity!, rolls }))
+      const back = decodeCatalogChunk(encodeCatalogChunk(entries))
+      expect(back.map((e) => e.rolls)).toEqual(part)
+    }
+    // Every accepted text has lines 0-3 and tiers 1-4: the packed layout.
+    for (const text of accepted) {
+      for (const [line, tier] of rollPairs(text)) {
+        expect(line).toBeLessThanOrEqual(3)
+        expect(tier).toBeGreaterThanOrEqual(1)
+        expect(tier).toBeLessThanOrEqual(4)
+      }
+    }
+  })
+})
+
+// --------------------------------------------------------------- filling
+
+describe('needsFill', () => {
+  it('fills an empty entry, upgrades a matching `~` text, and nothing else', () => {
+    const ordered = '041221331401133402'
+    const grouped = '~040102121413213334'
+    expect(needsFill(undefined, ordered)).toBe(true)
+    expect(needsFill(undefined, grouped)).toBe(true)
+    expect(needsFill(grouped, ordered)).toBe(true)
+    // Line 1 holds 2, 3, 4 in the grouped text: not the same order.
+    expect(needsFill('~040102121314213334', ordered)).toBe(false)
+    expect(needsFill('~0401021214132133', ordered)).toBe(false)
+    expect(needsFill(ordered, ordered)).toBe(false)
+    expect(needsFill(ordered, '041221331401133402'.replace('3402', '3403'))).toBe(false)
+    expect(needsFill(grouped, grouped)).toBe(false)
+    expect(needsFill(grouped, '~040102121413213334')).toBe(false)
+    expect(needsFill(undefined, undefined)).toBe(false)
+    expect(needsFill(undefined, '')).toBe(false)
+    expect(needsFill(undefined, 'nope')).toBe(false)
+    expect(needsFill(ordered, undefined)).toBe(false)
+  })
+})
+
+describe('fillCatalogChunk', () => {
+  const list = identities()
+  const nine = cases.valid[0]!.artifact.gi_rolls
+  const prefix = (data: Uint8Array) => {
+    const parts = readCatalogChunk(data)
+    return bytesToHex(parts.body.subarray(0, parts.identitiesEnd))
+  }
+
+  it('splices rolls in without touching the identities', () => {
+    for (const size of [2, 40]) {
+      const plain = Array.from({ length: size }, (_, i) => ({
+        id: 10 + i,
+        identity: list[i % 14]!,
+      }))
+      const before = encodeCatalogChunk(plain)
+      expect(before[0]).toBe(2)
+      const fills = new Map([[artifactKeyString(list[0]!), nine]])
+      const after = fillCatalogChunk(before, fills)
+      expect(after).not.toBe(before)
+      expect([3, 4]).toContain(after[0])
+      expect(prefix(after)).toBe(prefix(before))
+      const old = decodeCatalogChunk(before)
+      const now = decodeCatalogChunk(after)
+      expect(now.map((e) => [e.id, e.key])).toEqual(old.map((e) => [e.id, e.key]))
+      // Every entry with that key, not only the first.
+      now.forEach((e, i) => expect(e.rolls).toBe(i % 14 === 0 ? nine : undefined))
+      expect(now.filter((e) => e.rolls).length).toBe(Math.ceil(size / 14))
+      // Again with the same map: nothing to do, the same array back.
+      expect(fillCatalogChunk(after, fills)).toBe(after)
+    }
+  })
+
+  it('returns the very same array when nothing is filled, whatever the format', () => {
+    const plain = [
+      { id: 1, identity: list[0]! },
+      { id: 2, identity: list[1]! },
+    ]
+    const deflated = encodeCatalogChunk(plain)
+    const stored = new Uint8Array([1, ...readCatalogChunk(deflated).body])
+    for (const data of [deflated, stored]) {
+      expect(fillCatalogChunk(data, new Map())).toBe(data)
+      expect(fillCatalogChunk(data, new Map([['no such key', nine]]))).toBe(data)
+      expect(fillCatalogChunk(data, new Map([[artifactKeyString(list[0]!), 'nope']]))).toBe(data)
+      const filled = fillCatalogChunk(data, new Map([[artifactKeyString(list[1]!), '0112233404']]))
+      expect([3, 4]).toContain(filled[0])
+      expect(prefix(filled)).toBe(prefix(data))
+    }
+  })
+
+  it('keeps rolls an entry has, and upgrades only a matching `~` text', () => {
+    const grouped = '~040102121413213334'
+    const data = encodeCatalogChunk([
+      { id: 1, identity: list[0]!, rolls: '0412213314011334' + '01' }, // ordered, another order
+      { id: 2, identity: list[1]!, rolls: '0213243121241403' },
+      { id: 3, identity: list[2]!, rolls: grouped },
+      { id: 4, identity: list[3]! },
+    ])
+    const fills = new Map([
+      [artifactKeyString(list[0]!), nine],
+      [artifactKeyString(list[1]!), '0213243121241403'],
+      [artifactKeyString(list[2]!), nine],
+      [artifactKeyString(list[3]!), '01142233'],
+    ])
+    const after = fillCatalogChunk(data, fills)
+    expect(prefix(after)).toBe(prefix(data))
+    expect(decodeCatalogChunk(after).map((e) => e.rolls)).toEqual([
+      '0412213314011334' + '01',
+      '0213243121241403',
+      nine,
+      '01142233',
+    ])
+    expect(fillCatalogChunk(after, fills)).toBe(after)
+  })
+
+  it('throws CorruptDataError on a damaged chunk', () => {
+    const data = encodeCatalogChunk([{ id: 1, identity: list[0]!, rolls: nine }])
+    const fills = new Map([[artifactKeyString(list[0]!), nine]])
+    const body = readCatalogChunk(data).body
+    for (const bad of [
+      new Uint8Array(0),
+      new Uint8Array([7, 1, 2]),
+      new Uint8Array([3, ...body.subarray(0, body.length - 1)]),
+      new Uint8Array([3, ...body, 0]),
+      new Uint8Array([1, ...body]),
+    ]) {
+      expect(() => fillCatalogChunk(bad, fills)).toThrow(CorruptDataError)
+    }
+  })
+})
+
+describe('one id in two copies', () => {
+  it('never lets a copy without rolls replace one with them', () => {
+    const row = (rolls?: string): CatalogRow =>
+      [
+        7,
+        'GladiatorsFinale',
+        'flower',
+        0,
+        5,
+        'hp',
+        [],
+        4,
+        0,
+        [],
+        ...(rolls ? [rolls] : []),
+      ] as never
+    for (const order of [
+      [row('01112131'), row()],
+      [row(), row('01112131')],
+    ]) {
+      expect(catalogFromRows(order).get(7)!.rolls).toBe('01112131')
+    }
+    expect('rolls' in catalogFromRows([row(), row()]).get(7)!).toBe(false)
   })
 })

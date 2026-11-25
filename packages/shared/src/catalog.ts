@@ -51,9 +51,14 @@ export interface CatalogEntry extends ArtifactIdentity {
   rolls?: RollsText
 }
 
+/**
+ * The catalog by id. One id can come twice (two chunks after an old merge):
+ * a copy without rolls never replaces one with them.
+ */
 export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, CatalogEntry> {
   const catalog = new Map<number, CatalogEntry>()
   for (const r of rows) {
+    if (catalog.get(r[0])?.rolls !== undefined && !isRollsText(r[10])) continue
     const substats = expandSubstats(r[6])
     catalog.set(r[0], {
       id: r[0],

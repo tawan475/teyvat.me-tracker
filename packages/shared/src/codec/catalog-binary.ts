@@ -40,7 +40,10 @@
  *     per nibble, low nibble first: line << 2 | (tier - 1); a spare high
  *     nibble is 0
  *   layout 1 (anything else): count bytes, line << 4 | tier (digits 0-9)
- * Nine rolls of four lines take 6 bytes before deflate.
+ * Nine rolls of four lines take 6 bytes before deflate. Every text
+ * `checkRolls` accepts (at most MAX_ROLL_LINES lines, tiers 1-4) takes
+ * layout 0; layout 1 keeps any other RollsText lossless.
+ * `fillCatalogChunk` adds rolls to a chunk by rewriting only this block.
  *
  * A storage format: append to the key lists, add layouts under new format
  * bytes, never change what existing bytes mean.
@@ -48,7 +51,14 @@
 
 import type { ArtifactIdentity } from '../artifact'
 import type { GoodSubstat } from '../good'
-import { isRollsText, MAX_ROLLS, rollPairs, rollsOrdered, UNORDERED_ROLLS } from '../rolls'
+import {
+  isRollsText,
+  MAX_ROLLS,
+  needsFill,
+  rollPairs,
+  rollsOrdered,
+  UNORDERED_ROLLS,
+} from '../rolls'
 import type { RollsText } from '../rolls'
 import { ARTIFACT_SETS, STAT_KEYS, SUBSTAT_KEYS, SLOT_KEYS } from '../dictionary/artifacts'
 import { ByteReader, ByteWriter, CorruptDataError } from './bytes'
@@ -352,7 +362,24 @@ export function encodeCatalogChunk(entries: readonly CatalogEntryBytes[]): Uint8
   // Without rolls, exactly the bytes formats 1/2 always had.
   const withRolls = entries.some((entry) => entry.rolls !== undefined)
   if (withRolls) for (const { rolls } of entries) writeRolls(w, rolls)
-  const body = w.finish()
+  return chunkOf(w.finish(), withRolls)
+}
+
+/** A chunk read apart: what `fillCatalogChunk` splices. */
+export interface CatalogChunkParts {
+  /** The body, inflated when the chunk was deflated. */
+  body: Uint8Array
+  /** Where the identities end in `body`: the count, ids and packed identities come before. */
+  identitiesEnd: number
+  entries: CatalogEntryWithKey[]
+}
+
+export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
+  return readCatalogChunk(data).entries
+}
+
+/** Writes `body` as a chunk, deflated when that is smaller. */
+function chunkOf(body: Uint8Array, withRolls: boolean): Uint8Array {
   const deflated = deflate(body)
   const out = new Uint8Array(1 + Math.min(body.length, deflated.length))
   if (deflated.length < body.length) {
@@ -365,7 +392,34 @@ export function encodeCatalogChunk(entries: readonly CatalogEntryBytes[]): Uint8
   return out
 }
 
-export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
+/**
+ * `data` (any format) with rolls from `rollsByKey` (entry key, as
+ * artifactKeyString, to RollsText) written onto every entry `needsFill`
+ * allows, the same key on several entries filling each. A splice: the count,
+ * ids and packed identities are copied byte for byte, only the rolls block
+ * is written. Returns `data` itself when nothing changes.
+ */
+export function fillCatalogChunk(
+  data: Uint8Array,
+  rollsByKey: ReadonlyMap<string, RollsText>,
+): Uint8Array {
+  const { body, identitiesEnd, entries } = readCatalogChunk(data)
+  let changed = false
+  const rolls = entries.map((entry) => {
+    const incoming = rollsByKey.get(entry.key)
+    if (incoming === undefined || !needsFill(entry.rolls, incoming)) return entry.rolls
+    changed = true
+    return incoming
+  })
+  if (!changed) return data
+  const w = new ByteWriter()
+  w.bytes(body.subarray(0, identitiesEnd))
+  for (const text of rolls) writeRolls(w, text)
+  return chunkOf(w.finish(), true)
+}
+
+/** Reads a chunk and where its rolls block starts (see CatalogChunkParts). */
+export function readCatalogChunk(data: Uint8Array): CatalogChunkParts {
   if (data.length === 0) throw new CorruptDataError('Empty catalog chunk')
   const format = data[0]
   let body: Uint8Array
@@ -387,6 +441,7 @@ export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
     const identity = unpackArtifact(r)
     return { id, identity, key: bytesKey(body.subarray(start, r.offset)) }
   })
+  const identitiesEnd = r.offset
   if (format === CHUNK_ROLLS_STORED || format === CHUNK_ROLLS_DEFLATED) {
     for (const entry of entries) {
       const rolls = readRolls(r)
@@ -394,5 +449,5 @@ export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
     }
   }
   r.end()
-  return entries
+  return { body, identitiesEnd, entries }
 }

@@ -107,6 +107,13 @@ export const UNORDERED_ROLLS = '~'
 /** Rolls an artifact can list at most (a 5★ has nine); longer texts are refused unread. */
 export const MAX_ROLLS = 16
 
+/**
+ * Substat lines an artifact with rolls can have (the game gives four):
+ * `checkRolls` refuses more, so every text it accepts has lines 0-3 and
+ * tiers 1-4, which the catalog's packed rolls record holds exactly.
+ */
+export const MAX_ROLL_LINES = 4
+
 /** Longest RollsText there can be: the `~` and MAX_ROLLS pairs. */
 export const MAX_ROLLS_TEXT = 1 + 2 * MAX_ROLLS
 
@@ -156,7 +163,8 @@ function tolerance(key: string): number {
  * roll of `artifact` and agrees with its substats, else undefined. Pure and
  * cheap; never throws, whatever it is given.
  *
- * 1. digits, two per roll, `totalRolls` > 0 of them;
+ * 1. digits, two per roll, `totalRolls` > 0 of them (at most MAX_ROLLS);
+ *    at most MAX_ROLL_LINES substat lines;
  * 2. every line below `substats.length`;
  * 3. every tier from 1 to the number of tiers the stat has at this rarity;
  * 4. lines in first-appearance order (for `~` text: lines ascending);
@@ -169,7 +177,8 @@ export function checkRolls(artifact: unknown, text: unknown): RollsText | undefi
   if (typeof artifact !== 'object' || artifact === null) return undefined
   const { rarity, totalRolls, substats } = artifact as Partial<RollsSubject>
   if (typeof rarity !== 'number' || typeof totalRolls !== 'number') return undefined
-  if (!Array.isArray(substats) || substats.length === 0 || substats.length > 10) return undefined
+  if (!Array.isArray(substats) || substats.length === 0) return undefined
+  if (substats.length > MAX_ROLL_LINES) return undefined
   const ordered = rollsOrdered(text)
   // 1. Whole pairs, as many as the artifact's rolls.
   if (!Number.isInteger(totalRolls) || totalRolls <= 0) return undefined
@@ -218,4 +227,22 @@ export function checkRolls(artifact: unknown, text: unknown): RollsText | undefi
     if (!(Math.abs(sums[line]! - value) <= limit)) return undefined
   }
   return text
+}
+
+/**
+ * The one rule for writing `incoming` rolls onto a catalog entry that holds
+ * `stored` (both already checked against the piece): true when the entry
+ * has none and `incoming` is a RollsText; true when `stored` is a `~` text,
+ * `incoming` is ordered and every line holds the same tiers in the same
+ * order; false otherwise. Stored ordered rolls are never overwritten.
+ */
+export function needsFill(stored: RollsText | undefined, incoming: RollsText | undefined): boolean {
+  if (!isRollsText(incoming)) return false
+  if (stored === undefined) return true
+  if (!isRollsText(stored) || rollsOrdered(stored) || !rollsOrdered(incoming)) return false
+  const a = rollsByLine(stored, 10)
+  const b = rollsByLine(incoming, 10)
+  return a.every(
+    (tiers, line) => tiers.length === b[line]!.length && tiers.every((t, i) => t === b[line]![i]),
+  )
 }

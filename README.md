@@ -219,8 +219,10 @@ while every part still holds the bytes it read. Where one id sits in two
 chunks (an old merge), a copy's rolls go only with its own identity: the
 identity read is the one read before rolls existed, and another copy's
 rolls are taken only when that copy's identity is the same (the merge
-leaves a group with two different identities under one id unmerged, logged
-`rolls_merge_clash`). The catalog route gives a piece's rolls as
+keeps the first copy by first id, as it always did, drops a copy with
+another identity and none of its rolls, and logs how many it dropped as
+`rolls_merge_clash`, once: the merged chunk no longer holds the duplicate).
+The catalog route gives a piece's rolls as
 the row's eleventh element and the GOOD export as `gi_rolls`, checked again
 on the way out. Two pieces identical in every stored value (set, slot,
 level, main stat, every substat and starting value) are one catalog entry,
@@ -246,15 +248,19 @@ rolls back as a `rolls` list on each substat (tier values), not as
   exported and carried through the daily merge. A list whose rolls the
   switch kept out is still marked held while off, with a flag (`w` in the
   mark's info), so uploads of it stay cheap; the moment the switch is on, a
-  flagged mark no longer holds, so the first upload of such a list after
-  turning it on is read in full once and filled. To turn it on (or off:
+  flagged mark no longer holds, so such a list is read in full at least
+  twice after turning it on: the first upload of it fills and writes no
+  mark, the second finds nothing left and marks it (one more upload per
+  further 16 chunk rows to fill, `FILLS_PER_BATCH`). To turn it on (or off:
   `'0'`, or delete the row):
   `pnpm --filter @gdt/tracker exec wrangler d1 execute gdt --remote --command
   "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1',
   unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value,
   updated_at = excluded.updated_at"` (local: `--local`).
 - **Turning it on, a checklist.** (1) Set the row as above. (2) Upload one
-  account that carries `gi_rolls`. (3) Read that account's catalog route
+  account that carries `gi_rolls`: no released capture app sends it yet, so
+  with a test build of the capture app that does, or a hand-made GOOD file
+  whose artifacts carry it. (3) Read that account's catalog route
   (`GET /api/accounts/<id>/catalog`): filled pieces have an eleventh
   element. (4) Watch the Worker's logs for a day: `rolls_filled` (fills
   landing), `rolls_fill_lost` and `rolls_fill_mismatch` (should stay rare).
@@ -274,7 +280,9 @@ rolls back as a `rolls` list on each substat (tier values), not as
   capture; when captures were stored by a tracker older than Capture (or
   while the switch was off), and re-importing those saved files does
   nothing; when rolls refused by the checker then would pass a later fix to
-  it.
+  it; when the piece's chunk row was left for a later upload by the cap on
+  fills per batch (`FILLS_PER_BATCH`) and the piece left the bag before a
+  later upload filled that row.
 
 The capture app's own top-level keys are sections of their own, each optional and
 range-checked again on import: `gi_player` (AR, World Level, UID… as read at

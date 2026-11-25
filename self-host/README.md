@@ -160,7 +160,7 @@ from `SITE_URL`.
   ```sh
   docker compose exec tracker wrangler d1 execute DB --local --persist-to /data \
     --config /app/apps/tracker/dist/genshin_data_tracker/wrangler.json --command \
-    "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1', unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value"
+    "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1', unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
   ```
 
   Once it has been on, never go back to a tracker release from before exact

@@ -31,8 +31,9 @@ import {
   fillVerified,
   importSnapshot,
 } from '../services/import'
-import { chunkMatches, mergeChunkStatements } from '../services/repack'
+import { chunkMatches, mergeChunkStatements, repack, repackStatus } from '../services/repack'
 import { toBytes } from '../services/storage'
+import { ROLLS_STORE_ON_SQL } from '../services/upload-limits'
 import { Client, ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
 
 const UID = 812345678
@@ -277,6 +278,19 @@ describe('the rolls.store switch', () => {
     }
   })
 
+  it('is on for "1" with spaces around it, and for nothing else', async () => {
+    const on = async () =>
+      (await env.DB.prepare(`SELECT ${ROLLS_STORE_ON_SQL} AS on_`).first<{ on_: number }>())!.on_
+    for (const value of ['1', '1 ', ' 1']) {
+      await setSwitch(value)
+      expect(await on(), JSON.stringify(value)).toBe(1)
+    }
+    for (const value of ['1\n', '1\t', '0', 'true', 'on', ' ', null]) {
+      await setSwitch(value)
+      expect(await on(), JSON.stringify(value)).toBe(0)
+    }
+  })
+
   it('costs the same on or off when there is nothing to fill', async () => {
     const run = async () => {
       const { client } = await signUp()
@@ -507,6 +521,63 @@ describe('filling the rolls of pieces the catalog has', () => {
         plain!.map((c) => [c['round-trips'], c['rows-written']]),
       )
     }
+  })
+
+  it('leaves out a fill that fails its check, logs it, and marks the list unflagged', async () => {
+    await setSwitch('1')
+    const { client } = await signUp()
+    const { account } = await newAccount(client)
+    const pieces = rolledPieces(30, 41)
+    expect((await importNow(account.id, capture(withoutRolls(pieces)), 1_000)).status).toBe(
+      'created',
+    )
+    const before = await chunkRows(account.id)
+    // A fresh copy of the import whose fill is asked for other rolls than the
+    // upload's (each key another's): its bytes then fail fillVerified.
+    vi.resetModules()
+    vi.doMock('@gdt/shared', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('@gdt/shared')>()
+      const fill: typeof actual.fillCatalogChunk = (data, rollsByKey) => {
+        const texts = [...rollsByKey.values()]
+        const keys = [...rollsByKey.keys()]
+        return actual.fillCatalogChunk(
+          data,
+          new Map(keys.map((key, i) => [key, texts[(i + 1) % texts.length]!])),
+        )
+      }
+      return { ...actual, fillCatalogChunk: fill }
+    })
+    const broken = await import('../services/import')
+    vi.doUnmock('@gdt/shared')
+    vi.resetModules()
+    const rolled = capture(pieces)
+    const warn = vi.spyOn(console, 'warn')
+    const meter = new D1Meter()
+    const seen = await broken.importSnapshot(
+      env.DB,
+      { id: account.id, uid: String(UID) },
+      asUpload(rolled, 2_000),
+      meter,
+    )
+    expect(warn).toHaveBeenCalledWith(
+      'rolls_fill_mismatch',
+      JSON.stringify({ accountId: account.id, chunk: before[0]!.id }),
+    )
+    warn.mockRestore()
+    expect(seen.response.status).toBe('unchanged')
+    expect(seen.heldArtifacts).toBe(false)
+    expect(meter.roundTrips).toBe(2)
+    // Nothing written onto the catalog: the fill was not in the batch.
+    expect(await chunkRows(account.id)).toEqual(before)
+    // The list is marked, and not flagged: the switch is on.
+    expect((await markOf(account.id))!.fingerprint).toBe(await fingerprintOf(rolled))
+    expect(await markInfo(account.id)).not.toHaveProperty('w')
+    // So the next upload of it is held (by the import as shipped).
+    expect(await importNow(account.id, rolled, 3_000)).toMatchObject({
+      status: 'unchanged',
+      held: true,
+      roundTrips: 2,
+    })
   })
 
   it('marks a list whose only unfilled pieces are refused or conflicting rolls', async () => {
@@ -958,26 +1029,71 @@ describe('the daily merge of small chunks', () => {
     expect(await chunkRows(account.id)).toEqual(before)
   })
 
-  it('leaves a group unmerged where one id has two identities, and logs it', async () => {
-    const { account, rows } = await twoChunks()
+  /**
+   * Gives the first entry of the account's first chunk a copy with another
+   * identity and rolls, in a small chunk read after it (an old merge's
+   * leftover). The copy's rolls are another piece's, valid for nothing here.
+   */
+  async function clashCopy(accountId: number, rows: { data: Uint8Array }[], good: Loose) {
     const [first] = decodeCatalogChunk(rows[0]!.data)
-    // A copy of the first chunk's first id with another identity, in a small chunk after.
     const other = { ...first!.identity, level: first!.identity.level - 4 }
+    const rolls = [...(await rollsByKey(good)).values()][0]!
     await env.DB.prepare(
       `INSERT INTO artifact_chunks (account_id, first_id, last_id, count, data)
        VALUES (?1, ?2, ?2, 1, ?3)`,
     )
-      .bind(account.id, first!.id, encodeCatalogChunk([{ id: first!.id, identity: other }]))
+      .bind(accountId, first!.id, encodeCatalogChunk([{ id: first!.id, identity: other, rolls }]))
       .run()
+    return first!
+  }
+
+  it('merges a group where one id has two identities as before: the first copy, logged once', async () => {
+    const { account, rows, good } = await twoChunks()
+    const first = await clashCopy(account.id, rows, good)
     const read = await chunkRows(account.id)
+    expect(read).toHaveLength(3)
     const warn = vi.spyOn(console, 'warn')
     const plan = mergeChunkStatements(env.DB, account.id, read)
-    expect(warn).toHaveBeenCalledWith(
-      'rolls_merge_clash',
-      JSON.stringify({ accountId: account.id, groups: 1 }),
+    expect(plan.merged).toBe(3)
+    expect(warn.mock.calls.filter(([line]) => line === 'rolls_merge_clash')).toEqual([
+      ['rolls_merge_clash', JSON.stringify({ accountId: account.id, ids: 1 })],
+    ])
+    await env.DB.batch(plan.statements)
+    const now = await chunkRows(account.id)
+    expect(now).toHaveLength(1)
+    const entries = decodeCatalogChunk(now[0]!.data)
+    // Every id once; the clashing id keeps the first copy's identity, no rolls of the other.
+    expect(entries.map((e) => e.id)).toEqual(
+      [...new Set(rows.flatMap((r) => decodeCatalogChunk(r.data).map((e) => e.id)))].sort(
+        (a, b) => a - b,
+      ),
     )
+    const kept = entries.find((e) => e.id === first.id)!
+    expect(kept.identity).toEqual(first.identity)
+    expect(kept).not.toHaveProperty('rolls')
+    expect(entries.filter((e) => e.rolls)).toHaveLength(0)
+    // The duplicate is gone: a second run has nothing to merge and logs nothing.
+    const again = mergeChunkStatements(env.DB, account.id, now)
+    expect(again).toMatchObject({ merged: 0, statements: [] })
+    expect(warn.mock.calls.filter(([line]) => line === 'rolls_merge_clash')).toHaveLength(1)
     warn.mockRestore()
-    expect(plan).toMatchObject({ merged: 0, statements: [] })
+  })
+
+  it('never lets a clash group hold the one merge slot of a run from another account', async () => {
+    // Nothing left to merge from earlier tests, so the two below are the only candidates.
+    for (let i = 0; i < 5 && (await repackStatus(env.DB)).smallChunkAccounts > 0; i++) {
+      await repack(env.DB, { limit: 1_000 })
+    }
+    expect((await repackStatus(env.DB)).smallChunkAccounts).toBe(0)
+    const clashing = await twoChunks()
+    await clashCopy(clashing.account.id, clashing.rows, clashing.good)
+    const plain = await twoChunks()
+    expect((await repackStatus(env.DB)).smallChunkAccounts).toBe(2)
+    // limit 10: one account per run (ceil(limit / 10)), whichever the query gives first.
+    for (let run = 0; run < 2; run++) await repack(env.DB, { limit: 10 })
+    expect(await chunkRows(clashing.account.id)).toHaveLength(1)
+    expect(await chunkRows(plain.account.id)).toHaveLength(1)
+    expect((await repackStatus(env.DB)).smallChunkAccounts).toBe(0)
   })
 
   it('carries rolls through, and keeps the copy with rolls of an id held twice', async () => {

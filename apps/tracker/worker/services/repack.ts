@@ -680,9 +680,11 @@ async function mergeSmallChunks(d1: D1Database, limit: number): Promise<number> 
  * first id) into chunks of up to CATALOG_CHUNK_SIZE, and how many rows they
  * replace. Rolls go with their entries. When one id sits in two rows, the
  * first copy (by first id) is kept, as it always was, with the better rolls
- * (`needsFill`) of the copies whose identity is the same as its own; a group
- * where one id has two different identities is left unmerged (merging would
- * have to drop one) and counted in `rolls_merge_clash`. Each merge is written
+ * (`needsFill`) of the copies whose identity is the same as its own. A copy
+ * with another identity is dropped as it always was, none of its rolls
+ * taken, and counted in `rolls_merge_clash` (logged once: the merge removes
+ * it; a group left unmerged would hold the daily merge's slot for ever, the
+ * account picked again on every run). Each merge is written
  * only while every part row still holds the bytes read here, so a fill that
  * lands in between is never overwritten by a copy without it.
  */
@@ -701,26 +703,21 @@ export function mergeChunkStatements(
   const flush = () => {
     if (group.parts.length > 1) {
       const byId = new Map<number, MovedEntry>()
-      let clash = false
       for (const entry of group.entries) {
         const kept = byId.get(entry.id)
         if (!kept) {
           byId.set(entry.id, entry)
         } else if (artifactIdentityText(kept.identity) !== artifactIdentityText(entry.identity)) {
-          clash = true
+          clashes++
         } else if (needsFill(kept.rolls, entry.rolls)) {
           byId.set(entry.id, { id: kept.id, identity: kept.identity, rolls: entry.rolls! })
         }
       }
       const entries = [...byId.values()].sort((a, b) => a.id - b.id)
-      if (clash) {
-        clashes++
-      } else {
-        const data = encodeCatalogChunk(entries)
-        if (chunkMatches(data, entries)) {
-          statements.push(...mergeStatements(d1, accountId, group.parts, entries, data))
-          merged += group.parts.length
-        }
+      const data = encodeCatalogChunk(entries)
+      if (chunkMatches(data, entries)) {
+        statements.push(...mergeStatements(d1, accountId, group.parts, entries, data))
+        merged += group.parts.length
       }
     }
     group = { parts: [], entries: [] }
@@ -740,7 +737,7 @@ export function mergeChunkStatements(
   }
   flush()
   if (clashes > 0) {
-    console.warn('rolls_merge_clash', JSON.stringify({ accountId, groups: clashes }))
+    console.warn('rolls_merge_clash', JSON.stringify({ accountId, ids: clashes }))
   }
   return { statements, merged }
 }

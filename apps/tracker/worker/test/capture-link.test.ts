@@ -783,3 +783,112 @@ describe('alert facts from live batches', () => {
     expect([deletes, alarm]).toEqual([1, null])
   })
 })
+
+describe('presence review cases', () => {
+  it('two Captures on one account: a dead one never wins past the live one’s next beat', async () => {
+    const { hub, clock } = fakeHub()
+    const beat = (sid: number) =>
+      heartbeat(hub, {
+        sid,
+        device: `PC-0${sid}`,
+        state: 'decoding',
+        accountId: 3,
+        uid: '812345678',
+        platform: 'windows',
+        app: '1.18.4',
+      })
+    const start = clock.now
+    const at = (s: number) => (clock.now = start + s * 1000)
+    // B plays from 0, A from 230; both beat every 60 s (a page in view).
+    for (let s = 0; s <= 470; s += 10) {
+      at(s)
+      if (s % 60 === 0) await beat(2)
+      if (s >= 200 && (s - 200) % 60 === 30) await beat(1)
+    }
+    // A's beat at 470 was the last: it dies. With one app the hub would have
+    // skipped B's beats since 300, leaving A (470) newer than B until B's 600.
+    at(470)
+    expect((await presenceFor(hub, 3)).presence?.sid).toBe(1)
+    at(480)
+    await beat(2)
+    // Within one beat of B: the page shows B, and a command goes to B.
+    expect((await presenceFor(hub, 3)).presence).toMatchObject({ sid: 2, at: start + 480_000 })
+    expect(await queueCommand(hub, 3, 'wishes')).toMatchObject({ pending: ['wishes'] })
+    at(540)
+    expect((await beat(2)).commands.map((c) => c.kind)).toEqual(['wishes'])
+    // Once A expires, B is alone again: its repeats are skipped as before.
+    const { hub: alone, puts, clock: c2 } = fakeHub()
+    c2.now = start
+    await heartbeat(alone, {
+      sid: 2,
+      device: 'PC-02',
+      state: 'decoding',
+      accountId: 3,
+      uid: '812345678',
+      platform: 'windows',
+      app: '1.18.4',
+    })
+    c2.now += 60_000
+    await heartbeat(alone, {
+      sid: 2,
+      device: 'PC-02',
+      state: 'decoding',
+      accountId: 3,
+      uid: '812345678',
+      platform: 'windows',
+      app: '1.18.4',
+    })
+    expect(puts()).toBe(1)
+  })
+
+  it('a skipped beat, then a lost one, then the retry: never shown as gone', async () => {
+    const { client, me, account, importKey } = await setup()
+    const clock = { now: Date.now() }
+    await runInDurableObject(liveHub(env, me.id), async (object: LiveHub) => {
+      object.clock = () => clock.now
+    })
+    const start = clock.now
+    const at = (s: number) => (clock.now = start + s * 1000)
+    const beat = async () => {
+      const response = await presence(importKey, { state: 'decoding', uid: 812345678 })
+      expect(response.status).toBe(200)
+      return ((await response.json()) as PresenceResponse).next
+    }
+    const shown = async () =>
+      (await client.json<PresenceResponseForAccount>(`/api/accounts/${account.id}/presence`))
+        .presence
+    // A page in view: 60 s beats, the first one written.
+    const tab = await client.fetch('/api/live', {
+      headers: { upgrade: 'websocket', origin: ORIGIN },
+    })
+    const socket = tab.webSocket!
+    socket.accept()
+    at(0)
+    expect(await beat()).toBe(WATCHED_NEXT_S)
+    // The page loads it (its copy says last seen at 0).
+    setPresence(account.id, { presence: (await shown())!, pending: [] })
+    for (const s of [60, 120, 180, 240]) {
+      at(s)
+      expect(await beat()).toBe(WATCHED_NEXT_S)
+    }
+    // The page goes out of view (its socket closes); the next beat, just under
+    // the rewrite limit, is skipped and answered with the idle beat.
+    socket.close()
+    for (let i = 0; i < 100 && (await liveHub(env, me.id).sockets()) > 0; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    }
+    at(PRESENCE_REWRITE_MS / 1000 - 1)
+    expect(await beat()).toBe(IDLE_NEXT_S)
+    expect((await shown())?.at).toBe(start)
+    // The beat 600 s later is lost; Capture retries after min(interval, 300 s)
+    // (link.rs MAX_RETRY_SECS). Up to the retry, the app is shown on both sides.
+    const retry = PRESENCE_REWRITE_MS / 1000 - 1 + IDLE_NEXT_S + 300
+    expect(retry * 1000).toBeLessThan(PRESENCE_TTL_MS)
+    at(retry - 0.001)
+    expect(await shown()).not.toBeNull()
+    expect(presenceOf(account.id, clock.now)).not.toBeNull()
+    at(retry)
+    expect(await beat()).toBe(IDLE_NEXT_S)
+    expect((await shown())?.at).toBe(clock.now)
+  })
+})

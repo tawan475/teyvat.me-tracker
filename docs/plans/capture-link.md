@@ -113,10 +113,16 @@ The presence expires 25 minutes after the last written heartbeat (12 until 2026-
 Since 2026-11-26 the user's hub writes a heartbeat to its storage only when it says something
 new (state, account, UID, device, program, platform) or the kept one is 4.5 minutes old
 (`PRESENCE_REWRITE_MS`): every idle beat is still written, about one in five in-view beats is.
+While more than one Capture plays the same account, every beat is written (the newest stored
+time decides which one the pages show and which one gets a command, so a dead app never wins
+for longer than a beat).
 So the presence's `at` ("last seen") can lag by up to 4.5 minutes; the expiry counts from the
 last written beat. Every written beat is told to the user's open pages as a `presence` event,
-a time-only rewrite too: a page loads presence once and then only hears events, so its copy is
-never older than the rewrite limit plus one beat. The route reads the session's device name,
+a time-only rewrite too: the owner's pages load presence once and then only hear events, so
+their copy is never older than the rewrite limit plus one beat. A member of a shared account
+is not kept fresh: its page reads presence from the owner's hub once, but its socket is on its
+own hub, so no `presence` event reaches it, and "Playing now" there ends 25 minutes after that
+read even while the owner's Capture runs (12 minutes before 2026-11-26; open, the owner's call). The route reads the session's device name,
 alerts and program in the same D1 batch as the session itself: one round trip per beat (two before).
 
 ## Website

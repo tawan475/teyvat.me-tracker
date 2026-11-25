@@ -1094,8 +1094,10 @@ Plan and contract: `docs/plans/capture-link.md`.
   with Sync wishes / Send a capture (editors), delivered at its next
   heartbeat. Live event `{type: "presence"}`. A beat costs one D1 round
   trip; the hub stores it only when it changes or the kept one is 4.5
-  minutes old, so "last seen" can lag by that much; each stored beat is told
-  to open pages. Capture beats every 60 s while a page is in view, else
+  minutes old (every beat while two Captures play one account), so "last
+  seen" can lag by that much; each stored beat is told to the owner's open
+  pages (a shared account's members are not told: their "Playing now" ends
+  25 minutes after their page read it). Capture beats every 60 s while a page is in view, else
   every 600 s; presence expires 25 minutes after the last stored beat.
 
 **Setup:** make a P-256 key pair once (base64url: the 65-byte public point,

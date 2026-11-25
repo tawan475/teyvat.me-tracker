@@ -367,6 +367,19 @@ function playing(list: PresenceEntry[], accountId: number, now: number): boolean
   return list.some((p) => p.accountId === accountId && p.at > now - PRESENCE_TTL_MS)
 }
 
+/** Whether a live presence entry other than `key` plays `accountId`. */
+async function othersPlaying(
+  hub: HubContext,
+  key: string,
+  accountId: number,
+  now: number,
+): Promise<boolean> {
+  for (const [other, p] of await hub.storage.list<PresenceEntry>({ prefix: 'presence:' })) {
+    if (other !== key && p.accountId === accountId && p.at > now - PRESENCE_TTL_MS) return true
+  }
+  return false
+}
+
 /** Everything but the time alike. */
 function sameBeat(a: PresenceEntry, b: PresenceEntry): boolean {
   return (
@@ -420,7 +433,15 @@ export async function heartbeat(
     }
     // A storage write only when the entry says something new, or its time is
     // getting old: most beats while a page is in view repeat the last one.
-    if (!was || !sameBeat(was, entry) || was.at <= now - PRESENCE_REWRITE_MS) {
+    // Not while another Capture plays the same account: the newest stored
+    // time picks which one the pages show and commands go to, so each beat is
+    // written (else a dead one could win for up to the rewrite limit).
+    if (
+      !was ||
+      !sameBeat(was, entry) ||
+      was.at <= now - PRESENCE_REWRITE_MS ||
+      (entry.accountId !== null && (await othersPlaying(hub, key, entry.accountId, now)))
+    ) {
       await hub.storage.put(key, entry)
       // Pages hold the presence they loaded and hear only events: every write
       // is told, a time-only one too, so their copy never ages past the

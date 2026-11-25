@@ -34,8 +34,10 @@ import {
   completeSnapshot,
   decodeSnapshotMeta,
   contentKey,
-  decodeCatalogChunk,
   encodeCatalogChunk,
+  fillCatalogChunk,
+  needsFill,
+  readCatalogChunk,
   encodeSnapshotMeta,
   encodeStaticSections,
   kindOfCode,
@@ -54,12 +56,14 @@ import {
   type ArtifactFigures,
   type ArtifactIdentity,
   type BlobRef,
+  type CatalogChunkParts,
   type GiCapture,
   type ImportResponse,
   type ImportWarning,
   type KnownBlob,
   type PreparedSnapshot,
   type RawBlob,
+  type RollsText,
   type Section,
   type Slot,
   type SnapshotPlan,
@@ -260,9 +264,19 @@ async function importOnce(
 
   // Catalog entry for each distinct artifact identity in this upload.
   const identities = new Map<string, ArtifactIdentity>()
+  // Rolls for each identity: the first piece of it whose rolls passed the
+  // check (normalize drops any that do not), not simply its first piece.
+  const incomingRolls = new Map<string, RollsText>()
+  // Twins (one identity) whose valid rolls differ from the ones kept.
+  let rollConflicts = 0
   const readIdentities = () => {
     prepared.artifactHashes.forEach((hash, i) => {
-      if (!identities.has(hash)) identities.set(hash, prepared.good.artifacts[i]!.identity)
+      const artifact = prepared.good.artifacts[i]!
+      if (!identities.has(hash)) identities.set(hash, artifact.identity)
+      if (artifact.rolls === undefined) return
+      const kept = incomingRolls.get(hash)
+      if (kept === undefined) incomingRolls.set(hash, artifact.rolls)
+      else if (kept !== artifact.rolls) rollConflicts++
     })
     return [...identities.keys()]
   }
@@ -362,20 +376,33 @@ async function importOnce(
 
   // 2.
   const missing = hashes.filter((hash) => !artifactIds.has(hash))
-  let staged: { id: number; identity: ArtifactIdentity }[] = []
+  let staged: { id: number; identity: ArtifactIdentity; rolls?: RollsText }[] = []
   // What the store batch checks before it writes: no other upload added a
   // chunk to this account's catalog since this one read it.
   let catalogGuard: CatalogGuard | null = null
+  // Exact rolls are written only while the `rolls.store` switch is on.
+  const storeRolls = usage?.storeRolls ?? false
+  // New pieces whose rolls the switch kept out of their chunk.
+  let rollsWithheld = false
+  const chunkRows = [...chunks.rows]
   if (missing.length > 0) {
     // An artifact the catalog lacks: this upload stores a snapshot.
     assertCanStore(usage, now)
     const reserved = await reserveArtifactIds(d1, meter, accountId, missing.length, chunks.maxId)
+    chunkRows.push(...reserved.chunkRows)
     for (const [i, hash] of missing.entries()) {
       // A chunk written since step 1 may hold it already: use that id.
       const held = reserved.chunkIds.get(keys.get(hash)!)
       const id = held ?? reserved.first + i
       artifactIds.set(hash, id)
-      if (held === undefined) staged.push({ id, identity: identities.get(hash)! })
+      if (held !== undefined) continue
+      const rolls = incomingRolls.get(hash)
+      if (rolls !== undefined && !storeRolls) rollsWithheld = true
+      staged.push({
+        id,
+        identity: identities.get(hash)!,
+        ...(rolls !== undefined && storeRolls ? { rolls } : {}),
+      })
     }
     staged = staged.sort((x, y) => x.id - y.id)
     catalogGuard = {
@@ -489,6 +516,27 @@ async function importOnce(
     )
   }
 
+  // Rolls for pieces the catalog has already (in a chunk: a piece still in
+  // the v1 `artifacts` table gets none), written by a compare-and-swap of
+  // each chunk row that lacks some, in the batch below.
+  const rollsByKey = new Map<string, RollsText>()
+  for (const [hash, rolls] of incomingRolls) {
+    if (!legacyIds.has(hash)) rollsByKey.set(keys.get(hash)!, rolls)
+  }
+  const planned = planFills(chunkRows, rollsByKey, storeRolls, accountId)
+  if (rollConflicts + planned.conflicts > 0) {
+    console.warn(
+      'rolls_conflict',
+      JSON.stringify({ accountId, count: rollConflicts + planned.conflicts }),
+    )
+  }
+  const fills = planned.fills.map((fill) => fillStatement(d1, accountId, fill))
+  // The held-list mark says "this list is dealt with": not while a fill rides
+  // in the batch (a lost swap would leave the list held, its rolls unwritten)
+  // nor while the switch keeps rolls out that a fill would write.
+  const withheld = !storeRolls && (planned.pending || rollsWithheld)
+  const markList = !!deferred && !held && fills.length === 0 && !withheld
+
   if (
     latest &&
     sameInventory(latest) &&
@@ -499,7 +547,7 @@ async function importOnce(
     // instead of storing a duplicate snapshot. (A full send of the game in
     // another world or session is kept as its own snapshot even unchanged:
     // live sync's session cards have one row per world stay.)
-    const [, bumped, listening] = await meter.batch(d1, 'seen', [
+    const seen = [
       d1
         .prepare('UPDATE snapshots SET last_seen_at = max(last_seen_at, ?1) WHERE id = ?2')
         .bind(takenAt, latest.id),
@@ -510,7 +558,25 @@ async function importOnce(
         .bind(accountId),
       listenerStatement(d1, accountId),
       ...fillAccountStatements(d1, accountId, prepared),
-    ])
+    ]
+    const fillsAt = seen.length
+    seen.push(...fills)
+    // The list was read: the newest snapshot (equal to this upload) was made
+    // from it, so the next upload of it need not be (named by its own id).
+    if (markList) {
+      seen.push(
+        markArtifactsStatement(d1, accountId, {
+          fingerprint: deferred!.fingerprint,
+          sectionHash: encoded.artifacts.hash,
+          figures: prepared.summary,
+          snapshot: { id: latest.id },
+          now,
+        }),
+      )
+    }
+    const results = await meter.batch(d1, 'seen', seen)
+    logLostFills(accountId, results, fillsAt, fills.length)
+    const [, bumped, listening] = results
     return response('unchanged', latest.id, 0, dataVersionOf(bumped) ?? null, listenerOf(listening))
   }
 
@@ -563,15 +629,18 @@ async function importOnce(
   if (catalogGuard) {
     statements.push(...newChunkStatements(d1, accountId, staged, catalogGuard, chunkBytes))
   }
+  // Rolls onto pieces the catalog had: their bytes are not counted in the
+  // day's upload (the storage quota sums the table as it is).
+  const fillsAt = statements.length
+  statements.push(...fills)
   // The list this snapshot's artifacts section was made from, for the next upload.
-  if (deferred && !held) {
+  if (markList) {
     statements.push(
       markArtifactsStatement(d1, accountId, {
-        fingerprint: deferred.fingerprint,
+        fingerprint: deferred!.fingerprint,
         sectionHash: encoded.artifacts.hash,
         figures: prepared.summary,
-        takenAt,
-        contentKey: key,
+        snapshot: { takenAt, contentKey: key },
         now,
       }),
     )
@@ -605,6 +674,7 @@ async function importOnce(
     }
     throw error
   }
+  logLostFills(accountId, results, fillsAt, fills.length)
   const inserted = results[snapshotIndex]!.results[0] as { id: number } | undefined
   // A section it points at was collected in between, or another upload added
   // to the catalog since this one read it (its chunk may hold a piece this
@@ -729,7 +799,9 @@ function fillAccountStatements(
         .bind(accountId, uid, server),
     )
   }
-  if (player?.nickname) {
+  // The name only when the UID used is gi_player's own: a file whose
+  // gi_player.uid is broken (its UID from metadata.uid) names nothing.
+  if (player?.uid !== undefined && player.nickname) {
     statements.push(
       d1
         .prepare(
@@ -782,9 +854,10 @@ function readHeldArtifacts(row: Record<string, unknown> | undefined): HeldArtifa
 }
 
 /**
- * Remembers which list the artifacts section of the snapshot this batch
- * stores was made from (one row per account: the newest list), once that
- * snapshot row is there.
+ * Remembers which list the artifacts section of a snapshot was made from
+ * (one row per account: the newest list), once that snapshot row is there:
+ * the one this batch stores (by its capture time and content key), or the
+ * stored one an upload was seen again as (by its own id).
  */
 function markArtifactsStatement(
   d1: D1Database,
@@ -793,8 +866,7 @@ function markArtifactsStatement(
     fingerprint: string
     sectionHash: string
     figures: ArtifactFigures
-    takenAt: number
-    contentKey: number
+    snapshot: { takenAt: number; contentKey: number } | { id: number }
     now: number
   },
 ): D1PreparedStatement {
@@ -804,25 +876,22 @@ function markArtifactsStatement(
     a3: mark.figures.artifact3,
     a4: mark.figures.artifact4,
   })
+  const { snapshot } = mark
+  const [which, params] =
+    'id' in snapshot
+      ? ['s.id = ?6', [snapshot.id]]
+      : ['s.taken_at = ?6 AND s.content_key = ?7', [snapshot.takenAt, snapshot.contentKey]]
   return d1
     .prepare(
       `INSERT INTO part_marks (account_id, part, fingerprint, section_hash, blob_id, info, updated_at)
        SELECT ?1, 'artifacts', unhex(?2), unhex(?3), s.artifacts_ref, ?4, ?5 FROM snapshots AS s
-       WHERE s.account_id = ?1 AND s.taken_at = ?6 AND s.deleted_at IS NULL AND s.content_key = ?7
+       WHERE s.account_id = ?1 AND ${which} AND s.deleted_at IS NULL
          AND s.artifacts_ref IS NOT NULL
        ON CONFLICT (account_id, part) DO UPDATE SET fingerprint = excluded.fingerprint,
          section_hash = excluded.section_hash, blob_id = excluded.blob_id, info = excluded.info,
          updated_at = excluded.updated_at`,
     )
-    .bind(
-      accountId,
-      mark.fingerprint,
-      mark.sectionHash,
-      info,
-      mark.now,
-      mark.takenAt,
-      mark.contentKey,
-    )
+    .bind(accountId, mark.fingerprint, mark.sectionHash, info, mark.now, ...params)
 }
 
 /** v1 catalog rows (not repacked yet) by identity hash. */
@@ -847,15 +916,132 @@ function idMap(rows: Record<string, unknown>[]): Map<string, number> {
   return new Map(rows.map((row) => [row.hash as string, row.id as number]))
 }
 
-/** Catalog ids by packed identity, from chunk rows; and the highest chunk row id seen. */
-function readChunks(rows: Record<string, unknown>[]): { ids: Map<string, number>; maxId: number } {
+/** A catalog chunk row as read: its id, its bytes exactly as stored, and them read apart. */
+interface ChunkRow {
+  id: number
+  data: Uint8Array
+  parts: CatalogChunkParts
+}
+
+/**
+ * Catalog ids by packed identity, from chunk rows; the highest chunk row id
+ * seen; and the rows themselves (a fill swaps a row's bytes only while they
+ * are still the ones read here).
+ */
+function readChunks(rows: Record<string, unknown>[]): {
+  ids: Map<string, number>
+  maxId: number
+  rows: ChunkRow[]
+} {
   const ids = new Map<string, number>()
+  const read: ChunkRow[] = []
   let maxId = 0
   for (const row of rows) {
     maxId = Math.max(maxId, row.id as number)
-    for (const entry of decodeCatalogChunk(toBytes(row.data))) ids.set(entry.key, entry.id)
+    const data = toBytes(row.data)
+    const parts = readCatalogChunk(data)
+    for (const entry of parts.entries) ids.set(entry.key, entry.id)
+    read.push({ id: row.id as number, data, parts })
   }
-  return { ids, maxId }
+  return { ids, maxId, rows: read }
+}
+
+/** New bytes for one chunk row, swapped in only while it still holds `old`. */
+interface ChunkFill {
+  id: number
+  old: Uint8Array
+  data: Uint8Array
+}
+
+/**
+ * What the rolls of an upload (`rollsByKey`: packed identity to checked
+ * rolls) would write onto the chunk rows read: `pending` when some entry
+ * there lacks them (`needsFill`), `fills` the new bytes per row when
+ * `store` (the `rolls.store` switch) allows writing, each verified before
+ * it is used; `conflicts` the entries whose stored rolls differ (kept).
+ */
+function planFills(
+  rows: readonly ChunkRow[],
+  rollsByKey: ReadonlyMap<string, RollsText>,
+  store: boolean,
+  accountId: number,
+): { fills: ChunkFill[]; pending: boolean; conflicts: number } {
+  const fills: ChunkFill[] = []
+  let pending = false
+  let conflicts = 0
+  if (rollsByKey.size === 0) return { fills, pending, conflicts }
+  for (const row of rows) {
+    let wants = false
+    for (const entry of row.parts.entries) {
+      const incoming = rollsByKey.get(entry.key)
+      if (incoming === undefined) continue
+      if (needsFill(entry.rolls, incoming)) wants = true
+      else if (entry.rolls !== incoming) conflicts++
+    }
+    if (!wants) continue
+    pending = true
+    if (!store) continue
+    const data = fillCatalogChunk(row.data, rollsByKey)
+    if (data !== row.data && fillVerified(row.parts, data, rollsByKey)) {
+      fills.push({ id: row.id, old: row.data, data })
+    } else {
+      console.warn('rolls_fill_mismatch', JSON.stringify({ accountId, chunk: row.id }))
+    }
+  }
+  return { fills, pending, conflicts }
+}
+
+/**
+ * True when `data` is `before` with exactly the intended rolls added: the
+ * same bytes up to the rolls block (count, ids, packed identities), the same
+ * ids and keys in the same order, every stored roll kept unless `needsFill`
+ * lets the incoming one replace it.
+ */
+function fillVerified(
+  before: CatalogChunkParts,
+  data: Uint8Array,
+  rollsByKey: ReadonlyMap<string, RollsText>,
+): boolean {
+  let after: CatalogChunkParts
+  try {
+    after = readCatalogChunk(data)
+  } catch {
+    return false
+  }
+  if (after.identitiesEnd !== before.identitiesEnd) return false
+  for (let i = 0; i < before.identitiesEnd; i++) {
+    if (after.body[i] !== before.body[i]) return false
+  }
+  if (after.entries.length !== before.entries.length) return false
+  return before.entries.every((entry, i) => {
+    const next = after.entries[i]!
+    const incoming = rollsByKey.get(entry.key)
+    const wanted =
+      incoming !== undefined && needsFill(entry.rolls, incoming) ? incoming : entry.rolls
+    return next.id === entry.id && next.key === entry.key && next.rolls === wanted
+  })
+}
+
+/** Swaps a chunk row's bytes for its filled ones while it still holds the ones read (RETURNING: landed). */
+function fillStatement(d1: D1Database, accountId: number, fill: ChunkFill): D1PreparedStatement {
+  return d1
+    .prepare(
+      `UPDATE artifact_chunks SET data = ?4 WHERE id = ?2 AND account_id = ?1 AND data = ?3
+       RETURNING id`,
+    )
+    .bind(accountId, fill.id, fill.old, fill.data)
+}
+
+/** Logs the fills of a batch that found their row changed (not retried: the next read fills). */
+function logLostFills(
+  accountId: number,
+  results: readonly D1Result<Record<string, unknown>>[],
+  from: number,
+  count: number,
+): void {
+  let lost = 0
+  for (let i = from; i < from + count; i++) if (results[i]!.results.length === 0) lost++
+  if (lost > 0) console.warn('rolls_fill_lost', JSON.stringify({ accountId, lost }))
 }
 
 /** What a store batch needs to know that the catalog is still as this upload read it. */
@@ -891,7 +1077,13 @@ async function reserveArtifactIds(
   accountId: number,
   count: number,
   afterChunk: number,
-): Promise<{ first: number; chunkIds: Map<string, number>; maxChunkId: number }> {
+): Promise<{
+  first: number
+  chunkIds: Map<string, number>
+  maxChunkId: number
+  /** The chunk rows written since `afterChunk`, as read. */
+  chunkRows: ChunkRow[]
+}> {
   const now = Date.now()
   const tag = `~reserve:${crypto.randomUUID()}`
   const columns = `account_id, hash, set_key, slot_key, level, rarity, main_stat_key,
@@ -924,7 +1116,12 @@ async function reserveArtifactIds(
   const first = (results[1]!.results[0] as { id: number } | undefined)?.id
   if (first === undefined) throw new Error('No catalog ids were reserved')
   const read = readChunks(results[0]!.results)
-  return { first, chunkIds: read.ids, maxChunkId: Math.max(afterChunk, read.maxId) }
+  return {
+    first,
+    chunkIds: read.ids,
+    maxChunkId: Math.max(afterChunk, read.maxId),
+    chunkRows: read.rows,
+  }
 }
 
 /**
@@ -935,7 +1132,8 @@ async function reserveArtifactIds(
 function newChunkStatements(
   d1: D1Database,
   accountId: number,
-  entries: readonly { id: number; identity: ArtifactIdentity }[],
+  /** `rolls` only while the `rolls.store` switch is on (chunks without any keep formats 1/2). */
+  entries: readonly { id: number; identity: ArtifactIdentity; rolls?: RollsText }[],
   guard: CatalogGuard,
   /** Adds the bytes of the chunks it writes to `written.bytes`. */
   written: { bytes: number },

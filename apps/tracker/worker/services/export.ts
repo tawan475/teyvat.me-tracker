@@ -14,12 +14,14 @@ import {
   SectionTexts,
   artifactRows,
   asLeyline,
+  catalogRolls,
   decodeCatalogChunk,
   decodeSnapshot,
   deflateRaw,
   expandSubstats,
   exportedOff,
   leylineFileStem,
+  needsFill,
   storedSnapshotOf,
   v1SnapshotOf,
   writeBundle,
@@ -31,6 +33,7 @@ import {
   type CatalogRow,
   type Good,
   type RawBlob,
+  type RollsText,
   type Slot,
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
@@ -526,7 +529,10 @@ export async function buildGood(
     ),
   ]
   const catalog = await loadCatalog(d1, accountId, artifactIds)
-  return { good: asLeyline(decodeSnapshot(stored, catalog, MATERIALS)), takenAt: row.taken_at }
+  return {
+    good: asLeyline(decodeSnapshot(stored, catalog, MATERIALS, catalogRolls(catalog))),
+    takenAt: row.taken_at,
+  }
 }
 
 // ------------------------------------------------------------------ catalog
@@ -548,15 +554,21 @@ function identityOfRow(r: Record<string, unknown>): ArtifactIdentity {
   }
 }
 
+/** A catalog identity with its rolls, when the catalog knows them (never part of the identity). */
+export type CatalogIdentity = ArtifactIdentity & { rolls?: RollsText }
+
 /**
  * Catalog identities by id: v1 rows (all of the account's, or only `ids`)
- * and every compact chunk, which is where nearly all of them are.
+ * and every compact chunk, which is where nearly all of them are. One id can
+ * sit in two chunks (an old merge), read in no fixed order: its rolls are the
+ * better copy's by `needsFill`, so a copy without rolls never replaces one
+ * with them, whatever the order.
  */
 export async function loadCatalog(
   d1: D1Database,
   accountId: number,
   ids: number[] | null,
-): Promise<Map<number, ArtifactIdentity>> {
+): Promise<Map<number, CatalogIdentity>> {
   const [rows, chunks] = await d1.batch<Record<string, unknown>>([
     d1
       .prepare(
@@ -567,13 +579,22 @@ export async function loadCatalog(
     d1.prepare('SELECT data FROM artifact_chunks WHERE account_id = ?1').bind(accountId),
   ])
   const wanted = ids ? new Set(ids) : null
-  const catalog = new Map<number, ArtifactIdentity>()
+  const catalog = new Map<number, CatalogIdentity>()
   for (const row of chunks!.results) {
     for (const entry of decodeCatalogChunk(toBytes(row.data))) {
-      if (!wanted || wanted.has(entry.id)) catalog.set(entry.id, entry.identity)
+      if (wanted && !wanted.has(entry.id)) continue
+      // The identity is the last copy's, as ever; the rolls the better copy's.
+      const kept = catalog.get(entry.id)?.rolls
+      const rolls = needsFill(kept, entry.rolls) ? entry.rolls : kept
+      catalog.set(entry.id, rolls === undefined ? entry.identity : { ...entry.identity, rolls })
     }
   }
-  for (const row of rows!.results) catalog.set(row.id as number, identityOfRow(row))
+  // v1 rows (pieces not in a chunk yet) have no rolls.
+  for (const row of rows!.results) {
+    if (catalog.get(row.id as number)?.rolls === undefined) {
+      catalog.set(row.id as number, identityOfRow(row))
+    }
+  }
   return catalog
 }
 
@@ -620,11 +641,12 @@ export async function catalogJson(d1: D1Database, accountId: number): Promise<st
   return JSON.stringify(catalogRows(await loadCatalog(d1, accountId, null)))
 }
 
-function catalogRows(catalog: ReadonlyMap<number, ArtifactIdentity>): CatalogRow[] {
+/** CatalogRow per entry; the eleventh element (rolls) only for an entry that has rolls. */
+function catalogRows(catalog: ReadonlyMap<number, CatalogIdentity>): CatalogRow[] {
   return [...catalog]
     .sort((a, b) => a[0] - b[0])
-    .map(
-      ([id, a]): CatalogRow => [
+    .map(([id, a]): CatalogRow => {
+      const row: CatalogRow = [
         id,
         a.setKey,
         a.slotKey,
@@ -639,8 +661,10 @@ function catalogRows(catalog: ReadonlyMap<number, ArtifactIdentity>): CatalogRow
         a.unactivatedSubstats.map((s) =>
           s.initialValue === undefined ? [s.key, s.value] : [s.key, s.value, s.initialValue],
         ),
-      ],
-    )
+      ]
+      if (a.rolls !== undefined) row.push(a.rolls)
+      return row
+    })
 }
 
 /** Gives a Leyline download a stable, sortable file name (`leyline-<time>.json`). */

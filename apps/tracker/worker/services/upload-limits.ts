@@ -46,6 +46,17 @@ export const UPLOAD_SETTING_KEYS: Readonly<Record<keyof UploadLimits, string>> =
   storageQuota: 'upload.storage_quota',
 }
 
+/**
+ * The `site_settings` key of the switch that lets imports store exact
+ * artifact rolls (README "Exact artifact rolls"): the text `1` turns it on,
+ * anything else or no row leaves it off (the default). Read in the import's
+ * lookup batch with the limits. While off, nothing writes rolls, so no
+ * catalog chunk of format 3 or 4 comes to exist; reading them works either
+ * way. Once on, the Worker must never go back to a build that cannot read
+ * those formats.
+ */
+export const ROLLS_STORE_KEY = 'rolls.store'
+
 /** Days of `user_upload_days` maintenance keeps. */
 export const UPLOAD_DAYS_KEPT = 90
 
@@ -55,6 +66,8 @@ export interface UploadUsage {
   dayBytes: number
   storedBytes: number
   limits: UploadLimits
+  /** The `rolls.store` switch (ROLLS_STORE_KEY) is on. */
+  storeRolls: boolean
 }
 
 /** The UTC day of `now`, as `user_upload_days.day` names it. */
@@ -72,7 +85,7 @@ export function secondsToNextUtcDay(now: number): number {
   return Math.max(1, Math.ceil((next - now) / 1000))
 }
 
-const SETTING_KEYS_SQL = Object.values(UPLOAD_SETTING_KEYS)
+const SETTING_KEYS_SQL = [...Object.values(UPLOAD_SETTING_KEYS), ROLLS_STORE_KEY]
   .map((key) => `'${key}'`)
   .join(', ')
 
@@ -123,6 +136,7 @@ export function readUsage(row: Record<string, unknown> | undefined): UploadUsage
     dayBytes: Number(row.day_bytes),
     storedBytes: Number(row.stored_bytes),
     limits,
+    storeRolls: String(settings[ROLLS_STORE_KEY] ?? '').trim() === '1',
   }
 }
 

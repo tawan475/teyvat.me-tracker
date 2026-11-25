@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CHARACTERS,
   CorruptDataError,
+  artifactsFingerprint,
   artifactIdentityText,
   artifactKey,
   artifactKeyString,
@@ -24,6 +26,7 @@ import {
   rollsByLine,
   rollTiers,
   rollValue,
+  sha256Hex128,
   type ArtifactIdentity,
   type CatalogEntryBytes,
   type CatalogRow,
@@ -213,10 +216,11 @@ const bodyOf = (data: Uint8Array) =>
 
 /**
  * Two of the cases' pieces as the encoder before rolls (main at f5ddaa96)
- * writes them: format 2, deflated.
+ * writes them: format 2, deflated. (Made again with that commit's encoder
+ * when the cases' initial values were corrected, 2026-11-26.)
  */
 const PINNED_SMALL_CHUNK =
-  '026362e3d1d46312e1649991a87e52f4ec1910907008d79d9c6f0212e76069f8c3fc9e718697f249516330907770110000'
+  '026362e3d1d46312e1649991a87e52f4ec1910907008d79d9c6f0a12e76069f8c3fc9e718697f249516330907770110000'
 
 describe('catalog chunks with rolls', () => {
   it('writes exactly the old bytes when no entry has rolls', () => {
@@ -789,5 +793,25 @@ describe('what the catalog can store, both ways', () => {
     }
     expect(stored).toBeGreaterThan(500)
     expect(refused).toBeGreaterThan(500)
+  })
+})
+
+describe('ARTIFACTS_READING', () => {
+  // A stored fingerprint stands for "this list, read by this code". The 2 in
+  // the expected text is ARTIFACTS_READING (codec/parts.ts): change it here
+  // only together with the constant, so lowering it, or forgetting to raise
+  // it, fails this test. (The character dictionary's size is part of the
+  // hash and grows with the game, so it is read, not written out.)
+  it('pins the fingerprint of a fixed list', async () => {
+    const list = [
+      { setKey: 'GladiatorsFinale', slotKey: 'plume', level: 4, gi_rolls: '0111', gi_guid: '12' },
+      { setKey: 'GladiatorsFinale', slotKey: 'flower', level: 0, gi_guid: '9' },
+    ]
+    const sorted = [list[1], list[0]]
+    const expected = await sha256Hex128(
+      `artifacts:2:${CHARACTERS.keys.length}:${JSON.stringify(sorted)}`,
+    )
+    expect(await artifactsFingerprint(list)).toBe(expected)
+    expect(expected).toMatch(/^[0-9a-f]{32}$/)
   })
 })

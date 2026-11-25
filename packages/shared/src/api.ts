@@ -1234,8 +1234,9 @@ export interface LiveAccount {
 }
 
 /**
- * `uid_mismatch`: the file's `gi_player.uid` is not the account's UID (the
- * capture may be another account's). Stored anyway, as asked.
+ * `uid_mismatch`: the file's UID (`gi_player.uid`, else GGScanner's
+ * `metadata.uid`) is not the account's UID (the capture may be another
+ * account's). Stored anyway, as asked.
  */
 export interface ImportWarning {
   /** `uid_changed`: an upload to a picked account gave it the capture's UID. */

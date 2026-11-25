@@ -193,6 +193,50 @@ remains, and the Worker already runs on either schema. `artifacts` stays:
 imports insert new pieces there to get their ids (AUTOINCREMENT) and move
 them into a chunk in the same batch as the snapshot.
 
+**Exact artifact rolls** (`gi_rolls`, Teyvat.me Capture; `packages/shared/src/rolls.ts`).
+An artifact's every substat roll, two digits each (line, tier), read from an
+upload only when `checkRolls` finds that they add up to the piece's values.
+They are never part of a piece's identity or of any hash: they ride in the
+catalog chunk beside the identities, as a rolls block after them (chunk
+formats 3 and 4, `catalog-binary.ts`; a chunk without any keeps formats 1/2
+byte for byte). An import writes them on new pieces, and onto pieces the
+catalog already has by a compare-and-swap of each chunk row
+(`UPDATE … WHERE data = <the bytes read> RETURNING id`) in the batch that
+stores the snapshot or records it as seen again; the swap copies the
+identity bytes untouched and rewrites only the rolls block. A swap that
+finds its row changed is dropped (logged `rolls_fill_lost`); no held-list
+mark is written in a batch that carries a fill, so the next upload of the
+list reads it in full and fills again. The daily maintenance carries rolls
+through when it merges small chunks and writes a merge only while every part
+still holds the bytes it read. The catalog route gives a piece's rolls as
+the row's eleventh element and the GOOD export as `gi_rolls`, checked again
+on the way out. Two pieces identical in every stored value (set, slot,
+level, main stat, every substat and starting value) are one catalog entry,
+so they share one roll list: the first valid one stored, never replaced by
+another (the import logs how many such conflicts it saw as
+`rolls_conflict`, a count).
+- **The switch.** Writing rolls is off until the `site_settings` row
+  `rolls.store` is `1` (read in the import's first batch; nothing else
+  turns it on, no UI). While off, uploads are read and checked as ever,
+  nothing writes rolls and no format 3/4 chunk comes to exist; it is also
+  the kill switch. To turn it on (or off: `'0'`, or delete the row):
+  `pnpm --filter @gdt/tracker exec wrangler d1 execute gdt --remote --command
+  "INSERT INTO site_settings (key, value, updated_at) VALUES ('rolls.store', '1',
+  unixepoch() * 1000) ON CONFLICT (key) DO UPDATE SET value = excluded.value,
+  updated_at = excluded.updated_at"` (local: `--local`).
+- **No rollback past it.** Every import and export decodes every chunk of
+  the account, and a Worker from before rolls throws on formats 3 and 4.
+  Once the switch has been on, the Worker must never be rolled back to a
+  build that cannot read those formats.
+- **When a piece's rolls never arrive.** The exact re-upload of a capture
+  (same capture time) writes nothing, fills included, so rolls are lost for
+  good only for pieces that left the bag before an ordinary upload could
+  fill them: when the fill's swap was lost on the upload that stored the
+  capture; when captures were stored by a tracker older than Capture (or
+  while the switch was off), and re-importing those saved files does
+  nothing; when rolls refused by the checker then would pass a later fix to
+  it.
+
 The capture app's own top-level keys are sections of their own, each optional and
 range-checked again on import: `gi_player` (AR, World Level, UID… as read at
 login) as `player`, `gi_achievement_times` (finish times, unix seconds) as

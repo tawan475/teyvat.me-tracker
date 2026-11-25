@@ -1086,7 +1086,9 @@ Plan and contract: `docs/plans/capture-link.md`.
 - **Capture presence.** Teyvat.me Capture posts `POST /api/irminsul/presence`
   while the game runs; Overview and the Planner show "Playing now on <PC>"
   with Sync wishes / Send a capture (editors), delivered at its next
-  heartbeat. Live event `{type: "presence"}`.
+  heartbeat. Live event `{type: "presence"}`. A beat costs one D1 round
+  trip; the hub stores it only when it changes or the kept one is 4.5
+  minutes old, so "last seen" can lag by that much.
 
 **Setup:** make a P-256 key pair once (base64url: the 65-byte public point,
 the 32-byte private scalar), then from `apps/tracker`:

@@ -11,6 +11,15 @@ import { env, runInDurableObject } from 'cloudflare:test'
 import { describe, expect, it } from 'vitest'
 import { WATCHED_NEXT_S, liveHub, type LiveHub } from '../services/live'
 import { RESIN_STEP_MS } from '../services/alerts'
+import {
+  PRESENCE_REWRITE_MS,
+  PRESENCE_TTL_MS,
+  heartbeat,
+  presenceFor,
+  queueCommand,
+  type Heartbeat,
+  type HubContext,
+} from '../services/alert-hub'
 import { ORIGIN, irminsulForm, sampleExtras, sampleGood, signUp, withEnv } from './client'
 
 /** Calls the Worker and waits for what it does after answering (the hub's facts). */
@@ -52,6 +61,30 @@ const presence = (key: string, body: object) =>
     headers: { 'x-import-key': key, 'content-type': 'application/json' },
     body: JSON.stringify({ v: 1, ...body }),
   })
+
+/** A hub over an in-memory storage that counts its writes, on a clock the test moves. */
+function fakeHub() {
+  const map = new Map<string, unknown>()
+  let writes = 0
+  const clock = { now: 1_800_000_000_000 }
+  const storage = {
+    get: async (key: string) => structuredClone(map.get(key)),
+    put: async (key: string, value: unknown) => {
+      writes++
+      map.set(key, structuredClone(value))
+    },
+    delete: async (key: string) => map.delete(key),
+    list: async ({ prefix }: { prefix: string }) =>
+      new Map([...map].filter(([key]) => key.startsWith(prefix))),
+  }
+  const hub = {
+    storage: storage as unknown as DurableObjectStorage,
+    db: env.DB,
+    vars: {},
+    now: () => clock.now,
+  } as unknown as HubContext
+  return { hub, clock, puts: () => writes }
+}
 
 /** A push service that takes everything and remembers where it was sent. */
 function pushService() {
@@ -391,6 +424,59 @@ describe('Capture presence and commands', () => {
     })
     expect(await beat()).toBe(300)
     socket.close()
+  })
+
+  it('writes the kept heartbeat only when it changes or grows old', async () => {
+    const { hub, puts, clock } = fakeHub()
+    const beat = (over: Partial<Heartbeat> = {}) =>
+      heartbeat(hub, {
+        sid: 7,
+        device: 'PC-01',
+        state: 'decoding',
+        accountId: 3,
+        uid: '812345678',
+        platform: 'windows',
+        app: '1.18.4',
+        ...over,
+      })
+    const start = clock.now
+    expect((await beat()).changed).toEqual([3])
+    expect(puts()).toBe(1)
+    // The same beat again, a minute later and up to just before the limit: no write.
+    clock.now = start + 60_000
+    await beat()
+    clock.now = start + PRESENCE_REWRITE_MS - 1
+    await beat()
+    expect(puts()).toBe(1)
+    // At the limit: written, with the new time.
+    clock.now = start + PRESENCE_REWRITE_MS
+    expect((await beat()).changed).toEqual([])
+    expect(puts()).toBe(2)
+    expect((await presenceFor(hub, 3)).presence?.at).toBe(start + PRESENCE_REWRITE_MS)
+    // Anything else that changes is written at once: the state, the program, the account.
+    clock.now += 1_000
+    expect((await beat({ state: 'running' })).changed).toEqual([3])
+    expect(puts()).toBe(3)
+    clock.now += 1_000
+    await beat({ state: 'running', app: '1.18.5' })
+    expect(puts()).toBe(4)
+    clock.now += 1_000
+    expect((await beat({ state: 'running', app: '1.18.5', accountId: 4 })).changed).toEqual([3, 4])
+    expect(puts()).toBe(5)
+    // A command waits in its own key and still reaches the next beat, which writes nothing.
+    expect(await queueCommand(hub, 4, 'wishes')).toMatchObject({ pending: ['wishes'] })
+    expect(puts()).toBe(6)
+    clock.now += 1_000
+    const next = await beat({ state: 'running', app: '1.18.5', accountId: 4 })
+    expect(next.commands.map((c) => c.kind)).toEqual(['wishes'])
+    expect(puts()).toBe(6)
+    // An unwritten beat never makes the entry look gone: it expires PRESENCE_TTL_MS
+    // after the last written one, as before.
+    const written = clock.now - 1_000
+    clock.now = written + PRESENCE_TTL_MS - 1
+    expect((await presenceFor(hub, 4)).presence).not.toBeNull()
+    clock.now = written + PRESENCE_TTL_MS
+    expect((await presenceFor(hub, 4)).presence).toBeNull()
   })
 
   it('refuses a bad heartbeat', async () => {

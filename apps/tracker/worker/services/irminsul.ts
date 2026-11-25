@@ -167,7 +167,8 @@ export function whoamiOf(origin: string, sid: number, row: TargetRow): IrminsulW
 
 /** A live irminsul session of the token's user and version, with its target and the user's state. */
 const SESSION_SQL = `SELECT s.upload_mode, s.upload_account_id, u.username, u.suspended_at,
-    u.uploads_blocked_at, ${ACCOUNT_COLUMNS}
+    u.uploads_blocked_at, s.device_name, s.alerts, s.client_version, s.client_platform,
+    ${ACCOUNT_COLUMNS}
   FROM user_sessions AS s JOIN users AS u ON u.id = s.user_id
   LEFT JOIN genshin_accounts AS a ON a.id = s.upload_account_id
     AND (a.user_id = s.user_id OR EXISTS (SELECT 1 FROM account_members AS m
@@ -177,7 +178,14 @@ const SESSION_SQL = `SELECT s.upload_mode, s.upload_account_id, u.username, u.su
 
 export interface LiveSession extends TargetRow {
   block: KeyBlock
+  /** The session row's own columns, for the presence heartbeat (routes/capture-link). */
+  device_name: string | null
+  alerts: string | null
+  client_version: string | null
+  client_platform: string | null
 }
+
+type SessionRow = Omit<LiveSession, 'block'>
 
 function blockOf(row: Record<string, unknown>): KeyBlock {
   if (row.suspended_at !== null && row.suspended_at !== undefined) return 'suspended'
@@ -196,7 +204,7 @@ export async function loadSession(
     .prepare(SESSION_SQL)
     .bind(claims.sid, claims.userId, Date.now(), claims.ver)
     .first<Record<string, unknown>>()
-  return row ? { ...(row as unknown as TargetRow), block: blockOf(row) } : null
+  return row ? { ...(row as unknown as SessionRow), block: blockOf(row) } : null
 }
 
 /**
@@ -217,7 +225,7 @@ export async function loadUploadSession(
   const row = session!.results[0]
   if (!row) return null
   return {
-    session: { ...(row as unknown as TargetRow), block: blockOf(row) },
+    session: { ...(row as unknown as SessionRow), block: blockOf(row) },
     accounts: accounts!.results as unknown as KeyAccount[],
   }
 }

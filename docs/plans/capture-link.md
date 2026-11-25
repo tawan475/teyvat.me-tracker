@@ -102,6 +102,12 @@ every `next` seconds. Answer (200):
   polled `whoami` every 5 minutes and on focus (~2,250 requests a day).
 
 The presence expires 12 minutes after the last heartbeat (5 until 2026-11-02, 3 before 2026-11-01).
+Since 2026-11-26 the user's hub writes a heartbeat to its storage only when it says something
+new (state, account, UID, device, program, platform) or the kept one is 4.5 minutes old
+(`PRESENCE_REWRITE_MS`): every idle beat is still written, about one in five in-view beats is.
+So the presence's `at` ("last seen") can lag by up to 4.5 minutes; the expiry counts from the
+last written beat. The route reads the session's device name, alerts and program in the same
+D1 batch as the session itself: one round trip per beat (two before).
 
 ## Website
 

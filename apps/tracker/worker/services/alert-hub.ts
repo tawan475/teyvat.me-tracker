@@ -43,6 +43,13 @@ import {
 
 /** A heartbeat older than this: Capture (or the game) is gone (more than two idle beats). */
 export const PRESENCE_TTL_MS = 12 * 60_000
+/**
+ * A heartbeat that repeats the kept one is written again only once the kept
+ * time is this old, so `at` ("last seen") lags by up to this much. Under the
+ * idle beat (services/live.ts IDLE_NEXT_S) every beat is still written, so
+ * one lost beat never lets an entry pass PRESENCE_TTL_MS.
+ */
+export const PRESENCE_REWRITE_MS = 270_000
 /** Sent keys are forgotten after this. */
 const SENT_TTL_MS = 8 * 24 * 3_600_000
 
@@ -345,6 +352,19 @@ function playing(list: PresenceEntry[], accountId: number, now: number): boolean
   return list.some((p) => p.accountId === accountId && p.at > now - PRESENCE_TTL_MS)
 }
 
+/** Everything but the time alike. */
+function sameBeat(a: PresenceEntry, b: PresenceEntry): boolean {
+  return (
+    a.sid === b.sid &&
+    a.device === b.device &&
+    a.state === b.state &&
+    a.platform === b.platform &&
+    a.app === b.app &&
+    a.accountId === b.accountId &&
+    a.uid === b.uid
+  )
+}
+
 export interface Heartbeat {
   sid: number | null
   device: string
@@ -383,7 +403,11 @@ export async function heartbeat(
       accountId: beat.accountId,
       uid: beat.uid,
     }
-    await hub.storage.put(key, entry)
+    // A storage write only when the entry says something new, or its time is
+    // getting old: most beats while a page is in view repeat the last one.
+    if (!was || !sameBeat(was, entry) || was.at <= now - PRESENCE_REWRITE_MS) {
+      await hub.storage.put(key, entry)
+    }
     if (!was || was.state !== entry.state || was.accountId !== entry.accountId) {
       if (was?.accountId != null) changed.add(was.accountId)
       if (entry.accountId != null) changed.add(entry.accountId)

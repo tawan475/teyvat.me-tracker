@@ -16,16 +16,21 @@ import ItemArt from './ItemArt.vue'
  * visual. `selected` gives it the game's white glow. The Weapons, Artifacts
  * and Materials bags draw their tiles with it.
  */
-const props = defineProps<{
-  src: string
-  name: string
-  rarity?: number | null
-  label: string
-  stars?: boolean
-  selected?: boolean
-  /** On the first screen of a bag: fetched at once and first, not when laid out (lazy). */
-  priority?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    src: string
+    name: string
+    rarity?: number | null
+    label: string
+    stars?: boolean
+    selected?: boolean
+    /** On the first screen of a bag: fetched at once and first, not when laid out (lazy). */
+    priority?: boolean
+    /** A tile that toggles (the team randomizer): its state, instead of opening a dialog. */
+    pressed?: boolean | null
+  }>(),
+  { pressed: undefined },
+)
 /** `open` carries the click (its target anchors a popover; pointerType tells touch). */
 defineEmits<{ open: [event: MouseEvent] }>()
 
@@ -55,7 +60,8 @@ function initials(name: string): string {
 <template>
   <button
     type="button"
-    aria-haspopup="dialog"
+    :aria-haspopup="pressed == null ? 'dialog' : undefined"
+    :aria-pressed="pressed ?? undefined"
     :aria-label="label"
     :title="label"
     class="group @container relative block w-full min-w-0 text-left transition-transform hover:-translate-y-px focus-visible:outline-none"

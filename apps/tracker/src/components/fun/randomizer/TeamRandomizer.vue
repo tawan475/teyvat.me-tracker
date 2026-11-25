@@ -21,7 +21,6 @@ const owned = computed(() =>
     ? buildRoster(inventory.data.value.good).characters.map((c) => ({
         key: c.key,
         level: c.level,
-        constellation: c.constellation,
       }))
     : [],
 )

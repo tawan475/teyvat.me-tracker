@@ -37,7 +37,6 @@ function cast(
       gender: i % 2 ? 'm' : 'f',
       roles: i % 5 === 0 ? ['healer'] : [],
       level: 90 - (i % 4) * 10,
-      constellation: i % 7,
     }
     change(c, i)
     return c
@@ -261,9 +260,9 @@ describe('the pool', () => {
         }
   const name = (key: string) => key
   const owned = [
-    { key: 'Amber', level: 80, constellation: 6 },
-    { key: 'TravelerHydro', level: 90, constellation: 3 },
-    { key: 'Manekin', level: 1, constellation: 0 },
+    { key: 'Amber', level: 80 },
+    { key: 'TravelerHydro', level: 90 },
+    { key: 'Manekin', level: 1 },
   ]
   const released = [
     'Amber',
@@ -278,13 +277,13 @@ describe('the pool', () => {
   it("is the account's own characters, without the Manekin pair", () => {
     const pool = buildPool('mine', owned, released, facts, name)
     expect(pool.map((c) => c.key)).toEqual(['TravelerHydro', 'Amber'])
-    expect(pool[1]).toMatchObject({ level: 80, constellation: 6 })
+    expect(pool[1]).toMatchObject({ level: 80 })
   })
 
   it('is every released character, the Traveler once', () => {
     const pool = buildPool('all', owned, released, facts, name)
     expect(pool.map((c) => c.key)).toEqual(['Diluc', 'TravelerHydro', 'Amber'])
-    expect(pool[0]).toMatchObject({ level: null, constellation: null })
+    expect(pool[0]).toMatchObject({ level: null })
     expect(buildPool('all', [], released, facts, name).map((c) => c.key)).toEqual([
       'Diluc',
       'Traveler',

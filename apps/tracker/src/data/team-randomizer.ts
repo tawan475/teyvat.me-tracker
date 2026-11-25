@@ -33,7 +33,6 @@ export interface PoolCharacter extends CharacterFacts {
   name: string
   /** From the account's newest capture; null for a character it does not own. */
   level: number | null
-  constellation: number | null
 }
 
 export type PoolMode = 'mine' | 'all'
@@ -42,7 +41,6 @@ export type PoolMode = 'mine' | 'all'
 export interface OwnedCharacter {
   key: string
   level: number
-  constellation: number
 }
 
 const TRAVELER_ELEMENT = /^Traveler[A-Z]/
@@ -82,7 +80,6 @@ export function buildPool(
       key,
       name: nameOf(key),
       level: own?.level ?? null,
-      constellation: own?.constellation ?? null,
     })
   }
   return out.sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name))

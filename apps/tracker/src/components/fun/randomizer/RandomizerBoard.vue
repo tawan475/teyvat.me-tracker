@@ -39,10 +39,13 @@ import {
 import { useResource } from '@/data/use-resource'
 import { t } from '@/i18n'
 import { characterName } from '@/i18n/game-names'
+import { characterIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { readJson, writeJson } from '@/lib/storage'
 import CharacterTile from './CharacterTile.vue'
 import FilterMenu from './FilterMenu.vue'
+import SlotReel from './SlotReel.vue'
+import { passersBy, play, reducedMotion, spinDuration, type Spin } from './motion'
 
 /**
  * The team randomizer (design A of docs/plans/fun.md, as the user trimmed
@@ -50,7 +53,8 @@ import FilterMenu from './FilterMenu.vue'
  * one team), "Roll teams" with Undo, then the pool: the account's own
  * characters or every released one, the filters, the rules, and the roster
  * as a grid where a tap leaves a character out. It only rolls characters:
- * no team count, presets or sharing. Everything runs in the browser; what
+ * no team count, presets or sharing. A roll spins the slots it changes
+ * (SlotReel), a second click on Roll while they spin stops them. Everything runs in the browser; what
  * was last set is remembered per device. The account's page (TeamRandomizer)
  * and the public one (views/RandomizerView.vue) both show it.
  */
@@ -217,17 +221,68 @@ const HISTORY = 20
 
 const seed = () => Math.floor(Math.random() * 0x7fffffff)
 
-function apply(result: ReturnType<typeof fillTeams>) {
+/** Each slot's animation, and how many still spin. */
+const spins = ref<(Spin | null)[][]>(emptySlots().map((row) => row.map(() => null)))
+const reels = ref<InstanceType<typeof SlotReel>[]>([])
+const spinning = ref(0)
+const dice = ref<HTMLElement | null>(null)
+let spinId = 0
+/** Who may run past: a share of the pool whose portraits are fetched ahead, so none is blank. */
+const WARM = 24
+const warm = computed(() => passersBy(pool.value, Math.min(WARM, pool.value.length)))
+watch(
+  warm,
+  (list) => {
+    if (reducedMotion()) return
+    for (const character of list) new Image().src = characterIcon(character.key)
+  },
+  { immediate: true },
+)
+
+function settle() {
+  for (const reel of reels.value) reel?.settle()
+}
+
+/** Spins (or, for Undo, snaps) the slots `which` picks, one stopping after another. */
+function animate(kind: Spin['kind'], which: (team: number, slot: number) => boolean) {
+  if (reducedMotion()) return
+  let n = 0
+  spins.value = spins.value.map((row, team) =>
+    row.map((spin, slot) =>
+      which(team, slot)
+        ? {
+            id: ++spinId,
+            kind,
+            through: kind === 'roll' ? passersBy(warm.value) : [],
+            duration: spinDuration(n++),
+          }
+        : spin,
+    ),
+  )
+}
+
+function apply(
+  result: ReturnType<typeof fillTeams>,
+  spun: (team: number, slot: number) => boolean = () => false,
+) {
+  settle()
   if (!result.ok) {
     failure.value = result.reason
     return
   }
   failure.value = null
-  if (teams.value) history.value = [...history.value.slice(-(HISTORY - 1)), teams.value]
+  const before = teams.value
+  if (before && JSON.stringify(before) !== JSON.stringify(result.teams)) {
+    history.value = [...history.value.slice(-(HISTORY - 1)), before]
+  }
   teams.value = result.teams
+  if (before) animate('roll', spun)
 }
 
 function roll() {
+  // A click while the slots spin stops them on their result.
+  if (spinning.value > 0) return settle()
+  play(dice.value, [{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], 420)
   apply(
     fillTeams({
       pool: pool.value,
@@ -236,6 +291,7 @@ function roll() {
       kept: locks.value,
       seed: seed(),
     }),
+    (team, slot) => !locks.value[team]![slot],
   )
 }
 
@@ -250,6 +306,7 @@ function rerollSlot(team: number, slot: number) {
       seed: seed(),
       avoid: new Set([teams.value[team]![slot]!]),
     }),
+    (t, s) => t === team && s === slot,
   )
 }
 
@@ -265,11 +322,13 @@ function rerollTeam(team: number) {
       seed: seed(),
       avoid: new Set(teams.value[team]!.filter((key) => !kept.includes(key))),
     }),
+    (t, s) => t === team && !locks.value[t]![s],
   )
 }
 
 function toggleLock(team: number, slot: number) {
   if (!teams.value) return
+  settle()
   const next = locks.value.map((row) => [...row])
   next[team]![slot] = next[team]![slot] ? null : teams.value[team]![slot]!
   locks.value = next
@@ -278,14 +337,20 @@ function toggleLock(team: number, slot: number) {
 function undo() {
   const last = history.value.at(-1)
   if (!last) return
+  settle()
+  const now = teams.value
   history.value = history.value.slice(0, -1)
   teams.value = last
+  animate('snap', (team, slot) => now?.[team]?.[slot] !== last[team]![slot])
   failure.value = null
   // A lock holds only while its character is still in its slot.
   locks.value = locks.value.map((row, t) => row.map((key, s) => (last[t]![s] === key ? key : null)))
 }
 
-// The page opens on a roll, once there is a pool to roll from.
+// What failed may work now that the pool or the rules changed.
+watch([pool, rules, locks], () => (failure.value = null))
+
+// The page opens on a roll (still: only a click spins), once there is a pool to roll from.
 watch(
   () => releases.data.value !== undefined && pool.value.length >= TEAM_COUNT * TEAM_SIZE,
   (ready) => {
@@ -335,7 +400,8 @@ const slots = computed(() =>
           </h3>
           <UiIconButton
             :label="$t('fun.randomizer.rerollTeam')"
-            :disabled="!teams"
+            :disabled="!teams || team.every((slot) => slot.locked)"
+            class="disabled:pointer-events-none disabled:opacity-40"
             @click="rerollTeam(t)"
           >
             <RefreshCw class="size-5" aria-hidden="true" />
@@ -344,33 +410,24 @@ const slots = computed(() =>
         <div class="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-2">
           <div v-for="(slot, s) in team" :key="s" class="flex min-w-0 flex-col items-center gap-1">
             <template v-if="slot.character">
-              <CharacterTile
-                class="w-full"
-                :character="slot.character"
-                :mark="slot.locked ? 'lock' : null"
-                :selected="slot.locked"
-                :label="
-                  $t(slot.locked ? 'fun.randomizer.unlock' : 'fun.randomizer.lock', {
-                    name: slot.character.name,
-                  })
-                "
-                priority
-                @open="toggleLock(t, s)"
-              />
-              <span
-                v-if="owned.length"
-                class="tabular min-h-4 max-w-full truncate text-xs text-text-secondary"
-              >
-                <!-- Empty for one the account doesn't own, so the buttons stay in line. -->
-                <template v-if="slot.character.level !== null">
-                  {{ $t('game.levelN', { n: slot.character.level }) }} ·
-                  {{ $t('game.constellationN', { n: slot.character.constellation ?? 0 }) }}
-                </template>
-              </span>
+              <SlotReel ref="reels" :spin="spins[t]![s]!" @start="spinning++" @end="spinning--">
+                <CharacterTile
+                  :character="slot.character"
+                  :mark="slot.locked ? 'lock' : null"
+                  :selected="slot.locked"
+                  :label="
+                    $t(slot.locked ? 'fun.randomizer.unlock' : 'fun.randomizer.lock', {
+                      name: slot.character.name,
+                    })
+                  "
+                  priority
+                  @open="toggleLock(t, s)"
+                />
+              </SlotReel>
               <UiIconButton
                 :label="$t('fun.randomizer.reroll', { name: slot.character.name })"
                 :disabled="slot.locked"
-                :class="slot.locked ? 'pointer-events-none opacity-40' : ''"
+                class="disabled:pointer-events-none disabled:opacity-40"
                 @click="rerollSlot(t, s)"
               >
                 <RefreshCw class="size-4" aria-hidden="true" />
@@ -401,7 +458,9 @@ const slots = computed(() =>
         class="inline-flex min-h-13 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-6 text-base font-semibold text-accent-ink shadow-sm transition-[background-color,scale] duration-150 hover:bg-accent-hover active:scale-[0.99]"
         @click="roll"
       >
-        <Dices class="size-5 shrink-0" aria-hidden="true" />
+        <span ref="dice" class="inline-flex shrink-0" aria-hidden="true"
+          ><Dices class="size-5"
+        /></span>
         <span class="truncate">{{ $t('fun.randomizer.roll') }}</span>
       </button>
       <UiButton class="min-h-13!" :disabled="!history.length" @click="undo">
@@ -425,7 +484,7 @@ const slots = computed(() =>
         <span class="tabular ml-auto text-sm text-text-secondary">
           <i18n-t keypath="fun.randomizer.pool.count" scope="global">
             <template #n
-              ><b class="text-base font-semibold text-text-primary">{{
+              ><b :key="pool.length" class="count text-base font-semibold text-text-primary">{{
                 formatNumber(pool.length)
               }}</b></template
             >
@@ -549,6 +608,7 @@ const slots = computed(() =>
         <CharacterTile
           v-for="(character, index) in shown"
           :key="character.key"
+          class="arrive"
           :character="character"
           :mark="benched.has(character.key) ? 'ban' : null"
           :priority="index < 24"
@@ -566,3 +626,22 @@ const slots = computed(() =>
     </section>
   </div>
 </template>
+
+<style scoped>
+/* A filter brings tiles in, and the pool's count answers it. */
+@media (prefers-reduced-motion: no-preference) {
+  .arrive {
+    animation: arrive 180ms ease-out;
+  }
+  .count {
+    display: inline-block;
+    animation: arrive 180ms ease-out;
+  }
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+</style>

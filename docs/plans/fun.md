@@ -321,6 +321,12 @@ on):
 - The role, body type and gender filters and the healer rule read those columns.
 - "All released" leaves out a character whose first banner has not opened
   yet (`release-dates.ts`), though the game data already knows it.
+- **2026-11-25, the user on the live page** ("rmeove level and cons / add
+  animations"): no level or constellation on the tiles; a roll spins the
+  slots it changes and stops them one after another (`SlotReel.vue`,
+  `motion.ts`; about 1.1 s for all eight, transform and opacity only, a
+  second click on Roll stops it, none under reduced motion). The opening
+  roll does not spin.
 - The hub lists only pages that exist: no "Soon" cards.
 
 ## Design phase

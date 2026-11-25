@@ -8,73 +8,13 @@
  * `totalRolls`), and both narrow the answer down.
  *
  * Tables are the game's ReliquaryAffixExcelConfigData values per rarity,
- * lowest tier first (percentages are exact; flat stats rounded to 0.01).
+ * lowest tier first (percentages are exact; flat stats rounded to 0.01):
+ * ROLL_TIERS in @gdt/shared/rolls.
  */
 
-type Tiers = readonly number[]
+import { ROLL_TIERS as TIERS } from '@gdt/shared/rolls'
 
-const TIERS: Readonly<Record<number, Readonly<Record<string, Tiers>>>> = {
-  5: {
-    hp: [209.13, 239, 268.88, 298.75],
-    atk: [13.62, 15.56, 17.51, 19.45],
-    def: [16.2, 18.52, 20.83, 23.15],
-    hp_: [4.08, 4.66, 5.25, 5.83],
-    atk_: [4.08, 4.66, 5.25, 5.83],
-    def_: [5.1, 5.83, 6.56, 7.29],
-    eleMas: [16.32, 18.65, 20.98, 23.31],
-    enerRech_: [4.53, 5.18, 5.83, 6.48],
-    critRate_: [2.72, 3.11, 3.5, 3.89],
-    critDMG_: [5.44, 6.22, 6.99, 7.77],
-  },
-  4: {
-    hp: [167.3, 191.2, 215.1, 239],
-    atk: [10.89, 12.45, 14, 15.56],
-    def: [12.96, 14.82, 16.67, 18.52],
-    hp_: [3.26, 3.73, 4.2, 4.66],
-    atk_: [3.26, 3.73, 4.2, 4.66],
-    def_: [4.08, 4.66, 5.25, 5.83],
-    eleMas: [13.06, 14.92, 16.79, 18.65],
-    enerRech_: [3.63, 4.14, 4.66, 5.18],
-    critRate_: [2.18, 2.49, 2.8, 3.11],
-    critDMG_: [4.35, 4.97, 5.6, 6.22],
-  },
-  3: {
-    hp: [100.38, 114.72, 129.06, 143.4],
-    atk: [6.54, 7.47, 8.4, 9.34],
-    def: [7.78, 8.89, 10, 11.11],
-    hp_: [2.45, 2.8, 3.15, 3.5],
-    atk_: [2.45, 2.8, 3.15, 3.5],
-    def_: [3.06, 3.5, 3.93, 4.37],
-    eleMas: [9.79, 11.19, 12.59, 13.99],
-    enerRech_: [2.72, 3.11, 3.5, 3.89],
-    critRate_: [1.63, 1.86, 2.1, 2.33],
-    critDMG_: [3.26, 3.73, 4.2, 4.66],
-  },
-  2: {
-    hp: [50.19, 60.95, 71.7],
-    atk: [3.27, 3.97, 4.67],
-    def: [3.89, 4.72, 5.56],
-    hp_: [1.63, 1.98, 2.33],
-    atk_: [1.63, 1.98, 2.33],
-    def_: [2.04, 2.48, 2.91],
-    eleMas: [6.53, 7.93, 9.33],
-    enerRech_: [1.81, 2.2, 2.59],
-    critRate_: [1.09, 1.32, 1.55],
-    critDMG_: [2.18, 2.64, 3.11],
-  },
-  1: {
-    hp: [23.9, 29.88],
-    atk: [1.56, 1.95],
-    def: [1.85, 2.31],
-    hp_: [1.17, 1.46],
-    atk_: [1.17, 1.46],
-    def_: [1.46, 1.82],
-    eleMas: [4.66, 5.83],
-    enerRech_: [1.3, 1.62],
-    critRate_: [0.78, 0.97],
-    critDMG_: [1.55, 1.94],
-  },
-}
+type Tiers = readonly number[]
 
 /** Highest level per rarity; a substat rolls at every fourth level. */
 const MAX_LEVEL: Readonly<Record<number, number>> = { 5: 20, 4: 16, 3: 12, 2: 4, 1: 4 }

@@ -3,6 +3,7 @@ import type { KeyDictionary } from '../dictionary'
 import type { GiCollections, GiEndgame, GiExploration, GiTasks, Good } from '../good'
 import { sha256Hex128 } from '../hash'
 import { exportedOff } from '../off'
+import type { RollsText } from '../rolls'
 import { deflateRaw } from './compress'
 import {
   deferrableArtifacts,
@@ -947,11 +948,15 @@ export interface StoredSnapshot {
 const parseOrNull = <T>(text: string | null | undefined): T | null =>
   text ? (JSON.parse(text) as T) : null
 
-/** Rebuilds the GOOD file a stored snapshot came from. Runs in the browser. */
+/**
+ * Rebuilds the GOOD file a stored snapshot came from. Runs in the browser.
+ * `rolls`: each catalog id's rolls, when known (see decodeArtifacts).
+ */
 export function decodeSnapshot(
   stored: StoredSnapshot,
   catalog: ReadonlyMap<number, ArtifactIdentity>,
   materialsDictionary: KeyDictionary,
+  rolls?: ReadonlyMap<number, RollsText>,
 ): Good {
   const materials = decodeMaterials(
     JSON.parse(stored.materials),
@@ -967,6 +972,7 @@ export function decodeSnapshot(
       JSON.parse(stored.artifacts),
       catalog,
       parseOrNull(stored.artifactsBase),
+      rolls,
     ),
     weapons: decodeWeapons(JSON.parse(stored.weapons)),
     materials: Object.fromEntries(materials),

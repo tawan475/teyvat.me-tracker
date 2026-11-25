@@ -12,6 +12,7 @@
 
 import type { ArtifactIdentity, ArtifactState } from '../artifact'
 import { CHARACTERS, WEAPONS, fromRef, toRef, type KeyDictionary, type KeyRef } from '../dictionary'
+import { rollsOrdered, type RollsText } from '../rolls'
 import type {
   ArchiveTab,
   GiAbyssRecord,
@@ -282,15 +283,23 @@ export function artifactRows(
   ].sort(compareTuples)
 }
 
+/**
+ * The GOOD artifacts of a section. `rolls` = what the catalog knows of each
+ * id's rolls (kept apart from the identities, which must stay as packed):
+ * a piece whose rolls are in game order gets `gi_rolls`, after every other
+ * key; one without, or with rolls of unknown order across lines (`~`), none.
+ */
 export function decodeArtifacts(
   section: ArtifactsSection,
   catalog: ReadonlyMap<number, ArtifactIdentity>,
   base: ArtifactsSection | null = null,
+  rolls?: ReadonlyMap<number, RollsText>,
 ): GoodArtifact[] {
   return artifactRows(section, base).map(([id, location, flags]) => {
     const identity = catalog.get(id)
     if (!identity) throw new Error(`Artifact ${id} is missing from the catalog`)
-    return {
+    const text = rolls?.get(id)
+    const artifact: GoodArtifact = {
       setKey: identity.setKey,
       slotKey: identity.slotKey,
       level: identity.level,
@@ -305,6 +314,11 @@ export function decodeArtifacts(
       unactivatedSubstats: identity.unactivatedSubstats,
       ...(flags >= EXP_UNIT ? { gi_exp: Math.floor(flags / EXP_UNIT) } : {}),
     }
+    // `~` rolls (order within each line only) are not written as gi_rolls,
+    // which promises the game's order: a later reader gives them back in
+    // another shape, here.
+    if (text !== undefined && rollsOrdered(text)) artifact.gi_rolls = text
+    return artifact
   })
 }
 

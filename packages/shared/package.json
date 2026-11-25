@@ -11,6 +11,7 @@
     "./oauth": "./src/oauth.ts",
     "./off": "./src/off.ts",
     "./permissions": "./src/permissions.ts",
+    "./rolls": "./src/rolls.ts",
     "./settings": "./src/settings.ts"
   },
   "scripts": {

@@ -26,7 +26,21 @@
  *
  * A chunk (`encodeCatalogChunk`): format byte, then (deflated as one stream
  * when that is smaller) uint count, the catalog ids as zigzag deltas, then
- * each packed identity.
+ * each packed identity. Formats 1 (stored) and 2 (deflated) end there.
+ *
+ * Formats 3 (stored) and 4 (deflated), from 2026-11-26, hold the same body
+ * followed by a rolls block: one record per entry, in entry order, each the
+ * entry's rolls (a RollsText, see ../rolls) or none. The rolls are never part
+ * of the identity bytes, so an entry's key is the same in every format. A
+ * chunk none of whose entries has rolls is written as format 1/2.
+ *   uint  head      0: no rolls, else 1 + layout + 2 * (unordered + 2 * count)
+ *                   where unordered is 1 for a `~` text and count (1 to
+ *                   MAX_ROLLS) the number of rolls
+ *   layout 0 (every line 0-3 and tier 1-4): ceil(count / 2) bytes, a roll
+ *     per nibble, low nibble first: line << 2 | (tier - 1); a spare high
+ *     nibble is 0
+ *   layout 1 (anything else): count bytes, line << 4 | tier (digits 0-9)
+ * Nine rolls of four lines take 6 bytes before deflate.
  *
  * A storage format: append to the key lists, add layouts under new format
  * bytes, never change what existing bytes mean.
@@ -34,6 +48,8 @@
 
 import type { ArtifactIdentity } from '../artifact'
 import type { GoodSubstat } from '../good'
+import { isRollsText, MAX_ROLLS, rollPairs, rollsOrdered, UNORDERED_ROLLS } from '../rolls'
+import type { RollsText } from '../rolls'
 import { ARTIFACT_SETS, STAT_KEYS, SUBSTAT_KEYS, SLOT_KEYS } from '../dictionary/artifacts'
 import { ByteReader, ByteWriter, CorruptDataError } from './bytes'
 import { deflate, inflate } from './deflate'
@@ -236,6 +252,8 @@ export function artifactKey(a: ArtifactIdentity): Uint8Array {
 export interface CatalogEntryBytes {
   id: number
   identity: ArtifactIdentity
+  /** The piece's rolls, kept beside (never inside) the identity. */
+  rolls?: RollsText
 }
 
 /** One decoded chunk entry with its packed bytes as a string key (see artifactKeyString). */
@@ -256,9 +274,70 @@ function bytesKey(bytes: Uint8Array): string {
   return key
 }
 
-/** Format byte of a chunk: 1 = packed entries, stored; 2 = packed entries, deflated. */
+/**
+ * Format byte of a chunk: 1 = packed entries, stored; 2 = packed entries,
+ * deflated; 3 and 4 = the same with a rolls block after the entries.
+ */
 const CHUNK_STORED = 1
 const CHUNK_DEFLATED = 2
+const CHUNK_ROLLS_STORED = 3
+const CHUNK_ROLLS_DEFLATED = 4
+
+const PACKED_ROLLS = 0
+const DIGIT_ROLLS = 1
+
+const rollNibble = ([line, tier]: [number, number]) => (line << 2) | (tier - 1)
+
+/** One record of the rolls block (see the header). */
+function writeRolls(w: ByteWriter, rolls: RollsText | undefined): void {
+  if (rolls === undefined) {
+    w.uint(0)
+    return
+  }
+  if (!isRollsText(rolls)) throw new RangeError(`Invalid rolls ${JSON.stringify(rolls)}`)
+  const pairs = rollPairs(rolls)
+  const packed = pairs.every(([line, tier]) => line <= 3 && tier >= 1 && tier <= 4)
+  const unordered = rollsOrdered(rolls) ? 0 : 1
+  w.uint(1 + (packed ? PACKED_ROLLS : DIGIT_ROLLS) + 2 * (unordered + 2 * pairs.length))
+  if (packed) {
+    for (let i = 0; i < pairs.length; i += 2) {
+      const next = pairs[i + 1]
+      w.byte(rollNibble(pairs[i]!) | (next ? rollNibble(next) << 4 : 0))
+    }
+  } else {
+    for (const [line, tier] of pairs) w.byte((line << 4) | tier)
+  }
+}
+
+/** One record of the rolls block; a count or byte no writer makes is CorruptDataError. */
+function readRolls(r: ByteReader): RollsText | undefined {
+  const head = r.uint()
+  if (head === 0) return undefined
+  const code = head - 1
+  const layout = code % 2
+  const unordered = Math.floor(code / 2) % 2
+  const count = Math.floor(code / 4)
+  if (count < 1 || count > MAX_ROLLS) throw new CorruptDataError(`Invalid roll count ${count}`)
+  let text = unordered ? UNORDERED_ROLLS : ''
+  if (layout === PACKED_ROLLS) {
+    const bytes = r.bytes(Math.ceil(count / 2))
+    for (let i = 0; i < count; i++) {
+      const nibble = (bytes[i >> 1]! >> ((i & 1) * 4)) & 0x0f
+      text += `${nibble >> 2}${(nibble & 3) + 1}`
+    }
+    if (count % 2 === 1 && bytes[bytes.length - 1]! >> 4 !== 0) {
+      throw new CorruptDataError('Invalid rolls padding')
+    }
+  } else {
+    for (const byte of r.bytes(count)) {
+      const line = byte >> 4
+      const tier = byte & 0x0f
+      if (line > 9 || tier > 9) throw new CorruptDataError('Invalid roll')
+      text += `${line}${tier}`
+    }
+  }
+  return text
+}
 
 export function encodeCatalogChunk(entries: readonly CatalogEntryBytes[]): Uint8Array {
   const w = new ByteWriter()
@@ -270,14 +349,17 @@ export function encodeCatalogChunk(entries: readonly CatalogEntryBytes[]): Uint8
     previous = id
   }
   for (const { identity } of entries) packArtifact(w, identity)
+  // Without rolls, exactly the bytes formats 1/2 always had.
+  const withRolls = entries.some((entry) => entry.rolls !== undefined)
+  if (withRolls) for (const { rolls } of entries) writeRolls(w, rolls)
   const body = w.finish()
   const deflated = deflate(body)
   const out = new Uint8Array(1 + Math.min(body.length, deflated.length))
   if (deflated.length < body.length) {
-    out[0] = CHUNK_DEFLATED
+    out[0] = withRolls ? CHUNK_ROLLS_DEFLATED : CHUNK_DEFLATED
     out.set(deflated, 1)
   } else {
-    out[0] = CHUNK_STORED
+    out[0] = withRolls ? CHUNK_ROLLS_STORED : CHUNK_STORED
     out.set(body, 1)
   }
   return out
@@ -287,9 +369,10 @@ export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
   if (data.length === 0) throw new CorruptDataError('Empty catalog chunk')
   const format = data[0]
   let body: Uint8Array
-  if (format === CHUNK_STORED) body = data.subarray(1)
-  else if (format === CHUNK_DEFLATED) body = inflate(data.subarray(1))
-  else throw new CorruptDataError(`Unknown catalog chunk format ${format}`)
+  if (format === CHUNK_STORED || format === CHUNK_ROLLS_STORED) body = data.subarray(1)
+  else if (format === CHUNK_DEFLATED || format === CHUNK_ROLLS_DEFLATED) {
+    body = inflate(data.subarray(1))
+  } else throw new CorruptDataError(`Unknown catalog chunk format ${format}`)
   const r = new ByteReader(body)
   const count = r.uint()
   if (count > r.remaining) throw new CorruptDataError('Count past the data')
@@ -299,11 +382,17 @@ export function decodeCatalogChunk(data: Uint8Array): CatalogEntryWithKey[] {
     previous += r.int()
     ids.push(previous)
   }
-  const entries = ids.map((id) => {
+  const entries = ids.map((id): CatalogEntryWithKey => {
     const start = r.offset
     const identity = unpackArtifact(r)
     return { id, identity, key: bytesKey(body.subarray(start, r.offset)) }
   })
+  if (format === CHUNK_ROLLS_STORED || format === CHUNK_ROLLS_DEFLATED) {
+    for (const entry of entries) {
+      const rolls = readRolls(r)
+      if (rolls !== undefined) entry.rolls = rolls
+    }
+  }
   r.end()
   return entries
 }

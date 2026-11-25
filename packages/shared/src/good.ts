@@ -34,6 +34,12 @@ export interface GoodArtifact {
   unactivatedSubstats?: GoodSubstat[]
   /** EXP toward the next level (Teyvat.me Capture); absent = 0 or unknown. */
   gi_exp?: number
+  /**
+   * Every substat roll, two digits each (line, tier) in the game's order
+   * (`gi_rolls` contract v1, Teyvat.me Capture); see `checkRolls`. Absent
+   * when unknown.
+   */
+  gi_rolls?: string
 }
 
 export interface GoodWeapon {

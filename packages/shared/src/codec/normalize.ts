@@ -48,10 +48,17 @@ import {
 import { GOOD_LIMITS } from '../import'
 import { readCapture, type GiCapture } from '../live/capture'
 import { offBagKeys, readOff } from '../off'
+import { checkRolls, MAX_ROLLS_TEXT, rollsOrdered, type RollsText } from '../rolls'
 
 export interface ArtifactOccurrence {
   identity: ArtifactIdentity
   state: ArtifactState
+  /**
+   * Every roll of the piece (`gi_rolls`), only when it passed `checkRolls`.
+   * Never part of the identity or of any hash: the catalog stores it beside
+   * the identity.
+   */
+  rolls?: RollsText
 }
 
 /** An uploaded GOOD file after every field has been checked and coerced. */
@@ -386,19 +393,20 @@ function itemExp(raw: Json): { gi_exp?: number } {
 }
 
 function toArtifact(raw: Json): ArtifactOccurrence {
-  return {
-    identity: {
-      setKey: str(raw.setKey),
-      slotKey: str(raw.slotKey),
-      level: num(raw.level, 0),
-      rarity: num(raw.rarity, 0),
-      mainStatKey: str(raw.mainStatKey),
-      substats: toSubstats(raw.substats),
-      totalRolls: num(raw.totalRolls, 0),
-      // GOOD spells it "elixir"; older Capture builds and irminsul wrote "elixer".
-      elixirCrafted: Boolean(raw.elixirCrafted ?? raw.elixerCrafted),
-      unactivatedSubstats: toSubstats(raw.unactivatedSubstats),
-    },
+  const identity: ArtifactIdentity = {
+    setKey: str(raw.setKey),
+    slotKey: str(raw.slotKey),
+    level: num(raw.level, 0),
+    rarity: num(raw.rarity, 0),
+    mainStatKey: str(raw.mainStatKey),
+    substats: toSubstats(raw.substats),
+    totalRolls: num(raw.totalRolls, 0),
+    // GOOD spells it "elixir"; older Capture builds and irminsul wrote "elixer".
+    elixirCrafted: Boolean(raw.elixirCrafted ?? raw.elixerCrafted),
+    unactivatedSubstats: toSubstats(raw.unactivatedSubstats),
+  }
+  const occurrence: ArtifactOccurrence = {
+    identity,
     state: {
       location: str(raw.location),
       lock: Boolean(raw.lock),
@@ -406,6 +414,14 @@ function toArtifact(raw: Json): ArtifactOccurrence {
       ...(isIntIn(raw.gi_exp, 1, MAX_ITEM_EXP) ? { exp: raw.gi_exp } : {}),
     },
   }
+  // Rolls that do not fit the piece are dropped silently (contract v1).
+  // gi_rolls is digits only: the `~` form is never read from a file.
+  const text = raw.gi_rolls
+  if (typeof text === 'string' && text.length <= MAX_ROLLS_TEXT) {
+    const rolls = checkRolls(identity, text)
+    if (rolls !== undefined && rollsOrdered(rolls)) occurrence.rolls = rolls
+  }
+  return occurrence
 }
 
 const GUID = /^\d{1,20}$/

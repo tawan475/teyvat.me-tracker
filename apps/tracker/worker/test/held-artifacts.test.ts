@@ -121,11 +121,29 @@ describe('an upload whose artifact list is stored already', () => {
         unactivatedSubstats: [{ key: 'hp', value: 299 }],
         gi_guid: '7',
         somethingNew: 1,
+        // Rolls that do not fit the piece are dropped.
+        gi_rolls: '04',
       },
       { gi_guid: '8' },
+      {
+        setKey: 'GoldenTroupe',
+        slotKey: 'plume',
+        level: 4,
+        rarity: 5,
+        mainStatKey: 'atk',
+        totalRolls: 5,
+        substats: [
+          { key: 'critRate_', value: 6.6, initialValue: 2.7 },
+          { key: 'hp', value: 239, initialValue: 239 },
+          { key: 'def', value: 21, initialValue: 21 },
+          { key: 'eleMas', value: 23, initialValue: 23 },
+        ],
+        gi_rolls: '0112233404',
+        gi_guid: '9',
+      },
     ]
     const { artifacts, guids } = normalizeArtifactList(raw)
-    expect(guids).toEqual(['7', '8'])
+    expect(guids).toEqual(['7', '8', '9'])
     expect(JSON.stringify(artifacts)).toBe(
       '[{"identity":{"setKey":"GoldenTroupe","slotKey":"flower","level":20,"rarity":5,' +
         '"mainStatKey":"hp","substats":[{"key":"critRate_","value":3.9,"initialValue":3.9}],' +
@@ -133,10 +151,16 @@ describe('an upload whose artifact list is stored already', () => {
         '"state":{"location":"Furina","lock":true,"astralMark":true,"exp":120}},' +
         '{"identity":{"setKey":"","slotKey":"","level":0,"rarity":0,"mainStatKey":"",' +
         '"substats":[],"totalRolls":0,"elixirCrafted":false,"unactivatedSubstats":[]},' +
-        '"state":{"location":"","lock":false,"astralMark":false}}]',
+        '"state":{"location":"","lock":false,"astralMark":false}},' +
+        '{"identity":{"setKey":"GoldenTroupe","slotKey":"plume","level":4,"rarity":5,' +
+        '"mainStatKey":"atk","substats":[{"key":"critRate_","value":6.6,"initialValue":2.7},' +
+        '{"key":"hp","value":239,"initialValue":239},{"key":"def","value":21,"initialValue":21},' +
+        '{"key":"eleMas","value":23,"initialValue":23}],"totalRolls":5,"elixirCrafted":false,' +
+        '"unactivatedSubstats":[]},"state":{"location":"","lock":false,"astralMark":false},' +
+        '"rolls":"0112233404"}]',
     )
     const section = encodeArtifacts(artifacts.map((a, i) => ({ id: i + 1, state: a.state })))
-    expect(JSON.stringify(section)).toBe('{"i":[1,1],"l":[36,0],"f":[483,0]}')
+    expect(JSON.stringify(section)).toBe('{"i":[1,1,1],"l":[36,0,0],"f":[483,0,0]}')
   })
 
   it('reads a list in full when it cannot be told apart by guid, or would be refused', async () => {

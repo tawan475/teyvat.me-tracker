@@ -1,5 +1,6 @@
 import { calculateCV, calculateRV, type ArtifactIdentity } from './artifact'
 import type { GoodSubstat } from './good'
+import { isRollsText, type RollsText } from './rolls'
 
 /**
  * A substat as stored in the artifact catalog and sent on the wire:
@@ -24,7 +25,8 @@ export function expandSubstats(compact: readonly CompactSubstat[]): GoodSubstat[
  * One artifact catalog row on the wire, positional because an account's
  * catalog is thousands of rows:
  * [id, setKey, slotKey, level, rarity, mainStatKey, substats, totalRolls,
- *  elixirCrafted (0/1), unactivatedSubstats]
+ *  elixirCrafted (0/1), unactivatedSubstats, rolls?]
+ * `rolls` (a RollsText) only when the piece's rolls are known.
  */
 export type CatalogRow = [
   number,
@@ -37,6 +39,7 @@ export type CatalogRow = [
   number,
   0 | 1,
   CompactSubstat[],
+  RollsText?,
 ]
 
 /** A catalog artifact with its derived crit and roll values. */
@@ -44,6 +47,8 @@ export interface CatalogEntry extends ArtifactIdentity {
   id: number
   cv: number
   rv: number
+  /** The piece's rolls, when known. Not part of its identity. */
+  rolls?: RollsText
 }
 
 export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, CatalogEntry> {
@@ -64,7 +69,17 @@ export function catalogFromRows(rows: readonly CatalogRow[]): Map<number, Catalo
       // Derived on read, never stored, so a formula change applies everywhere.
       cv: calculateCV(substats),
       rv: calculateRV(substats),
+      ...(isRollsText(r[10]) ? { rolls: r[10] } : {}),
     })
   }
   return catalog
+}
+
+/** The rolls a catalog knows, by id: what decodeSnapshot / decodeArtifacts take. */
+export function catalogRolls(
+  catalog: ReadonlyMap<number, { rolls?: RollsText }>,
+): Map<number, RollsText> {
+  const rolls = new Map<number, RollsText>()
+  for (const [id, entry] of catalog) if (entry.rolls !== undefined) rolls.set(id, entry.rolls)
+  return rolls
 }

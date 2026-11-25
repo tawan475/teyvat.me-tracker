@@ -15,7 +15,7 @@ import { sha256Hex128 } from '../hash'
  * default changed), so every stored fingerprint stops matching and each
  * account's next upload is read in full once.
  */
-const ARTIFACTS_READING = 1
+const ARTIFACTS_READING = 2
 
 /**
  * The fingerprint of an artifact list whose every entry has a `gi_guid`

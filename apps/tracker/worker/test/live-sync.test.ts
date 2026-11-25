@@ -306,6 +306,102 @@ describe('live sync on', () => {
     expect(big.batch).toBeUndefined()
   })
 
+  it('an end batch closes the journal; the next batch or a snapshot opens it again', async () => {
+    const { client, account, importKey } = await setup()
+    // Opened long ago (capture time 1 s past the epoch): only the path count decides collapse.
+    const answer = await snapshot(importKey, liveGood(), 1_000)
+    const base = answer.live!.base
+    const read = () => client.json<LiveJournalResponse>(`/api/accounts/${account.id}/live`)
+    const etag = async () =>
+      (await client.fetch(`/api/accounts/${account.id}/live`)).headers.get('etag')
+    const many = Array.from({ length: COLLAPSE_CHANGES + 10 }, (_, i) => [
+      'set',
+      ['materials', `Thing${i}`],
+      i,
+    ]) as GoodDelta['changes']
+    expect(await sendOk(importKey, delta(base, 1, many))).toMatchObject({ collapse: true })
+    expect((await read()).endedAt).toBeUndefined()
+    const before = await etag()
+
+    // The last batch, with no change left to send: stored, never a collapse.
+    const sum = {
+      characters: 2,
+      weapons: 3,
+      artifacts: 4,
+      materials: 600,
+      mora: 777_777,
+      primogem: 1_600,
+      artifact3: 1,
+      artifact4: 2,
+    }
+    const end = delta(base, 2, [], { end: true, sum })
+    const sentAt = Date.now()
+    expect(await sendOk(importKey, end)).toEqual({
+      ok: true,
+      seq: 2,
+      collapse: false,
+      watching: false,
+    })
+    const ended = await read()
+    expect(ended).toMatchObject({ open: true, seq: 2, figures: sum })
+    expect(ended.endedAt).toBeGreaterThanOrEqual(sentAt)
+    expect(ended.endedAt).toBe(ended.updatedAt)
+    expect(await etag()).not.toBe(before)
+    const { points } = await client.json<LivePointsResponse>(`/api/accounts/${account.id}/points`)
+    expect(points.at(-1)).toEqual({ at: ended.endedAt, figures: sum })
+    // Its retry is a duplicate, as any.
+    expect(await sendOk(importKey, end)).toEqual({ ok: true, duplicate: true, seq: 2 })
+    expect((await read()).endedAt).toBe(ended.endedAt)
+
+    // A later batch on the same journal (a hand-over) opens it again.
+    await sendOk(importKey, delta(base, 3, [['set', ['materials', 'Mora'], 5]]))
+    expect((await read()).endedAt).toBeUndefined()
+    expect(await journalRow(account.id)).toMatchObject({ ended_at: 0 })
+
+    // Ended again, then a snapshot: the next journal starts open.
+    await sendOk(importKey, delta(base, 4, [], { end: true }))
+    expect((await read()).endedAt).toBeGreaterThan(0)
+    const next = await snapshot(
+      importKey,
+      liveGood({ materials: { Mora: 9, Primogem: 16_000, Crystalfly: 3 } }),
+      2_000,
+    )
+    expect(next.live!.base).not.toBe(base)
+    expect(await journalRow(account.id)).toMatchObject({ last_seq: 0, ended_at: 0 })
+    expect((await read()).endedAt).toBeUndefined()
+  })
+
+  it("an end batch's push applied to the journal before it gives what a read answers", async () => {
+    const { account, userId, importKey } = await setup()
+    const base = (await snapshot(importKey, liveGood(), 1_000)).live!.base
+    const owner = { id: account.id, userId }
+    const now = Date.now()
+    let journal = (await readJournal(env.LIVE_DB, account.id)).response
+    const steps: [GoodDelta['changes'], boolean][] = [
+      [[['set', ['materials', 'Mora'], 10]], false],
+      [[], true],
+      [[['set', ['artifacts', guid(100), 'lock'], false]], false],
+      [[['set', ['materials', 'Mora'], 20]], true],
+    ]
+    for (const [i, [changes, end]] of steps.entries()) {
+      const at = now + i * 1_000
+      const stored = await storeBatch(
+        env.LIVE_DB,
+        owner,
+        delta(base, i + 1, changes, end ? { end: true } : {}),
+        at,
+      )
+      expect(stored.batch!.endedAt).toBe(end ? at : undefined)
+      const read = (await readJournal(env.LIVE_DB, account.id)).response
+      expect(read.endedAt).toBe(end ? at : undefined)
+      const applied = applyLiveBatch(journal, stored.seq, stored.batch!)!
+      expect(applied).toEqual(read)
+      // Cleared, not left undefined: the key itself goes.
+      expect('endedAt' in applied).toBe(end)
+      journal = read
+    }
+  })
+
   it('an unchanged snapshot (same inventory, later) also restarts the journal', async () => {
     const { account, importKey } = await setup()
     const first = await snapshot(importKey, liveGood(), 1_000)

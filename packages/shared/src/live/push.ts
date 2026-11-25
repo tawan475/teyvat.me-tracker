@@ -33,14 +33,17 @@ export function applyLiveBatch(
       items.push(item)
     }
   }
+  // `endedAt` is the batch's own: an end batch sets it, any later one clears it.
+  const { endedAt: _ended, ...rest } = journal
   return {
-    ...journal,
+    ...rest,
     seq,
     updatedAt: batch.updatedAt,
     figures: batch.figures,
     bytes: batch.bytes,
     changes: mergeChanges(journal.changes ?? [], batch.changes),
     items,
+    ...(batch.endedAt !== undefined ? { endedAt: batch.endedAt } : {}),
   }
 }
 

@@ -86,6 +86,18 @@ describe('GOOD-X delta contract', () => {
     expect(bad({ sum: { mora: -1 } })).toBe(false)
   })
 
+  it('takes the end mark as `true` only, and still strips unknown keys', () => {
+    const parse = (patch: object) => goodDeltaSchema.safeParse({ ...fixture.delta, ...patch })
+    const ended = parse({ end: true, later: 'from a newer Capture' })
+    expect(ended.success).toBe(true)
+    expect(ended.data?.end).toBe(true)
+    expect(ended.data).not.toHaveProperty('later')
+    expect(parse({}).data).not.toHaveProperty('end')
+    expect(parse({ end: false }).success).toBe(false)
+    expect(parse({ end: 1 }).success).toBe(false)
+    expect(parse({ end: 'true' }).success).toBe(false)
+  })
+
   it('skips unknown paths and changes to items it does not hold', () => {
     const applied = applyDelta(base, [
       ['set', ['furniture', '1'], 3],

@@ -1,0 +1,1 @@
+ALTER TABLE `live_journals` ADD `ended_at` integer DEFAULT 0 NOT NULL;

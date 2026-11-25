@@ -12,7 +12,7 @@
 
 import type { ArtifactIdentity, ArtifactState } from '../artifact'
 import { CHARACTERS, WEAPONS, fromRef, toRef, type KeyDictionary, type KeyRef } from '../dictionary'
-import { checkRolls, rollsOrdered, type RollsText } from '../rolls'
+import { checkRolls, rollsOrdered, withRollLists, type RollsText } from '../rolls'
 import type {
   ArchiveTab,
   GiAbyssRecord,
@@ -287,7 +287,8 @@ export function artifactRows(
  * The GOOD artifacts of a section. `rolls` = what the catalog knows of each
  * id's rolls (kept apart from the identities, which must stay as packed):
  * a piece whose rolls are in game order gets `gi_rolls`, after every other
- * key; one without, or with rolls of unknown order across lines (`~`), none.
+ * key; one with rolls of unknown order across lines (`~`) gets a `rolls`
+ * list on each substat instead; one without, neither.
  */
 export function decodeArtifacts(
   section: ArtifactsSection,
@@ -315,12 +316,14 @@ export function decodeArtifacts(
       ...(flags >= EXP_UNIT ? { gi_exp: Math.floor(flags / EXP_UNIT) } : {}),
     }
     // `~` rolls (order within each line only) are not written as gi_rolls,
-    // which promises the game's order: a later reader gives them back in
-    // another shape, here. A stored text is checked against the piece again
-    // (a damaged chunk, a later change to the tier table): one that no
+    // which promises the game's order: they go back the way GGScanner sent
+    // them, a `rolls` list on each substat (copies: the identity's own
+    // substats stay as packed). A stored text is checked against the piece
+    // again (a damaged chunk, a later change to the tier table): one that no
     // longer fits is left out, never exported as fact.
-    if (text !== undefined && rollsOrdered(text) && checkRolls(identity, text) === text) {
-      artifact.gi_rolls = text
+    if (text !== undefined && checkRolls(identity, text) === text) {
+      if (rollsOrdered(text)) artifact.gi_rolls = text
+      else artifact.substats = withRollLists(identity.substats, identity.rarity, text)
     }
     return artifact
   })

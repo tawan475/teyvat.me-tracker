@@ -63,7 +63,8 @@ order across substats is known, then the rolls packed a nibble each (substat
 line and tier). The exact layout is in the header of `catalog-binary.ts`.
 The rolls are never part of the packed identity. A snapshot's artifacts
 carry them as `gi_rolls` (two digits per roll, line then tier, in the game's
-order) when their order is known; `inflated/catalog.json` lists them as
+order) when their order is known, else as a `rolls` list of roll values on
+each substat (in order within that substat); `inflated/catalog.json` lists them as
 `rolls` (a text that starts with `~` holds each line's rolls without the
 order across lines).
 

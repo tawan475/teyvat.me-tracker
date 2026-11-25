@@ -803,7 +803,7 @@ describe('what the catalog can store, both ways', () => {
 })
 
 describe('ARTIFACTS_READING', () => {
-  // A stored fingerprint stands for "this list, read by this code". The 2 in
+  // A stored fingerprint stands for "this list, read by this code". The 3 in
   // the expected text is ARTIFACTS_READING (codec/parts.ts): change it here
   // only together with the constant, so lowering it, or forgetting to raise
   // it, fails this test. (The character dictionary's size is part of the
@@ -815,7 +815,7 @@ describe('ARTIFACTS_READING', () => {
     ]
     const sorted = [list[1], list[0]]
     const expected = await sha256Hex128(
-      `artifacts:2:${CHARACTERS.keys.length}:${JSON.stringify(sorted)}`,
+      `artifacts:3:${CHARACTERS.keys.length}:${JSON.stringify(sorted)}`,
     )
     expect(await artifactsFingerprint(list)).toBe(expected)
     expect(expected).toMatch(/^[0-9a-f]{32}$/)

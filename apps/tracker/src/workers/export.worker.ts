@@ -8,8 +8,6 @@
  */
 
 import {
-  catalogFromRows,
-  catalogRolls,
   openBundle,
   sectionHashesOf,
   type CatalogRow,
@@ -20,7 +18,7 @@ import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { request } from '@/api/http'
 import { BUNDLE_FORMAT } from '@/api/format'
 import type { ExportCommand, ExportEvent, ExportStart } from '@/data/export-protocol'
-import { decodeFromSections, writeGoodZip } from '@/data/export-zip'
+import { writeGoodZip, zipDecoder } from '@/data/export-zip'
 import { liveFiles } from '@/data/live-export'
 import { rawExportFiles, writeRawZip, type RawCatalog } from '@/data/raw-export'
 
@@ -151,12 +149,8 @@ async function run({ root, ids, level, live: withLive }: ExportStart) {
   // Every section the selection decodes: bases and irminsul's extras included.
   const texts = await bundle.sections.many(new Set(snapshots.flatMap(sectionHashesOf)))
   const rows = JSON.parse(new TextDecoder().decode(catalogBytes)) as CatalogRow[]
-  const catalog = catalogFromRows(rows)
-  // Every file's artifacts carry gi_rolls where the server's export gives them.
-  const rolls = catalogRolls(catalog)
-
-  const decode = (snapshot: (typeof snapshots)[number]) =>
-    decodeFromSections(snapshot, texts, catalog, MATERIALS, rolls)
+  // Every file's artifacts carry their rolls where the server's export gives them.
+  const decode = zipDecoder(texts, rows, MATERIALS)
   let extra: ReturnType<typeof liveFiles> = []
   if (liveData) {
     const { live, points } = await liveData

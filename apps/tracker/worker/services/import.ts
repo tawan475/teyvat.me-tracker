@@ -37,6 +37,7 @@ import {
   encodeCatalogChunk,
   fillCatalogChunk,
   needsFill,
+  rollsAgree,
   readCatalogChunk,
   encodeSnapshotMeta,
   encodeStaticSections,
@@ -277,7 +278,7 @@ async function importOnce(
       if (artifact.rolls === undefined) return
       const kept = incomingRolls.get(hash)
       if (kept === undefined) incomingRolls.set(hash, artifact.rolls)
-      else if (kept !== artifact.rolls) rollConflicts++
+      else if (!rollsAgree(kept, artifact.rolls)) rollConflicts++
     })
     return [...identities.keys()]
   }
@@ -1002,7 +1003,9 @@ function planFills(
       const incoming = rollsByKey.get(entry.key)
       if (incoming === undefined) continue
       if (needsFill(entry.rolls, incoming)) pieces++
-      else if (entry.rolls !== incoming) conflicts++
+      // A conflict is other tiers: `~` rolls that agree with stored ordered
+      // ones (or the reverse) are the same rolls, known less well.
+      else if (entry.rolls !== undefined && !rollsAgree(entry.rolls, incoming)) conflicts++
     }
     if (pieces === 0) continue
     pending = true

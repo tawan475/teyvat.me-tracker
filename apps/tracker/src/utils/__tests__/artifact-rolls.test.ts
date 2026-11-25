@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Good, GoodArtifact, LiveJournalResponse } from '@gdt/shared'
+import { rollsByLine, rollValue } from '@gdt/shared/rolls'
 import { withJournal } from '@/data/live-now'
 import { inferArtifactRolls, type RollSource } from '@/utils/artifact-rolls'
 import cases from '../../../../../packages/shared/test/fixtures/gi-rolls-cases.json'
@@ -343,5 +344,66 @@ describe('live journal items', () => {
     )
     const [artifact] = now.good.artifacts
     expect(inferArtifactRolls(artifact!)).toEqual(inferArtifactRolls(without(artifact!)))
+  })
+})
+
+describe('inferArtifactRolls with per-substat rolls lists (GGScanner, our exports)', () => {
+  /** A case as its exported shape: no gi_rolls, each substat's tier values in its own order. */
+  const listed = (c: Case, edit = (_line: number, list: unknown[]): unknown => list) => {
+    const { gi_rolls: text, ...artifact } = c.artifact
+    return {
+      ...artifact,
+      substats: c.artifact.substats.map((s, line) => ({
+        ...s,
+        rolls: edit(
+          line,
+          rollsByLine(text, c.artifact.substats.length)[line]!.map(
+            (tier) => rollValue(s.key, c.artifact.rarity, tier)!,
+          ),
+        ),
+      })),
+    }
+  }
+  const bare = (artifact: ReturnType<typeof listed>) => ({
+    ...artifact,
+    substats: artifact.substats.map(({ rolls: _, ...s }) => s),
+  })
+
+  it('gives the same exact tiers per line as gi_rolls does', () => {
+    for (const c of valid) {
+      expect(inferArtifactRolls(listed(c)), c.name).toEqual(inferArtifactRolls(c.artifact))
+    }
+    const c = valid.find((v) => v.name === '5-star +20, every upgrade into one line')!
+    expect(inferArtifactRolls(listed(c))).not.toEqual(inferArtifactRolls(bare(listed(c))))
+  })
+
+  it('gives the guess for lists that do not fit, never throwing', () => {
+    const c = valid[0]!
+    const junk: ((line: number, list: unknown[]) => unknown)[] = [
+      (l, x) => (l === 2 ? undefined : x),
+      (l, x) => (l === 2 ? [] : x),
+      (l, x) => (l === 2 ? [...x, 4.53] : x),
+      (l, x) => (l === 0 ? [x[1], x[0], x[2]] : x),
+      (l, x) => (l === 1 ? ['6.22', ...x.slice(1)] : x),
+      (l, x) => (l === 1 ? [Number.NaN, ...x.slice(1)] : x),
+      (l, x) => (l === 1 ? x.map((v) => (v as number) / 100) : x),
+      (l, x) => (l === 2 ? new Array(10_000).fill(4.53) : x),
+      (l, x) => (l === 2 ? 'garbage' : x),
+      (l, x) => (l === 2 ? { a: 1 } : x),
+    ]
+    for (const edit of junk) {
+      const artifact = listed(c, edit)
+      expect(() => inferArtifactRolls(artifact as never)).not.toThrow()
+      expect(inferArtifactRolls(artifact as never)).toEqual(inferArtifactRolls(bare(artifact)))
+    }
+  })
+
+  it('reads a valid gi_rolls first, and the lists when gi_rolls does not fit', () => {
+    const c = valid.find((v) => v.name === '5-star +20, every upgrade into one line')!
+    const other = valid.find((v) => v !== c && v.artifact.rarity === 5)!
+    const both = { ...listed(c), gi_rolls: c.artifact.gi_rolls }
+    expect(inferArtifactRolls(both)).toEqual(inferArtifactRolls(c.artifact))
+    const stale = { ...listed(c), gi_rolls: other.artifact.gi_rolls }
+    expect(inferArtifactRolls(stale)).toEqual(inferArtifactRolls(c.artifact))
   })
 })

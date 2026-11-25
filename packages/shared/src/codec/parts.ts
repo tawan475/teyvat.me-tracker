@@ -14,10 +14,11 @@ import { sha256Hex128 } from '../hash'
  * it whenever either reads an artifact differently (a new field kept, a
  * default changed), so every stored fingerprint stops matching and each
  * account's next upload is read in full once. That includes the rolls
- * (`gi_rolls`, kept since 2): raise it too when `checkRolls`, its
+ * (`gi_rolls`, kept since 2; GGScanner's per-substat `rolls` lists, read
+ * since 3): raise it too when `checkRolls`, `readRollLists`, their
  * tolerances or the tier table (`ROLL_TIERS`, ../rolls) change.
  */
-const ARTIFACTS_READING = 2
+const ARTIFACTS_READING = 3
 
 /**
  * The fingerprint of an artifact list whose every entry has a `gi_guid`

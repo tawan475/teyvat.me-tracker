@@ -48,13 +48,14 @@ import {
 import { GOOD_LIMITS } from '../import'
 import { readCapture, type GiCapture } from '../live/capture'
 import { offBagKeys, readOff } from '../off'
-import { checkRolls, MAX_ROLLS_TEXT, rollsOrdered, type RollsText } from '../rolls'
+import { checkRolls, MAX_ROLLS_TEXT, readRollLists, rollsOrdered, type RollsText } from '../rolls'
 
 export interface ArtifactOccurrence {
   identity: ArtifactIdentity
   state: ArtifactState
   /**
-   * Every roll of the piece (`gi_rolls`), only when it passed `checkRolls`.
+   * Every roll of the piece (`gi_rolls`, else GGScanner's per-substat
+   * `rolls` lists as a `~` text), only when it passed `checkRolls`.
    * Never part of the identity or of any hash: the catalog stores it beside
    * the identity.
    */
@@ -420,6 +421,13 @@ function toArtifact(raw: Json): ArtifactOccurrence {
   if (typeof text === 'string' && text.length <= MAX_ROLLS_TEXT) {
     const rolls = checkRolls(identity, text)
     if (rolls !== undefined && rollsOrdered(rolls)) occurrence.rolls = rolls
+  }
+  // Else GGScanner's per-substat `rolls` lists (order within a line only):
+  // read beside the identity, never kept on its substats.
+  if (occurrence.rolls === undefined) {
+    const lists = readRollLists(identity.rarity, raw.substats)
+    const rolls = lists === undefined ? undefined : checkRolls(identity, lists)
+    if (rolls !== undefined) occurrence.rolls = rolls
   }
   return occurrence
 }

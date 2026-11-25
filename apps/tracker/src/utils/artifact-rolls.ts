@@ -12,7 +12,13 @@
  * ROLL_TIERS in @gdt/shared/rolls.
  */
 
-import { checkRolls, rollsByLine, rollsOrdered, ROLL_TIERS as TIERS } from '@gdt/shared/rolls'
+import {
+  checkRolls,
+  readRollLists,
+  rollsByLine,
+  rollsOrdered,
+  ROLL_TIERS as TIERS,
+} from '@gdt/shared/rolls'
 
 type Tiers = readonly number[]
 
@@ -197,7 +203,12 @@ function possibleTotals(
 export interface RollSource {
   rarity: number
   level: number
-  substats: readonly { key: string; value: number; initialValue?: number }[]
+  /**
+   * `rolls`: this line's roll values in display units, in order within the
+   * line (GGScanner, and our exports of rolls known that way). Used only
+   * when every line has one and they pass the same checks as `gi_rolls`.
+   */
+  substats: readonly { key: string; value: number; initialValue?: number; rolls?: unknown }[]
   totalRolls?: number
   /**
    * Every roll as the game lists them (`gi_rolls`, Teyvat.me Capture). Used
@@ -208,16 +219,27 @@ export interface RollSource {
 }
 
 /**
- * The artifact's own rolls (`gi_rolls`), in the shape the inference returns:
- * per substat, highest tier first. Null when it has none, or none that pass
- * the reader's checks (a malformed or stale list is ignored, never trusted).
+ * The rolls an artifact carries and that pass the reader's checks: its
+ * `gi_rolls`, else its per-substat `rolls` lists (as a `~` text).
+ */
+function checkedRolls(artifact: RollSource): string | undefined {
+  // gi_rolls is digits only: the `~` form is never read from a file.
+  const text = artifact.gi_rolls
+  const ordered = text === undefined ? undefined : checkRolls(artifact, text)
+  if (ordered !== undefined && rollsOrdered(ordered)) return ordered
+  const lists = readRollLists(artifact.rarity, artifact.substats)
+  return lists === undefined ? undefined : checkRolls(artifact, lists)
+}
+
+/**
+ * The artifact's own rolls (`gi_rolls`, or per-substat `rolls` lists), in
+ * the shape the inference returns: per substat, highest tier first. Null
+ * when it has none, or none that pass the reader's checks (a malformed or
+ * stale list is ignored, never trusted).
  */
 function exactRolls(artifact: RollSource): InferredRoll[][] | null {
-  const text = artifact.gi_rolls
-  if (text === undefined) return null
-  // gi_rolls is digits only: the `~` form is never read from a file.
-  const checked = checkRolls(artifact, text)
-  if (checked === undefined || !rollsOrdered(checked)) return null
+  const checked = checkedRolls(artifact)
+  if (checked === undefined) return null
   const { rarity, substats } = artifact
   return rollsByLine(checked, substats.length).map((tiers, line) => {
     const key = substats[line]!.key
@@ -233,7 +255,7 @@ function exactRolls(artifact: RollSource): InferredRoll[][] | null {
 /**
  * Rolls for every substat of an artifact (same order as `substats`; an empty
  * list where the value cannot be decomposed). Exact when the artifact carries
- * rolls that fit it (`gi_rolls`); otherwise inferred: where a substat alone
+ * rolls that fit it (`gi_rolls` or per-substat `rolls`); otherwise inferred: where a substat alone
  * is ambiguous (3 high rolls or 4 low ones), the artifact's total roll count
  * decides.
  */

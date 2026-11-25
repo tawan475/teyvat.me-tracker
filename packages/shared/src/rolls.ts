@@ -96,7 +96,7 @@ export function rollValue(key: string, rarity: number, tier: number): number | u
  *   `substats`) then tier (1-based), in the game's order across lines;
  * - or `~` and the same pairs grouped by line, lines ascending, each line's
  *   rolls in their own order, when only the order within a line is known
- *   (GGScanner's per-substat `rolls`; not produced yet).
+ *   (GGScanner's per-substat `rolls`: `readRollLists`).
  * Only ever holds a text `checkRolls` accepted.
  */
 export type RollsText = string
@@ -245,6 +245,93 @@ export function checkRolls(artifact: unknown, text: unknown): RollsText | undefi
     if (!(Math.abs(sums[line]! - value) <= limit)) return undefined
   }
   return text
+}
+
+/**
+ * How far a listed roll may sit from its tier (display units): GGScanner's
+ * packet captures list the game's own values, which the tier table holds
+ * rounded to 0.01.
+ */
+function listTolerance(key: string): number {
+  return key.endsWith('_') ? 0.011 : 0.051
+}
+
+/**
+ * GGScanner's per-substat roll lists (`substats[n].rolls`: that line's roll
+ * values in display units, 3.89 not 0.0389, in the order they happened
+ * within the line) as a `~` RollsText, or undefined. Every substat must
+ * carry a list of 1 to MAX_ROLLS finite numbers (MAX_ROLLS in all) and every
+ * value must sit within 0.011 (percentages) / 0.051 (flat stats) of a tier of
+ * that stat at `rarity`; anything else gives undefined. Not checked against
+ * the piece's values: pass the result to `checkRolls`. Never throws.
+ */
+export function readRollLists(rarity: unknown, substats: unknown): RollsText | undefined {
+  if (typeof rarity !== 'number' || !Array.isArray(substats)) return undefined
+  if (substats.length === 0 || substats.length > MAX_ROLL_LINES) return undefined
+  let text = UNORDERED_ROLLS
+  let count = 0
+  for (let line = 0; line < substats.length; line++) {
+    const substat = substats[line] as unknown
+    if (typeof substat !== 'object' || substat === null) return undefined
+    const { key, rolls } = substat as { key?: unknown; rolls?: unknown }
+    if (typeof key !== 'string' || !Array.isArray(rolls)) return undefined
+    if (rolls.length === 0 || rolls.length > MAX_ROLLS - count) return undefined
+    const tiers = rollTiers(key, rarity)
+    const limit = listTolerance(key)
+    for (const value of rolls as unknown[]) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
+      let tier = 0
+      let best = Infinity
+      tiers.forEach((tierValue, index) => {
+        const off = Math.abs(tierValue - value)
+        if (off < best) {
+          best = off
+          tier = index + 1
+        }
+      })
+      if (!(best <= limit)) return undefined
+      text += `${line}${tier}`
+      count++
+    }
+  }
+  return text
+}
+
+/**
+ * The substats of a piece whose rolls are a `~` text, each with its `rolls`
+ * list as GGScanner writes it (the tier values from ROLL_TIERS, display
+ * units, in the text's order): the way such rolls are given back, so that
+ * `readRollLists` reads the same text again. New objects: the ones given
+ * are left as they are. Pass only a text `checkRolls` accepted for them.
+ */
+export function withRollLists<S extends { key: string }>(
+  substats: readonly S[],
+  rarity: number,
+  text: RollsText,
+): (S & { rolls: number[] })[] {
+  const byLine = rollsByLine(text, substats.length)
+  return substats.map((substat, line) => ({
+    ...substat,
+    rolls: byLine[line]!.map((tier) => rollValue(substat.key, rarity, tier) ?? 0),
+  }))
+}
+
+/**
+ * Whether two checked texts tell the same rolls: equal, or one of them `~`
+ * and every line holding the same tiers in the same order in both (the `~`
+ * one only knows less of the order). Two different ordered texts disagree:
+ * each states the order across lines.
+ */
+export function rollsAgree(a: RollsText, b: RollsText): boolean {
+  if (a === b) return true
+  if (!isRollsText(a) || !isRollsText(b)) return false
+  if (rollsOrdered(a) && rollsOrdered(b)) return false
+  // Ten lines: every digit a line can be, so no pair is left out.
+  const x = rollsByLine(a, 10)
+  const y = rollsByLine(b, 10)
+  return x.every(
+    (tiers, line) => tiers.length === y[line]!.length && tiers.every((t, i) => t === y[line]![i]),
+  )
 }
 
 /**

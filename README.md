@@ -226,7 +226,17 @@ on the way out. Two pieces identical in every stored value (set, slot,
 level, main stat, every substat and starting value) are one catalog entry,
 so they share one roll list: the first valid one stored, never replaced by
 another (the import logs how many such conflicts it saw as
-`rolls_conflict`, a count).
+`rolls_conflict`, a count; rolls that agree tier for tier, one copy knowing
+the order across lines and the other not, are not a conflict).
+GGScanner's per-substat `rolls` lists (each line's roll values in display
+units, in order within the line; only its packet captures write them) are
+read too, when an artifact has no valid `gi_rolls` and every substat has a
+list whose values each sit within 0.011 (percentages) / 0.051 (flat stats)
+of a tier (`readRollLists`), and `checkRolls` accepts the result: they are
+stored as a `~` text (no order across lines), which ordered rolls of the
+same tiers may later replace, never the reverse. The GOOD export gives such
+rolls back as a `rolls` list on each substat (tier values), not as
+`gi_rolls`.
 - **The switch.** Writing rolls is off until the `site_settings` row
   `rolls.store` is `1` (read in the import's first batch; nothing else
   turns it on, no UI). It is also the kill switch. Off stops new rolls from

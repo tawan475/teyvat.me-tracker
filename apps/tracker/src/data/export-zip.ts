@@ -11,11 +11,14 @@
 import { Zip, ZipDeflate } from 'fflate'
 import {
   asLeyline,
+  catalogFromRows,
+  catalogRolls,
   decodeSnapshot,
   leylineFileStem,
   storedSnapshotOf,
   type ArtifactIdentity,
   type BundleSnapshot,
+  type CatalogRow,
   type Good,
   type KeyDictionary,
   type RollsText,
@@ -71,6 +74,21 @@ export function decodeFromSections(
     return value
   }
   return asLeyline(decodeSnapshot(storedSnapshotOf(snapshot, text), catalog, materials, rolls))
+}
+
+/**
+ * The zip export's decode of each snapshot, from the catalog route's rows:
+ * every file's artifacts carry their rolls (`gi_rolls`, or a `rolls` list
+ * per substat) exactly where the server's GOOD export gives them.
+ */
+export function zipDecoder(
+  texts: ReadonlyMap<string, string>,
+  rows: readonly CatalogRow[],
+  materials: KeyDictionary,
+): (snapshot: BundleSnapshot) => Good & { leyline: number } {
+  const catalog = catalogFromRows(rows)
+  const rolls = catalogRolls(catalog)
+  return (snapshot) => decodeFromSections(snapshot, texts, catalog, materials, rolls)
 }
 
 export interface ZipProgress {

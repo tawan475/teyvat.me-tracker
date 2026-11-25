@@ -21,7 +21,7 @@ import {
   type GoodWeapon,
   type KeyRef,
 } from '@gdt/shared'
-import { checkRolls, rollsOrdered } from '@gdt/shared/rolls'
+import { checkRolls, rollsOrdered, withRollLists } from '@gdt/shared/rolls'
 import { yieldToMain } from '@/lib/yield'
 import {
   accountCacheKey,
@@ -76,10 +76,12 @@ const ASTRAL_MARK = 2
 /**
  * A catalog piece as the GOOD artifact a capture had on `location`, its lock
  * and astral mark from the capture's `flags`. It carries `gi_rolls` when the
- * catalog knows its rolls in game order and they still fit it, as the
+ * catalog knows its rolls in game order and they still fit it, per-substat
+ * `rolls` lists when it knows them only within each line (`~`), as the
  * snapshot decode gives them: the roll bars read them.
  */
 export function wornArtifact(piece: CatalogEntry, location: string, flags: number): GoodArtifact {
+  const rolls = piece.rolls !== undefined ? checkRolls(piece, piece.rolls) : undefined
   return {
     setKey: piece.setKey,
     slotKey: piece.slotKey,
@@ -88,16 +90,15 @@ export function wornArtifact(piece: CatalogEntry, location: string, flags: numbe
     mainStatKey: piece.mainStatKey,
     location,
     lock: (flags & LOCK) !== 0,
-    substats: piece.substats,
+    substats:
+      rolls !== undefined && !rollsOrdered(rolls)
+        ? withRollLists(piece.substats, piece.rarity, rolls)
+        : piece.substats,
     totalRolls: piece.totalRolls,
     astralMark: (flags & ASTRAL_MARK) !== 0,
     elixirCrafted: piece.elixirCrafted,
     unactivatedSubstats: piece.unactivatedSubstats,
-    ...(piece.rolls !== undefined &&
-    rollsOrdered(piece.rolls) &&
-    checkRolls(piece, piece.rolls) !== undefined
-      ? { gi_rolls: piece.rolls }
-      : {}),
+    ...(rolls !== undefined && rollsOrdered(rolls) ? { gi_rolls: rolls } : {}),
   }
 }
 

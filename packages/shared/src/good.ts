@@ -11,6 +11,14 @@ export interface GoodSubstat {
   key: string
   value: number
   initialValue?: number
+  /**
+   * This line's roll values in display units, in the order they happened
+   * within the line (GGScanner). Read only when every line has one and
+   * they fit the piece (`readRollLists`, `checkRolls`); written back only
+   * on exported artifacts whose rolls are known this way. Never stored on a
+   * catalog identity.
+   */
+  rolls?: number[]
 }
 
 export interface GoodArtifact {

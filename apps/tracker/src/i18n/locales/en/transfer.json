@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "Export as…",
+    "importsBack": "Imports back here",
     "leavesOut": "Leaves out: {list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me keys ({n})",

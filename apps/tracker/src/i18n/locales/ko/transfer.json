@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "내보내기 형식…",
+    "importsBack": "여기에서 다시 가져올 수 있음",
     "leavesOut": "제외: {list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me 키 ({n})",

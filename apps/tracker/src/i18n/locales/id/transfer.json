@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "Ekspor sebagai…",
+    "importsBack": "Bisa diimpor kembali di sini",
     "leavesOut": "Tanpa: {list}",
     "leaves": {
       "teyvatmeKeys": "kunci Teyvat.me ({n})",

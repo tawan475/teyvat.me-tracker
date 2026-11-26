@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "Exportar como…",
+    "importsBack": "Se vuelve a importar aquí",
     "leavesOut": "Omite: {list}",
     "leaves": {
       "teyvatmeKeys": "claves de Teyvat.me ({n})",

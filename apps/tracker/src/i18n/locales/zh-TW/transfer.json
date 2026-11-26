@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "匯出為…",
+    "importsBack": "可匯入回本站",
     "leavesOut": "不含：{list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me 鍵（{n}）",

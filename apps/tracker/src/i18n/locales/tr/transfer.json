@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "Farklı dışa aktar…",
+    "importsBack": "Buraya geri içe aktarılabilir",
     "leavesOut": "Dışarıda kalan: {list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me anahtarları ({n})",

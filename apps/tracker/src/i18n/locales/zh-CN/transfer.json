@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "导出为…",
+    "importsBack": "可导入回本站",
     "leavesOut": "不含：{list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me 键（{n}）",

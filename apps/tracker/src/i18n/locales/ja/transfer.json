@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "エクスポート…",
+    "importsBack": "ここで再インポートできます",
     "leavesOut": "含まれないもの：{list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me のキー（{n}）",

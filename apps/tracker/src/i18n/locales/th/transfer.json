@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "ส่งออกเป็น…",
+    "importsBack": "นำเข้ากลับมาที่นี่ได้",
     "leavesOut": "ไม่รวม: {list}",
     "leaves": {
       "teyvatmeKeys": "คีย์ของ Teyvat.me ({n})",

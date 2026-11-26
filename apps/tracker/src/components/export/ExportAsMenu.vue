@@ -68,7 +68,12 @@ async function toggle() {
       .map<Row>((f) => ({
         id: f.id,
         name: f.name,
-        readers: f.readers.join(', '),
+        // The tools that read it; for the Teyvat.me file (none named) that it imports back here.
+        readers: f.readers.length
+          ? f.readers.join(', ')
+          : f.importsBack
+            ? t('transfer.exportAs.importsBack')
+            : '',
         leaves: leavesOutLine(f.leavesOut(input)),
         save: () => {
           const file = f.build(input)
@@ -144,7 +149,9 @@ async function pick(row: Row) {
               <span class="truncate text-[0.9375rem] font-semibold text-text-primary">{{
                 row.name
               }}</span>
-              <span class="truncate text-xs text-text-secondary">{{ row.readers }}</span>
+              <span v-if="row.readers" class="truncate text-xs text-text-secondary">{{
+                row.readers
+              }}</span>
               <span v-if="row.leaves" class="truncate text-xs text-text-muted">{{
                 row.leaves.short
               }}</span>

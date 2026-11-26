@@ -139,6 +139,7 @@
   },
   "exportAs": {
     "button": "Xuất dạng…",
+    "importsBack": "Có thể nhập lại vào đây",
     "leavesOut": "Bỏ qua: {list}",
     "leaves": {
       "teyvatmeKeys": "khóa Teyvat.me ({n})",

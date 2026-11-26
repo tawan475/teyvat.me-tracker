@@ -2,13 +2,7 @@
 import { computed, ref, shallowRef, watch } from 'vue'
 import { FileJson, FileUp } from 'lucide-vue-next'
 import type { Achievement } from '@gdt/game-data'
-import {
-  UIAF_MAX_BYTES,
-  UIAF_MAX_ENTRIES,
-  UiafError,
-  isUiaf,
-  parseUiaf,
-} from '@gdt/shared/achievements/uiaf'
+import { UIAF_MAX_BYTES, UIAF_MAX_ENTRIES } from '@gdt/shared/achievements/uiaf'
 import {
   parseAchievementImport,
   planAchievementImport,
@@ -29,8 +23,9 @@ import { formatNumber } from '@/lib/format'
  * standard: Snap Hutao, cocogoat…), a Seelie account export, a paimon.moe
  * backup (one of its accounts: this account's UID, else the user's pick) or
  * a GOOD file with `gi_achievements` (stardb, Teyvat.me Capture). Only ids
- * not already done are added. A UIAF file it refuses says why (too big, too
- * many entries, a version it does not read).
+ * not already done are added. Any file over UIAF_MAX_BYTES is refused
+ * unread, and a UIAF file the parse refuses says why (too many entries, a
+ * version it does not read).
  */
 const props = defineProps<{
   open: boolean
@@ -56,19 +51,18 @@ const formatLabel = (parsed: ParsedAchievementImport): string => {
           : t('achievements.import.formats.list')
 }
 
-/** Why a UIAF file is refused, in one short line. */
-function uiafRefusal(error: UiafError, json: unknown): string {
-  switch (error.code) {
+const tooBig = () =>
+  t('achievements.import.refused.tooBig', { mb: formatNumber(UIAF_MAX_BYTES / 1024 / 1024) })
+
+/** Why a UIAF file is refused (`parseAchievementImport`'s `refused`), in one short line. */
+function uiafRefusal(refused: NonNullable<ParsedAchievementImport['refused']>): string {
+  switch (refused.code) {
     case 'too_big':
-      return t('achievements.import.refused.tooBig', {
-        mb: formatNumber(UIAF_MAX_BYTES / 1024 / 1024),
-      })
+      return tooBig()
     case 'too_many':
       return t('achievements.import.refused.tooMany', { n: formatNumber(UIAF_MAX_ENTRIES) })
-    case 'version': {
-      const info = (json as { info?: { uiaf_version?: unknown } } | null)?.info
-      return t('achievements.import.refused.version', { version: String(info?.uiaf_version ?? '') })
-    }
+    case 'version':
+      return t('achievements.import.refused.version', { version: refused.version ?? '' })
     default:
       return t('achievements.import.refused.malformed')
   }
@@ -115,28 +109,16 @@ async function read(file: File | undefined) {
   if (!file) return
   reset()
   fileName.value = file.name
+  // Any file over the limit is refused unread.
+  if (file.size > UIAF_MAX_BYTES) {
+    failure.value = tooBig()
+    return
+  }
   reading.value = true
   try {
-    const text = await file.text()
-    let json: unknown
-    try {
-      json = JSON.parse(text.replace(/^\uFEFF/, ''))
-    } catch {
-      failure.value = t('achievements.import.notJson')
-      return
-    }
-    // A UIAF file is read with its limits first, so a refusal can say why.
-    if (isUiaf(json)) {
-      try {
-        parseUiaf(text)
-      } catch (error) {
-        if (!(error instanceof UiafError)) throw error
-        failure.value = uiafRefusal(error, json)
-        return
-      }
-    }
-    const result = parseAchievementImport(json)
-    if (result) {
+    const result = parseAchievementImport(JSON.parse((await file.text()).replace(/^\uFEFF/, '')))
+    if (result?.refused) failure.value = uiafRefusal(result.refused)
+    else if (result) {
       picked.value = result.accounts ? pickPaimonAccount(result.accounts, props.uid) : 0
       parsed.value = result
     } else failure.value = t('achievements.import.noAchievements')
@@ -224,7 +206,7 @@ async function add() {
           >
         </div>
         <p v-if="failure" class="text-sm text-danger-text" role="alert">{{ failure }}</p>
-        <div v-else-if="plan && parsed" class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div v-else-if="plan && parsed" class="grid grid-cols-2 gap-2">
           <UiStat
             :label="$t('achievements.import.new')"
             :value="plan.add.length"

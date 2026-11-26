@@ -8,6 +8,7 @@
     "./achievements/uiaf": "./src/achievements/uiaf.ts",
     "./codec/bundle": "./src/codec/bundle.ts",
     "./dictionary/materials": "./src/dictionary/materials.ts",
+    "./good-plain": "./src/good-plain.ts",
     "./import": "./src/import.ts",
     "./oauth": "./src/oauth.ts",
     "./off": "./src/off.ts",

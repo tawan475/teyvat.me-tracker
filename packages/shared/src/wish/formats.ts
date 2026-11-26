@@ -12,6 +12,7 @@
  * (pulls.ts) and are matched by banner, time and item.
  */
 
+import { isUiaf } from '../achievements/uiaf'
 import { uigfGachaType, formatWishTime, isSyntheticWishId, type WishPull } from './pulls'
 import { wishItemByLooseKey, wishItemTypeLabel } from './items'
 import type { WishRecord } from './records'
@@ -81,6 +82,8 @@ function uigfTimezone(value: unknown): number | null {
 }
 
 export function parseUigf(json: Record<string, unknown>): WishFile {
+  // A UIAF achievement file has `info` and `list` too, never wishes.
+  if (isUiaf(json)) throw new WishFileError('An achievement file (UIAF), not wishes')
   const info = (json.info ?? {}) as Record<string, unknown>
   if (Array.isArray(json.hk4e)) {
     return {

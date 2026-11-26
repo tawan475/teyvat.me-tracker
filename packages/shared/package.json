@@ -5,6 +5,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./achievements/uiaf": "./src/achievements/uiaf.ts",
     "./codec/bundle": "./src/codec/bundle.ts",
     "./dictionary/materials": "./src/dictionary/materials.ts",
     "./import": "./src/import.ts",

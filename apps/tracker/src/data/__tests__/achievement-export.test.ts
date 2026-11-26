@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Achievement } from '@gdt/game-data'
-import { UIAF_UNKNOWN_TIME, normalizeGood, parseUiaf, type LiveJournalResponse } from '@gdt/shared'
+import { UIAF_UNKNOWN_TIME, parseUiaf, type LiveJournalResponse } from '@gdt/shared'
 import {
   achievementExportFacts,
   achievementExportRows,
-  buildAchievementLeyline,
   buildAchievementUiaf,
   type AchievementExportInput,
 } from '../achievement-export'
@@ -166,38 +165,5 @@ describe('buildAchievementUiaf', () => {
     expect(back?.format).toBe('uiaf')
     expect(back?.ids).toEqual([80001, 80004])
     expect(back?.uiaf?.unfinished).toBe(1)
-  })
-})
-
-describe('buildAchievementLeyline', () => {
-  const data = input(
-    captured([80001, 80002], { 80001: T }, { 80003: { progress: 4, total: 10 } }),
-    [80004],
-  )
-  const file = buildAchievementLeyline(data, { version: '1.19.2', now: 1_700_000_500_000 })
-
-  it('holds the done ids (marks too), the game times and the counters', () => {
-    expect(file).toMatchObject({
-      format: 'GOOD',
-      version: 3,
-      source: 'Teyvat.me',
-      leyline: 1,
-      gi_achievements: [80001, 80002, 80004],
-      gi_achievement_times: { '80001': T },
-      gi_achievement_progress: { '80003': { progress: 4, total: 10 } },
-    })
-    expect(Object.keys(file).slice(0, 4)).toEqual(['format', 'version', 'source', 'leyline'])
-    expect(parseAchievementImport(file)).toEqual({
-      format: 'good',
-      ids: [80001, 80002, 80004],
-    })
-  })
-
-  it('names every other part as not shared, so none reads as empty', () => {
-    const good = normalizeGood(file)
-    expect(good.off).toContain('characters')
-    expect(good.off).toContain('materials')
-    expect(good.off).not.toContain('gi_achievements')
-    expect(good.achievements).toEqual([80001, 80002, 80004])
   })
 })

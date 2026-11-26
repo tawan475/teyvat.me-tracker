@@ -11,20 +11,13 @@
  * (`GET …/achievement-marks?at=`). `loadAchievementExport`
  * (achievement-export-load.ts) reads the same.
  *
- * Two files: UIAF v1.1 (UIGF-Org's achievement standard) and a Teyvat.me
- * (Leyline) file holding only the achievements, every other part named in
- * `gi_off`, so a reader never takes the missing parts for empty ones.
+ * The file is UIAF v1.1 (UIGF-Org's achievement standard), the one format
+ * that carries hand marks. The page's other format is the capture's own
+ * Teyvat.me (Leyline) file (export-formats.ts), which holds no marks.
  */
 
 import type { Achievement } from '@gdt/game-data'
-import {
-  OFF_SWITCHES,
-  asLeyline,
-  buildUiaf,
-  UIAF_UNKNOWN_TIME,
-  type UiafEntry,
-  type UiafFile,
-} from '@gdt/shared'
+import { buildUiaf, UIAF_UNKNOWN_TIME, type UiafEntry, type UiafFile } from '@gdt/shared'
 import { isDone, type CapturedAchievements, type DoneState } from './achievement-progress'
 
 export interface AchievementExportInput {
@@ -126,47 +119,5 @@ export function buildAchievementUiaf(input: AchievementExportInput, app: ExportA
     name: 'Teyvat.me',
     version: app.version,
     now: app.now,
-  })
-}
-
-/** Every part but the achievements is not in the achievements file. */
-const NOT_IN_ACHIEVEMENT_FILE = OFF_SWITCHES.filter((name) => name !== 'gi_achievements')
-
-/**
- * The achievements as a Teyvat.me (Leyline) file: `gi_achievements` = every
- * done id (captured and marked: what the page counts), `gi_achievement_times`
- * the game's finish times of captured ones, `gi_achievement_progress` the
- * unfinished counters. Every other part is named in `gi_off` and the GOOD
- * lists are written empty, as a Leyline export writes a part not shared, so
- * a Leyline reader (our import too) never reads them as an empty account.
- */
-export function buildAchievementLeyline(
-  input: AchievementExportInput,
-  app: ExportApp,
-): Record<string, unknown> {
-  const rows = achievementExportRows(input)
-  const times: Record<string, number> = {}
-  const progress: Record<string, { progress: number; total: number }> = {}
-  for (const row of rows) {
-    if (row.status === 2 && row.timestamp !== UIAF_UNKNOWN_TIME)
-      times[String(row.id)] = row.timestamp
-  }
-  for (const [id, value] of input.captured.progress ?? []) {
-    const row = rows.find((r) => r.id === id)
-    if (row?.status === 1) progress[String(id)] = { progress: row.current, total: value.total }
-  }
-  return asLeyline({
-    format: 'GOOD',
-    version: 3,
-    source: 'Teyvat.me',
-    characters: [],
-    artifacts: [],
-    weapons: [],
-    materials: {},
-    timestamp: app.now ?? Date.now(),
-    gi_achievements: rows.filter((r) => r.status === 2).map((r) => r.id),
-    ...(Object.keys(times).length ? { gi_achievement_times: times } : {}),
-    ...(Object.keys(progress).length ? { gi_achievement_progress: progress } : {}),
-    gi_off: [...NOT_IN_ACHIEVEMENT_FILE],
   })
 }

@@ -140,14 +140,32 @@ describe('achievements', () => {
       completedAt: new Map([[80001, 1_700_000_000_000]]),
       progress: new Map([[80003, { progress: 2, total: 10 }]]),
     },
-    marked: new Set([80004, 80005]),
+    // 80001 is marked too: the capture holds it, so it is not a mark the file lacks.
+    marked: new Set([80001, 80004, 80005]),
     known: new Map([a(80001, 1), a(80002, 2), a(80003, 10), a(80004, 4)].map((x) => [x.id, x])),
+    snapshot: {
+      leyline: {
+        format: 'GOOD',
+        version: 3,
+        source: 'Teyvat.me',
+        leyline: 1,
+        characters: [],
+        weapons: [],
+        artifacts: [],
+        materials: {},
+        gi_off: ['materials'],
+        gi_achievements: [80001, 80002],
+        gi_achievement_times: { '80001': 1_700_000_000 },
+      },
+      takenAt: Date.UTC(2026, 0, 2, 3, 4, 5),
+    },
     uid: UID,
     accountId: 3,
     appVersion: '1.19.2',
     now: NOW,
   }
   const [uiaf, leyline] = formatsFor('achievements')
+  const [snapshotLeyline] = formatsFor('snapshots')
 
   it("UIAF's facts agree with the rows it writes", () => {
     const file = parseUiaf(uiaf!.build(input).text)
@@ -164,11 +182,29 @@ describe('achievements', () => {
     expect(uiaf!.fileName(input)).toBe(`achievements-uiaf-${UID}-2026-11-26.json`)
   })
 
-  it('the Leyline file lists marks with the captured ones, and says so', () => {
+  it('the Teyvat.me file is the capture, as on Snapshots, without hand marks', () => {
+    const snapshot = input.snapshot!
+    expect(leyline!.build(input)).toEqual(snapshotLeyline!.build(snapshot))
+    expect(leyline!.fileName(input)).toBe(snapshotLeyline!.fileName(snapshot))
+    expect(leyline!.fileName(input)).toBe('leyline-2026-01-02T03-04-05.json')
+    expect(leyline!.readers).toEqual(snapshotLeyline!.readers)
+    expect(leyline!.name).toBe(snapshotLeyline!.name)
     const json = JSON.parse(leyline!.build(input).text)
-    expect(json.gi_achievements).toEqual([80001, 80002, 80004, 80005])
-    expect(parseAchievementImport(json)?.ids).toEqual([80001, 80002, 80004, 80005])
-    expect(leyline!.leavesOut(input)).toEqual([{ code: 'marks-as-done', count: 2 }])
-    expect(leyline!.fileName(input)).toBe(`leyline-achievements-${UID}-2026-11-26.json`)
+    expect(json.gi_achievements).toEqual([80001, 80002])
+    expect(parseAchievementImport(json)?.ids).toEqual([80001, 80002])
+    expect(leyline!.leavesOut(input)).toEqual([
+      { code: 'not-shared', parts: ['materials'] },
+      { code: 'hand-marks', count: 2 },
+    ])
+  })
+
+  it('names no hand marks when every mark is captured', () => {
+    expect(leyline!.leavesOut({ ...input, marked: new Set([80002]) })).toEqual([
+      { code: 'not-shared', parts: ['materials'] },
+    ])
+  })
+
+  it('has nothing to build without a capture', () => {
+    expect(() => leyline!.build({ ...input, snapshot: null })).toThrow()
   })
 })

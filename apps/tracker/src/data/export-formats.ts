@@ -21,7 +21,6 @@ import {
 } from '@gdt/shared'
 import {
   achievementExportFacts,
-  buildAchievementLeyline,
   buildAchievementUiaf,
   type AchievementExportInput,
 } from './achievement-export'
@@ -47,8 +46,8 @@ export type LeavesOut =
   | { code: 'captured-without-time'; count: number }
   /** UIAF: "reward claimed" (status 3) is never written: it is not known. */
   | { code: 'reward-claimed' }
-  /** Leyline achievements: hand marks are listed with the captured ones, not apart. */
-  | { code: 'marks-as-done'; count: number }
+  /** The capture's Leyline file, on the Achievements page: hand marks it does not hold (UIAF does). */
+  | { code: 'hand-marks'; count: number }
 
 export interface ExportFile {
   text: string
@@ -88,6 +87,11 @@ export interface WishExportInput {
 }
 
 export interface AchievementFileInput extends AchievementExportInput {
+  /**
+   * The capture the Teyvat.me file is (the newest; in time travel the one
+   * travelled to), as on Snapshots; null when the account has none.
+   */
+  snapshot: SnapshotExportInput | null
   uid: string | null
   accountId: number
   appVersion: string
@@ -210,21 +214,27 @@ const uiaf: ExportFormat<AchievementFileInput> = {
   },
 }
 
+/** The capture's file, read off the input: none to build without a capture. */
+const capture = (input: AchievementFileInput): SnapshotExportInput => {
+  if (!input.snapshot) throw new Error('No capture to export')
+  return input.snapshot
+}
+
+/**
+ * The Snapshots page's Teyvat.me file, the same builder and name: the
+ * captured achievements as the capture has them, and no hand marks.
+ */
 const leylineAchievements: ExportFormat<AchievementFileInput> = {
-  id: 'leyline',
-  name: 'Teyvat.me (Leyline)',
-  readers: [],
-  importsBack: true,
-  build: (input) => ({
-    text: JSON.stringify(
-      buildAchievementLeyline(input, { version: input.appVersion, now: input.now }),
-    ),
-    type: JSON_TYPE,
-  }),
-  fileName: (input) => `leyline-achievements-${fileUid(input)}-${day(input.now)}.json`,
+  ...leylineSnapshot,
+  build: (input) => leylineSnapshot.build(capture(input)),
+  fileName: (input) => leylineSnapshot.fileName(capture(input)),
   leavesOut: (input) => {
-    const { markedOnly } = achievementExportFacts(input)
-    return markedOnly ? [{ code: 'marks-as-done', count: markedOnly }] : []
+    const { leyline } = capture(input)
+    const out = notShared(leyline)
+    const held = new Set(Array.isArray(leyline.gi_achievements) ? leyline.gi_achievements : [])
+    const count = [...input.marked].filter((id) => !held.has(id)).length
+    if (count) out.push({ code: 'hand-marks', count })
+    return out
   },
 }
 

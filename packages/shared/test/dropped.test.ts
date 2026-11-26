@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   cleanSection,
+  completeSnapshot,
   decodeSectionBlob,
   encodeCollections2,
+  encodeContent,
   encodeExtras,
   encodeProgress,
   encodeSectionBlob,
   encodeSnapshot,
+  encodeStaticSections,
   encodeTasks,
   isDroppedChange,
   kindCode,
   normalizeGood,
+  olderContentHashes,
   prepareSnapshot,
   sectionHashOf,
   withoutDropped,
@@ -102,6 +106,21 @@ describe('fields the tracker no longer keeps', () => {
     expect(encoded.preDropContentHashes).toContain(asBefore.contentHash)
     expect(encoded.preDropContentHashes).toContain(asBefore.pre17ContentHash)
     expect(asBefore.preDropContentHashes).toEqual([])
+  })
+
+  it('encodeContent is completeSnapshot without the older hashes, which add the rest', async () => {
+    for (const file of [input, syntheticGood(4)]) {
+      const prepared = await prepareSnapshot(file, { materials: MATERIALS })
+      const ids = new Map(prepared.artifactHashes.map((hash, i) => [hash, i + 1]))
+      const sections = await encodeStaticSections(prepared, MATERIALS)
+      const whole = await completeSnapshot(sections, prepared, ids)
+      const content = await encodeContent(sections, prepared, ids)
+      const older = await olderContentHashes(sections, content, prepared, ids)
+      expect({ ...content, ...older }).toEqual(whole)
+      // The same keys in the same order (the guest store reads them by name).
+      expect(Object.keys({ ...content, ...older })).toEqual(Object.keys(whole))
+      for (const key of Object.keys(older)) expect(content).not.toHaveProperty(key)
+    }
   })
 
   it('live changes to them are not stored', () => {

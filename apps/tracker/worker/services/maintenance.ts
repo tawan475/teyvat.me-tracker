@@ -45,6 +45,8 @@ export interface MaintenanceResult {
   signupIps: number
   /** Account-sharing invites nobody accepted in time. */
   invites: number
+  /** Why the v2 section collection failed (the other clean-ups are done; `blobs` then counts only v1 ones). */
+  blobsError?: string
   repack?: RepackResult
 }
 
@@ -88,10 +90,12 @@ export async function runMaintenance(
   options: { repackLimit?: number } = {},
 ): Promise<MaintenanceResult> {
   // One batch: a failure (the v1 tables gone, say) leaves nothing half done.
+  // The v2 section collection runs on its own after it: it reads every
+  // snapshot row, so it is the statement that grows past D1's time limit
+  // first, and it must not take the trash, session and token clean-ups with it.
   const sessionsEnded = now - SESSION_KEEP_DAYS * 86_400_000
   const [
     snapshots,
-    sections,
     tokens,
     codes,
     uploadDays,
@@ -106,7 +110,6 @@ export async function runMaintenance(
       d1
         .prepare('DELETE FROM snapshots WHERE deleted_at IS NOT NULL AND deleted_at < ?1')
         .bind(now - TRASH_DAYS * 86_400_000),
-      d1.prepare(COLLECT_SECTION_BLOBS),
       d1.prepare('DELETE FROM auth_tokens WHERE expires_at < ?1').bind(now - KEEP_EXPIRED_MS),
       d1.prepare('DELETE FROM oauth_codes WHERE expires_at < ?1').bind(now - CODE_KEEP_MS),
       d1
@@ -131,10 +134,18 @@ export async function runMaintenance(
       ...(withV1 ? [d1.prepare(COLLECT_LEGACY_BLOBS)] : []),
     ]),
   )
+  // After the trash purge, so the sections only purged snapshots named go too.
+  let sections = 0
+  let blobsError: string | undefined
+  try {
+    sections = (await d1.prepare(COLLECT_SECTION_BLOBS).all()).results.length
+  } catch (error) {
+    blobsError = String(error).slice(0, 300)
+  }
   const result: MaintenanceResult = {
     snapshots: snapshots!.meta.changes,
     // Rows returned: meta.changes would also count the counter trigger's updates.
-    blobs: sections!.results.length + (legacy?.results.length ?? 0),
+    blobs: sections + (legacy?.results.length ?? 0),
     tokens:
       tokens!.meta.changes +
       codes!.meta.changes +
@@ -144,6 +155,7 @@ export async function runMaintenance(
     sessions: sessions!.meta.changes,
     signupIps: signupIps!.meta.changes,
     invites: invites!.meta.changes,
+    ...(blobsError !== undefined ? { blobsError } : {}),
   }
   if (options.repackLimit && options.repackLimit > 0) {
     result.repack = await repack(d1, { limit: options.repackLimit })

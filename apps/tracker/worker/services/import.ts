@@ -31,8 +31,8 @@ import {
   SLOTS,
   serverFromUid,
   artifactKeyString,
-  completeSnapshot,
   decodeSnapshotMeta,
+  encodeContent,
   contentKey,
   encodeCatalogChunk,
   fillCatalogChunk,
@@ -42,6 +42,7 @@ import {
   encodeSnapshotMeta,
   encodeStaticSections,
   kindOfCode,
+  olderContentHashes,
   planSnapshotV2,
   RECENT_ANCHORS,
   prepareSnapshot,
@@ -414,24 +415,37 @@ async function importOnce(
     }
   }
 
-  const encoded = await completeSnapshot(sections, prepared, artifactIds, held?.sectionHash)
+  const encoded = await encodeContent(sections, prepared, artifactIds, held?.sectionHash)
   const key = contentKey(encoded.contentHash)
-  const legacyKey = contentKey(encoded.legacyContentHash)
-  const preAnecdotesKey = contentKey(encoded.preAnecdotesContentHash)
-  const preTasksKey = contentKey(encoded.preTasksContentHash)
-  const preCollectionsKey = contentKey(encoded.preCollectionsContentHash)
-  const preCollections2Key = contentKey(encoded.preCollections2ContentHash)
-  const preWardrobeKey = contentKey(encoded.preWardrobeContentHash)
-  const preExplorationKey = contentKey(encoded.preExplorationContentHash)
-  const pre17Key = contentKey(encoded.pre17ContentHash)
-  const pre18Key = contentKey(encoded.pre18ContentHash)
-  const pre19Key = contentKey(encoded.pre19ContentHash)
-  const pre20Key = contentKey(encoded.pre20ContentHash)
-  const pre21Key = contentKey(encoded.pre21ContentHash)
-  const pre22Key = contentKey(encoded.pre22ContentHash)
-  const preRecipesKey = contentKey(encoded.preRecipesContentHash)
-  // Stored before the tracker dropped fields it no longer keeps (dropped.ts).
-  const preDropKeys = encoded.preDropContentHashes.map(contentKey)
+  // Every other hash this file had under older trackers (olderContentHashes
+  // is most of the hashing work): worked out only for a snapshot of the same
+  // capture time whose key is not this upload's own (sameCapture).
+  let olderHashes: Promise<string[]> | undefined
+  const older = () =>
+    (olderHashes ??= olderContentHashes(
+      sections,
+      encoded,
+      prepared,
+      artifactIds,
+      held?.sectionHash,
+    ).then((o) => [
+      encoded.legacyContentHash,
+      encoded.preAnecdotesContentHash,
+      encoded.preTasksContentHash,
+      encoded.preCollectionsContentHash,
+      encoded.preCollections2ContentHash,
+      encoded.preWardrobeContentHash,
+      encoded.preExplorationContentHash,
+      o.pre17ContentHash,
+      o.pre18ContentHash,
+      o.pre19ContentHash,
+      o.pre20ContentHash,
+      o.pre21ContentHash,
+      o.pre22ContentHash,
+      o.preRecipesContentHash,
+      // Stored before the tracker dropped fields it no longer keeps (dropped.ts).
+      ...o.preDropContentHashes,
+    ]))
   const response = (
     status: ImportResponse['status'],
     snapshotId: number,
@@ -461,40 +475,17 @@ async function importOnce(
   // (or later its anecdotes, tasks, collections, Capture 1.4.0's keys, then
   // its exploration, then Capture 1.7.0's, then 1.8.0's, then 1.17's, then 1.17.12's, then 1.17.20's, then 1.17.21's parts) were kept
   // (its hash then left them out), in either storage format.
-  const sameCapture = (row: SameTimeRow) =>
-    row.content_key !== null
-      ? row.content_key === key ||
-        row.content_key === legacyKey ||
-        row.content_key === preAnecdotesKey ||
-        row.content_key === preTasksKey ||
-        row.content_key === preCollectionsKey ||
-        row.content_key === preCollections2Key ||
-        row.content_key === preWardrobeKey ||
-        row.content_key === preExplorationKey ||
-        row.content_key === pre17Key ||
-        row.content_key === pre18Key ||
-        row.content_key === pre19Key ||
-        row.content_key === pre20Key ||
-        row.content_key === pre21Key ||
-        row.content_key === pre22Key ||
-        row.content_key === preRecipesKey ||
-        preDropKeys.includes(row.content_key)
-      : encoded.preDropContentHashes.includes(row.content_hash!) ||
-        row.content_hash === encoded.contentHash ||
-        row.content_hash === encoded.legacyContentHash ||
-        row.content_hash === encoded.preAnecdotesContentHash ||
-        row.content_hash === encoded.preTasksContentHash ||
-        row.content_hash === encoded.preCollectionsContentHash ||
-        row.content_hash === encoded.preCollections2ContentHash ||
-        row.content_hash === encoded.preWardrobeContentHash ||
-        row.content_hash === encoded.preExplorationContentHash ||
-        row.content_hash === encoded.pre17ContentHash ||
-        row.content_hash === encoded.pre18ContentHash ||
-        row.content_hash === encoded.pre19ContentHash ||
-        row.content_hash === encoded.pre20ContentHash ||
-        row.content_hash === encoded.pre21ContentHash ||
-        row.content_hash === encoded.pre22ContentHash ||
-        row.content_hash === encoded.preRecipesContentHash
+  const sameCapture = async (row: SameTimeRow) => {
+    if (
+      row.content_key !== null ? row.content_key === key : row.content_hash === encoded.contentHash
+    ) {
+      return true
+    }
+    const hashes = await older()
+    return row.content_key !== null
+      ? hashes.some((hash) => contentKey(hash) === row.content_key)
+      : hashes.includes(row.content_hash!)
+  }
   const sameInventory = (row: LatestRow) =>
     (row.content_key !== null
       ? row.content_key === key
@@ -508,7 +499,7 @@ async function importOnce(
 
   if (sameTime) {
     // A re-upload of the same capture is a no-op, so uploaders can retry freely.
-    if (sameCapture(sameTime)) {
+    if (await sameCapture(sameTime)) {
       return response('unchanged', sameTime.id, 0, null, undefined, sameTime.id === latest?.id)
     }
     throw new ApiError(
@@ -673,7 +664,8 @@ async function importOnce(
         .prepare(sameTimeSql(legacy))
         .bind(accountId, takenAt)
         .first<SameTimeRow>()
-      if (row && sameCapture(row)) return response('unchanged', row.id, 0, null, undefined, false)
+      if (row && (await sameCapture(row)))
+        return response('unchanged', row.id, 0, null, undefined, false)
       throw new ApiError(
         409,
         'duplicate_capture',
@@ -1253,7 +1245,13 @@ export function catalogChunkStatements(
   return statements
 }
 
-/** Rows of LATEST_BLOBS_SQL, decoded, by id. */
+/**
+ * Rows of LATEST_BLOBS_SQL by id, each decoded on its first read (planSections
+ * reads only the neighbour sections it compresses or diffs against: one whose
+ * hash matches decodes nothing). A base missing from the rows, or a chain
+ * deeper than the decoder reads, fails here as it did when every row was
+ * decoded up front.
+ */
 function knownBlobs(
   rows: Record<string, unknown>[],
   /** Leaves the artifacts section's blobs out (and undecoded). */
@@ -1271,20 +1269,30 @@ function knownBlobs(
     })
   }
   const decoder = new BlobDecoder((id) => raw.get(id))
+  for (const blob of raw.values()) {
+    let base = blob.baseId
+    for (let depth = 1; base !== null; depth++) {
+      if (depth > 2) throw new Error(`Section ${base} is deeper than a base of a base`)
+      const next = raw.get(base)
+      if (!next) throw new Error(`Section ${base} is missing`)
+      base = next.baseId
+    }
+  }
   const known = new Map<number, KnownBlob>()
   const build = (id: number): KnownBlob | null => {
     const cached = known.get(id)
     if (cached) return cached
     const blob = raw.get(id)
     if (!blob) return null
-    const entry: KnownBlob = {
+    const entry = {
       id,
       code: blob.code,
       hash: blob.hash,
       size: blob.data.length,
-      decoded: decoder.decode(id),
       base: blob.baseId === null ? null : build(blob.baseId),
-    }
+    } as KnownBlob
+    // The decoder keeps what it decoded: each blob is decoded once at most.
+    Object.defineProperty(entry, 'decoded', { get: () => decoder.decode(id), enumerable: true })
     known.set(id, entry)
     return entry
   }

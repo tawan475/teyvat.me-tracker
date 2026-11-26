@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "Exportar como…",
     "importsBack": "Pode ser importado de volta aqui",
+    "names": {
+      "teyvatmeFile": "Arquivo do Teyvat.me"
+    },
     "leavesOut": "Deixa de fora: {list}",
     "leaves": {
       "teyvatmeKeys": "chaves do Teyvat.me ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "datas de conquistas marcadas à mão ({n})",
       "capturedWithoutTime": "datas que o jogo não enviou ({n})",
       "rewardClaimed": "recompensa resgatada",
-      "handMarks": "marcas à mão ({n})"
+      "handMarks": "marcas à mão ({n})",
+      "overLimit": "entradas acima do limite de {max} ({n})"
     }
   }
 }

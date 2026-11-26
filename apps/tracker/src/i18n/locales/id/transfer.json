@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "Ekspor sebagai…",
     "importsBack": "Bisa diimpor kembali di sini",
+    "names": {
+      "teyvatmeFile": "File Teyvat.me"
+    },
     "leavesOut": "Tanpa: {list}",
     "leaves": {
       "teyvatmeKeys": "kunci Teyvat.me ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "waktu selesai tanda manual ({n})",
       "capturedWithoutTime": "waktu selesai yang tidak dikirim game ({n})",
       "rewardClaimed": "hadiah diklaim",
-      "handMarks": "tanda manual ({n})"
+      "handMarks": "tanda manual ({n})",
+      "overLimit": "entri di atas batas {max} ({n})"
     }
   }
 }

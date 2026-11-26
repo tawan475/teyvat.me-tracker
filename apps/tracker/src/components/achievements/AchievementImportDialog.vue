@@ -14,6 +14,7 @@ import FilterChip from '@/components/ui/FilterChip.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiStat from '@/components/ui/UiStat.vue'
+import { refusedBySize } from '@/data/export-rules'
 import { pickPaimonAccount } from '@/data/paimon-backup'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
@@ -110,7 +111,7 @@ async function read(file: File | undefined) {
   reset()
   fileName.value = file.name
   // Any file over the limit is refused unread.
-  if (file.size > UIAF_MAX_BYTES) {
+  if (refusedBySize(file.size)) {
     failure.value = tooBig()
     return
   }

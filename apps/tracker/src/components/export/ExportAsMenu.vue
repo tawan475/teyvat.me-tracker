@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="P extends ExportPage">
-import { nextTick, ref, shallowRef, useTemplateRef } from 'vue'
+import { nextTick, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { ChevronDown, Download } from 'lucide-vue-next'
 import type { ExportPage, PageInputs } from '@/data/export-formats'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -41,7 +41,11 @@ interface Row {
 }
 
 const feedback = useFeedback()
-const anchor = useTemplateRef<HTMLElement>('anchor')
+/**
+ * The button: the popover is placed by it and gives focus back to it on
+ * Escape (a click sets it, as ResinTracker's popovers do).
+ */
+const anchor = shallowRef<HTMLElement | null>(null)
 const popover = useTemplateRef<{ place: () => void }>('popover')
 const open = ref(false)
 const rows = shallowRef<Row[] | null>(null)
@@ -50,8 +54,9 @@ const building = ref<string | null>(null)
 const uigf = ref(false)
 let opened = 0
 
-async function toggle() {
+async function toggle(event: MouseEvent) {
   if (open.value) return close()
+  anchor.value = event.currentTarget as HTMLElement
   open.value = true
   rows.value = null
   const token = ++opened
@@ -67,7 +72,7 @@ async function toggle() {
       .filter((f) => props.formats.includes(f.id))
       .map<Row>((f) => ({
         id: f.id,
-        name: f.name,
+        name: f.nameCode ? t(`transfer.exportAs.names.${f.nameCode}`) : f.name,
         // The tools that read it; for the Teyvat.me file (none named) that it imports back here.
         readers: f.readers.length
           ? f.readers.join(', ')
@@ -96,6 +101,26 @@ function close() {
   opened++
 }
 
+/**
+ * Focus moving anywhere but the menu (Tab past its last control) closes it,
+ * so Escape is never left with an open menu it cannot reach: UiPopover
+ * listens for Escape inside its panel only. The kit's other popovers have
+ * the same gap; this closes it for this menu only. Focus inside the panel
+ * (its close button) or on the button keeps it open.
+ */
+const body = useTemplateRef<HTMLElement>('body')
+function onFocusIn(event: FocusEvent) {
+  const to = event.target as Node | null
+  const panel = body.value?.closest('[role="dialog"]')
+  if (!to || !panel || panel.contains(to) || anchor.value?.contains(to)) return
+  close()
+}
+watch(open, (on) => {
+  if (on) document.addEventListener('focusin', onFocusIn, true)
+  else document.removeEventListener('focusin', onFocusIn, true)
+})
+onBeforeUnmount(() => document.removeEventListener('focusin', onFocusIn, true))
+
 /** The next paint, so the row's spinner shows before a long build. */
 const painted = () =>
   new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))
@@ -116,7 +141,7 @@ async function pick(row: Row) {
 </script>
 
 <template>
-  <span v-if="formats.length" ref="anchor" class="inline-flex shrink-0">
+  <span v-if="formats.length" class="inline-flex shrink-0">
     <UiButton :size="size" :aria-expanded="open" aria-haspopup="menu" @click="toggle">
       <Download class="size-4" aria-hidden="true" />{{ $t('transfer.exportAs.button') }}
       <ChevronDown class="size-4" aria-hidden="true" />
@@ -129,47 +154,49 @@ async function pick(row: Row) {
       :focus="false"
       @close="close"
     >
-      <div v-if="!rows" class="flex justify-center p-6 text-text-muted" aria-busy="true">
-        <UiSpinner class="size-5" />
+      <div ref="body">
+        <div v-if="!rows" class="flex justify-center p-6 text-text-muted" aria-busy="true">
+          <UiSpinner class="size-5" />
+        </div>
+        <div v-else>
+          <div class="flex flex-col divide-y divide-border-default p-1.5" role="menu">
+            <button
+              v-for="row in rows"
+              :key="row.id"
+              type="button"
+              role="menuitem"
+              class="flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-surface-overlay focus-visible:bg-surface-overlay disabled:cursor-default"
+              :disabled="building !== null"
+              :aria-busy="building === row.id || undefined"
+              :title="row.leaves?.full"
+              @click="pick(row)"
+            >
+              <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span class="truncate text-[0.9375rem] font-semibold text-text-primary">{{
+                  row.name
+                }}</span>
+                <span v-if="row.readers" class="truncate text-xs text-text-secondary">{{
+                  row.readers
+                }}</span>
+                <span v-if="row.leaves" class="truncate text-xs text-text-muted">{{
+                  row.leaves.short
+                }}</span>
+              </span>
+              <UiSpinner v-if="building === row.id" class="size-4 shrink-0 text-text-muted" />
+              <Download v-else class="size-4 shrink-0 text-text-muted" aria-hidden="true" />
+            </button>
+          </div>
+          <div v-if="uigf" class="border-t border-border-default px-4 py-2.5 text-xs">
+            <a
+              href="https://uigf.org/"
+              target="_blank"
+              rel="noopener"
+              class="font-medium text-accent-text underline-offset-2 hover:underline"
+              >UIGF-Org</a
+            >
+          </div>
+        </div>
       </div>
-      <template v-else>
-        <div class="flex flex-col divide-y divide-border-default p-1.5" role="menu">
-          <button
-            v-for="row in rows"
-            :key="row.id"
-            type="button"
-            role="menuitem"
-            class="flex min-w-0 items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-surface-overlay focus-visible:bg-surface-overlay disabled:cursor-default"
-            :disabled="building !== null"
-            :aria-busy="building === row.id || undefined"
-            :title="row.leaves?.full"
-            @click="pick(row)"
-          >
-            <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span class="truncate text-[0.9375rem] font-semibold text-text-primary">{{
-                row.name
-              }}</span>
-              <span v-if="row.readers" class="truncate text-xs text-text-secondary">{{
-                row.readers
-              }}</span>
-              <span v-if="row.leaves" class="truncate text-xs text-text-muted">{{
-                row.leaves.short
-              }}</span>
-            </span>
-            <UiSpinner v-if="building === row.id" class="size-4 shrink-0 text-text-muted" />
-            <Download v-else class="size-4 shrink-0 text-text-muted" aria-hidden="true" />
-          </button>
-        </div>
-        <div v-if="uigf" class="border-t border-border-default px-4 py-2.5 text-xs">
-          <a
-            href="https://uigf.org/"
-            target="_blank"
-            rel="noopener"
-            class="font-medium text-accent-text underline-offset-2 hover:underline"
-            >UIGF-Org</a
-          >
-        </div>
-      </template>
     </UiPopover>
   </span>
 </template>

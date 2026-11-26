@@ -627,3 +627,28 @@ describe('withLiveAchievements', () => {
     )
   })
 })
+
+describe('the entry limit on every achievements file', () => {
+  const ids = (n: number) => Array.from({ length: n }, (_, i) => 80000 + i)
+  const refused = (format: string) => ({ format, ids: [], refused: { code: 'too_many' } })
+
+  it('refuses a bare id list, a GOOD file, a Seelie file and a paimon.moe backup over 10,000 entries', () => {
+    expect(parseAchievementImport(ids(10_001))).toEqual(refused('list'))
+    expect(parseAchievementImport({ gi_achievements: ids(10_001) })).toEqual(refused('good'))
+    expect(parseAchievementImport({ format: 'GOOD', achievements: ids(10_001) })).toEqual(
+      refused('good'),
+    )
+    const seelie = Object.fromEntries(ids(10_001).map((id) => [String(id), { done: true }]))
+    expect(parseAchievementImport({ achievements: seelie })).toEqual(refused('seelie'))
+    const paimon = {
+      achievement: { '0': Object.fromEntries(ids(10_001).map((id) => [String(id), true])) },
+      'wish-uid': '812345678',
+    }
+    expect(parseAchievementImport(paimon)).toEqual(refused('paimon'))
+  })
+
+  it('reads exactly 10,000', () => {
+    expect(parseAchievementImport(ids(10_000))?.ids).toHaveLength(10_000)
+    expect(parseAchievementImport({ gi_achievements: ids(10_000) })?.ids).toHaveLength(10_000)
+  })
+})

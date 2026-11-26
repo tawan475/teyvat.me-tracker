@@ -1,4 +1,4 @@
-import { partOfSwitch, type OffSwitch, type RemovablePart } from '@gdt/shared'
+import { partOfSwitch, type OffSwitch, type RemovablePart } from '@gdt/shared/off'
 import { t } from '@/i18n'
 
 /** A removable part's name (`snapshots.parts.names.<part>`). */

@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "Xuất dạng…",
     "importsBack": "Có thể nhập lại vào đây",
+    "names": {
+      "teyvatmeFile": "Tệp Teyvat.me"
+    },
     "leavesOut": "Bỏ qua: {list}",
     "leaves": {
       "teyvatmeKeys": "khóa Teyvat.me ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "thời điểm hoàn thành của mục đánh dấu tay ({n})",
       "capturedWithoutTime": "thời điểm hoàn thành game không gửi ({n})",
       "rewardClaimed": "đã nhận thưởng",
-      "handMarks": "đánh dấu tay ({n})"
+      "handMarks": "đánh dấu tay ({n})",
+      "overLimit": "mục vượt giới hạn {max} ({n})"
     }
   }
 }

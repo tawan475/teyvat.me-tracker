@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "导出为…",
     "importsBack": "可导入回本站",
+    "names": {
+      "teyvatmeFile": "Teyvat.me 文件"
+    },
     "leavesOut": "不含：{list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me 键（{n}）",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "手动标记的完成时间（{n}）",
       "capturedWithoutTime": "游戏未发送的完成时间（{n}）",
       "rewardClaimed": "已领取奖励",
-      "handMarks": "手动标记（{n}）"
+      "handMarks": "手动标记（{n}）",
+      "overLimit": "超出 {max} 条上限的条目（{n}）"
     }
   }
 }

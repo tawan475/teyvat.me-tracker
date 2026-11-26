@@ -771,6 +771,37 @@ A new v1 route goes in `worker/api/v1/routes.ts`: the registry, with its scope, 
 </details>
 
 <details>
+<summary><b>Export as…</b></summary>
+
+Three pages have an "Export as…" menu (`components/export/ExportAsMenu.vue`,
+formats from `formatsFor(page)` in `src/data/export-formats.ts`):
+
+- **Snapshots:** the Teyvat.me file (Leyline, imports back here) and plain
+  GOOD (`toPlainGood`: no `gi_*` keys, a part not shared left out, never
+  written empty) for Genshin Optimizer and Seelie.
+- **Wish history:** UIGF v4.2 and paimon.moe CSV.
+- **Achievements:** UIAF v1.1 (captured and hand marks) and the capture's
+  Teyvat.me file.
+
+Everyone who can view the account may export (owner, editor, viewer, guest,
+demo, time travel, which exports the capture travelled to); staff Inspect
+shows no menu (`src/data/export-rules.ts`). A row shows only when its data
+exists, with a short "Leaves out" line for what the format cannot hold.
+Every file is built in the browser; the registry and converters load only
+when a menu opens.
+
+UIAF mapping (`src/data/achievement-export.ts`): a done achievement is
+status 2 with the game's finish time, or 253402271999 when unknown (every
+hand mark); an unfinished one with a captured counter is status 1 with time
+0; status 3 is never written; at most 10,000 rows (known ids first). Imports
+(UIAF, Seelie, paimon.moe, Leyline/GOOD, an id list; ≤ 10,000 entries and
+≤ 5 MB) only add hand marks: nothing is unmarked and a capture is never
+overwritten. UIGF-Org's link sits beside the UIGF and UIAF rows and in the
+achievements import.
+
+</details>
+
+<details>
 <summary><b>Wish history</b></summary>
 
 The wish history is a log beside the snapshots (it never moves an account's
@@ -829,8 +860,8 @@ the browser) and `DELETE /api/accounts/:id/wishes`. Imports that store
 something are checked against the quotas and the staff blocks, and send a
 `wishes` live event.
 
-**Wish link import** (the traditional way, as paimon.moe's; Import /
-export → Wish link). The game's Wish → History page carries an `authkey`
+**Wish link import** (the traditional way, as paimon.moe's; Import →
+Wish link). The game's Wish → History page carries an `authkey`
 that reads the history for about a day. PC: `apps/tracker/public/wish-url.ps1`
 (served from the site; the dialog copies `& ([scriptblock]::Create((irm '<origin>/wish-url.ps1')))`, run in its own scope
 with a TLS 1.2 prefix for Windows PowerShell 5.1) finds the game from its
@@ -862,8 +893,10 @@ import.
 v3/v2: `info.uid` + `list`), paimon.moe's importer CSV
 (`paimonmoe,importer,version,1,0`, rows `gacha_type,time,name,item_type,
 rank_type`), and paimon.moe's backup (Settings → Export: `wish-counter-*`
-keys, its snake-case item ids). Export: UIGF v4.1 and that CSV (newest first
-per banner, as paimon.moe's Local Importer reads it).
+keys, its snake-case item ids); a UIGF v4.2 file's Miliastra records
+(`hk4e_ugc`) are counted and skipped. Export, from the page's "Export as…"
+menu: UIGF v4.2 and that CSV (newest first per banner, as paimon.moe's Local
+Importer reads it). `/api/v1/wishes/uigf` still answers UIGF v4.1.
 
 **The pages** (`src/data/wish-history.ts`, `components/wishes/`), after
 paimon.moe's and checked against it on a real 18,000-pull backup (every

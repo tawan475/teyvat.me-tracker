@@ -142,7 +142,14 @@ describe('achievementExportFacts', () => {
     const facts = achievementExportFacts(
       input(captured([80001, 80002], { 80001: T }, { 80003: { progress: 1, total: 10 } }), [80004]),
     )
-    expect(facts).toEqual({ done: 3, timed: 1, capturedUntimed: 1, markedOnly: 1, unfinished: 1 })
+    expect(facts).toEqual({
+      done: 3,
+      timed: 1,
+      capturedUntimed: 1,
+      markedOnly: 1,
+      unfinished: 1,
+      cut: 0,
+    })
   })
 })
 
@@ -165,5 +172,31 @@ describe('buildAchievementUiaf', () => {
     expect(back?.format).toBe('uiaf')
     expect(back?.ids).toEqual([80001, 80004])
     expect(back?.uiaf?.unfinished).toBe(1)
+  })
+})
+
+describe('the UIAF export stays within the import limit', () => {
+  it('writes at most 10,000 rows: known ids first, then unknown ids ascending; counts the cut', () => {
+    // 10,003 marks: the 5 known ids and 9,998 unknown ones (only 9,995 fit).
+    const unknown = Array.from({ length: 9_998 }, (_, i) => 100_000 + i)
+    const marked = [...unknown.slice().reverse(), 80001, 80002, 80003, 80004, 80005]
+    const all = input(captured([]), marked)
+    const rows = achievementExportRows(all)
+    expect(rows).toHaveLength(10_000)
+    for (const id of [80001, 80002, 80003, 80004, 80005])
+      expect(rows.some((r) => r.id === id)).toBe(true)
+    expect(rows.at(-1)!.id).toBe(100_000 + 9_994)
+    expect(rows.map((r) => r.id)).toEqual([...rows.map((r) => r.id)].sort((a, b) => a - b))
+    expect(achievementExportFacts(all).cut).toBe(3)
+    // Our own import reads the file it writes.
+    const text = JSON.stringify(buildAchievementUiaf(all, { version: '1', now: 0 }))
+    const back = parseAchievementImport(JSON.parse(text))
+    expect(back?.refused).toBeUndefined()
+    expect(back?.ids).toHaveLength(10_000)
+    expect(parseUiaf(text).entries).toHaveLength(10_000)
+  })
+
+  it('cuts nothing within the limit', () => {
+    expect(achievementExportFacts(input(captured([80001]), [80002])).cut).toBe(0)
   })
 })

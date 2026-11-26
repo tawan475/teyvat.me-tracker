@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "ส่งออกเป็น…",
     "importsBack": "นำเข้ากลับมาที่นี่ได้",
+    "names": {
+      "teyvatmeFile": "ไฟล์ Teyvat.me"
+    },
     "leavesOut": "ไม่รวม: {list}",
     "leaves": {
       "teyvatmeKeys": "คีย์ของ Teyvat.me ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "เวลาที่ทำสำเร็จของรายการที่ทำเครื่องหมายเอง ({n})",
       "capturedWithoutTime": "เวลาที่ทำสำเร็จที่เกมไม่ได้ส่งมา ({n})",
       "rewardClaimed": "รับรางวัลแล้ว",
-      "handMarks": "ทำเครื่องหมายเอง ({n})"
+      "handMarks": "ทำเครื่องหมายเอง ({n})",
+      "overLimit": "รายการที่เกินขีดจำกัด {max} ({n})"
     }
   }
 }

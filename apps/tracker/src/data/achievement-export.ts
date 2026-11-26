@@ -19,6 +19,7 @@
 import type { Achievement } from '@gdt/game-data'
 import {
   buildUiaf,
+  UIAF_MAX_ENTRIES,
   UIAF_UNKNOWN_TIME,
   type UiafEntry,
   type UiafFile,
@@ -56,8 +57,32 @@ const doneIds = (input: AchievementExportInput): number[] => {
  *   `timestamp` 0;
  * - anything else: no row. Never status 3: a claimed reward is not known.
  * Disused and unknown ids are written as held. Sorted by id.
+ * At most UIAF_MAX_ENTRIES rows, so our own import always reads the file:
+ * ids the game data knows first, then unknown ids ascending
+ * (`achievementExportCut` counts the rest).
  */
 export function achievementExportRows(input: AchievementExportInput): UiafEntry[] {
+  return capRows(allRows(input), input.known).rows
+}
+
+/** Rows over UIAF_MAX_ENTRIES left out of the file (0 for any real account). */
+export function achievementExportCut(input: AchievementExportInput): number {
+  return capRows(allRows(input), input.known).cut
+}
+
+function capRows(
+  rows: UiafEntry[],
+  known: ReadonlyMap<number, Achievement>,
+): { rows: UiafEntry[]; cut: number } {
+  if (rows.length <= UIAF_MAX_ENTRIES) return { rows, cut: 0 }
+  const kept = [
+    ...rows.filter((r) => known.has(r.id)),
+    ...rows.filter((r) => !known.has(r.id)),
+  ].slice(0, UIAF_MAX_ENTRIES)
+  return { rows: kept.sort((a, b) => a.id - b.id), cut: rows.length - UIAF_MAX_ENTRIES }
+}
+
+function allRows(input: AchievementExportInput): UiafEntry[] {
   const rows: UiafEntry[] = []
   const done = new Set<number>()
   for (const id of doneIds(input)) {
@@ -88,6 +113,8 @@ export interface AchievementExportFacts {
   markedOnly: number
   /** Unfinished achievements with a captured counter (UIAF status 1). */
   unfinished: number
+  /** Rows left out to keep the file within UIAF_MAX_ENTRIES (unknown ids, the highest first). */
+  cut: number
 }
 
 export function achievementExportFacts(input: AchievementExportInput): AchievementExportFacts {
@@ -97,8 +124,11 @@ export function achievementExportFacts(input: AchievementExportInput): Achieveme
     capturedUntimed: 0,
     markedOnly: 0,
     unfinished: 0,
+    cut: 0,
   }
-  for (const row of achievementExportRows(input)) {
+  const { rows, cut } = capRows(allRows(input), input.known)
+  facts.cut = cut
+  for (const row of rows) {
     if (row.status === 1) {
       facts.unfinished++
       continue

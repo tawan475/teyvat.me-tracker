@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "エクスポート…",
     "importsBack": "ここで再インポートできます",
+    "names": {
+      "teyvatmeFile": "Teyvat.me ファイル"
+    },
     "leavesOut": "含まれないもの：{list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me のキー（{n}）",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "手動で付けた印の達成日時（{n}）",
       "capturedWithoutTime": "ゲームが送らなかった達成日時（{n}）",
       "rewardClaimed": "報酬受取済み",
-      "handMarks": "手動の印（{n}）"
+      "handMarks": "手動の印（{n}）",
+      "overLimit": "上限 {max} 件を超える項目（{n}）"
     }
   }
 }

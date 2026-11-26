@@ -1,4 +1,4 @@
-import { OFF_SWITCHES, type OffSwitch } from '@gdt/shared'
+import { OFF_SWITCHES, type OffSwitch } from '@gdt/shared/off'
 import type { LeavesOut } from '@/data/export-formats'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
@@ -47,6 +47,13 @@ export function leavesOutWords(fact: LeavesOut): LeavesOutWords {
       return same(t('transfer.exportAs.leaves.rewardClaimed'))
     case 'hand-marks':
       return same(t('transfer.exportAs.leaves.handMarks', { n: formatNumber(fact.count) }))
+    case 'over-limit':
+      return same(
+        t('transfer.exportAs.leaves.overLimit', {
+          n: formatNumber(fact.count),
+          max: formatNumber(fact.max),
+        }),
+      )
   }
 }
 

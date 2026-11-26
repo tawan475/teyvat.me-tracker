@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "Экспорт как…",
     "importsBack": "Импортируется обратно сюда",
+    "names": {
+      "teyvatmeFile": "Файл Teyvat.me"
+    },
     "leavesOut": "Без: {list}",
     "leaves": {
       "teyvatmeKeys": "ключи Teyvat.me ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "время выполнения отмеченных вручную ({n})",
       "capturedWithoutTime": "время, которое игра не прислала ({n})",
       "rewardClaimed": "награда получена",
-      "handMarks": "отметки вручную ({n})"
+      "handMarks": "отметки вручную ({n})",
+      "overLimit": "записи сверх предела {max} ({n})"
     }
   }
 }

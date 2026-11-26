@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "Farklı dışa aktar…",
     "importsBack": "Buraya geri içe aktarılabilir",
+    "names": {
+      "teyvatmeFile": "Teyvat.me dosyası"
+    },
     "leavesOut": "Dışarıda kalan: {list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me anahtarları ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "elle işaretlenenlerin bitiş zamanları ({n})",
       "capturedWithoutTime": "oyunun göndermediği bitiş zamanları ({n})",
       "rewardClaimed": "ödül alındı",
-      "handMarks": "elle işaretler ({n})"
+      "handMarks": "elle işaretler ({n})",
+      "overLimit": "{max} sınırını aşan kayıtlar ({n})"
     }
   }
 }

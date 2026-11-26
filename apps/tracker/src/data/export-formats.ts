@@ -14,6 +14,7 @@
 
 // Zod-free subpaths only; this module is reached only through the menus' lazy import.
 import type { WishPull } from '@gdt/shared'
+import { UIAF_MAX_ENTRIES } from '@gdt/shared/achievements/uiaf'
 import { toPlainGood } from '@gdt/shared/good-plain'
 import { leylineFileStem } from '@gdt/shared/leyline'
 import { buildPaimonCsv, buildUigfExport } from '@gdt/shared/wish/formats'
@@ -22,6 +23,7 @@ import {
   buildAchievementUiaf,
   type AchievementExportInput,
 } from './achievement-export'
+import { isGuestAccount } from '@/local/guest-id'
 import type { WishItemIdLookup } from './wish-item-ids'
 
 export type ExportPage = 'snapshots' | 'wishes' | 'achievements'
@@ -42,6 +44,8 @@ export type LeavesOut =
   | { code: 'marks-without-time'; count: number }
   /** UIAF: captured, but the game sent no finish time (written as unknown). */
   | { code: 'captured-without-time'; count: number }
+  /** UIAF: entries over UIAF_MAX_ENTRIES left out (unknown ids), so our own import reads the file. */
+  | { code: 'over-limit'; count: number; max: number }
   /** UIAF: "reward claimed" (status 3) is never written: it is not known. */
   | { code: 'reward-claimed' }
   /** The capture's Leyline file, on the Achievements page: hand marks it does not hold (UIAF does). */
@@ -55,7 +59,14 @@ export interface ExportFile {
 
 export interface ExportFormat<Input> {
   id: string
+  /** The format's name, never translated (GOOD, UIGF v4.2…); the English one when `nameCode` is set. */
   name: string
+  /**
+   * A name the menu words in the site's language instead of `name`
+   * (`transfer.exportAs.names.<code>`): only "Teyvat.me file", whose word
+   * "file" is translated while "Teyvat.me" is not.
+   */
+  nameCode?: 'teyvatmeFile'
   readers: readonly string[]
   importsBack: boolean
   build(input: Input): ExportFile
@@ -82,6 +93,8 @@ export interface WishExportInput {
   /** The tracker's version (`export_app_version`). */
   appVersion: string
   now?: number
+  /** Time travel: the capture travelled to (epoch ms), which dates the file name. */
+  travelledTo?: number | null
 }
 
 export interface AchievementFileInput extends AchievementExportInput {
@@ -94,6 +107,8 @@ export interface AchievementFileInput extends AchievementExportInput {
   accountId: number
   appVersion: string
   now?: number
+  /** Time travel: the capture travelled to (epoch ms), which dates the file name. */
+  travelledTo?: number | null
 }
 
 export interface PageInputs {
@@ -103,9 +118,12 @@ export interface PageInputs {
 }
 
 const JSON_TYPE = 'application/json'
-const day = (now?: number) => new Date(now ?? Date.now()).toISOString().slice(0, 10)
+/** The file name's date: the capture travelled to, else the export's day. */
+const day = (input: { now?: number; travelledTo?: number | null }) =>
+  new Date(input.travelledTo ?? input.now ?? Date.now()).toISOString().slice(0, 10)
+/** The UID, else `guest` for the guest's account, else the account's id. */
 const fileUid = (input: { uid: string | null; accountId: number }) =>
-  input.uid ?? `account${input.accountId}`
+  input.uid ?? (isGuestAccount(input.accountId) ? 'guest' : `account${input.accountId}`)
 
 // ---------------------------------------------------------------- snapshots
 
@@ -130,6 +148,7 @@ const ITEM_LISTS = ['characters', 'weapons', 'artifacts'] as const
 const leylineSnapshot: ExportFormat<SnapshotExportInput> = {
   id: 'leyline',
   name: 'Teyvat.me file',
+  nameCode: 'teyvatmeFile',
   readers: [],
   importsBack: true,
   build: ({ leyline }) => ({ text: JSON.stringify(leyline), type: JSON_TYPE }),
@@ -176,7 +195,7 @@ const uigf: ExportFormat<WishExportInput> = {
   readers: ['Snap.Hutao.Remastered', 'Teyvat Guide', 'FufuLauncher', 'Moonward', 'Starward'],
   importsBack: true,
   build: (input) => ({ text: JSON.stringify(uigfExport(input).file, null, 2), type: JSON_TYPE }),
-  fileName: (input) => `wishes-uigf-${fileUid(input)}-${day(input.now)}.json`,
+  fileName: (input) => `wishes-uigf-${fileUid(input)}-${day(input)}.json`,
   leavesOut: (input) => {
     const count = input.pulls.filter((p) => !(p.item.itemId || input.itemIds?.(p))).length
     return count ? [{ code: 'no-item-id', count }] : []
@@ -189,7 +208,7 @@ const paimonCsv: ExportFormat<WishExportInput> = {
   readers: ['paimon.moe'],
   importsBack: true,
   build: (input) => ({ text: buildPaimonCsv(input.pulls), type: 'text/csv' }),
-  fileName: (input) => `wishes-paimonmoe-${fileUid(input)}-${day(input.now)}.csv`,
+  fileName: (input) => `wishes-paimonmoe-${fileUid(input)}-${day(input)}.csv`,
   leavesOut: () => [{ code: 'record-ids' }],
 }
 
@@ -206,13 +225,14 @@ const uiaf: ExportFormat<AchievementFileInput> = {
     ),
     type: JSON_TYPE,
   }),
-  fileName: (input) => `achievements-uiaf-${fileUid(input)}-${day(input.now)}.json`,
+  fileName: (input) => `achievements-uiaf-${fileUid(input)}-${day(input)}.json`,
   leavesOut: (input) => {
     const facts = achievementExportFacts(input)
     const out: LeavesOut[] = []
     if (facts.markedOnly) out.push({ code: 'marks-without-time', count: facts.markedOnly })
     if (facts.capturedUntimed)
       out.push({ code: 'captured-without-time', count: facts.capturedUntimed })
+    if (facts.cut) out.push({ code: 'over-limit', count: facts.cut, max: UIAF_MAX_ENTRIES })
     out.push({ code: 'reward-claimed' })
     return out
   },

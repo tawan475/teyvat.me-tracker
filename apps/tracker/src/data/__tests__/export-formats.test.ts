@@ -9,6 +9,7 @@ import {
   toPlainGood,
   type WishPull,
 } from '@gdt/shared'
+import { achievementExportFacts } from '../achievement-export'
 import { parseAchievementImport } from '../achievement-progress'
 import {
   formatsFor,
@@ -31,6 +32,12 @@ describe('formatsFor', () => {
         expect(f.name).not.toBe('')
         expect(f.importsBack).toBe(true)
       }
+  })
+
+  it('words only the Teyvat.me file in the site language (nameCode); format names stay', () => {
+    for (const page of ['snapshots', 'wishes', 'achievements'] as const)
+      for (const f of formatsFor(page))
+        expect(f.nameCode).toBe(f.id === 'leyline' ? 'teyvatmeFile' : undefined)
   })
 
   it('names no other tool for the Teyvat.me file; Genshin Optimizer and Seelie only for plain GOOD', () => {
@@ -129,6 +136,15 @@ describe('wishes', () => {
     expect(csv!.leavesOut(input)).toEqual([{ code: 'record-ids' }])
     expect(csv!.fileName({ ...input, uid: null })).toBe('wishes-paimonmoe-account3-2026-11-26.csv')
   })
+
+  it('dates the file by the capture travelled to; the guest without a UID is "guest"', () => {
+    const travelledTo = Date.UTC(2025, 4, 6, 7, 8, 9)
+    expect(uigf!.fileName({ ...input, travelledTo })).toBe(`wishes-uigf-${UID}-2025-05-06.json`)
+    expect(csv!.fileName({ ...input, travelledTo })).toBe(`wishes-paimonmoe-${UID}-2025-05-06.csv`)
+    expect(uigf!.fileName({ ...input, uid: null, accountId: -1 })).toBe(
+      'wishes-uigf-guest-2026-11-26.json',
+    )
+  })
 })
 
 describe('achievements', () => {
@@ -189,6 +205,24 @@ describe('achievements', () => {
     ])
     expect(file.entries.some((e) => e.status === 3)).toBe(false)
     expect(uiaf!.fileName(input)).toBe(`achievements-uiaf-${UID}-2026-11-26.json`)
+    expect(uiaf!.fileName({ ...input, travelledTo: Date.UTC(2025, 4, 6) })).toBe(
+      `achievements-uiaf-${UID}-2025-05-06.json`,
+    )
+    expect(uiaf!.fileName({ ...input, uid: null, accountId: -1 })).toBe(
+      'achievements-uiaf-guest-2026-11-26.json',
+    )
+  })
+
+  it('says how many entries the 10,000 limit cut', () => {
+    const marked = new Set(Array.from({ length: 10_002 }, (_, i) => 200_000 + i))
+    const cut = achievementExportFacts({ ...input, marked }).cut
+    expect(cut).toBeGreaterThan(0)
+    expect(uiaf!.leavesOut({ ...input, marked })).toContainEqual({
+      code: 'over-limit',
+      count: cut,
+      max: 10_000,
+    })
+    expect(uiaf!.leavesOut(input).some((f) => f.code === 'over-limit')).toBe(false)
   })
 
   it('the Teyvat.me file is the capture, as on Snapshots, without hand marks', () => {

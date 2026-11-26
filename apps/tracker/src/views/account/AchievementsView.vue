@@ -51,6 +51,7 @@ import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import { api } from '@/api'
 import type { AccountRef } from '@/data/account-data'
+import { exportRowsShown, importShown } from '@/data/export-rules'
 import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achievement-capture'
 import { useResource } from '@/data/use-resource'
 import { gameIcon, loadGameIcons } from '@/lib/assets'
@@ -60,7 +61,9 @@ import { readJson, writeJson } from '@/lib/storage'
 import { t } from '@/i18n'
 import { locale } from '@/i18n/locale'
 import { useFeedback } from '@/stores/feedback'
-import { useAccount, useReadOnly } from './context'
+import { useAccount, useDemo, useReadOnly, useTravel } from './context'
+
+const travel = useTravel()
 
 /**
  * Achievements: done = the newest snapshot that has achievements (irminsul
@@ -391,6 +394,7 @@ function undoAction(done: number[], undone: number[]) {
 
 /** Staff Inspect and viewers: the marks show, nothing is marked. */
 const readOnly = useReadOnly()
+const canImport = importShown('achievements', { readOnly, demo: useDemo() })
 
 function mark(ids: number[]) {
   if (readOnly) return
@@ -451,13 +455,13 @@ async function unmarkAll() {
  * capture travelled to). Everyone who can view the account; not in staff
  * Inspect. A row shows only when its data exists.
  */
-const exportFormats = computed<string[]>(() => {
-  if ((account.value as AccountRef).source === 'staff' || !ready.value) return []
+const exportFormats = computed<readonly string[]>(() => {
+  if (!ready.value) return []
   const c = captured.value
   const formats: string[] = []
   if ((c && c.ids.size > 0) || marks.marked.value.size > 0) formats.push('uiaf')
   if (account.value.latest) formats.push('leyline')
-  return formats
+  return exportRowsShown(account.value as AccountRef, formats)
 })
 async function loadExport() {
   const g = game.data.value
@@ -476,6 +480,7 @@ async function loadExport() {
     uid: account.value.uid?.trim() || null,
     accountId: account.value.id,
     appVersion: APP_VERSION,
+    travelledTo: travel.value?.takenAt ?? null,
   }
 }
 
@@ -506,9 +511,9 @@ async function importIds(ids: number[]): Promise<boolean> {
           {{ $t('achievements.notCaptured') }}
         </p>
       </template>
-      <template v-if="!readOnly || exportFormats.length" #actions>
+      <template v-if="canImport || exportFormats.length" #actions>
         <UiButton
-          v-if="!readOnly"
+          v-if="canImport"
           :disabled="!ready"
           :title="$t('achievements.importTitle')"
           @click="importOpen = true"

@@ -140,6 +140,9 @@
   "exportAs": {
     "button": "내보내기 형식…",
     "importsBack": "여기에서 다시 가져올 수 있음",
+    "names": {
+      "teyvatmeFile": "Teyvat.me 파일"
+    },
     "leavesOut": "제외: {list}",
     "leaves": {
       "teyvatmeKeys": "Teyvat.me 키 ({n})",
@@ -149,7 +152,8 @@
       "marksWithoutTime": "직접 표시한 업적의 완료 시각 ({n})",
       "capturedWithoutTime": "게임이 보내지 않은 완료 시각 ({n})",
       "rewardClaimed": "보상 수령",
-      "handMarks": "직접 표시 ({n})"
+      "handMarks": "직접 표시 ({n})",
+      "overLimit": "{max}개 한도를 넘는 항목 ({n})"
     }
   }
 }

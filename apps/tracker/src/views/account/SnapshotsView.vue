@@ -38,6 +38,7 @@ import UiPager from '@/components/ui/UiPager.vue'
 import { useSnapshotSelection } from '@/composables/useSnapshotSelection'
 import LiveRow from '@/components/live/LiveRow.vue'
 import { loadLive, loadSnapshots, type AccountRef } from '@/data/account-data'
+import { exportRowsShown } from '@/data/export-rules'
 import { noteLiveChange } from '@/live/journal'
 import { cancelExport, downloadSnapshotGood, exportJob, exportZip } from '@/data/export'
 import { offSince } from '@/data/not-shared'
@@ -88,7 +89,9 @@ const feedback = useFeedback()
  * which is `latest` there) as a file, for everyone who can view the
  * account; not in staff Inspect.
  */
-const exportable = computed(() => (account.value as AccountRef).source !== 'staff')
+const exportRows = computed(() =>
+  exportRowsShown(account.value as AccountRef, account.value.latest ? ['leyline', 'good'] : []),
+)
 async function loadExport() {
   const latest = account.value.latest
   if (!latest) throw new Error(t('transfer.export.noSnapshots'))
@@ -582,12 +585,7 @@ function selectionClearance(): number {
             :matched="filtered.length"
             @select="selectRange"
           />
-          <ExportAsMenu
-            v-if="exportable"
-            page="snapshots"
-            :formats="account.latest ? ['leyline', 'good'] : []"
-            :load="loadExport"
-          />
+          <ExportAsMenu page="snapshots" :formats="exportRows" :load="loadExport" />
         </div>
       </div>
 

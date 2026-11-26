@@ -12,7 +12,13 @@
 
 import type { Achievement, AchievementData, AchievementTexts } from '@gdt/game-data'
 import type { LiveJournalResponse } from '@gdt/shared'
-import { isUiaf, parseUiaf, UiafError, type UiafErrorCode } from '@gdt/shared/achievements/uiaf'
+import {
+  UIAF_MAX_ENTRIES,
+  isUiaf,
+  parseUiaf,
+  UiafError,
+  type UiafErrorCode,
+} from '@gdt/shared/achievements/uiaf'
 import {
   isPaimonBackup,
   paimonAccounts,
@@ -592,9 +598,9 @@ export interface ParsedAchievementImport {
     skipped: number
   }
   /**
-   * UIAF: the file is refused (nothing added, `ids` empty) and why: another
-   * version (`version` names it), over UIAF_MAX_ENTRIES entries, too big or
-   * malformed (`parseUiaf`'s code).
+   * The file is refused (nothing added, `ids` empty) and why: any format
+   * over UIAF_MAX_ENTRIES entries (`too_many`); a UIAF file also for another
+   * version (`version` names it), too big or malformed (`parseUiaf`'s code).
    */
   refused?: { code: UiafErrorCode; version?: string }
 }
@@ -642,7 +648,8 @@ export function parseAchievementImport(json: unknown): ParsedAchievementImport |
     }
   }
   if (Array.isArray(json)) {
-    return json.length > 0 && json.every(isId) ? { format: 'list', ids: idList(json) } : null
+    if (json.length === 0 || !json.every(isId)) return null
+    return capped('list', json.length) ?? { format: 'list', ids: idList(json) }
   }
   if (!isRecord(json)) return null
   if (isPaimonBackup(json)) {
@@ -650,21 +657,39 @@ export function parseAchievementImport(json: unknown): ParsedAchievementImport |
       .map((a) => ({ ...a, ids: paimonAchievements(json, a.prefix) }))
       .filter((a) => a.ids.length > 0)
     if (accounts.length === 0) return null
-    return { format: 'paimon', ids: accounts[0]!.ids, accounts }
+    return (
+      capped('paimon', Math.max(...accounts.map((a) => a.ids.length))) ?? {
+        format: 'paimon',
+        ids: accounts[0]!.ids,
+        accounts,
+      }
+    )
   }
   if (Array.isArray(json.gi_achievements)) {
-    return { format: 'good', ids: idList(json.gi_achievements) }
+    const list = json.gi_achievements
+    return capped('good', list.length) ?? { format: 'good', ids: idList(list) }
   }
   if (Array.isArray(json.achievements) && json.format === 'GOOD') {
-    return { format: 'good', ids: idList(json.achievements) }
+    const list = json.achievements
+    return capped('good', list.length) ?? { format: 'good', ids: idList(list) }
   }
   if (isRecord(json.achievements)) {
-    const ids = Object.entries(json.achievements)
+    const entries = Object.entries(json.achievements)
+    const ids = entries
       .filter(([id, value]) => /^\d+$/.test(id) && isRecord(value) && value.done === true)
       .map(([id]) => Number(id))
-    return { format: 'seelie', ids: idList(ids) }
+    return capped('seelie', entries.length) ?? { format: 'seelie', ids: idList(ids) }
   }
   return null
+}
+
+/**
+ * Every format is held to UIAF's entry limit (UIAF_MAX_ENTRIES, about 3×
+ * the game's achievements): a longer file is refused whole, saying why, as
+ * a UIAF file is.
+ */
+function capped(format: AchievementImportFormat, entries: number): ParsedAchievementImport | null {
+  return entries > UIAF_MAX_ENTRIES ? { format, ids: [], refused: { code: 'too_many' } } : null
 }
 
 export interface AchievementImportPlan {

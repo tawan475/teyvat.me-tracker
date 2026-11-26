@@ -23,6 +23,7 @@ import { EXPECTED_PITY, PRIMOS_PER_PULL, monthlyPulls, type BannerStats } from '
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
 import { loadLatestInventory, type AccountRef } from '@/data/account-data'
+import { exportRowsShown, importShown } from '@/data/export-rules'
 import { APP_VERSION } from '@/lib/app-version'
 import { useResource } from '@/data/use-resource'
 import { useAccount, useAccountRoute, useDemo, useReadOnly, useTravel } from './context'
@@ -117,7 +118,10 @@ const dialog = ref(false)
  * "Export as…": the pulls shown (in time travel those made by the capture's
  * time), for everyone who can view the account; not in staff Inspect.
  */
-const exportable = computed(() => (account.value as AccountRef).source !== 'staff')
+const exportRows = computed(() =>
+  exportRowsShown(account.value as AccountRef, ['uigf', 'paimon-csv']),
+)
+const canImport = importShown('wishes', { readOnly, demo })
 async function loadExport() {
   const h = history.value
   if (!h) throw new Error(t('wishes.loadFailed'))
@@ -129,6 +133,7 @@ async function loadExport() {
     pulls: [...h.banners.values()].flat(),
     itemIds: await loadWishItemIds(),
     appVersion: APP_VERSION,
+    travelledTo: travel.value?.takenAt ?? null,
   }
 }
 
@@ -157,16 +162,10 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
         </p>
       </template>
       <template v-if="ready && history?.total" #actions>
-        <UiButton v-if="!readOnly && !demo" size="sm" @click="dialog = true">
+        <UiButton v-if="canImport" size="sm" @click="dialog = true">
           <FileUp class="size-4" aria-hidden="true" />{{ $t('wishes.import') }}
         </UiButton>
-        <ExportAsMenu
-          v-if="exportable"
-          page="wishes"
-          size="sm"
-          :formats="['uigf', 'paimon-csv']"
-          :load="loadExport"
-        />
+        <ExportAsMenu page="wishes" size="sm" :formats="exportRows" :load="loadExport" />
       </template>
     </PageHeader>
 

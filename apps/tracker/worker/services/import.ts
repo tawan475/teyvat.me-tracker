@@ -59,6 +59,7 @@ import {
   type ArtifactIdentity,
   type BlobRef,
   type CatalogChunkParts,
+  type DecodedBlob,
   type GiCapture,
   type ImportResponse,
   type ImportWarning,
@@ -1248,9 +1249,9 @@ export function catalogChunkStatements(
 /**
  * Rows of LATEST_BLOBS_SQL by id, each decoded on its first read (planSections
  * reads only the neighbour sections it compresses or diffs against: one whose
- * hash matches decodes nothing). A base missing from the rows, or a chain
- * deeper than the decoder reads, fails here as it did when every row was
- * decoded up front.
+ * hash matches decodes nothing). A base missing from the rows fails here, as
+ * it did when every row was decoded up front; a chain of any depth whose
+ * bases are all among the rows decodes.
  */
 function knownBlobs(
   rows: Record<string, unknown>[],
@@ -1269,14 +1270,23 @@ function knownBlobs(
     })
   }
   const decoder = new BlobDecoder((id) => raw.get(id))
+  // Every base a row names must be among the rows (the decoder's message).
+  // A chain that loops is refused as the decoder's depth limit refused it.
   for (const blob of raw.values()) {
-    let base = blob.baseId
-    for (let depth = 1; base !== null; depth++) {
-      if (depth > 2) throw new Error(`Section ${base} is deeper than a base of a base`)
-      const next = raw.get(base)
-      if (!next) throw new Error(`Section ${base} is missing`)
-      base = next.baseId
+    const seen = new Set([blob.id])
+    for (let base = blob.baseId; base !== null; base = raw.get(base)!.baseId) {
+      if (!raw.has(base)) throw new Error(`Section ${base} is missing`)
+      if (seen.has(base)) throw new Error(`Section ${base} is deeper than a base of a base`)
+      seen.add(base)
     }
+  }
+  // Bases first, so the decoder (which reads at most a base of a base) finds
+  // each one decoded already: the old loop decoded every row in row order, so
+  // a chain deeper than that decoded whenever its bases came first.
+  const decode = (id: number): DecodedBlob => {
+    const baseId = raw.get(id)!.baseId
+    if (baseId !== null) decode(baseId)
+    return decoder.decode(id)
   }
   const known = new Map<number, KnownBlob>()
   const build = (id: number): KnownBlob | null => {
@@ -1292,7 +1302,7 @@ function knownBlobs(
       base: blob.baseId === null ? null : build(blob.baseId),
     } as KnownBlob
     // The decoder keeps what it decoded: each blob is decoded once at most.
-    Object.defineProperty(entry, 'decoded', { get: () => decoder.decode(id), enumerable: true })
+    Object.defineProperty(entry, 'decoded', { get: () => decode(id), enumerable: true })
     known.set(id, entry)
     return entry
   }

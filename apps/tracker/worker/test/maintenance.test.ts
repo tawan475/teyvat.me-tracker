@@ -1,7 +1,12 @@
 import { env, SELF } from 'cloudflare:test'
 import { readBundle, type AccountResponse, type Good, type ImportResponse } from '@gdt/shared'
 import { describe, expect, it } from 'vitest'
-import { COLLECT_SECTION_BLOBS, TRASH_DAYS, runMaintenance } from '../services/maintenance'
+import {
+  COLLECT_SECTION_BLOBS,
+  TRASH_DAYS,
+  maintenanceJob,
+  runMaintenance,
+} from '../services/maintenance'
 import { ORIGIN, bigGood, irminsulForm, sampleExtras, sampleGood, signUp } from './client'
 
 describe('maintenance', () => {
@@ -138,7 +143,8 @@ describe('maintenance', () => {
             : target.prepare(sql)
       },
     })
-    const result = await runMaintenance(failing, later)
+    // As the nightly cron runs it, recorded in job_runs.
+    const result = await maintenanceJob(failing, later)
     expect(result.blobsError).toContain('exceeded the time limit')
     expect(result.blobs).toBe(0)
     expect(result.snapshots).toBeGreaterThanOrEqual(1)
@@ -149,10 +155,23 @@ describe('maintenance', () => {
       "SELECT 1 FROM passkey_challenges WHERE challenge_hash = 'k4-expired'",
     ).first()
     expect(challenge).toBeNull()
+    // Staff Job runs shows the run as failed, with what the other clean-ups did.
+    const lastRun = async () =>
+      (await env.DB.prepare(
+        "SELECT ok, detail FROM job_runs WHERE job = 'maintenance' ORDER BY id DESC LIMIT 1",
+      ).first<{ ok: number; detail: string }>())!
+    const failed = await lastRun()
+    expect(failed.ok).toBe(0)
+    expect(JSON.parse(failed.detail)).toMatchObject({
+      blobsError: expect.stringContaining('exceeded the time limit'),
+      snapshots: result.snapshots,
+      tokens: result.tokens,
+    })
     // Nothing was collected; the next night's run does it.
     expect(await blobs()).toBe(blobsBefore)
-    const next = await runMaintenance(env.DB, later)
+    const next = await maintenanceJob(env.DB, later)
     expect(next.blobsError).toBeUndefined()
+    expect((await lastRun()).ok).toBe(1)
     expect(next.blobs).toBeGreaterThanOrEqual(1)
     expect(await blobs()).toBeLessThan(blobsBefore)
   })

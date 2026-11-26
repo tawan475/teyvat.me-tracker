@@ -26,6 +26,7 @@
 
 import { KEEP_EXPIRED_MS } from './auth-tokens'
 import { CODE_KEEP_MS } from './irminsul'
+import { recordJob } from './job-runs'
 import { COLLECT_LEGACY_BLOBS, repack, type RepackResult } from './repack'
 import { REFS_SQL, withLegacySchema } from './storage'
 import { expiredInvitesStatement } from './sharing'
@@ -82,6 +83,24 @@ export function collectAccountBlobs(d1: D1Database, accountId: number): D1Prepar
        RETURNING 1`,
     )
     .bind(accountId)
+}
+
+/**
+ * The nightly run as the cron starts it, recorded in `job_runs`: not ok when
+ * the section collection failed (the other clean-ups are done and their
+ * counts are in the detail with `blobsError`), so staff Job runs shows it.
+ */
+export function maintenanceJob(
+  d1: D1Database,
+  now = Date.now(),
+  options: { repackLimit?: number } = {},
+): Promise<MaintenanceResult> {
+  return recordJob(
+    d1,
+    'maintenance',
+    () => runMaintenance(d1, now, options),
+    (result) => ({ ok: result.blobsError === undefined, detail: result }),
+  )
 }
 
 export async function runMaintenance(

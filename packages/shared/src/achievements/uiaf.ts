@@ -98,7 +98,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
  * `list` a list. A UIGF file (`info.uigf_version` / `info.version`, or a
  * `hk4e` block) is never UIAF, even with a `list`.
  */
-export function isUiaf(json: unknown): json is Record<string, unknown> {
+export function isUiaf(json: unknown): boolean {
   if (!isRecord(json) || !isRecord(json.info) || !Array.isArray(json.list)) return false
   const info = json.info
   if (typeof info.uiaf_version !== 'string') return false
@@ -148,10 +148,11 @@ export function parseUiaf(input: string | unknown): ParsedUiaf {
     }
   }
   if (!isUiaf(json)) throw new UiafError('not_uiaf', 'Not a UIAF file')
-  const info = json.info as Record<string, unknown>
+  const file = json as { info: Record<string, unknown>; list: unknown[] }
+  const info = file.info
   const version = UIAF_VERSIONS.find((v) => v === info.uiaf_version)
   if (!version) throw new UiafError('version', `UIAF ${String(info.uiaf_version)} is not read`)
-  const list = json.list as unknown[]
+  const list = file.list
   if (list.length > UIAF_MAX_ENTRIES)
     throw new UiafError('too_many', `More than ${UIAF_MAX_ENTRIES} entries`)
 

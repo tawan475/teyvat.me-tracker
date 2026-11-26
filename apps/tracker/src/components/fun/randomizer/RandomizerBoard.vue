@@ -43,6 +43,7 @@ import { characterIcon } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { readJson, writeJson } from '@/lib/storage'
 import CharacterTile from './CharacterTile.vue'
+import { useBenchDrag } from './bench-drag'
 import FilterMenu from './FilterMenu.vue'
 import SlotReel from './SlotReel.vue'
 import { passersBy, play, reducedMotion, spinDuration, type Spin } from './motion'
@@ -130,6 +131,13 @@ function toggleBench(key: string) {
     ? state.benched.filter((k) => k !== key)
     : [...state.benched, key]
 }
+/** Dragging across the tiles benches (or brings back) the run of them. */
+const poolGrid = ref<HTMLElement | null>(null)
+useBenchDrag(poolGrid, {
+  keys: () => shown.value.map((c) => c.key),
+  benched: () => state.benched,
+  set: (keys) => (state.benched = keys),
+})
 
 // ------------------------------------------------------------ filters
 
@@ -599,8 +607,9 @@ const slots = computed(() =>
         </UiButton>
       </UiEmpty>
       <div
-        v-else
-        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,4.25rem),1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,5.25rem),1fr))] sm:gap-2.5"
+        v-show="shown.length"
+        ref="poolGrid"
+        class="grid select-none [-webkit-touch-callout:none] grid-cols-[repeat(auto-fill,minmax(min(100%,4.25rem),1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,5.25rem),1fr))] sm:gap-2.5"
       >
         <CharacterTile
           v-for="(character, index) in shown"
@@ -609,6 +618,7 @@ const slots = computed(() =>
           :character="character"
           :mark="benched.has(character.key) ? 'ban' : null"
           :priority="index < 24"
+          :data-bench-key="character.key"
           :label="
             $t(
               benched.has(character.key)

@@ -12,7 +12,7 @@
 
 import type { Achievement, AchievementData, AchievementTexts } from '@gdt/game-data'
 import type { LiveJournalResponse } from '@gdt/shared'
-import { isUiaf, parseUiaf, UiafError } from '@gdt/shared/achievements/uiaf'
+import { isUiaf, parseUiaf, UiafError, type UiafErrorCode } from '@gdt/shared/achievements/uiaf'
 import {
   isPaimonBackup,
   paimonAccounts,
@@ -591,6 +591,12 @@ export interface ParsedAchievementImport {
     /** Status 0 (invalid by the file's word) or a field of the wrong type: skipped. */
     skipped: number
   }
+  /**
+   * UIAF: the file is refused (nothing added, `ids` empty) and why: another
+   * version (`version` names it), over UIAF_MAX_ENTRIES entries, too big or
+   * malformed (`parseUiaf`'s code).
+   */
+  refused?: { code: UiafErrorCode; version?: string }
 }
 
 const isId = (value: unknown): value is number =>
@@ -605,8 +611,9 @@ function idList(values: unknown[]): number[] {
 
 /**
  * Reads completed achievement ids from a parsed JSON file; null when it is
- * none of the formats, or a UIAF file it refuses (another version, over
- * UIAF_MAX_ENTRIES entries: `parseUiaf` says which).
+ * none of the formats. A UIAF file it refuses (another version, over
+ * UIAF_MAX_ENTRIES entries…) answers format `uiaf` with no ids and
+ * `refused` saying why, so the dialog words it without a second parse.
  */
 export function parseAchievementImport(json: unknown): ParsedAchievementImport | null {
   if (isUiaf(json)) {
@@ -622,8 +629,16 @@ export function parseAchievementImport(json: unknown): ParsedAchievementImport |
         },
       }
     } catch (error) {
-      if (error instanceof UiafError) return null
-      throw error
+      if (!(error instanceof UiafError)) throw error
+      const version = (json as { info: { uiaf_version?: unknown } }).info.uiaf_version
+      return {
+        format: 'uiaf',
+        ids: [],
+        refused: {
+          code: error.code,
+          ...(error.code === 'version' ? { version: String(version) } : {}),
+        },
+      }
     }
   }
   if (Array.isArray(json)) {

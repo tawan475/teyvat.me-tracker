@@ -497,10 +497,28 @@ describe('UIAF import', () => {
     expect(parseAchievementImport(uiaf([row(10), row(20)], 'v1.0'))?.ids).toEqual([10, 20])
   })
 
-  it('refuses a UIAF file of another version or over the limit', () => {
-    expect(parseAchievementImport(uiaf([row(10, 2)], 'v2.0'))).toBeNull()
+  it('refuses a UIAF file of another version or over the limit, saying why', () => {
+    expect(parseAchievementImport(uiaf([row(10, 2)], 'v2.0'))).toEqual({
+      format: 'uiaf',
+      ids: [],
+      refused: { code: 'version', version: 'v2.0' },
+    })
     const many = Array.from({ length: 10_001 }, (_, i) => row(80000 + i, 2))
-    expect(parseAchievementImport(uiaf(many))).toBeNull()
+    expect(parseAchievementImport(uiaf(many))).toEqual({
+      format: 'uiaf',
+      ids: [],
+      refused: { code: 'too_many' },
+    })
+    // A refused file plans nothing.
+    const refused = parseAchievementImport(uiaf(many))!
+    expect(
+      planAchievementImport(
+        refused.ids,
+        { captured: new Set(), marked: new Set() },
+        new Map(),
+        refused,
+      ).add,
+    ).toEqual([])
   })
 
   it('never reads a UIGF wish file as achievements', () => {

@@ -12,13 +12,11 @@
  * word them in every language.
  */
 
-import {
-  buildPaimonCsv,
-  buildUigfExport,
-  leylineFileStem,
-  toPlainGood,
-  type WishPull,
-} from '@gdt/shared'
+// Zod-free subpaths only; this module is reached only through the menus' lazy import.
+import type { WishPull } from '@gdt/shared'
+import { toPlainGood } from '@gdt/shared/good-plain'
+import { leylineFileStem } from '@gdt/shared/leyline'
+import { buildPaimonCsv, buildUigfExport } from '@gdt/shared/wish/formats'
 import {
   achievementExportFacts,
   buildAchievementUiaf,
@@ -123,10 +121,16 @@ const notShared = (leyline: Readonly<Record<string, unknown>>): LeavesOut[] => {
 
 const ITEM_LISTS = ['characters', 'weapons', 'artifacts'] as const
 
+/**
+ * No other tool is named for it: a part not shared is written as an empty
+ * list (`"characters": []`), which Genshin Optimizer can read as "delete
+ * those" (plain GOOD leaves the key out instead). The menu says it imports
+ * back here.
+ */
 const leylineSnapshot: ExportFormat<SnapshotExportInput> = {
   id: 'leyline',
   name: 'Teyvat.me (Leyline)',
-  readers: ['Genshin Optimizer', 'Seelie'],
+  readers: [],
   importsBack: true,
   build: ({ leyline }) => ({ text: JSON.stringify(leyline), type: JSON_TYPE }),
   fileName: ({ takenAt }) => `${leylineFileStem(takenAt)}.json`,

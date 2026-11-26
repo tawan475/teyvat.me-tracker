@@ -143,4 +143,34 @@ describe('toPlainGood', () => {
     expect(toPlainGood(once)).toEqual(once)
     expect('weapons' in once).toBe(false)
   })
+
+  it('keeps only GOOD substat keys: per-substat rolls and gi_* fields go', () => {
+    const artifact = {
+      setKey: 'GladiatorsFinale',
+      slotKey: 'flower',
+      level: 20,
+      rarity: 5,
+      mainStatKey: 'hp',
+      location: '',
+      lock: false,
+      substats: [
+        { key: 'critRate_', value: 7.8, initialValue: 3.9, rolls: [3.9, 3.9], gi_tier: 4 },
+        { key: 'atk', value: 19 },
+      ],
+      unactivatedSubstats: [{ key: 'def', value: 23, rolls: [23], gi_x: 1 }],
+      gi_rolls: '0001',
+    }
+    const input = leyline({ artifacts: [artifact] })
+    const before = JSON.stringify(input)
+    const plain = toPlainGood(input)
+    const out = (plain.artifacts as Record<string, unknown>[])[0]!
+    expect(out.substats).toEqual([
+      { key: 'critRate_', value: 7.8, initialValue: 3.9 },
+      { key: 'atk', value: 19 },
+    ])
+    expect(out.unactivatedSubstats).toEqual([{ key: 'def', value: 23 }])
+    for (const sub of [...(out.substats as object[]), ...(out.unactivatedSubstats as object[])])
+      for (const key of Object.keys(sub)) expect(['key', 'value', 'initialValue']).toContain(key)
+    expect(JSON.stringify(input)).toBe(before)
+  })
 })

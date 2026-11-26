@@ -114,9 +114,9 @@ function readEntry(raw: unknown): UiafEntry | null {
   const { id, current, status, timestamp } = raw
   if (typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0 || id > UIAF_MAX_ID)
     return null
-  // Read leniently, written strictly: a missing counter or time is "unknown".
-  if (current !== undefined && !nonNegative(current)) return null
-  if (timestamp !== undefined && !nonNegative(timestamp)) return null
+  // Read leniently, written strictly: a missing or unreadable counter or time
+  // is "unknown" (only a bad id or status leaves an entry out), so a finished
+  // entry with a bad counter or time is still finished.
   let read: UiafStatus
   if (status === undefined)
     read = 2 // v1.0 listed finished achievements
@@ -124,9 +124,9 @@ function readEntry(raw: unknown): UiafEntry | null {
   else return null
   return {
     id,
-    current: current === undefined ? 0 : Math.floor(current),
+    current: nonNegative(current) ? Math.floor(current) : 0,
     status: read,
-    timestamp: timestamp === undefined ? UIAF_UNKNOWN_TIME : Math.floor(timestamp),
+    timestamp: nonNegative(timestamp) ? Math.floor(timestamp) : UIAF_UNKNOWN_TIME,
   }
 }
 

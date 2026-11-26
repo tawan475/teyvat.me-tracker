@@ -4,6 +4,10 @@
  *
  * - Every top-level `gi_*` key and `leyline` go; so does every `gi_*` field
  *   on a character, weapon or artifact (`gi_rolls`, `gi_guid`, `gi_exp`).
+ * - An artifact's substats (and `unactivatedSubstats`) keep only the keys
+ *   GOOD defines for one (`GOOD_SUBSTAT_FIELDS`, Genshin Optimizer's substat schema:
+ *   `key`, `value`, `initialValue`); GGScanner's per-substat `rolls` and any
+ *   `gi_*` field go.
  * - A build part the capture did not share (`gi_off` names `characters`,
  *   `weapons`, `artifacts` or `materials`) is left OUT, never written empty:
  *   Genshin Optimizer's import can delete what is "not in the import", so an
@@ -22,10 +26,29 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const isOurs = (key: string) => key === 'leyline' || key.startsWith('gi_')
 
+/** The keys a GOOD substat has (Genshin Optimizer's `substatSchema`). */
+export const GOOD_SUBSTAT_FIELDS = ['key', 'value', 'initialValue'] as const
+
+function plainSubstat(substat: unknown): unknown {
+  if (!isRecord(substat)) return substat
+  const out: Record<string, unknown> = {}
+  for (const key of GOOD_SUBSTAT_FIELDS) if (key in substat) out[key] = substat[key]
+  return out
+}
+
+/** The artifact fields that are lists of substats. */
+const SUBSTAT_LISTS = ['substats', 'unactivatedSubstats'] as const
+
 function plainItem(item: unknown): unknown {
   if (!isRecord(item)) return item
   const out: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(item)) if (!key.startsWith('gi_')) out[key] = value
+  for (const [key, value] of Object.entries(item)) {
+    if (key.startsWith('gi_')) continue
+    out[key] =
+      (SUBSTAT_LISTS as readonly string[]).includes(key) && Array.isArray(value)
+        ? value.map(plainSubstat)
+        : value
+  }
   return out
 }
 

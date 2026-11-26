@@ -17,7 +17,12 @@
  */
 
 import type { Achievement } from '@gdt/game-data'
-import { buildUiaf, UIAF_UNKNOWN_TIME, type UiafEntry, type UiafFile } from '@gdt/shared'
+import {
+  buildUiaf,
+  UIAF_UNKNOWN_TIME,
+  type UiafEntry,
+  type UiafFile,
+} from '@gdt/shared/achievements/uiaf'
 import { isDone, type CapturedAchievements, type DoneState } from './achievement-progress'
 
 export interface AchievementExportInput {

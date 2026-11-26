@@ -92,7 +92,7 @@ describe('parseUiaf', () => {
     expect(parsed.unfinished).toBe(1)
   })
 
-  it('leaves out and counts entries of the wrong types', () => {
+  it('leaves out and counts entries with a bad id or status only', () => {
     const parsed = parseUiaf(
       v11([
         { id: '80001', current: 0, status: 2, timestamp: 0 },
@@ -107,8 +107,42 @@ describe('parseUiaf', () => {
         { id: 80006, current: 0, status: 2, timestamp: 0 },
       ]),
     )
-    expect(parsed.malformed).toBe(9)
-    expect(parsed.finished).toEqual([80006])
+    // 80002 (counter '1') and 80004 (time -1) are finished all the same.
+    expect(parsed.malformed).toBe(7)
+    expect(parsed.finished).toEqual([80002, 80004, 80006])
+  })
+
+  it('reads a finished entry with a bad counter or time as finished, both unknown', () => {
+    const parsed = parseUiaf(
+      v11([
+        { id: 80001, current: -3, status: 2, timestamp: -1 },
+        { id: 80002, current: 'x', status: 3, timestamp: 'y' },
+        { id: 80003, current: Number.NaN, timestamp: null },
+        { id: 80004, current: -1, status: 1, timestamp: 'z' },
+      ]),
+    )
+    expect(parsed.malformed).toBe(0)
+    expect(parsed.finished).toEqual([80001, 80002, 80003])
+    expect(parsed.unfinished).toBe(1)
+    for (const entry of parsed.entries) {
+      expect(entry.current).toBe(0)
+      expect(entry.timestamp).toBe(UIAF_UNKNOWN_TIME)
+    }
+  })
+
+  it('never reads a file naming another standard or holding a UIGF block as UIAF', () => {
+    const list = [{ id: 80001, current: 0, status: 2, timestamp: 0 }]
+    for (const other of ['uigf_version', 'srgf_version']) {
+      const file = { info: { export_app: 'Test', uiaf_version: 'v1.1', [other]: 'v3.0' }, list }
+      expect(isUiaf(file)).toBe(false)
+      expect(code(() => parseUiaf(file))).toBe('not_uiaf')
+    }
+    for (const block of ['hk4e', 'hkrpg', 'nap', 'hk4e_ugc']) {
+      const file = { info: { export_app: 'Test', uiaf_version: 'v1.1' }, list, [block]: [] }
+      expect(isUiaf(file)).toBe(false)
+      expect(code(() => parseUiaf(file))).toBe('not_uiaf')
+    }
+    expect(isUiaf({ info: { export_app: 'Test', uiaf_version: 'v1.1' }, list })).toBe(true)
   })
 
   it('refuses what is not UIAF v1.0 or v1.1', () => {

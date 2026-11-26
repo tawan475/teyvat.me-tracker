@@ -8,13 +8,16 @@
     "./achievements/uiaf": "./src/achievements/uiaf.ts",
     "./codec/bundle": "./src/codec/bundle.ts",
     "./dictionary/materials": "./src/dictionary/materials.ts",
+    "./good": "./src/good.ts",
     "./good-plain": "./src/good-plain.ts",
     "./import": "./src/import.ts",
+    "./leyline": "./src/leyline.ts",
     "./oauth": "./src/oauth.ts",
     "./off": "./src/off.ts",
     "./permissions": "./src/permissions.ts",
     "./rolls": "./src/rolls.ts",
-    "./settings": "./src/settings.ts"
+    "./settings": "./src/settings.ts",
+    "./wish/formats": "./src/wish/formats.ts"
   },
   "scripts": {
     "test": "vitest run",

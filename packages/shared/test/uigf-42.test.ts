@@ -69,6 +69,18 @@ describe('UIGF v4.2 import', () => {
     expect(file.miliastraSkipped).toBe(2)
   })
 
+  it('reads a file holding only Miliastra records as no wishes and the skipped count', () => {
+    for (const hk4e_ugc of [
+      [{ uid: UID, timezone: 8, list: [ugc(1), ugc(2)] }],
+      { uid: UID, timezone: 8, list: [ugc(1), ugc(2)] },
+    ]) {
+      const file = parseWishFile(JSON.stringify({ info, hk4e_ugc }))
+      expect(file.format).toBe('uigf')
+      expect(file.accounts).toEqual([])
+      expect(file.miliastraSkipped).toBe(2)
+    }
+  })
+
   it('says nothing of Miliastra for a file without the block', () => {
     const file = parseWishFile(
       JSON.stringify({ info, hk4e: [{ uid: UID, timezone: 8, list: [] }] }),
@@ -146,6 +158,16 @@ describe('UIGF v4.2 export', () => {
       '',
       '',
     ])
+  })
+
+  it("pins today's v4.1 bytes (key order included)", () => {
+    const file = buildUigf(
+      [{ uid: UID, timezone: 8, pulls: [pull(1, 'Diluc'), pull(2, unknownName)] }],
+      { name: 'Teyvat.me', version: '1', now: 1_700_000_000_000 },
+    )
+    expect(JSON.stringify(file)).toBe(
+      '{"info":{"export_timestamp":1700000000,"export_app":"Teyvat.me","export_app_version":"1","version":"v4.1"},"hk4e":[{"uid":812345678,"timezone":8,"lang":"en-us","list":[{"uigf_gacha_type":"301","gacha_type":"301","item_id":"10000016","count":"1","time":"2026-01-02 03:04:06","name":"Diluc","item_type":"Character","rank_type":"5","id":"1000000000000000001"},{"uigf_gacha_type":"301","gacha_type":"301","item_id":"","count":"1","time":"2026-01-02 03:04:07","name":"Made-up New Character","item_type":"Character","rank_type":"5","id":"1000000000000000002"}]}]}',
+    )
   })
 
   it('v4.1 and v4.2 differ only in the version string', () => {

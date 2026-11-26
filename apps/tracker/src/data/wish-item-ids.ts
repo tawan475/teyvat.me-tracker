@@ -8,7 +8,8 @@
  */
 
 import { loadPlanner, type PlannerData } from '@gdt/game-data'
-import { toGoodKey, type WishPull } from '@gdt/shared'
+import type { WishPull } from '@gdt/shared'
+import { toGoodKey } from '@gdt/shared/good'
 
 export type WishItemIdLookup = (pull: WishPull) => number | undefined
 

@@ -32,6 +32,15 @@ describe('formatsFor', () => {
         expect(f.importsBack).toBe(true)
       }
   })
+
+  it('names no other tool for the Teyvat.me file; Genshin Optimizer and Seelie only for plain GOOD', () => {
+    for (const page of ['snapshots', 'achievements'] as const)
+      expect(formatsFor(page).find((f) => f.id === 'leyline')!.readers).toEqual([])
+    for (const page of ['snapshots', 'wishes', 'achievements'] as const)
+      for (const f of formatsFor(page))
+        for (const tool of ['Genshin Optimizer', 'Seelie'])
+          expect(f.readers.includes(tool)).toBe(f.id === 'good')
+  })
 })
 
 describe('snapshots', () => {

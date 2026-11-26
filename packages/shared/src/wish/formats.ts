@@ -59,7 +59,11 @@ export function parseWishFile(text: string): WishFile {
   } catch {
     throw new WishFileError('Not a UIGF JSON or paimon.moe file')
   }
-  if (json && typeof json === 'object' && ('hk4e' in json || 'list' in json)) {
+  if (
+    json &&
+    typeof json === 'object' &&
+    ('hk4e' in json || 'list' in json || 'hk4e_ugc' in json)
+  ) {
     return parseUigf(json as Record<string, unknown>)
   }
   if (json && typeof json === 'object' && hasPaimonCounters(json as Record<string, unknown>)) {
@@ -125,6 +129,8 @@ export function parseUigf(json: Record<string, unknown>): WishFile {
       ],
     }
   }
+  // UIGF v4.2 with Miliastra records only: no wishes, the skipped count said.
+  if ('hk4e_ugc' in json) return { ...skipped, format: 'uigf', accounts: [] }
   throw new WishFileError('Not a UIGF file')
 }
 

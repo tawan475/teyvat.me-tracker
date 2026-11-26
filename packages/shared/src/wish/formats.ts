@@ -2,7 +2,9 @@
  * Wish history files of other sites, in and out:
  * - UIGF v4 (uigf.org; Snap Hutao, Starward, genshin-wish-export and most
  *   tools): `{info, hk4e: [{uid, timezone, lang, list}]}`. Reading also takes
- *   v3 and older (`{info: {uid, lang, region_time_zone}, list}`).
+ *   v3 and older (`{info: {uid, lang, region_time_zone}, list}`). v4.2 adds
+ *   `hk4e_ugc` (Miliastra Wonderland wishes): never stored, counted as
+ *   skipped (`WishFile.miliastraSkipped`).
  * - paimon.moe's importer CSV (`paimonmoe,importer,version,1,0`, then
  *   `gacha_type,time,name,item_type,rank_type` rows; what its Local
  *   Importer reads), and paimon.moe's own backup (Settings → Export: its
@@ -36,6 +38,12 @@ export interface WishFileAccount {
 export interface WishFile {
   format: 'uigf' | 'paimon-csv' | 'paimon-xlsx' | 'paimon-backup'
   accounts: WishFileAccount[]
+  /**
+   * UIGF v4.2: records in the file's `hk4e_ugc` block (Miliastra Wonderland),
+   * left out (the tracker keeps Genshin's banners only). Absent when the file
+   * has no such block.
+   */
+  miliastraSkipped?: number
 }
 
 const str = (value: unknown): string =>
@@ -85,8 +93,10 @@ export function parseUigf(json: Record<string, unknown>): WishFile {
   // A UIAF achievement file has `info` and `list` too, never wishes.
   if (isUiaf(json)) throw new WishFileError('An achievement file (UIAF), not wishes')
   const info = (json.info ?? {}) as Record<string, unknown>
+  const skipped = 'hk4e_ugc' in json ? { miliastraSkipped: miliastraRecords(json.hk4e_ugc) } : {}
   if (Array.isArray(json.hk4e)) {
     return {
+      ...skipped,
       format: 'uigf',
       accounts: json.hk4e.map((entry: Record<string, unknown>) => {
         const uid = str(entry.uid) || null
@@ -103,6 +113,7 @@ export function parseUigf(json: Record<string, unknown>): WishFile {
   if (Array.isArray(json.list)) {
     const uid = str(info.uid) || null
     return {
+      ...skipped,
       format: 'uigf',
       accounts: [
         {
@@ -117,6 +128,41 @@ export function parseUigf(json: Record<string, unknown>): WishFile {
   throw new WishFileError('Not a UIGF file')
 }
 
+/**
+ * The records of a `hk4e_ugc` block: a list of accounts with a `list` each,
+ * as the spec means (its published schema puts the account's fields on the
+ * array itself, so one account object is read too).
+ */
+function miliastraRecords(block: unknown): number {
+  const lists = (Array.isArray(block) ? block : [block]).map((entry) =>
+    entry && typeof entry === 'object' ? (entry as { list?: unknown }).list : undefined,
+  )
+  return lists.reduce<number>((sum, list) => sum + (Array.isArray(list) ? list.length : 0), 0)
+}
+
+/** The UIGF versions written: v4.1 (what older builds wrote) and v4.2 (the current spec). */
+export type UigfExportVersion = 'v4.1' | 'v4.2'
+
+export interface UigfExportOptions {
+  /** `version` in `info`; v4.1 by default. Both write the same `hk4e` records. */
+  version?: UigfExportVersion
+  /** The game's item id for a pull the table does not know (the game data, by key or name). */
+  itemId?: (pull: WishPull) => number | undefined
+  /**
+   * A pull whose item id is still unknown: `empty` writes `item_id: ""` (as
+   * v4.1 exports always did), `leave-out` leaves the record out and counts
+   * it: most UIGF readers refuse an empty id (Snap.Hutao.Remastered,
+   * Moonward, the Latte Helper).
+   */
+  missingItemId?: 'empty' | 'leave-out'
+}
+
+export interface UigfExport {
+  file: unknown
+  /** Records left out for want of an item id (`missingItemId: 'leave-out'`). */
+  missingItemId: number
+}
+
 export interface WishExportAccount {
   uid: string
   timezone: number
@@ -124,35 +170,56 @@ export interface WishExportAccount {
   pulls: readonly WishPull[]
 }
 
-/** UIGF v4.1. Oldest first; `count` is always 1; synthetic ids are exported as they are. */
+/** UIGF v4.1 (or `options.version`). Oldest first; `count` is always 1; synthetic ids are exported as they are. */
 export function buildUigf(
   accounts: readonly WishExportAccount[],
   app: { name: string; version: string; now?: number },
+  options: UigfExportOptions = {},
 ): unknown {
-  return {
+  return buildUigfExport(accounts, app, options).file
+}
+
+/** UIGF with what was left out; see UigfExportOptions. */
+export function buildUigfExport(
+  accounts: readonly WishExportAccount[],
+  app: { name: string; version: string; now?: number },
+  options: UigfExportOptions = {},
+): UigfExport {
+  let missing = 0
+  const file = {
     info: {
       export_timestamp: Math.floor((app.now ?? Date.now()) / 1000),
       export_app: app.name,
       export_app_version: app.version,
-      version: 'v4.1',
+      version: options.version ?? 'v4.1',
     },
     hk4e: accounts.map((account) => ({
       uid: /^\d+$/.test(account.uid) ? Number(account.uid) : account.uid,
       timezone: account.timezone,
       lang: 'en-us',
-      list: account.pulls.map((pull) => ({
-        uigf_gacha_type: String(uigfGachaType(pull.gachaType)),
-        gacha_type: String(pull.gachaType),
-        item_id: pull.item.itemId ? String(pull.item.itemId) : '',
-        count: '1',
-        time: formatWishTime(pull.time),
-        name: pull.item.name,
-        item_type: wishItemTypeLabel(pull.item.kind),
-        rank_type: pull.item.rank ? String(pull.item.rank) : '',
-        id: pull.id.toString(),
-      })),
+      list: account.pulls.flatMap((pull) => {
+        const itemId = pull.item.itemId || options.itemId?.(pull) || 0
+        if (!itemId && options.missingItemId === 'leave-out') {
+          missing++
+          return []
+        }
+        return [
+          {
+            uigf_gacha_type: String(uigfGachaType(pull.gachaType)),
+            gacha_type: String(pull.gachaType),
+            item_id: itemId ? String(itemId) : '',
+            count: '1',
+            time: formatWishTime(pull.time),
+            name: pull.item.name,
+            item_type: wishItemTypeLabel(pull.item.kind),
+            rank_type: pull.item.rank ? String(pull.item.rank) : '',
+            id: pull.id.toString(),
+          },
+        ]
+      }),
     })),
   }
+  return { file, missingItemId: missing }
 }
 
 // ------------------------------------------------------------ paimon.moe CSV

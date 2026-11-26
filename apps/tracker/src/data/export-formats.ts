@@ -129,7 +129,7 @@ const ITEM_LISTS = ['characters', 'weapons', 'artifacts'] as const
  */
 const leylineSnapshot: ExportFormat<SnapshotExportInput> = {
   id: 'leyline',
-  name: 'Teyvat.me (Leyline)',
+  name: 'Teyvat.me file',
   readers: [],
   importsBack: true,
   build: ({ leyline }) => ({ text: JSON.stringify(leyline), type: JSON_TYPE }),

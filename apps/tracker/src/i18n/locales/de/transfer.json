@@ -136,5 +136,19 @@
     "alreadyRunning": "Export läuft bereits",
     "workerStopped": "Der Export-Worker wurde unerwartet beendet.",
     "workerUnreadable": "Der Export-Worker hat eine unlesbare Nachricht gesendet."
+  },
+  "exportAs": {
+    "button": "Exportieren als…",
+    "leavesOut": "Ohne: {list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me-Schlüssel ({n})",
+      "itemExtras": "Teyvat.me-Gegenstandsfelder ({n})",
+      "noItemId": "Gebete ohne Item-ID ({n})",
+      "recordIds": "Gebets-IDs, UID, Zeitzone",
+      "marksWithoutTime": "Abschlusszeiten von Handmarkierungen ({n})",
+      "capturedWithoutTime": "vom Spiel nicht gesendete Abschlusszeiten ({n})",
+      "rewardClaimed": "Belohnung erhalten",
+      "handMarks": "Handmarkierungen ({n})"
+    }
   }
 }

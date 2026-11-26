@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
-import { Download, FileJson, FileUp, Trash2 } from 'lucide-vue-next'
+import { FileJson, FileUp, Trash2 } from 'lucide-vue-next'
 import {
   WISH_SITE_IMPORT_MAX_RECORDS,
-  buildPaimonCsv,
   buildUigf,
   parseWishBytes,
   type AccountResponse,
@@ -19,7 +18,6 @@ import UiStat from '@/components/ui/UiStat.vue'
 import WishCaptureImport from './WishCaptureImport.vue'
 import WishLinkImport from './WishLinkImport.vue'
 import type { WishHistory } from '@/data/wish-history'
-import { saveBlob } from '@/data/export'
 import { t } from '@/i18n'
 import { formatBytes, formatDateTime, formatNumber, formatRelative } from '@/lib/format'
 import { useFeedback } from '@/stores/feedback'
@@ -28,12 +26,13 @@ import { isGuestAccount } from '@/local/guest-id'
 import { useResource } from '@/data/use-resource'
 
 /**
- * Wish history in and out: import a UIGF v4 JSON (or older UIGF), a
- * paimon.moe CSV (its Local Importer's format) or Excel export, or
- * paimon.moe's own backup;
- * export UIGF v4 or that CSV; delete the history. Files are read and
- * written in the browser; an import sends the records (merged by id on the
- * server, so a file overlapping what is held only adds what is new).
+ * Wish history in: import from Capture, the game's wish link, or a file (a
+ * UIGF v4 JSON or older UIGF, a paimon.moe CSV (its Local Importer's
+ * format) or Excel export, or paimon.moe's own backup); the history's data
+ * figures; delete the history. Exports are the page's "Export as…" menu
+ * (2026-11-26). Files are read in the browser; an import sends the records
+ * (merged by id on the server, so a file overlapping what is held only adds
+ * what is new).
  */
 const props = defineProps<{
   open: boolean
@@ -110,7 +109,12 @@ const entry = computed<WishFileAccount | null>(() =>
 const mismatch = computed(() => {
   const e = entry.value
   if (!file.value) return ''
-  if (file.value.accounts.length === 0) return t('wishes.transfer.noRecords')
+  if (file.value.accounts.length === 0) {
+    const skipped = file.value.miliastraSkipped
+    return skipped
+      ? `${t('wishes.transfer.noRecords')} · ${t('wishes.transfer.miliastraSkipped', { n: formatNumber(skipped) })}`
+      : t('wishes.transfer.noRecords')
+  }
   if (e?.uid && uid.value && e.uid !== uid.value) {
     return t('wishes.transfer.uidMismatch', { uid: e.uid, own: uid.value })
   }
@@ -188,10 +192,8 @@ async function importFile() {
 }
 
 const pulls = computed(() => (props.history ? [...props.history.banners.values()].flat() : []))
-const stamp = () => new Date().toISOString().slice(0, 10)
-const fileUid = () => uid.value ?? `account${props.account.id}`
 
-/** The UIGF file as the Export button writes it. */
+/** The history as a UIGF file, for its size in the Data row. */
 function uigfText(): string {
   const history = props.history
   if (!history) return ''
@@ -222,21 +224,6 @@ const figures = computed(() => {
   }
 })
 
-function exportUigf() {
-  if (!props.history) return
-  saveBlob(
-    new Blob([uigfText()], { type: 'application/json' }),
-    `wishes-uigf-${fileUid()}-${stamp()}.json`,
-  )
-}
-
-function exportPaimon() {
-  saveBlob(
-    new Blob([buildPaimonCsv(pulls.value)], { type: 'text/csv' }),
-    `wishes-paimonmoe-${fileUid()}-${stamp()}.csv`,
-  )
-}
-
 async function remove() {
   const ok = await feedback.confirm({
     title: t('wishes.transfer.deleteTitle'),
@@ -259,7 +246,7 @@ async function remove() {
 </script>
 
 <template>
-  <UiModal :open="open" :title="$t('wishes.importExport')" @close="emit('close')">
+  <UiModal :open="open" :title="$t('wishes.import')" @close="emit('close')">
     <div class="flex flex-col gap-5">
       <section v-if="!readOnly" class="flex flex-col gap-3" :aria-label="$t('wishes.import')">
         <UiSegmented v-model="mode" :options="modes" :label="$t('wishes.transfer.importFrom')" />
@@ -326,7 +313,12 @@ async function remove() {
             </p>
             <p v-else-if="entry" class="tabular font-mono text-sm text-text-secondary">
               {{ $t('wishes.pulls', { n: formatNumber(entry.records.length) })
-              }}{{ entry.uid ? ` · UID ${entry.uid}` : '' }}
+              }}{{ entry.uid ? ` · UID ${entry.uid}` : ''
+              }}{{
+                file?.miliastraSkipped
+                  ? ` · ${$t('wishes.transfer.miliastraSkipped', { n: formatNumber(file.miliastraSkipped) })}`
+                  : ''
+              }}
             </p>
           </div>
           <UiButton
@@ -381,26 +373,6 @@ async function remove() {
               })
             }}</span>
           </UiStat>
-        </div>
-      </section>
-
-      <section class="flex flex-col gap-2" :aria-label="$t('wishes.export')">
-        <h3 class="text-sm font-semibold">{{ $t('wishes.export') }}</h3>
-        <div class="flex flex-wrap gap-2">
-          <UiButton
-            :disabled="pulls.length === 0"
-            :title="$t('wishes.transfer.uigfTitle')"
-            @click="exportUigf"
-          >
-            <Download class="size-4" aria-hidden="true" />UIGF
-          </UiButton>
-          <UiButton
-            :disabled="pulls.length === 0"
-            :title="$t('wishes.transfer.paimonTitle')"
-            @click="exportPaimon"
-          >
-            <Download class="size-4" aria-hidden="true" />paimon.moe CSV
-          </UiButton>
         </div>
       </section>
 

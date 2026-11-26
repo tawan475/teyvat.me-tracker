@@ -136,5 +136,19 @@
     "alreadyRunning": "Exportação já em andamento",
     "workerStopped": "O processo de exportação parou inesperadamente.",
     "workerUnreadable": "O processo de exportação enviou uma mensagem ilegível."
+  },
+  "exportAs": {
+    "button": "Exportar como…",
+    "leavesOut": "Deixa de fora: {list}",
+    "leaves": {
+      "teyvatmeKeys": "chaves do Teyvat.me ({n})",
+      "itemExtras": "campos de item do Teyvat.me ({n})",
+      "noItemId": "orações sem id de item ({n})",
+      "recordIds": "ids das orações, UID, fuso horário",
+      "marksWithoutTime": "datas de conquistas marcadas à mão ({n})",
+      "capturedWithoutTime": "datas que o jogo não enviou ({n})",
+      "rewardClaimed": "recompensa resgatada",
+      "handMarks": "marcas à mão ({n})"
+    }
   }
 }

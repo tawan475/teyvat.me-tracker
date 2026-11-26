@@ -39,6 +39,7 @@ import JustSyncedBar from '@/components/live/JustSyncedBar.vue'
 import { useJustSynced } from '@/lib/just-synced'
 import AchievementImportDialog from '@/components/achievements/AchievementImportDialog.vue'
 import AchievementSummary from '@/components/achievements/AchievementSummary.vue'
+import ExportAsMenu from '@/components/export/ExportAsMenu.vue'
 import AchievementToolbar from '@/components/achievements/AchievementToolbar.vue'
 import { useAchievementMarks } from '@/components/achievements/use-achievement-marks'
 import NotSharedStrip from '@/components/not-shared/NotSharedStrip.vue'
@@ -48,9 +49,12 @@ import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiError from '@/components/ui/UiError.vue'
 import UiPanel from '@/components/ui/UiPanel.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
+import { api } from '@/api'
+import type { AccountRef } from '@/data/account-data'
 import { NO_CAPTURED_ACHIEVEMENTS, loadCapturedAchievements } from '@/data/achievement-capture'
 import { useResource } from '@/data/use-resource'
 import { gameIcon, loadGameIcons } from '@/lib/assets'
+import { APP_VERSION } from '@/lib/app-version'
 import { formatNumber } from '@/lib/format'
 import { readJson, writeJson } from '@/lib/storage'
 import { t } from '@/i18n'
@@ -439,6 +443,42 @@ async function unmarkAll() {
     })
 }
 
+// ------------------------------------------------------------------ export
+
+/**
+ * "Export as…": UIAF (captured and hand marks) and the capture's own
+ * Teyvat.me file, as the page holds them (in time travel: as of the
+ * capture travelled to). Everyone who can view the account; not in staff
+ * Inspect. A row shows only when its data exists.
+ */
+const exportFormats = computed<string[]>(() => {
+  if ((account.value as AccountRef).source === 'staff' || !ready.value) return []
+  const c = captured.value
+  const formats: string[] = []
+  if ((c && c.ids.size > 0) || marks.marked.value.size > 0) formats.push('uiaf')
+  if (account.value.latest) formats.push('leyline')
+  return formats
+})
+async function loadExport() {
+  const g = game.data.value
+  const c = captured.value
+  if (!g || !c) throw new Error(t('achievements.loadFailed'))
+  const latest = account.value.latest
+  const leyline = latest ? await api.snapshotGood(account.value.id, latest.id) : null
+  return {
+    captured: c,
+    marked: marks.marked.value,
+    known: g.data.byId,
+    snapshot:
+      latest && leyline
+        ? { leyline: leyline as unknown as Record<string, unknown>, takenAt: latest.takenAt }
+        : null,
+    uid: account.value.uid?.trim() || null,
+    accountId: account.value.id,
+    appVersion: APP_VERSION,
+  }
+}
+
 // ------------------------------------------------------------------ import
 
 const importOpen = ref(false)
@@ -466,15 +506,16 @@ async function importIds(ids: number[]): Promise<boolean> {
           {{ $t('achievements.notCaptured') }}
         </p>
       </template>
-      <template v-if="!readOnly" #actions>
+      <template v-if="!readOnly || exportFormats.length" #actions>
         <UiButton
+          v-if="!readOnly"
           :disabled="!ready"
           :title="$t('achievements.importTitle')"
           @click="importOpen = true"
         >
-          <FileUp class="size-4" aria-hidden="true" />
-          Seelie / paimon / stardb
+          <FileUp class="size-4" aria-hidden="true" />{{ $t('achievements.import.title') }}
         </UiButton>
+        <ExportAsMenu page="achievements" :formats="exportFormats" :load="loadExport" />
       </template>
     </PageHeader>
 

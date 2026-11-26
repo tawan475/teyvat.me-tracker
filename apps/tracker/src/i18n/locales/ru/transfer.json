@@ -136,5 +136,19 @@
     "alreadyRunning": "Экспорт уже идёт",
     "workerStopped": "Процесс экспорта неожиданно остановился.",
     "workerUnreadable": "Процесс экспорта прислал нечитаемое сообщение."
+  },
+  "exportAs": {
+    "button": "Экспорт как…",
+    "leavesOut": "Без: {list}",
+    "leaves": {
+      "teyvatmeKeys": "ключи Teyvat.me ({n})",
+      "itemExtras": "поля предметов Teyvat.me ({n})",
+      "noItemId": "молитвы без id предмета ({n})",
+      "recordIds": "id молитв, UID, часовой пояс",
+      "marksWithoutTime": "время выполнения отмеченных вручную ({n})",
+      "capturedWithoutTime": "время, которое игра не прислала ({n})",
+      "rewardClaimed": "награда получена",
+      "handMarks": "отметки вручную ({n})"
+    }
   }
 }

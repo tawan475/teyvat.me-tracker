@@ -136,5 +136,19 @@
     "alreadyRunning": "已有导出正在进行",
     "workerStopped": "导出进程意外停止。",
     "workerUnreadable": "导出进程发送了无法读取的消息。"
+  },
+  "exportAs": {
+    "button": "导出为…",
+    "leavesOut": "不含：{list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me 键（{n}）",
+      "itemExtras": "Teyvat.me 物品字段（{n}）",
+      "noItemId": "无物品 ID 的祈愿（{n}）",
+      "recordIds": "祈愿 ID、UID、时区",
+      "marksWithoutTime": "手动标记的完成时间（{n}）",
+      "capturedWithoutTime": "游戏未发送的完成时间（{n}）",
+      "rewardClaimed": "已领取奖励",
+      "handMarks": "手动标记（{n}）"
+    }
   }
 }

@@ -220,7 +220,7 @@ const snapshotsLink = computed<RouteLocationRaw>(() => {
                 >{{ $t('shell.page.snapshots') }} › {{ $t('snapshots.bar.download') }}</template
               >
               <template #wishes
-                >{{ $t('shell.page.wishHistory') }} › {{ $t('wishes.importExport') }}</template
+                >{{ $t('shell.page.wishHistory') }} › {{ $t('transfer.exportAs.button') }}</template
               >
             </i18n-t>
             <div class="pp-act">

@@ -16,6 +16,7 @@ import BaseTable, { type TableLabel } from '@/components/legacy/BaseTable.vue'
 import CompactDialog from '@/components/snapshot-history/CompactDialog.vue'
 import ConfirmDialog from '@/components/snapshot-history/ConfirmDialog.vue'
 import ExportTargets from '@/components/snapshot-history/ExportTargets.vue'
+import ExportAsMenu from '@/components/export/ExportAsMenu.vue'
 import FigureCell from '@/components/snapshot-history/FigureCell.vue'
 import LegacyCheckbox from '@/components/snapshot-history/LegacyCheckbox.vue'
 import RangeFilter from '@/components/snapshot-history/RangeFilter.vue'
@@ -36,7 +37,7 @@ import UiError from '@/components/ui/UiError.vue'
 import UiPager from '@/components/ui/UiPager.vue'
 import { useSnapshotSelection } from '@/composables/useSnapshotSelection'
 import LiveRow from '@/components/live/LiveRow.vue'
-import { loadLive, loadSnapshots } from '@/data/account-data'
+import { loadLive, loadSnapshots, type AccountRef } from '@/data/account-data'
 import { noteLiveChange } from '@/live/journal'
 import { cancelExport, downloadSnapshotGood, exportJob, exportZip } from '@/data/export'
 import { offSince } from '@/data/not-shared'
@@ -81,6 +82,19 @@ const canDelete = (!readOnly && owner) || mode.purge !== undefined
 // past, view-only sharing), not in staff Inspect, whose layout keeps neither.
 const rowActions = !readOnly || mode.demo === true || mode.guest === true || !mode.route
 const feedback = useFeedback()
+
+/**
+ * "Export as…": the newest capture (in time travel the one travelled to,
+ * which is `latest` there) as a file, for everyone who can view the
+ * account; not in staff Inspect.
+ */
+const exportable = computed(() => (account.value as AccountRef).source !== 'staff')
+async function loadExport() {
+  const latest = account.value.latest
+  if (!latest) throw new Error(t('transfer.export.noSnapshots'))
+  const leyline = await api.snapshotGood(account.value.id, latest.id)
+  return { leyline: leyline as unknown as Record<string, unknown>, takenAt: latest.takenAt }
+}
 
 /** Guest mode's watched folder: the Source strip over the list (its code loads only there). */
 const FolderSourceStrip = defineAsyncComponent(
@@ -558,15 +572,23 @@ function selectionClearance(): number {
         <h2 class="flex h-[3.25rem] items-center text-xl font-bold transition-colors">
           {{ $t('snapshots.heading') }}
         </h2>
-        <RangeFilter
-          v-if="list.length > 0"
-          v-model:from="from"
-          v-model:to="to"
-          :first-day="firstDay"
-          :last-day="lastDay"
-          :matched="filtered.length"
-          @select="selectRange"
-        />
+        <div class="flex flex-wrap items-center gap-2">
+          <RangeFilter
+            v-if="list.length > 0"
+            v-model:from="from"
+            v-model:to="to"
+            :first-day="firstDay"
+            :last-day="lastDay"
+            :matched="filtered.length"
+            @select="selectRange"
+          />
+          <ExportAsMenu
+            v-if="exportable"
+            page="snapshots"
+            :formats="account.latest ? ['leyline', 'good'] : []"
+            :load="loadExport"
+          />
+        </div>
       </div>
 
       <LiveRow

@@ -136,5 +136,19 @@
     "alreadyRunning": "Export already running",
     "workerStopped": "The export worker stopped unexpectedly.",
     "workerUnreadable": "The export worker sent an unreadable message."
+  },
+  "exportAs": {
+    "button": "Export as…",
+    "leavesOut": "Leaves out: {list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me keys ({n})",
+      "itemExtras": "Teyvat.me item fields ({n})",
+      "noItemId": "pulls without an item id ({n})",
+      "recordIds": "wish ids, UID, time zone",
+      "marksWithoutTime": "finish times of hand marks ({n})",
+      "capturedWithoutTime": "finish times the game did not send ({n})",
+      "rewardClaimed": "reward claimed",
+      "handMarks": "hand marks ({n})"
+    }
   }
 }

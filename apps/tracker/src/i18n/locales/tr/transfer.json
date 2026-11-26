@@ -136,5 +136,19 @@
     "alreadyRunning": "Dışa aktarma zaten çalışıyor",
     "workerStopped": "Dışa aktarma işçisi beklenmedik şekilde durdu.",
     "workerUnreadable": "Dışa aktarma işçisi okunamayan bir mesaj gönderdi."
+  },
+  "exportAs": {
+    "button": "Farklı dışa aktar…",
+    "leavesOut": "Dışarıda kalan: {list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me anahtarları ({n})",
+      "itemExtras": "Teyvat.me eşya alanları ({n})",
+      "noItemId": "eşya kimliği olmayan dilekler ({n})",
+      "recordIds": "dilek kimlikleri, UID, saat dilimi",
+      "marksWithoutTime": "elle işaretlenenlerin bitiş zamanları ({n})",
+      "capturedWithoutTime": "oyunun göndermediği bitiş zamanları ({n})",
+      "rewardClaimed": "ödül alındı",
+      "handMarks": "elle işaretler ({n})"
+    }
   }
 }

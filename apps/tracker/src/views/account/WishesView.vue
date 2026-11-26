@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { ArrowDownUp, Clock, Sparkles } from 'lucide-vue-next'
+import { Clock, FileUp, Sparkles } from 'lucide-vue-next'
 import type { UigfGachaType } from '@gdt/shared'
+import ExportAsMenu from '@/components/export/ExportAsMenu.vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -21,7 +22,8 @@ import { WISH_BANNERS, bannerInfo, formatPity, wishMinute } from '@/components/w
 import { EXPECTED_PITY, PRIMOS_PER_PULL, monthlyPulls, type BannerStats } from '@/data/wish-history'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { loadLatestInventory } from '@/data/account-data'
+import { loadLatestInventory, type AccountRef } from '@/data/account-data'
+import { APP_VERSION } from '@/lib/app-version'
 import { useResource } from '@/data/use-resource'
 import { useAccount, useAccountRoute, useDemo, useReadOnly, useTravel } from './context'
 
@@ -112,6 +114,25 @@ function retry() {
 const dialog = ref(false)
 
 /**
+ * "Export as…": the pulls shown (in time travel those made by the capture's
+ * time), for everyone who can view the account; not in staff Inspect.
+ */
+const exportable = computed(() => (account.value as AccountRef).source !== 'staff')
+async function loadExport() {
+  const h = history.value
+  if (!h) throw new Error(t('wishes.loadFailed'))
+  const { loadWishItemIds } = await import('@/data/wish-item-ids')
+  return {
+    uid: account.value.uid?.trim() || null,
+    accountId: account.value.id,
+    timezone: h.timezone,
+    pulls: [...h.banners.values()].flat(),
+    itemIds: await loadWishItemIds(),
+    appVersion: APP_VERSION,
+  }
+}
+
+/**
  * Banner history follows on the same page (the user's call, 2026-11-06: no
  * tab to switch, the banners are seen at once). A run named in the URL
  * (`?run=`, the banner page's links) opens and scrolls into view there.
@@ -136,11 +157,16 @@ const openRun = computed(() => (typeof route.query.run === 'string' ? route.quer
         </p>
       </template>
       <template v-if="ready && history?.total" #actions>
-        <UiButton size="sm" @click="dialog = true">
-          <ArrowDownUp class="size-4" aria-hidden="true" />{{
-            readOnly || demo ? $t('wishes.export') : $t('wishes.importExport')
-          }}
+        <UiButton v-if="!readOnly && !demo" size="sm" @click="dialog = true">
+          <FileUp class="size-4" aria-hidden="true" />{{ $t('wishes.import') }}
         </UiButton>
+        <ExportAsMenu
+          v-if="exportable"
+          page="wishes"
+          size="sm"
+          :formats="['uigf', 'paimon-csv']"
+          :load="loadExport"
+        />
       </template>
     </PageHeader>
 

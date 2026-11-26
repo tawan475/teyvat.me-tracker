@@ -136,5 +136,19 @@
     "alreadyRunning": "Esportazione già in corso",
     "workerStopped": "Il processo di esportazione si è interrotto inaspettatamente.",
     "workerUnreadable": "Il processo di esportazione ha inviato un messaggio illeggibile."
+  },
+  "exportAs": {
+    "button": "Esporta come…",
+    "leavesOut": "Esclude: {list}",
+    "leaves": {
+      "teyvatmeKeys": "chiavi Teyvat.me ({n})",
+      "itemExtras": "campi oggetto Teyvat.me ({n})",
+      "noItemId": "tiri senza id oggetto ({n})",
+      "recordIds": "id dei desideri, UID, fuso orario",
+      "marksWithoutTime": "date degli obiettivi segnati a mano ({n})",
+      "capturedWithoutTime": "date che il gioco non ha inviato ({n})",
+      "rewardClaimed": "ricompensa riscossa",
+      "handMarks": "segni a mano ({n})"
+    }
   }
 }

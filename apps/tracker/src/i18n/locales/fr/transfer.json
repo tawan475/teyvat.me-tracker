@@ -136,5 +136,19 @@
     "alreadyRunning": "Export déjà en cours",
     "workerStopped": "Le worker d'export s'est arrêté de façon inattendue.",
     "workerUnreadable": "Le worker d'export a envoyé un message illisible."
+  },
+  "exportAs": {
+    "button": "Exporter en…",
+    "leavesOut": "Sans : {list}",
+    "leaves": {
+      "teyvatmeKeys": "clés Teyvat.me ({n})",
+      "itemExtras": "champs d'objet Teyvat.me ({n})",
+      "noItemId": "vœux sans id d'objet ({n})",
+      "recordIds": "ids des vœux, UID, fuseau horaire",
+      "marksWithoutTime": "dates des succès cochés à la main ({n})",
+      "capturedWithoutTime": "dates que le jeu n'a pas envoyées ({n})",
+      "rewardClaimed": "récompense obtenue",
+      "handMarks": "succès cochés à la main ({n})"
+    }
   }
 }

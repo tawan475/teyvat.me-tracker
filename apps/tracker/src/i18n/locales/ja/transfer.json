@@ -136,5 +136,19 @@
     "alreadyRunning": "エクスポートはすでに実行中です",
     "workerStopped": "エクスポート処理が予期せず停止しました。",
     "workerUnreadable": "エクスポート処理から読み取れないメッセージが届きました。"
+  },
+  "exportAs": {
+    "button": "エクスポート…",
+    "leavesOut": "含まれないもの：{list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me のキー（{n}）",
+      "itemExtras": "Teyvat.me のアイテム項目（{n}）",
+      "noItemId": "アイテムIDのない祈願（{n}）",
+      "recordIds": "祈願ID・UID・タイムゾーン",
+      "marksWithoutTime": "手動で付けた印の達成日時（{n}）",
+      "capturedWithoutTime": "ゲームが送らなかった達成日時（{n}）",
+      "rewardClaimed": "報酬受取済み",
+      "handMarks": "手動の印（{n}）"
+    }
   }
 }

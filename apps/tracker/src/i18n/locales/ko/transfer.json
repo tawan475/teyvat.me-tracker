@@ -136,5 +136,19 @@
     "alreadyRunning": "이미 내보내는 중입니다",
     "workerStopped": "내보내기 워커가 예기치 않게 중지되었습니다.",
     "workerUnreadable": "내보내기 워커가 읽을 수 없는 메시지를 보냈습니다."
+  },
+  "exportAs": {
+    "button": "내보내기 형식…",
+    "leavesOut": "제외: {list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me 키 ({n})",
+      "itemExtras": "Teyvat.me 아이템 필드 ({n})",
+      "noItemId": "아이템 ID 없는 기원 ({n})",
+      "recordIds": "기원 ID, UID, 시간대",
+      "marksWithoutTime": "직접 표시한 업적의 완료 시각 ({n})",
+      "capturedWithoutTime": "게임이 보내지 않은 완료 시각 ({n})",
+      "rewardClaimed": "보상 수령",
+      "handMarks": "직접 표시 ({n})"
+    }
   }
 }

@@ -136,5 +136,19 @@
     "alreadyRunning": "已有匯出正在進行",
     "workerStopped": "匯出程序意外停止。",
     "workerUnreadable": "匯出程序傳送了無法讀取的訊息。"
+  },
+  "exportAs": {
+    "button": "匯出為…",
+    "leavesOut": "不含：{list}",
+    "leaves": {
+      "teyvatmeKeys": "Teyvat.me 鍵（{n}）",
+      "itemExtras": "Teyvat.me 物品欄位（{n}）",
+      "noItemId": "無物品 ID 的祈願（{n}）",
+      "recordIds": "祈願 ID、UID、時區",
+      "marksWithoutTime": "手動標記的完成時間（{n}）",
+      "capturedWithoutTime": "遊戲未傳送的完成時間（{n}）",
+      "rewardClaimed": "已領取獎勵",
+      "handMarks": "手動標記（{n}）"
+    }
   }
 }

@@ -136,5 +136,19 @@
     "alreadyRunning": "Ya hay una exportación en curso",
     "workerStopped": "El proceso de exportación se detuvo de forma inesperada.",
     "workerUnreadable": "El proceso de exportación envió un mensaje ilegible."
+  },
+  "exportAs": {
+    "button": "Exportar como…",
+    "leavesOut": "Omite: {list}",
+    "leaves": {
+      "teyvatmeKeys": "claves de Teyvat.me ({n})",
+      "itemExtras": "campos de objeto de Teyvat.me ({n})",
+      "noItemId": "deseos sin id de objeto ({n})",
+      "recordIds": "ids de deseo, UID, zona horaria",
+      "marksWithoutTime": "fechas de logros marcados a mano ({n})",
+      "capturedWithoutTime": "fechas que el juego no envió ({n})",
+      "rewardClaimed": "recompensa reclamada",
+      "handMarks": "marcas a mano ({n})"
+    }
   }
 }

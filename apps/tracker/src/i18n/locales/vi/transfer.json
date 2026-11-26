@@ -136,5 +136,19 @@
     "alreadyRunning": "Đang xuất rồi",
     "workerStopped": "Tiến trình xuất dừng đột ngột.",
     "workerUnreadable": "Tiến trình xuất gửi về dữ liệu không đọc được."
+  },
+  "exportAs": {
+    "button": "Xuất dạng…",
+    "leavesOut": "Bỏ qua: {list}",
+    "leaves": {
+      "teyvatmeKeys": "khóa Teyvat.me ({n})",
+      "itemExtras": "trường vật phẩm Teyvat.me ({n})",
+      "noItemId": "lượt cầu nguyện không có id vật phẩm ({n})",
+      "recordIds": "id cầu nguyện, UID, múi giờ",
+      "marksWithoutTime": "thời điểm hoàn thành của mục đánh dấu tay ({n})",
+      "capturedWithoutTime": "thời điểm hoàn thành game không gửi ({n})",
+      "rewardClaimed": "đã nhận thưởng",
+      "handMarks": "đánh dấu tay ({n})"
+    }
   }
 }

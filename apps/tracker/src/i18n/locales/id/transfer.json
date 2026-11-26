@@ -136,5 +136,19 @@
     "alreadyRunning": "Ekspor sudah berjalan",
     "workerStopped": "Worker ekspor berhenti tiba-tiba.",
     "workerUnreadable": "Worker ekspor mengirim pesan yang tidak terbaca."
+  },
+  "exportAs": {
+    "button": "Ekspor sebagai…",
+    "leavesOut": "Tanpa: {list}",
+    "leaves": {
+      "teyvatmeKeys": "kunci Teyvat.me ({n})",
+      "itemExtras": "kolom item Teyvat.me ({n})",
+      "noItemId": "pull tanpa id item ({n})",
+      "recordIds": "id wish, UID, zona waktu",
+      "marksWithoutTime": "waktu selesai tanda manual ({n})",
+      "capturedWithoutTime": "waktu selesai yang tidak dikirim game ({n})",
+      "rewardClaimed": "hadiah diklaim",
+      "handMarks": "tanda manual ({n})"
+    }
   }
 }

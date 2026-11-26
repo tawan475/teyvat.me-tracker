@@ -136,5 +136,19 @@
     "alreadyRunning": "การส่งออกกำลังทำงานอยู่แล้ว",
     "workerStopped": "ตัวส่งออกหยุดทำงานโดยไม่คาดคิด",
     "workerUnreadable": "ตัวส่งออกส่งข้อความที่อ่านไม่ได้"
+  },
+  "exportAs": {
+    "button": "ส่งออกเป็น…",
+    "leavesOut": "ไม่รวม: {list}",
+    "leaves": {
+      "teyvatmeKeys": "คีย์ของ Teyvat.me ({n})",
+      "itemExtras": "ฟิลด์ไอเทมของ Teyvat.me ({n})",
+      "noItemId": "การอธิษฐานที่ไม่มี id ไอเทม ({n})",
+      "recordIds": "id การอธิษฐาน, UID, เขตเวลา",
+      "marksWithoutTime": "เวลาที่ทำสำเร็จของรายการที่ทำเครื่องหมายเอง ({n})",
+      "capturedWithoutTime": "เวลาที่ทำสำเร็จที่เกมไม่ได้ส่งมา ({n})",
+      "rewardClaimed": "รับรางวัลแล้ว",
+      "handMarks": "ทำเครื่องหมายเอง ({n})"
+    }
   }
 }

@@ -239,7 +239,11 @@ export interface ExtraSections {
   extras: Section | null
 }
 
-export interface EncodedSnapshot extends ExtraSections {
+/**
+ * A snapshot's sections and its content hash, with the older hashes the
+ * content hash's chain makes on the way (`encodeContent`).
+ */
+export interface EncodedContent extends ExtraSections {
   characters: Section
   weapons: Section
   artifacts: Section
@@ -302,6 +306,14 @@ export interface EncodedSnapshot extends ExtraSections {
    * `gi_exploration` was kept, so re-uploading it stays a no-op.
    */
   preExplorationContentHash: string
+}
+
+/**
+ * The content hashes older trackers gave the same file that the content
+ * hash's chain does not make on the way (`olderContentHashes`): they only
+ * tell a re-upload of a capture stored by older code.
+ */
+export interface OlderContentHashes {
   /**
    * The content hash a tracker from before Capture 1.7.0 gave this file
    * (gi_tasks' and gi_collections' 1.7.0 parts and the progress section left
@@ -350,6 +362,8 @@ export interface EncodedSnapshot extends ExtraSections {
    */
   preRecipesContentHash: string
 }
+
+export interface EncodedSnapshot extends EncodedContent, OlderContentHashes {}
 
 /** The sections that do not depend on catalog ids, materials in full. */
 export interface StaticSections extends ExtraSections {
@@ -468,7 +482,8 @@ function optionalSection(kind: SectionKind, value: object | null): Promise<Secti
  * Step 2b, once the catalog has assigned ids: the artifacts section and the
  * content hash. Every section is still in full; the content hash is final
  * here, so an unchanged inventory is detected before any base is loaded.
- * Call {@link withBases} only when the snapshot will be stored.
+ * Call {@link withBases} only when the snapshot will be stored. With every
+ * older hash too: `encodeContent` and `olderContentHashes` in one.
  */
 export async function completeSnapshot(
   sections: StaticSections,
@@ -480,6 +495,27 @@ export async function completeSnapshot(
    */
   heldArtifacts?: string,
 ): Promise<EncodedSnapshot> {
+  const content = await encodeContent(sections, prepared, artifactIds, heldArtifacts)
+  return {
+    ...content,
+    ...(await olderContentHashes(sections, content, prepared, artifactIds, heldArtifacts)),
+  }
+}
+
+/**
+ * `completeSnapshot` without `olderContentHashes`: what storing a snapshot
+ * needs. The older hashes only tell a re-upload of a capture stored by older
+ * code, so a server works them out only when a snapshot of the same capture
+ * time exists and its key is not this one (they were most of this step's
+ * work: the second pass over a file with dropped fields re-encodes sections).
+ */
+export async function encodeContent(
+  sections: StaticSections,
+  prepared: PreparedSnapshot,
+  artifactIds: ReadonlyMap<string, number>,
+  /** As in `completeSnapshot`. */
+  heldArtifacts?: string,
+): Promise<EncodedContent> {
   const { good, artifactHashes } = prepared
   if (prepared.deferred && heldArtifacts === undefined) {
     throw new Error('The artifact list is deferred: resolve it or name the held section')
@@ -494,32 +530,72 @@ export async function completeSnapshot(
     heldArtifacts !== undefined
       ? { kind: 'artifacts', hash: heldArtifacts, json: '' }
       : await makeSection('artifacts', encodeArtifacts(refs))
-  const base = [
-    sections.characters.hash,
-    sections.weapons.hash,
-    artifacts.hash,
-    sections.materials.hash,
-    sections.achievements?.hash ?? '',
-  ]
+  const base = baseHashes(sections, artifacts.hash)
   const legacyContentHash = await sha256Hex128(base.join(':'))
   // Appended only when present, so a file without them keeps its old hash;
   // the anecdotes (kept later) after the first three, the same way.
   const extras = [sections.player, sections.achievementTimes, sections.characterExtras]
-  const withExtras = [...base, ...extras.map((s) => s?.hash ?? '')]
+  const withExtras = withExtrasOf(sections, base)
   const preAnecdotesContentHash = extras.some((s) => s !== null)
     ? await sha256Hex128(withExtras.join(':'))
     : legacyContentHash
   const preTasksContentHash = sections.anecdotes
     ? await sha256Hex128([...withExtras, sections.anecdotes.hash].join(':'))
     : preAnecdotesContentHash
-  /**
-   * The rest of the chain, from the sections that later captures grew (the
-   * tasks, collections2) and those added last: each key kept later is
-   * appended only when present, with empty places for what a file lacks, so
-   * a file without it keeps its old hash. Called again with the sections as
-   * an older tracker stored them to name the hash it gave the same file.
-   */
-  const chain = async (
+  const full = await contentChain(sections, withExtras, preTasksContentHash)(
+    sections.tasks,
+    sections.collections2,
+    sections.exploration,
+    sections.progress,
+    sections.extras,
+  )
+  return {
+    ...sections,
+    artifacts,
+    materialsBase: null,
+    artifactsBase: null,
+    achievementTimesBase: null,
+    contentHash: full.content,
+    legacyContentHash,
+    preAnecdotesContentHash,
+    preTasksContentHash,
+    preCollectionsContentHash: full.preCollections,
+    preCollections2ContentHash: full.preCollections2,
+    preWardrobeContentHash: full.preWardrobe,
+    preExplorationContentHash: full.preExploration,
+  }
+}
+
+/** The first five places of the content hash's chain. */
+function baseHashes(sections: StaticSections, artifactsHash: string): string[] {
+  return [
+    sections.characters.hash,
+    sections.weapons.hash,
+    artifactsHash,
+    sections.materials.hash,
+    sections.achievements?.hash ?? '',
+  ]
+}
+
+/** `base` and irminsul's first three extra keys' places (empty for each one absent). */
+function withExtrasOf(sections: StaticSections, base: readonly string[]): string[] {
+  const extras = [sections.player, sections.achievementTimes, sections.characterExtras]
+  return [...base, ...extras.map((s) => s?.hash ?? '')]
+}
+
+/**
+ * The rest of the chain, from the sections that later captures grew (the
+ * tasks, collections2) and those added last: each key kept later is
+ * appended only when present, with empty places for what a file lacks, so
+ * a file without it keeps its old hash. Called again with the sections as
+ * an older tracker stored them to name the hash it gave the same file.
+ */
+function contentChain(
+  sections: StaticSections,
+  withExtras: readonly string[],
+  preTasksContentHash: string,
+) {
+  return async (
     tasks: Section | null,
     collections2: Section | null,
     exploration: Section | null,
@@ -560,14 +636,26 @@ export async function completeSnapshot(
       : preExtras
     return { preCollections, preCollections2, preWardrobe, preExploration, preProgress, content }
   }
-  const full = await chain(
-    sections.tasks,
-    sections.collections2,
-    sections.exploration,
-    sections.progress,
-    sections.extras,
+}
+
+/**
+ * The rest of `completeSnapshot`: the content hashes older trackers gave the
+ * same file. `content` is `encodeContent` of the same arguments.
+ */
+export async function olderContentHashes(
+  sections: StaticSections,
+  content: Pick<EncodedContent, 'artifacts' | 'contentHash' | 'preTasksContentHash'>,
+  prepared: PreparedSnapshot,
+  artifactIds: ReadonlyMap<string, number>,
+  /** As in `completeSnapshot`. */
+  heldArtifacts?: string,
+): Promise<OlderContentHashes> {
+  const { contentHash } = content
+  const chain = contentChain(
+    sections,
+    withExtrasOf(sections, baseHashes(sections, content.artifacts.hash)),
+    content.preTasksContentHash,
   )
-  const contentHash = full.content
   const { tasks, collections, exploration, endgame } = prepared.good
   // Capture 1.17.12's gi_endgame lives inside the extras section: what the
   // section was for trackers that did not know it (none, when it alone made one).
@@ -728,19 +816,6 @@ export async function completeSnapshot(
     }
   }
   return {
-    ...sections,
-    artifacts,
-    materialsBase: null,
-    artifactsBase: null,
-    achievementTimesBase: null,
-    contentHash,
-    legacyContentHash,
-    preAnecdotesContentHash,
-    preTasksContentHash,
-    preCollectionsContentHash: full.preCollections,
-    preCollections2ContentHash: full.preCollections2,
-    preWardrobeContentHash: full.preWardrobe,
-    preExplorationContentHash: full.preExploration,
     preRecipesContentHash,
     pre17ContentHash,
     pre18ContentHash,

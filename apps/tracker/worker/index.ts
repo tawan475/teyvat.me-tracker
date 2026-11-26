@@ -31,7 +31,7 @@ import { wishProxy } from './routes/wish-proxy'
 import { wishAccounts, wishSync } from './routes/wishes'
 import { syncGameEvents } from './services/game-events'
 import { recordJob } from './services/job-runs'
-import { runMaintenance } from './services/maintenance'
+import { maintenanceJob } from './services/maintenance'
 import { takeSample } from './services/metrics'
 
 const app = new Hono<AppEnv>().basePath('/api')
@@ -161,9 +161,9 @@ export default {
     // Optional var (wrangler.jsonc "vars" or the dashboard): v1 rows to repack per day.
     const repackLimit = Number((env as { REPACK_CRON_LIMIT?: string }).REPACK_CRON_LIMIT ?? 0) || 0
     ctx.waitUntil(
-      recordJob(env.DB, 'maintenance', () =>
-        runMaintenance(env.DB, Date.now(), { repackLimit }),
-      ).then((result) => console.log('maintenance', JSON.stringify(result))),
+      maintenanceJob(env.DB, Date.now(), { repackLimit }).then((result) =>
+        console.log('maintenance', JSON.stringify(result)),
+      ),
     )
   },
 } satisfies ExportedHandler<Env>

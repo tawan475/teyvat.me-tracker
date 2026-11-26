@@ -15,7 +15,7 @@
 import { sha256Hex128 } from '../hash'
 import type { KeyDictionary } from '../dictionary'
 import type { GiPlayer } from '../good'
-import type { PreparedSnapshot, EncodedSnapshot } from './snapshot'
+import type { PreparedSnapshot, EncodedContent } from './snapshot'
 import {
   DELTA_KINDS,
   decodeSectionBlob,
@@ -138,7 +138,8 @@ export interface SnapshotPlan {
 }
 
 export interface PlanInput {
-  encoded: EncodedSnapshot
+  /** `encodeContent` (or `completeSnapshot`) of the upload: its full sections are read. */
+  encoded: EncodedContent
   prepared: PreparedSnapshot
   materialsDictionary: KeyDictionary
   /** The latest live snapshot's blob of each slot (v2 rows only), bases attached. */

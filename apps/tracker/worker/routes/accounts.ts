@@ -22,6 +22,7 @@ import { genshinAccounts } from '../db/schema'
 import type { AppEnv } from '../env'
 import { accountEtag, bodyEtag, checkEtag } from '../lib/etag'
 import { ApiError, idParam, isUniqueViolation, notFound, parseJson, rateLimit } from '../lib/http'
+import { ImportStages } from '../lib/import-stages'
 import { D1Meter } from '../lib/meter'
 import { requireActiveSession, requireUser } from '../lib/session'
 import { readUpload } from '../lib/upload'
@@ -212,6 +213,7 @@ export const accounts = new Hono<AppEnv>()
    * pages once at its end (`announce`), instead of after every file.
    */
   .post('/:id/import', async (c) => {
+    const stages = new ImportStages('web')
     const id = idParam(c, 'id')
     const [account, blocked] = await Promise.all([
       loadAccount(getDb(c.env.DB), c.get('userId'), id, 'edit'),
@@ -224,9 +226,15 @@ export const accounts = new Hono<AppEnv>()
     const { response, dataVersion, listener, prepared, newest } = await importSnapshot(
       c.env.DB,
       account,
-      await readUpload(c),
+      await readUpload(c, stages),
       meter,
-    )
+      undefined,
+      undefined,
+      stages,
+    ).catch((error: unknown) => {
+      stages.done(meter, { error })
+      throw error
+    })
     meter.report(c)
     if (newest) {
       afterResponse(c, endJournalBehind(liveDb(c.env), id, response.snapshotId))
@@ -245,6 +253,8 @@ export const accounts = new Hono<AppEnv>()
         c.get('userId'),
       )
     }
+    stages.lap('after')
+    stages.done(meter, { status: response.status })
     return c.json(response, response.status === 'created' ? 201 : 200)
   })
 

@@ -22,6 +22,7 @@ import {
 import type { Context } from 'hono'
 import type { AppEnv } from '../env'
 import { ApiError } from '../lib/http'
+import type { ImportStages } from '../lib/import-stages'
 import { D1Meter } from '../lib/meter'
 import { accountForUid, takeAccountUid, type KeyAccount, type UploadOwner } from './accounts'
 import { importSnapshot, parseUpload, type Upload } from './import'
@@ -35,8 +36,24 @@ export async function uploadAs(
   upload: Upload,
   /** `uidRequired`: what a file without a UID is told (how to fix it differs per caller). */
   text: { uidRequired: string },
+  /** The upload's import_stages line, logged once it is answered (or failed). */
+  stages?: ImportStages,
 ): Promise<Response> {
   const meter = new D1Meter()
+  return store(c, owner, upload, text, meter, stages).catch((error: unknown) => {
+    stages?.done(meter, { error })
+    throw error
+  })
+}
+
+async function store(
+  c: Context<AppEnv>,
+  owner: UploadOwner,
+  upload: Upload,
+  text: { uidRequired: string },
+  meter: D1Meter,
+  stages: ImportStages | undefined,
+): Promise<Response> {
   let account: KeyAccount
   let userId: number
   let created = false
@@ -46,6 +63,7 @@ export async function uploadAs(
     account = owner.account
     userId = owner.userId
     parsed = await parseUpload(upload.text)
+    stages?.lap('parse')
     const uid = uploadUid(parsed.good)
     const was = account.uid
     if (uid !== undefined && (await takeAccountUid(c.env.DB, meter, account, String(uid)))) {
@@ -54,6 +72,7 @@ export async function uploadAs(
   } else {
     userId = owner.user.id
     parsed = await parseUpload(upload.text)
+    stages?.lap('parse')
     const uid = uploadUid(parsed.good)
     if (uid === undefined) throw new ApiError(422, 'uid_required', text.uidRequired)
     ;({ account, created } = await accountForUid(
@@ -64,6 +83,7 @@ export async function uploadAs(
       owner.accounts,
     ))
   }
+  stages?.lap('owner')
   const live = liveDb(c.env)
   const result = await importSnapshot(
     c.env.DB,
@@ -72,6 +92,7 @@ export async function uploadAs(
     meter,
     parsed,
     live ? liveUsage(live, account.user_id ?? userId) : undefined,
+    stages,
   ).catch((error: unknown) => {
     // The account this upload made stays, whatever happened to the file.
     if (created) notifyUser(c, userId, { type: 'accounts' })
@@ -124,6 +145,7 @@ export async function uploadAs(
     } catch (error) {
       console.warn('live_open_failed', JSON.stringify({ accountId: account.id }), String(error))
     }
+    stages?.lap('journal')
   }
   // Only when someone listens (read in the import's own batch). A new
   // account is in the list now even when its first file changed nothing.
@@ -144,6 +166,8 @@ export async function uploadAs(
       server: account.server,
     })
   }
+  stages?.lap('after')
+  stages?.done(meter, { status: response.status })
   return c.json<ImportResponse>(
     {
       ...response,

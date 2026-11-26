@@ -23,6 +23,7 @@ import { pageOrigin } from '../lib/email'
 import type { IrminsulClaims } from '../lib/irminsul-auth'
 import { irminsulSessionEnded, requireIrminsul } from '../lib/irminsul-auth'
 import { rateLimit } from '../lib/http'
+import { ImportStages } from '../lib/import-stages'
 import { readUpload } from '../lib/upload'
 import { uploadsRefused } from '../services/accounts'
 import { sessionOwner } from '../lib/uploader'
@@ -48,11 +49,18 @@ export const irminsul = new Hono<AppEnv>()
   })
 
   .post('/import', async (c) => {
+    const stages = new ImportStages('capture')
     const claims = claimsOf(c)
     await rateLimit(c.env.KEY_IMPORT_LIMITER, `irminsul:${claims.sid}`)
     const owner = await sessionOwner(c, claims)
     const where = configUrl(pageOrigin(c.env, c.req.url), claims.sid)
-    return uploadAs(c, owner, await readUpload(c), {
-      uidRequired: `This file has no UID (gi_player.uid or metadata.uid), so it can't be matched to an account. Update your capture app, or choose one account for this device: ${where}`,
-    })
+    return uploadAs(
+      c,
+      owner,
+      await readUpload(c, stages),
+      {
+        uidRequired: `This file has no UID (gi_player.uid or metadata.uid), so it can't be matched to an account. Update your capture app, or choose one account for this device: ${where}`,
+      },
+      stages,
+    )
   })

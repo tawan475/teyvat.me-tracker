@@ -73,6 +73,7 @@ import {
 } from '@gdt/shared'
 import { MATERIALS } from '@gdt/shared/dictionary/materials'
 import { ApiError, isUniqueViolation } from '../lib/http'
+import type { ImportStages } from '../lib/import-stages'
 import { D1Meter } from '../lib/meter'
 import { dataVersionOf, recomputeAccount } from './accounts'
 import { listenerOf, listenerStatement, type Listener } from './live'
@@ -229,13 +230,18 @@ export async function importSnapshot(
   parsed?: PreparedSnapshot,
   /** Bytes the owner keeps elsewhere (gdt-live), counted toward the storage quota. */
   extraStoredBytes?: Promise<number>,
+  /** The upload's import_stages line (lib/import-stages): its stages and sizes. */
+  stages?: ImportStages,
 ): Promise<ImportResult> {
   const prepared = parsed ?? (await parseUpload(upload.text))
+  if (!parsed) stages?.lap('parse')
   for (let attempt = 1; ; attempt++) {
     try {
-      return await withLegacySchema((legacy) =>
-        importOnce(d1, account, upload, meter, prepared, legacy, extraStoredBytes),
+      const result = await withLegacySchema((legacy) =>
+        importOnce(d1, account, upload, meter, prepared, legacy, extraStoredBytes, stages),
       )
+      stages?.note({ pieces: result.prepared.summary.artifacts })
+      return result
     } catch (error) {
       // Only the daily maintenance or repack can pull a section away mid-import.
       if (error instanceof Retry && attempt < 3) continue
@@ -252,6 +258,7 @@ async function importOnce(
   parsed: PreparedSnapshot,
   legacy: boolean,
   extraStoredBytes?: Promise<number>,
+  stages?: ImportStages,
 ): Promise<ImportResult> {
   let prepared = parsed
   // The artifact list is not read yet when it came with a guid per piece
@@ -306,6 +313,7 @@ async function importOnce(
     .filter((s): s is Section => s !== null)
     .map((s) => shortHashHex(s.hash))
   if (player) staticHashes.push(shortHashHex(player.hash))
+  stages?.lap('prepare')
 
   // 1.
   const [
@@ -347,6 +355,7 @@ async function importOnce(
     usageStatement(d1, accountId, day),
     d1.prepare(HELD_ARTIFACTS_SQL).bind(accountId, deferred?.fingerprint ?? ''),
   ])
+  stages?.lap('lookup')
   const held = deferred ? readHeldArtifacts(markResult!.results[0]) : null
   if (deferred && !held) {
     prepared = await resolveDeferredArtifacts(parsed)
@@ -377,6 +386,17 @@ async function importOnce(
     const id = legacyIds.get(hash) ?? chunks.ids.get(key)
     if (id !== undefined) artifactIds.set(hash, id)
   }
+  stages?.lap('artifacts')
+  stages?.note({
+    held: held !== null,
+    chunkRows: chunks.rows.length,
+    identities: chunks.ids.size,
+    blobRows: blobsResult!.results.length,
+    blobBytes: blobsResult!.results.reduce(
+      (sum, row) => sum + ((row.data as { length?: number } | null)?.length ?? 0),
+      0,
+    ),
+  })
 
   // 2.
   const missing = hashes.filter((hash) => !artifactIds.has(hash))
@@ -415,9 +435,12 @@ async function importOnce(
       last: reserved.first + missing.length - 1,
     }
   }
+  stages?.lap('catalog')
+  stages?.note({ newPieces: missing.length })
 
   const encoded = await encodeContent(sections, prepared, artifactIds, held?.sectionHash)
   const key = contentKey(encoded.contentHash)
+  stages?.lap('encode')
   // Every other hash this file had under older trackers (olderContentHashes
   // is most of the hashing work): worked out only for a snapshot of the same
   // capture time whose key is not this upload's own (sameCapture).
@@ -500,7 +523,9 @@ async function importOnce(
 
   if (sameTime) {
     // A re-upload of the same capture is a no-op, so uploaders can retry freely.
-    if (await sameCapture(sameTime)) {
+    const same = await sameCapture(sameTime)
+    stages?.lap('encode')
+    if (same) {
       return response('unchanged', sameTime.id, 0, null, undefined, sameTime.id === latest?.id)
     }
     throw new ApiError(
@@ -573,7 +598,9 @@ async function importOnce(
         }),
       )
     }
+    stages?.lap('plan')
     const results = await meter.batch(d1, 'seen', seen)
+    stages?.lap('store')
     logFills(accountId, results, fillsAt, planned.fills)
     const [, bumped, listening] = results
     return response('unchanged', latest.id, 0, dataVersionOf(bumped) ?? null, listenerOf(listening))
@@ -654,11 +681,15 @@ async function importOnce(
     recomputeAccount(d1, accountId),
     listenerStatement(d1, accountId),
   )
+  stages?.lap('plan')
+  stages?.note({ sections: plan.blobs.length, stored: plan.storedSize })
 
   let results: D1Result<Record<string, unknown>>[]
   try {
     results = await meter.batch(d1, 'store', statements)
+    stages?.lap('store')
   } catch (error) {
+    stages?.lap('store')
     // Lost a race with a concurrent upload of the same capture time.
     if (isUniqueViolation(error, 'snapshots')) {
       const row = await d1

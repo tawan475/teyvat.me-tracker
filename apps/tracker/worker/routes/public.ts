@@ -23,6 +23,7 @@ import { UPLOAD_SUPPORT, type VerifyKeyResponse } from '@gdt/shared'
 import { Hono } from 'hono'
 import type { AppEnv } from '../env'
 import { pageOrigin } from '../lib/email'
+import { ImportStages } from '../lib/import-stages'
 import { readUpload } from '../lib/upload'
 import { keyOwner } from '../lib/uploader'
 import { uploadAs } from '../services/upload-as'
@@ -55,9 +56,16 @@ export const publicImport = new Hono<AppEnv>()
   })
 
   .post('/import-by-key', async (c) => {
+    const stages = new ImportStages('key')
     const owner = await keyOwner(c, c.env.KEY_IMPORT_LIMITER)
-    return uploadAs(c, owner, await readUpload(c), {
-      uidRequired:
-        "This file has no UID (gi_player.uid or metadata.uid), so your all-accounts key can't tell which account it is. Use the account's own import key, or a tool that writes the UID (an up-to-date Teyvat.me Capture does).",
-    })
+    return uploadAs(
+      c,
+      owner,
+      await readUpload(c, stages),
+      {
+        uidRequired:
+          "This file has no UID (gi_player.uid or metadata.uid), so your all-accounts key can't tell which account it is. Use the account's own import key, or a tool that writes the UID (an up-to-date Teyvat.me Capture does).",
+      },
+      stages,
+    )
   })

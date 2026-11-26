@@ -2,6 +2,7 @@ import { MAX_IMPORT_FILE_SIZE_BYTES, MAX_IMPORT_FILE_SIZE_MB } from '@gdt/shared
 import type { Context } from 'hono'
 import type { Upload } from '../services/import'
 import { ApiError } from './http'
+import type { ImportStages } from './import-stages'
 
 const tooLarge = () =>
   new ApiError(413, 'too_large', `A GOOD file may be at most ${MAX_IMPORT_FILE_SIZE_MB} MB`)
@@ -13,8 +14,17 @@ const tooLarge = () =>
  * - or a raw application/json body, optionally `Content-Encoding: gzip`, with
  *   `?timestamp=`.
  * The size cap applies to the decompressed text, enforced while streaming.
+ * `stages` (the import_stages line) gets the time before and during the read.
  */
-export async function readUpload(c: Context): Promise<Upload> {
+export async function readUpload(c: Context, stages?: ImportStages): Promise<Upload> {
+  stages?.lap('auth')
+  const upload = await readBody(c)
+  stages?.lap('body')
+  stages?.note({ sent: Number(c.req.header('content-length') ?? 0), raw: upload.rawSize })
+  return upload
+}
+
+async function readBody(c: Context): Promise<Upload> {
   // Multipart overhead is small; the decompressed check below is authoritative.
   const declared = Number(c.req.header('content-length') ?? 0)
   if (declared > MAX_IMPORT_FILE_SIZE_BYTES + 64 * 1024) throw tooLarge()

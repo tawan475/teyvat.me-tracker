@@ -702,6 +702,21 @@ zips are built in the browser; the server only rebuilds single Leyline files (`l
   `x-gdt-d1` (round trips, rows read/written, SQL time). A session never opens
   it. The key lives in the gitignored `apps/tracker/.diag-key`:
   `curl -H "x-diag-key: $(cat apps/tracker/.diag-key)" https://teyvat.me/api/health`.
+- **`import_stages` log line.** Every upload on the three routes that store
+  snapshots (Capture's `/api/irminsul/import`, `import-by-key`, the website's
+  `/api/accounts/:id/import`) logs one line, `worker/lib/import-stages.ts`:
+  `route` (`capture`/`key`/`web`), `status` (`created`/`unchanged`/`failed`
+  with the HTTP `code`), `held` (artifact list held), a `…Ms` figure per stage
+  (`auth`, `body`, `parse`, `owner`, `prepare`, `lookup`, `artifacts`,
+  `catalog`, `encode`, `plan`, `store`, `journal`, `after`, then `totalMs` and
+  D1's own `sqlMs`, `trips`) and sizes (`sent`, `raw`, `pieces`, `chunkRows`,
+  `identities`, `newPieces`, `blobRows`, `blobBytes`, `sections`, `stored`).
+  Numbers and fixed words only, never an id, UID, key or name
+  (`worker/test/import-stages.test.ts` pins the keys). A deployed Worker's
+  clock moves only across I/O, so there a stage's figure is the CPU since the
+  last I/O plus the wait of the I/O that ends it: CPU-only stages read 0 and
+  their time shows in the next stage that waits (`lookup`, `catalog`,
+  `store`, `journal`); locally every stage reads its own time.
 - **Progress** (cookie auth, account owner only):
   `GET/PATCH /api/accounts/:id/achievement-marks` (`{done, undone}` id lists;
   marks by hand, on top of what snapshots captured) and

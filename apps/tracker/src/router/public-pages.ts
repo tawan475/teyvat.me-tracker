@@ -28,7 +28,6 @@ export const INDEXED_PAGES: readonly IndexedPage[] = [
   { path: '/', file: 'index.html', changefreq: 'weekly', priority: 1 },
   { path: '/developers', file: 'developers.html', changefreq: 'monthly', priority: 0.6 },
   { path: '/developers/api', file: 'developers/api.html', changefreq: 'monthly', priority: 0.5 },
-  { path: '/randomizer', file: 'randomizer.html', changefreq: 'weekly', priority: 0.7 },
   { path: '/privacy', file: 'privacy.html', changefreq: 'monthly', priority: 0.5 },
 ]
 

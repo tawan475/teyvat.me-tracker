@@ -94,8 +94,7 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privacy",
-    "fun": "Divertimento",
-    "randomizer": "Gruppi casuali"
+    "fun": "Divertimento"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -204,8 +203,7 @@
     "endgame": "Abisso a spirale, Teatro immaginario e Battaglia nel regno oscuro: i nemici di ogni stagione e i tuoi record.",
     "developersApi": "L'API di Teyvat.me: leggi e modifica i tuoi account di Genshin, istantanee, desideri e piani con un token personale.",
     "privacy": "Cosa conserva Teyvat.me su di te, per quanto tempo, chi può vederlo e come esportarlo o eliminarlo.",
-    "fun": "Cose divertenti con il tuo account di Genshin Impact: gruppi casuali estratti dai tuoi personaggi e altro.",
-    "randomizer": "Gruppi casuali gratis per Genshin Impact: due gruppi casuali tra tutti i personaggi usciti, con filtri, regole, blocchi ed esclusioni. Senza account."
+    "fun": "Cose divertenti con il tuo account di Genshin Impact: gruppi casuali estratti dai tuoi personaggi e altro."
   },
   "support": "Sostieni Teyvat.me su Ko-fi",
   "timeTravel": {

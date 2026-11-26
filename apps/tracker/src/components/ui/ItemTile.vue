@@ -26,6 +26,8 @@ const props = withDefaults(
     selected?: boolean
     /** On the first screen of a bag: fetched at once and first, not when laid out (lazy). */
     priority?: boolean
+    /** A character's portrait: it fills the art down to the strip, as the game's cells do, with no margin. */
+    portrait?: boolean
     /** A tile that toggles (the team randomizer): its state, instead of opening a dialog. */
     pressed?: boolean | null
   }>(),
@@ -84,7 +86,12 @@ function initials(name: string): string {
         :data-skeleton="rarity ? 'off' : undefined"
         :src="src"
         alt=""
-        class="absolute inset-x-0 top-0 aspect-square w-full object-contain p-[3cqw]"
+        class="absolute inset-x-0 top-0 w-full"
+        :class="
+          portrait
+            ? 'h-[102.1cqw] rounded-t-[7cqw] object-cover object-bottom'
+            : 'aspect-square object-contain p-[3cqw]'
+        "
         @error="failed = true"
       />
       <span

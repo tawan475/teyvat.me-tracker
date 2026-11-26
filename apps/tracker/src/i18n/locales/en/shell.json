@@ -94,8 +94,7 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privacy",
-    "fun": "Fun",
-    "randomizer": "Team randomizer"
+    "fun": "Fun"
   },
   "notFound": {
     "title": "Page not found",
@@ -204,8 +203,7 @@
     "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records.",
     "developersApi": "The Teyvat.me API: read and change your Genshin accounts, snapshots, wishes and plans with a personal token.",
     "privacy": "What Teyvat.me keeps about you, for how long, who can see it, and how to export or delete it.",
-    "fun": "Fun things to do with your Genshin Impact account: a team randomizer that rolls from your own characters, and more.",
-    "randomizer": "Free Genshin Impact team randomizer: roll two random teams from every released character, with filters, rules, locks and bans. No account needed."
+    "fun": "Fun things to do with your Genshin Impact account: a team randomizer that rolls from your own characters, and more."
   },
   "support": "Support Teyvat.me on Ko-fi",
   "timeTravel": {

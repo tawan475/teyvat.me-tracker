@@ -94,8 +94,7 @@
     "endgame": "Oyun sonu",
     "developersApi": "API",
     "privacy": "Gizlilik",
-    "fun": "Eğlence",
-    "randomizer": "Rastgele gruplar"
+    "fun": "Eğlence"
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -204,8 +203,7 @@
     "endgame": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz: her sezonun düşmanları ve kendi rekorların.",
     "developersApi": "Teyvat.me API'si: Genshin hesaplarını, anlık görüntülerini, dileklerini ve planlarını kişisel bir token ile oku ve değiştir.",
     "privacy": "Teyvat.me'nin senin hakkında ne sakladığı, ne kadar süre sakladığı, kimin görebildiği ve nasıl dışa aktarılıp silineceği.",
-    "fun": "Genshin Impact hesabınla eğlenceli şeyler: kendi karakterlerinden çeken rastgele gruplar ve daha fazlası.",
-    "randomizer": "Ücretsiz Genshin Impact rastgele grup aracı: çıkmış tüm karakterlerden iki rastgele grup; filtreler, kurallar, kilitler ve hariç tutma ile. Hesap gerekmez."
+    "fun": "Genshin Impact hesabınla eğlenceli şeyler: kendi karakterlerinden çeken rastgele gruplar ve daha fazlası."
   },
   "support": "Teyvat.me'yi Ko-fi'de destekle",
   "timeTravel": {

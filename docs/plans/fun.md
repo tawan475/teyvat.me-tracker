@@ -254,7 +254,7 @@ Sizes: S = about a day, M = a few days, L = a week or more. Add rows freely.
 | --- | --- | --- |
 | **0. Data** | `body` (and model gender) columns in the catalog; `overrides/character-roles.json` with roles and mechanic groups; a game data release | genshin-game-data only |
 | **1. Shell + team randomizer** | The Fun section (hub A, registry, routes for account / guest / demo, messages in 15 languages) and team randomizer A: pool, filters, rules, locks, reroll, Undo, two teams per roll | phase 0 for the role, body type and gender filters (the rest works without) |
-| **2. Public page** | `/randomizer`, outside `/app`, signed out too: the same board over every released character, indexed and prerendered | phase 1 |
+| **2. Public page** | Built, then removed 2026-11-26 at the user's call; `/randomizer` redirects to the guest's page | — |
 | **3. More to roll** | The loadout add-on, boss / domain, challenge cards, the wheel | a gi-cdn check for any new art name |
 | **4. Small games** | From the backlog, in the order the user picks (suggested: What should I do today, Daily guess, Bingo) | per idea |
 
@@ -316,8 +316,9 @@ on):
 - **Phase 1**: `views/account/FunView.vue`, `components/fun/` (`pages.ts` is
   the registry), logic in `src/data/team-randomizer.ts`, messages `fun.json`
   in every locale.
-- **Phase 2**: `/randomizer` (`views/RandomizerView.vue`): the public frame of
-  /privacy around the same board (`randomizer/RandomizerBoard.vue`).
+- **Phase 2 was removed on 2026-11-26** (the user: not good, and in the old
+  public-page look): `/randomizer` now redirects to the guest's page,
+  `/guest/fun/team-randomizer`. No public randomizer page.
 - The role, body type and gender filters and the healer rule read those columns.
 - "All released" leaves out a character whose first banner has not opened
   yet (`release-dates.ts`), though the game data already knows it.

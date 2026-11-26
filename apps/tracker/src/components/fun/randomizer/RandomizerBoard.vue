@@ -54,9 +54,8 @@ import { passersBy, play, reducedMotion, spinDuration, type Spin } from './motio
  * characters or every released one, the filters, the rules, and the roster
  * as a grid where a tap leaves a character out. It only rolls characters:
  * no team count, presets or sharing. A roll spins the slots it changes
- * (SlotReel), a second click on Roll while they spin stops them. Everything runs in the browser; what
- * was last set is remembered per device. The account's page (TeamRandomizer)
- * and the public one (views/RandomizerView.vue) both show it.
+ * (SlotReel); a click while they spin rolls again at once. Everything runs in the browser; what
+ * was last set is remembered per device.
  */
 const props = withDefaults(
   defineProps<{
@@ -221,10 +220,9 @@ const HISTORY = 20
 
 const seed = () => Math.floor(Math.random() * 0x7fffffff)
 
-/** Each slot's animation, and how many still spin. */
+/** Each slot's animation. */
 const spins = ref<(Spin | null)[][]>(emptySlots().map((row) => row.map(() => null)))
 const reels = ref<InstanceType<typeof SlotReel>[]>([])
-const spinning = ref(0)
 const dice = ref<HTMLElement | null>(null)
 let spinId = 0
 /** Who may run past: a share of the pool whose portraits are fetched ahead, so none is blank. */
@@ -280,8 +278,7 @@ function apply(
 }
 
 function roll() {
-  // A click while the slots spin stops them on their result.
-  if (spinning.value > 0) return settle()
+  // A click while the slots spin rolls again at once (`apply` ends the old spin).
   play(dice.value, [{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], 420)
   apply(
     fillTeams({
@@ -410,7 +407,7 @@ const slots = computed(() =>
         <div class="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-2">
           <div v-for="(slot, s) in team" :key="s" class="flex min-w-0 flex-col items-center gap-1">
             <template v-if="slot.character">
-              <SlotReel ref="reels" :spin="spins[t]![s]!" @start="spinning++" @end="spinning--">
+              <SlotReel ref="reels" :spin="spins[t]![s]!">
                 <CharacterTile
                   :character="slot.character"
                   :mark="slot.locked ? 'lock' : null"

@@ -168,13 +168,8 @@ const router = createRouter({
       component: () => import('@/views/PrivacyView.vue'),
       meta: { public: true, themed: true, title: 'privacy' },
     },
-    // The team randomizer over every released character (Fun; public, follows the theme).
-    {
-      path: '/randomizer',
-      name: 'randomizer',
-      component: () => import('@/views/RandomizerView.vue'),
-      meta: { public: true, themed: true, title: 'randomizer' },
-    },
+    // The public randomizer page is gone (2026-11-26): its links land on the guest's.
+    { path: '/randomizer', redirect: '/guest/fun/team-randomizer' },
     {
       path: '/login',
       name: 'login',

@@ -94,8 +94,7 @@
     "endgame": "Contenido final",
     "developersApi": "API",
     "privacy": "Privacidad",
-    "fun": "Diversión",
-    "randomizer": "Equipos al azar"
+    "fun": "Diversión"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -204,8 +203,7 @@
     "endgame": "Espiral del Abismo, Teatro Fantasía y Conflagración estigia: los enemigos de cada temporada y tus propios récords.",
     "developersApi": "La API de Teyvat.me: lee y cambia tus cuentas de Genshin, capturas, deseos y planes con un token personal.",
     "privacy": "Qué guarda Teyvat.me sobre ti, durante cuánto tiempo, quién puede verlo y cómo exportarlo o borrarlo.",
-    "fun": "Cosas divertidas con tu cuenta de Genshin Impact: un sorteo de equipos con tus propios personajes y más.",
-    "randomizer": "Sorteo de equipos gratis para Genshin Impact: dos equipos al azar entre todos los personajes lanzados, con filtros, reglas, fijados y exclusiones. Sin cuenta."
+    "fun": "Cosas divertidas con tu cuenta de Genshin Impact: un sorteo de equipos con tus propios personajes y más."
   },
   "support": "Apoya a Teyvat.me en Ko-fi",
   "timeTravel": {

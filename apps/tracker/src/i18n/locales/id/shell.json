@@ -94,8 +94,7 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privasi",
-    "fun": "Seru-seruan",
-    "randomizer": "Pengacak party"
+    "fun": "Seru-seruan"
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",
@@ -204,8 +203,7 @@
     "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri.",
     "developersApi": "API Teyvat.me: baca dan ubah akun Genshin, snapshot, permohonan, dan rencanamu dengan token pribadi.",
     "privacy": "Apa yang disimpan Teyvat.me tentangmu, berapa lama, siapa yang bisa melihatnya, dan cara mengekspor atau menghapusnya.",
-    "fun": "Hal seru dengan akun Genshin Impact-mu: pengacak party dari karaktermu sendiri, dan lainnya.",
-    "randomizer": "Pengacak party Genshin Impact gratis: dua party acak dari semua karakter yang sudah rilis, dengan filter, aturan, kunci, dan pengecualian. Tanpa akun."
+    "fun": "Hal seru dengan akun Genshin Impact-mu: pengacak party dari karaktermu sendiri, dan lainnya."
   },
   "support": "Dukung Teyvat.me di Ko-fi",
   "timeTravel": {

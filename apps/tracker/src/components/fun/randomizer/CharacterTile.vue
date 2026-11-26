@@ -48,6 +48,7 @@ watch(
     :src="characterIcon(character.key)"
     :name="name"
     :rarity="character.rarity"
+    portrait
     :label="label"
     :selected="selected"
     :pressed="mark != null"

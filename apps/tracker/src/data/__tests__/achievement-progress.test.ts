@@ -469,6 +469,76 @@ describe('imports', () => {
   })
 })
 
+describe('UIAF import', () => {
+  // A made-up UIAF v1.1 file (uigf.org's shape), with every status.
+  const uiaf = (list: unknown[], version = 'v1.1') => ({
+    info: { export_app: 'Test', uiaf_version: version, export_timestamp: 1700000000 },
+    list,
+  })
+  const row = (id: number, status?: number, current = 0) => ({
+    id,
+    current,
+    ...(status === undefined ? {} : { status }),
+    timestamp: 1700000000,
+  })
+
+  it('reads finished entries as ids and counts what is not kept', () => {
+    const parsed = parseAchievementImport(
+      uiaf([row(13, 2), row(10, 3), row(12, 1, 7), row(11, 0), { id: 'x' }, row(13, 1)]),
+    )
+    expect(parsed).toEqual({
+      format: 'uiaf',
+      ids: [10, 13],
+      uiaf: { version: 'v1.1', unfinished: 1, skipped: 2 },
+    })
+  })
+
+  it('reads a v1.0 file (no status) as finished', () => {
+    expect(parseAchievementImport(uiaf([row(10), row(20)], 'v1.0'))?.ids).toEqual([10, 20])
+  })
+
+  it('refuses a UIAF file of another version or over the limit', () => {
+    expect(parseAchievementImport(uiaf([row(10, 2)], 'v2.0'))).toBeNull()
+    const many = Array.from({ length: 10_001 }, (_, i) => row(80000 + i, 2))
+    expect(parseAchievementImport(uiaf(many))).toBeNull()
+  })
+
+  it('never reads a UIGF wish file as achievements', () => {
+    expect(
+      parseAchievementImport({
+        info: { uid: '812345678', uigf_version: 'v3.0' },
+        list: [{ id: '1', gacha_type: '301' }],
+      }),
+    ).toBeNull()
+  })
+
+  it('plans the same adds as the equal id list, with the counts not kept', () => {
+    const file = parseAchievementImport(
+      uiaf([row(10, 2), row(11, 2), row(12, 2), row(30, 2), row(99001, 3), row(21, 1, 3)]),
+    )!
+    const list = parseAchievementImport([10, 11, 12, 30, 99001])!
+    const done = state([10], [11])
+    expect(planAchievementImport(file.ids, done, data.byId, file)).toEqual({
+      ...planAchievementImport(list.ids, done, data.byId),
+      unfinished: 1,
+      skipped: 0,
+    })
+    expect(planAchievementImport(file.ids, done, data.byId, file)).toMatchObject({
+      add: [12, 30, 99001],
+      already: 2,
+      unknown: 1,
+      disused: 1,
+    })
+  })
+
+  it('never unmarks: an unfinished entry for a marked id leaves it marked', () => {
+    const file = parseAchievementImport(uiaf([row(11, 1), row(12, 2)]))!
+    const plan = planAchievementImport(file.ids, state([], [11]), data.byId, file)
+    expect(plan.add).toEqual([12])
+    expect(plan.unfinished).toBe(1)
+  })
+})
+
 describe('real data', () => {
   it('groups every active achievement exactly once', async () => {
     const real = await loadAchievements()

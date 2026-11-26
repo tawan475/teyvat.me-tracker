@@ -12,6 +12,7 @@
 
 import type { Achievement, AchievementData, AchievementTexts } from '@gdt/game-data'
 import type { LiveJournalResponse } from '@gdt/shared'
+import { isUiaf, parseUiaf, UiafError } from '@gdt/shared/achievements/uiaf'
 import {
   isPaimonBackup,
   paimonAccounts,
@@ -569,8 +570,12 @@ export function unmarkFrom(entry: AchievementEntry, index: number, state: DoneSt
  * - `list`: a bare JSON array of ids
  * - `paimon`: a paimon.moe backup (`achievement: {"<category>": {"80001": true}}`,
  *   one set per paimon.moe account)
+ * - `uiaf`: a UIAF v1.0/v1.1 file of UIGF-Org (`info.uiaf_version`, `list` of
+ *   `{id, current, status, timestamp}`; Snap Hutao, cocogoat…): finished
+ *   entries only (status 2 or 3, or none in v1.0); counters and times are
+ *   not kept (a mark is an id)
  */
-export type AchievementImportFormat = 'seelie' | 'good' | 'list' | 'paimon'
+export type AchievementImportFormat = 'seelie' | 'good' | 'list' | 'paimon' | 'uiaf'
 
 export interface ParsedAchievementImport {
   format: AchievementImportFormat
@@ -578,6 +583,14 @@ export interface ParsedAchievementImport {
   ids: number[]
   /** paimon.moe: each account with its ids (pick one; another UID's are another player's). */
   accounts?: (PaimonAccount & { ids: number[] })[]
+  /** UIAF: the entries that are not added, by why. */
+  uiaf?: {
+    version: 'v1.0' | 'v1.1'
+    /** Status 1: unfinished; a mark cannot hold a counter, so not kept. */
+    unfinished: number
+    /** Status 0 (invalid by the file's word) or a field of the wrong type: skipped. */
+    skipped: number
+  }
 }
 
 const isId = (value: unknown): value is number =>
@@ -590,8 +603,29 @@ function idList(values: unknown[]): number[] {
   return [...new Set(values.filter(isId))].sort((a, b) => a - b)
 }
 
-/** Reads completed achievement ids from a parsed JSON file; null when it is none of the formats. */
+/**
+ * Reads completed achievement ids from a parsed JSON file; null when it is
+ * none of the formats, or a UIAF file it refuses (another version, over
+ * UIAF_MAX_ENTRIES entries: `parseUiaf` says which).
+ */
 export function parseAchievementImport(json: unknown): ParsedAchievementImport | null {
+  if (isUiaf(json)) {
+    try {
+      const file = parseUiaf(json)
+      return {
+        format: 'uiaf',
+        ids: file.finished,
+        uiaf: {
+          version: file.version,
+          unfinished: file.unfinished,
+          skipped: file.invalid + file.malformed,
+        },
+      }
+    } catch (error) {
+      if (error instanceof UiafError) return null
+      throw error
+    }
+  }
   if (Array.isArray(json)) {
     return json.length > 0 && json.every(isId) ? { format: 'list', ids: idList(json) } : null
   }
@@ -627,14 +661,28 @@ export interface AchievementImportPlan {
   unknown: number
   /** Of `add`, achievements removed from the game (kept, never counted). */
   disused: number
+  /** UIAF: in the file but not finished there (status 1), so not kept. Absent for other formats. */
+  unfinished?: number
+  /** UIAF: in the file but skipped (status 0, or unreadable). Absent for other formats. */
+  skipped?: number
 }
 
+/**
+ * What an import adds: only ids neither captured nor marked. Nothing is ever
+ * unmarked, and a capture is never overwritten (marks and captures are apart).
+ * `parsed` (the file's parse) carries UIAF's not-kept counts into the plan.
+ */
 export function planAchievementImport(
   ids: readonly number[],
   state: DoneState,
   known: ReadonlyMap<number, Achievement>,
+  parsed?: Pick<ParsedAchievementImport, 'uiaf'> | null,
 ): AchievementImportPlan {
   const plan: AchievementImportPlan = { add: [], already: 0, unknown: 0, disused: 0 }
+  if (parsed?.uiaf) {
+    plan.unfinished = parsed.uiaf.unfinished
+    plan.skipped = parsed.uiaf.skipped
+  }
   for (const id of new Set(ids)) {
     if (isDone(state, id)) {
       plan.already++

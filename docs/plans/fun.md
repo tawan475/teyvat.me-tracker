@@ -307,6 +307,14 @@ on):
 - **All five role tags** ("orle tag yea sure"): healer, shielder, main DPS,
   sub DPS, support, tagged by what the kit does.
 
+2026-11-27, the user, by marking the hub mock's eleven cards:
+
+- **Build next (six):** the loadout randomizer, boss and domain, challenge
+  cards, the wheel, the bingo card, the tier list maker.
+- **Dropped, do not propose again (four):** What should I do today?, Daily
+  guess, Higher or lower, Achievement roulette.
+- Each of the six gets its own A/B/C/D design round before any UI is built.
+
 ### Built (2026-11-24, local commits)
 
 - **Phase 0**, genshin-game-data 773f0ea + a13482c: catalog columns `body`,

@@ -317,6 +317,19 @@ on):
   the backlog.
 - Each of the six gets its own A/B/C/D design round before any UI is built.
 
+Same day, on the design round for the four randomizer pages
+(https://claude.ai/artifact/QNyRAtmLH4JsrK1SKmZ9hW):
+
+- **Loadout randomizer: shelved for now** ("i dont like fold this for now").
+- **Boss: design C** (every candidate a tile, one lights up), made like the
+  team randomizer: tiles can be banned, filters on top, among them land /
+  underwater. No domains, and no "legends not defeated only" switch.
+- **Challenge cards: A and B combined**: the drawn cards large on top, the
+  whole deck below where cards can be banned like characters; the number of
+  cards is set with - and + buttons, as many as wanted.
+- **Wheel: design A's look**, with the functions people know from name-wheel
+  sites (the user named wheelofnames.com as the reference for what it does).
+
 ### Built (2026-11-24, local commits)
 
 - **Phase 0**, genshin-game-data 773f0ea + a13482c: catalog columns `body`,

@@ -311,8 +311,10 @@ on):
 
 - **Build next (six):** the loadout randomizer, boss and domain, challenge
   cards, the wheel, the bingo card, the tier list maker.
-- **Dropped, do not propose again (four):** What should I do today?, Daily
-  guess, Higher or lower, Achievement roulette.
+- **Dropped, do not propose again:** Higher or lower.
+- **Not dropped, only not planned yet** (the user's correction the same day):
+  What should I do today?, Daily guess, Achievement roulette. They stay in
+  the backlog.
 - Each of the six gets its own A/B/C/D design round before any UI is built.
 
 ### Built (2026-11-24, local commits)

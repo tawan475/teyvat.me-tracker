@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "隊伍隨機器",
       "pitch": "從你自己的角色中隨機組隊"
+    },
+    "bossRandomizer": {
+      "title": "首領隨機器",
+      "pitch": "下一個打哪個首領"
+    },
+    "challengeCards": {
+      "title": "挑戰卡",
+      "pitch": "讓挑戰更難的規則"
+    },
+    "wheel": {
+      "title": "轉盤",
+      "pitch": "轉你自己的清單"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "元素不夠滿足規則",
       "fiveStars": "4★角色不夠滿足規則",
       "locks": "鎖定的角色違反了規則"
+    }
+  },
+  "boss": {
+    "loadFailed": "無法載入首領",
+    "roll": "隨機首領",
+    "rolled": "已抽中",
+    "empty": "首領池中沒有首領",
+    "kindTitle": "類型",
+    "kind": {
+      "weekly": "週本",
+      "world": "世界首領",
+      "legend": "地方傳奇"
+    },
+    "whereTitle": "場地",
+    "where": {
+      "land": "陸地",
+      "water": "水下"
+    }
+  },
+  "cards": {
+    "draw": "抽取卡牌",
+    "redraw": "在此重抽一張",
+    "empty": "牌堆裡沒有卡牌",
+    "count": "卡牌數量",
+    "fewer": "少一張",
+    "more": "多一張",
+    "deck": "牌堆",
+    "deckCount": "牌堆 {n} / {total}",
+    "modeTitle": "遊玩方式",
+    "mode": {
+      "solo": "單人",
+      "coop": "連線"
+    },
+    "soloOnly": "僅單人",
+    "coopOnly": "僅連線",
+    "timeTrial": "限時",
+    "timeTrials": "限時卡",
+    "timeTrialsHint": "為戰鬥設定時間限制的卡牌",
+    "level": {
+      "1": "簡單",
+      "2": "中等",
+      "3": "困難"
+    },
+    "list": {
+      "noBursts": {
+        "title": "禁用元素爆發",
+        "text": "全程不使用元素爆發。"
+      },
+      "noSkills": {
+        "title": "禁用元素戰技",
+        "text": "全程不使用元素戰技。"
+      },
+      "normalAttacksOnly": {
+        "title": "僅普通攻擊",
+        "text": "不用元素戰技，也不用元素爆發。"
+      },
+      "fourStarWeapons": {
+        "title": "僅4★武器",
+        "text": "每名角色裝備4★或更低的武器。"
+      },
+      "levelOneWeapons": {
+        "title": "Lv. 1 武器",
+        "text": "每名角色裝備1級武器。"
+      },
+      "oneWeaponType": {
+        "title": "同一武器類型",
+        "text": "全隊使用同一類型的武器。"
+      },
+      "noHealing": {
+        "title": "禁止治療",
+        "text": "不帶治療角色，不用治療技能，不吃回血食物。"
+      },
+      "noShields": {
+        "title": "禁止護盾",
+        "text": "不帶護盾角色，不用護盾技能。"
+      },
+      "noFood": {
+        "title": "禁止食物",
+        "text": "不用食物，也不用藥劑。"
+      },
+      "noArtifacts": {
+        "title": "不帶聖遺物",
+        "text": "所有人卸下聖遺物。"
+      },
+      "oneElement": {
+        "title": "單一元素",
+        "text": "全隊同一種元素。"
+      },
+      "fourStarCharacters": {
+        "title": "僅4★角色",
+        "text": "隊伍中沒有5★角色。"
+      },
+      "noSprinting": {
+        "title": "禁止衝刺",
+        "text": "只能走路、跳躍和攀爬。"
+      },
+      "noDodging": {
+        "title": "禁止閃避",
+        "text": "不能衝刺躲開攻擊。"
+      },
+      "swapEveryTen": {
+        "title": "每10秒換人",
+        "text": "任何角色在場不超過十秒。"
+      },
+      "noSwapping": {
+        "title": "禁止換人",
+        "text": "開場的角色打完整場戰鬥。"
+      },
+      "threeCharacters": {
+        "title": "三名角色",
+        "text": "隊伍空出一個位置。"
+      },
+      "underThreeMinutes": {
+        "title": "3分鐘內",
+        "text": "三分鐘內結束戰鬥，否則不算。"
+      },
+      "underNinetySeconds": {
+        "title": "90秒內",
+        "text": "速通：限時九十秒。"
+      },
+      "noReviving": {
+        "title": "禁止復甦",
+        "text": "倒下的玩家直到戰鬥結束都不能復甦。"
+      },
+      "sameElementEveryone": {
+        "title": "全員同元素",
+        "text": "所有玩家帶同一種元素。"
+      },
+      "oneBurstEach": {
+        "title": "每人一次爆發",
+        "text": "每名玩家只用一次元素爆發。"
+      }
+    }
+  },
+  "wheel": {
+    "sample": "週本\n深境螺旋\n聖遺物秘境\n探索\n塵歌壺\n連線",
+    "unsaved": "未儲存的清單",
+    "new": "新增",
+    "open": "開啟",
+    "save": "儲存",
+    "listName": "清單名稱",
+    "deleteList": "刪除{name}",
+    "share": "分享連結",
+    "copied": "連結已複製",
+    "spin": "轉動轉盤",
+    "hint": "點擊轉盤轉動，或按 Ctrl + Enter",
+    "empty": "新增項目後即可轉動",
+    "spinning": "轉動中…",
+    "notSpun": "尚未轉動",
+    "winner": "選出來了",
+    "remove": "移除",
+    "close": "關閉",
+    "full": "全螢幕",
+    "exitFull": "退出全螢幕",
+    "entries": "項目",
+    "results": "結果",
+    "perLine": "每行一個項目",
+    "shuffle": "打亂",
+    "sort": "排序",
+    "clearResults": "清空結果",
+    "noResults": "暫無結果",
+    "options": "選項",
+    "option": {
+      "seconds": "轉動時間",
+      "remove": "每次轉動後移除選中的項目",
+      "dialog": "用對話框顯示選中的項目",
+      "sound": "音效",
+      "confetti": "彩紙",
+      "hide": "轉動時隱藏項目"
     }
   }
 }

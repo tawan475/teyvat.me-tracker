@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "チームランダマイザー",
       "pitch": "所持キャラクターからランダムにチームを編成"
+    },
+    "bossRandomizer": {
+      "title": "ボスランダマイザー",
+      "pitch": "次に戦うボスを決める"
+    },
+    "challengeCards": {
+      "title": "チャレンジカード",
+      "pitch": "挑戦を難しくするルール"
+    },
+    "wheel": {
+      "title": "ルーレット",
+      "pitch": "自分のリストを回す"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "ルールを満たす元素が足りません",
       "fiveStars": "ルールを満たす★4キャラクターが足りません",
       "locks": "固定したキャラクターがルールに反しています"
+    }
+  },
+  "boss": {
+    "loadFailed": "ボスを読み込めませんでした",
+    "roll": "ボスを抽選",
+    "rolled": "抽選結果",
+    "empty": "抽選対象にボスがいません",
+    "kindTitle": "種類",
+    "kind": {
+      "weekly": "週ボス",
+      "world": "フィールドボス",
+      "legend": "地方伝説"
+    },
+    "whereTitle": "場所",
+    "where": {
+      "land": "地上",
+      "water": "水中"
+    }
+  },
+  "cards": {
+    "draw": "カードを引く",
+    "redraw": "ここでもう1枚引く",
+    "empty": "山札にカードがありません",
+    "count": "カードの枚数",
+    "fewer": "1枚減らす",
+    "more": "1枚増やす",
+    "deck": "山札",
+    "deckCount": "山札 {n} / {total}",
+    "modeTitle": "プレイ",
+    "mode": {
+      "solo": "シングル",
+      "coop": "マルチ"
+    },
+    "soloOnly": "シングルのみ",
+    "coopOnly": "マルチのみ",
+    "timeTrial": "タイムアタック",
+    "timeTrials": "タイムアタック",
+    "timeTrialsHint": "戦闘に制限時間を設けるカード",
+    "level": {
+      "1": "イージー",
+      "2": "ノーマル",
+      "3": "ハード"
+    },
+    "list": {
+      "noBursts": {
+        "title": "元素爆発禁止",
+        "text": "最後まで元素爆発を使いません。"
+      },
+      "noSkills": {
+        "title": "元素スキル禁止",
+        "text": "最後まで元素スキルを使いません。"
+      },
+      "normalAttacksOnly": {
+        "title": "通常攻撃のみ",
+        "text": "元素スキルも元素爆発も使いません。"
+      },
+      "fourStarWeapons": {
+        "title": "★4武器のみ",
+        "text": "全キャラクターが★4以下の武器を装備します。"
+      },
+      "levelOneWeapons": {
+        "title": "Lv.1 武器",
+        "text": "全キャラクターがLv.1の武器を装備します。"
+      },
+      "oneWeaponType": {
+        "title": "武器タイプ統一",
+        "text": "チーム全員が同じタイプの武器を使います。"
+      },
+      "noHealing": {
+        "title": "回復禁止",
+        "text": "ヒーラーも回復スキルも回復する食べ物も使いません。"
+      },
+      "noShields": {
+        "title": "シールド禁止",
+        "text": "シールド役もシールドスキルも使いません。"
+      },
+      "noFood": {
+        "title": "食べ物禁止",
+        "text": "食べ物も薬剤も使いません。"
+      },
+      "noArtifacts": {
+        "title": "聖遺物なし",
+        "text": "全員が聖遺物を外します。"
+      },
+      "oneElement": {
+        "title": "元素統一",
+        "text": "チーム全員が同じ元素です。"
+      },
+      "fourStarCharacters": {
+        "title": "★4キャラクターのみ",
+        "text": "チームに★5キャラクターを入れません。"
+      },
+      "noSprinting": {
+        "title": "ダッシュ禁止",
+        "text": "歩き、ジャンプ、登りだけで移動します。"
+      },
+      "noDodging": {
+        "title": "回避禁止",
+        "text": "ダッシュで攻撃を避けません。"
+      },
+      "swapEveryTen": {
+        "title": "10秒ごとに交代",
+        "text": "誰も10秒を超えてフィールドに出続けません。"
+      },
+      "noSwapping": {
+        "title": "交代禁止",
+        "text": "戦闘を始めたキャラクターが最後まで戦います。"
+      },
+      "threeCharacters": {
+        "title": "キャラクター3人",
+        "text": "チームの枠を1つ空けます。"
+      },
+      "underThreeMinutes": {
+        "title": "3分以内",
+        "text": "3分以内に戦闘を終えなければ無効です。"
+      },
+      "underNinetySeconds": {
+        "title": "90秒以内",
+        "text": "スピードラン：制限時間は90秒です。"
+      },
+      "noReviving": {
+        "title": "復活禁止",
+        "text": "倒れたプレイヤーは戦闘終了まで復活しません。"
+      },
+      "sameElementEveryone": {
+        "title": "全員同じ元素",
+        "text": "プレイヤー全員が同じ元素を持ち込みます。"
+      },
+      "oneBurstEach": {
+        "title": "元素爆発は1人1回",
+        "text": "各プレイヤーは元素爆発を1回だけ使います。"
+      }
+    }
+  },
+  "wheel": {
+    "sample": "週ボス\n深境螺旋\n聖遺物秘境\n探索\n塵歌壺\nマルチ",
+    "unsaved": "未保存のリスト",
+    "new": "新規",
+    "open": "開く",
+    "save": "保存",
+    "listName": "リスト名",
+    "deleteList": "{name}を削除",
+    "share": "リンクを共有",
+    "copied": "リンクをコピーしました",
+    "spin": "ルーレットを回す",
+    "hint": "ルーレットをクリックするか、Ctrl + Enter で回します",
+    "empty": "項目を追加すると回せます",
+    "spinning": "回転中…",
+    "notSpun": "まだ回していません",
+    "winner": "当選が決まりました",
+    "remove": "削除",
+    "close": "閉じる",
+    "full": "全画面",
+    "exitFull": "全画面を終了",
+    "entries": "項目",
+    "results": "結果",
+    "perLine": "1行に1項目",
+    "shuffle": "シャッフル",
+    "sort": "並べ替え",
+    "clearResults": "結果を消去",
+    "noResults": "まだ結果がありません",
+    "options": "オプション",
+    "option": {
+      "seconds": "回転時間",
+      "remove": "回すたびに当選項目を削除",
+      "dialog": "当選項目をダイアログで表示",
+      "sound": "サウンド",
+      "confetti": "紙吹雪",
+      "hide": "回転中は項目を隠す"
     }
   }
 }

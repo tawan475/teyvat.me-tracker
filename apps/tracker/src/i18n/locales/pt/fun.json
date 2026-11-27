@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Equipes aleatórias",
       "pitch": "Equipes aleatórias com os seus personagens"
+    },
+    "bossRandomizer": {
+      "title": "Chefe aleatório",
+      "pitch": "Qual chefe enfrentar a seguir"
+    },
+    "challengeCards": {
+      "title": "Cartas de desafio",
+      "pitch": "Regras que dificultam a partida"
+    },
+    "wheel": {
+      "title": "Roleta",
+      "pitch": "Gire a sua própria lista"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Elementos insuficientes para a regra",
       "fiveStars": "Personagens 4★ insuficientes para a regra",
       "locks": "Os personagens travados quebram uma regra"
+    }
+  },
+  "boss": {
+    "loadFailed": "Não foi possível carregar os chefes",
+    "roll": "Sortear um chefe",
+    "rolled": "Sorteados",
+    "empty": "Nenhum chefe na seleção",
+    "kindTitle": "Tipo",
+    "kind": {
+      "weekly": "Chefe Semanal",
+      "world": "Chefe de Mundo",
+      "legend": "Lenda Local"
+    },
+    "whereTitle": "Onde",
+    "where": {
+      "land": "Terra",
+      "water": "Debaixo d'água"
+    }
+  },
+  "cards": {
+    "draw": "Tirar cartas",
+    "redraw": "Tirar outra carta aqui",
+    "empty": "Nenhuma carta no baralho",
+    "count": "Quantas cartas",
+    "fewer": "Uma carta a menos",
+    "more": "Uma carta a mais",
+    "deck": "Baralho",
+    "deckCount": "{n} de {total} no baralho",
+    "modeTitle": "Modo de jogo",
+    "mode": {
+      "solo": "Solo",
+      "coop": "Cooperativo"
+    },
+    "soloOnly": "Apenas solo",
+    "coopOnly": "Apenas cooperativo",
+    "timeTrial": "Contrarrelógio",
+    "timeTrials": "Contrarrelógio",
+    "timeTrialsHint": "Cartas que impõem um limite de tempo à luta",
+    "level": {
+      "1": "Fácil",
+      "2": "Médio",
+      "3": "Difícil"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Sem Supremos",
+        "text": "Os Supremos ficam sem uso durante toda a partida."
+      },
+      "noSkills": {
+        "title": "Sem habilidades",
+        "text": "As Habilidades Elementais ficam sem uso durante toda a partida."
+      },
+      "normalAttacksOnly": {
+        "title": "Apenas ataques normais",
+        "text": "Sem Habilidades Elementais, sem Supremos."
+      },
+      "fourStarWeapons": {
+        "title": "Apenas armas 4★",
+        "text": "Cada personagem usa uma arma de 4★ ou menos."
+      },
+      "levelOneWeapons": {
+        "title": "Armas Nv. 1",
+        "text": "Cada personagem usa uma arma de nível 1."
+      },
+      "oneWeaponType": {
+        "title": "Um tipo de arma",
+        "text": "Toda a equipe usa o mesmo tipo de arma."
+      },
+      "noHealing": {
+        "title": "Sem cura",
+        "text": "Sem curandeiros, sem habilidades de cura, sem comida que cura."
+      },
+      "noShields": {
+        "title": "Sem escudos",
+        "text": "Sem personagens de escudo e sem habilidades de escudo."
+      },
+      "noFood": {
+        "title": "Sem comida",
+        "text": "Sem comida e sem poções."
+      },
+      "noArtifacts": {
+        "title": "Sem artefatos",
+        "text": "Todos tiram os artefatos."
+      },
+      "oneElement": {
+        "title": "Um elemento",
+        "text": "Toda a equipe compartilha um elemento."
+      },
+      "fourStarCharacters": {
+        "title": "Apenas personagens 4★",
+        "text": "Nenhum personagem 5★ na equipe."
+      },
+      "noSprinting": {
+        "title": "Sem correr",
+        "text": "Apenas andar, pular e escalar."
+      },
+      "noDodging": {
+        "title": "Sem esquiva",
+        "text": "Nada de se esquivar com uma corrida."
+      },
+      "swapEveryTen": {
+        "title": "Troca a cada 10 s",
+        "text": "Ninguém fica em campo por mais de dez segundos."
+      },
+      "noSwapping": {
+        "title": "Sem trocas",
+        "text": "O personagem que começa a luta é quem a termina."
+      },
+      "threeCharacters": {
+        "title": "Três personagens",
+        "text": "Um espaço da equipe fica vazio."
+      },
+      "underThreeMinutes": {
+        "title": "Menos de 3 minutos",
+        "text": "A luta termina em até três minutos, ou não conta."
+      },
+      "underNinetySeconds": {
+        "title": "Menos de 90 segundos",
+        "text": "Corrida contra o tempo: noventa segundos no relógio."
+      },
+      "noReviving": {
+        "title": "Sem reviver",
+        "text": "Um jogador caído fica no chão até a luta acabar."
+      },
+      "sameElementEveryone": {
+        "title": "Mesmo elemento para todos",
+        "text": "Todos os jogadores levam o mesmo elemento."
+      },
+      "oneBurstEach": {
+        "title": "Um Supremo cada",
+        "text": "Cada jogador usa o seu Supremo uma vez."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Chefes Semanais\nAbismo do Espiral\nDomínio de artefatos\nExplorar\nBule de Relachá\nCooperativo",
+    "unsaved": "Lista não salva",
+    "new": "Nova",
+    "open": "Abrir",
+    "save": "Salvar",
+    "listName": "Nome da lista",
+    "deleteList": "Excluir {name}",
+    "share": "Compartilhar link",
+    "copied": "Link copiado",
+    "spin": "Girar a roleta",
+    "hint": "Clique na roleta para girar ou pressione Ctrl + Enter",
+    "empty": "Adicione entradas para girar",
+    "spinning": "Girando…",
+    "notSpun": "Ainda não girou",
+    "winner": "Temos um vencedor",
+    "remove": "Remover",
+    "close": "Fechar",
+    "full": "Tela cheia",
+    "exitFull": "Sair da tela cheia",
+    "entries": "Entradas",
+    "results": "Resultados",
+    "perLine": "Uma entrada por linha",
+    "shuffle": "Embaralhar",
+    "sort": "Ordenar",
+    "clearResults": "Limpar os resultados",
+    "noResults": "Nenhum resultado ainda",
+    "options": "Opções",
+    "option": {
+      "seconds": "Tempo de giro",
+      "remove": "Remover o vencedor após cada giro",
+      "dialog": "Mostrar o vencedor em uma janela",
+      "sound": "Som",
+      "confetti": "Confete",
+      "hide": "Ocultar as entradas durante o giro"
     }
   }
 }

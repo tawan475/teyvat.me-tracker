@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Équipes aléatoires",
       "pitch": "Des équipes au hasard parmi vos personnages"
+    },
+    "bossRandomizer": {
+      "title": "Boss aléatoire",
+      "pitch": "Quel boss affronter ensuite"
+    },
+    "challengeCards": {
+      "title": "Cartes de défi",
+      "pitch": "Des règles qui corsent la partie"
+    },
+    "wheel": {
+      "title": "Roue",
+      "pitch": "Faites tourner votre propre liste"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Pas assez d'éléments pour la règle",
       "fiveStars": "Pas assez de personnages 4★ pour la règle",
       "locks": "Les personnages verrouillés enfreignent une règle"
+    }
+  },
+  "boss": {
+    "loadFailed": "Impossible de charger les boss",
+    "roll": "Tirer un boss",
+    "rolled": "Tirage",
+    "empty": "Aucun boss dans la sélection",
+    "kindTitle": "Type",
+    "kind": {
+      "weekly": "Boss hebdomadaire",
+      "world": "Boss de monde",
+      "legend": "Légende locale"
+    },
+    "whereTitle": "Où",
+    "where": {
+      "land": "Terre",
+      "water": "Sous l'eau"
+    }
+  },
+  "cards": {
+    "draw": "Tirer des cartes",
+    "redraw": "Tirer une autre carte ici",
+    "empty": "Aucune carte dans le paquet",
+    "count": "Nombre de cartes",
+    "fewer": "Une carte de moins",
+    "more": "Une carte de plus",
+    "deck": "Paquet",
+    "deckCount": "{n} sur {total} dans le paquet",
+    "modeTitle": "Mode de jeu",
+    "mode": {
+      "solo": "Solo",
+      "coop": "Coop"
+    },
+    "soloOnly": "Solo uniquement",
+    "coopOnly": "Coop uniquement",
+    "timeTrial": "Contre-la-montre",
+    "timeTrials": "Contre-la-montre",
+    "timeTrialsHint": "Des cartes qui imposent une limite de temps au combat",
+    "level": {
+      "1": "Facile",
+      "2": "Moyen",
+      "3": "Difficile"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Sans déchaînements",
+        "text": "Les déchaînements élémentaires restent inutilisés pendant toute la partie."
+      },
+      "noSkills": {
+        "title": "Sans compétences",
+        "text": "Les compétences élémentaires restent inutilisées pendant toute la partie."
+      },
+      "normalAttacksOnly": {
+        "title": "Attaques normales seulement",
+        "text": "Ni compétences élémentaires, ni déchaînements élémentaires."
+      },
+      "fourStarWeapons": {
+        "title": "Armes 4★ seulement",
+        "text": "Chaque personnage porte une arme 4★ ou moins."
+      },
+      "levelOneWeapons": {
+        "title": "Armes niv. 1",
+        "text": "Chaque personnage porte une arme de niveau 1."
+      },
+      "oneWeaponType": {
+        "title": "Un seul type d'arme",
+        "text": "Toute l'équipe utilise le même type d'arme."
+      },
+      "noHealing": {
+        "title": "Sans soins",
+        "text": "Ni soigneurs, ni compétences de soin, ni nourriture qui soigne."
+      },
+      "noShields": {
+        "title": "Sans boucliers",
+        "text": "Ni personnages à bouclier, ni compétences de bouclier."
+      },
+      "noFood": {
+        "title": "Sans nourriture",
+        "text": "Ni nourriture, ni potions."
+      },
+      "noArtifacts": {
+        "title": "Sans artéfacts",
+        "text": "Tout le monde retire ses artéfacts."
+      },
+      "oneElement": {
+        "title": "Un seul élément",
+        "text": "Toute l'équipe partage le même élément."
+      },
+      "fourStarCharacters": {
+        "title": "Personnages 4★ seulement",
+        "text": "Aucun personnage 5★ dans l'équipe."
+      },
+      "noSprinting": {
+        "title": "Sans sprint",
+        "text": "Marcher, sauter et grimper seulement."
+      },
+      "noDodging": {
+        "title": "Sans esquive",
+        "text": "Pas de ruée pour éviter les coups."
+      },
+      "swapEveryTen": {
+        "title": "Changement toutes les 10 s",
+        "text": "Personne ne reste sur le terrain plus de dix secondes."
+      },
+      "noSwapping": {
+        "title": "Sans changement",
+        "text": "Le personnage qui commence le combat le termine."
+      },
+      "threeCharacters": {
+        "title": "Trois personnages",
+        "text": "Un emplacement de l'équipe reste vide."
+      },
+      "underThreeMinutes": {
+        "title": "Moins de 3 minutes",
+        "text": "Le combat se termine en trois minutes, sinon il ne compte pas."
+      },
+      "underNinetySeconds": {
+        "title": "Moins de 90 secondes",
+        "text": "Une course de vitesse, quatre-vingt-dix secondes au chrono."
+      },
+      "noReviving": {
+        "title": "Sans réanimation",
+        "text": "Un joueur tombé reste à terre jusqu'à la fin du combat."
+      },
+      "sameElementEveryone": {
+        "title": "Même élément pour tous",
+        "text": "Tous les joueurs apportent le même élément."
+      },
+      "oneBurstEach": {
+        "title": "Un déchaînement chacun",
+        "text": "Chaque joueur utilise son déchaînement élémentaire une seule fois."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Boss hebdomadaires\nProfondeurs spiralées\nDonjon d'artéfacts\nExplorer\nSérénithéière\nCoop",
+    "unsaved": "Liste non enregistrée",
+    "new": "Nouvelle",
+    "open": "Ouvrir",
+    "save": "Enregistrer",
+    "listName": "Nom de la liste",
+    "deleteList": "Supprimer {name}",
+    "share": "Partager le lien",
+    "copied": "Lien copié",
+    "spin": "Faire tourner la roue",
+    "hint": "Cliquez sur la roue pour la faire tourner, ou appuyez sur Ctrl + Enter",
+    "empty": "Ajoutez des entrées pour tourner",
+    "spinning": "Rotation…",
+    "notSpun": "Pas encore tournée",
+    "winner": "Nous avons un gagnant",
+    "remove": "Retirer",
+    "close": "Fermer",
+    "full": "Plein écran",
+    "exitFull": "Quitter le plein écran",
+    "entries": "Entrées",
+    "results": "Résultats",
+    "perLine": "Une entrée par ligne",
+    "shuffle": "Mélanger",
+    "sort": "Trier",
+    "clearResults": "Effacer les résultats",
+    "noResults": "Aucun résultat pour l'instant",
+    "options": "Options",
+    "option": {
+      "seconds": "Durée de rotation",
+      "remove": "Retirer le gagnant après chaque tour",
+      "dialog": "Afficher le gagnant dans une fenêtre",
+      "sound": "Son",
+      "confetti": "Confettis",
+      "hide": "Masquer les entrées pendant la rotation"
     }
   }
 }

@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Truppen-Zufallsgenerator",
       "pitch": "Zufällige Truppen aus deinen eigenen Figuren"
+    },
+    "bossRandomizer": {
+      "title": "Boss-Zufallsgenerator",
+      "pitch": "Welcher Boss als Nächstes dran ist"
+    },
+    "challengeCards": {
+      "title": "Herausforderungskarten",
+      "pitch": "Regeln, die einen Durchlauf schwerer machen"
+    },
+    "wheel": {
+      "title": "Glücksrad",
+      "pitch": "Dreh deine eigene Liste"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Nicht genug Elemente für die Regel",
       "fiveStars": "Nicht genug 4★-Figuren für die Regel",
       "locks": "Die gesperrten Figuren verletzen eine Regel"
+    }
+  },
+  "boss": {
+    "loadFailed": "Bosse konnten nicht geladen werden",
+    "roll": "Boss auswürfeln",
+    "rolled": "Ausgewürfelt",
+    "empty": "Kein Boss in der Auswahl",
+    "kindTitle": "Art",
+    "kind": {
+      "weekly": "Wochenboss",
+      "world": "Weltboss",
+      "legend": "Lokallegende"
+    },
+    "whereTitle": "Wo",
+    "where": {
+      "land": "Land",
+      "water": "Unter Wasser"
+    }
+  },
+  "cards": {
+    "draw": "Karten ziehen",
+    "redraw": "Hier eine andere Karte ziehen",
+    "empty": "Keine Karte im Stapel",
+    "count": "Anzahl Karten",
+    "fewer": "Eine Karte weniger",
+    "more": "Eine Karte mehr",
+    "deck": "Stapel",
+    "deckCount": "{n} von {total} im Stapel",
+    "modeTitle": "Spielweise",
+    "mode": {
+      "solo": "Solo",
+      "coop": "Koop"
+    },
+    "soloOnly": "Nur Solo",
+    "coopOnly": "Nur Koop",
+    "timeTrial": "Zeitlimit",
+    "timeTrials": "Zeitlimits",
+    "timeTrialsHint": "Karten, die dem Kampf ein Zeitlimit setzen",
+    "level": {
+      "1": "Leicht",
+      "2": "Mittel",
+      "3": "Schwer"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Keine Spezialfähigkeiten",
+        "text": "Spezialfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      },
+      "noSkills": {
+        "title": "Keine Elementarfähigkeiten",
+        "text": "Elementarfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      },
+      "normalAttacksOnly": {
+        "title": "Nur Standardangriffe",
+        "text": "Keine Elementarfähigkeiten, keine Spezialfähigkeiten."
+      },
+      "fourStarWeapons": {
+        "title": "Nur 4★-Waffen",
+        "text": "Jede Figur trägt eine Waffe mit höchstens 4★."
+      },
+      "levelOneWeapons": {
+        "title": "Waffen auf St. 1",
+        "text": "Jede Figur trägt eine Waffe auf Stufe 1."
+      },
+      "oneWeaponType": {
+        "title": "Ein Waffentyp",
+        "text": "Die ganze Truppe nutzt denselben Waffentyp."
+      },
+      "noHealing": {
+        "title": "Keine Heilung",
+        "text": "Keine Heiler, keine Heilfähigkeiten, keine heilende Nahrung."
+      },
+      "noShields": {
+        "title": "Keine Schilde",
+        "text": "Keine Schildgeber und keine Schildfähigkeiten."
+      },
+      "noFood": {
+        "title": "Keine Nahrung",
+        "text": "Keine Nahrung und keine Tränke."
+      },
+      "noArtifacts": {
+        "title": "Keine Artefakte",
+        "text": "Alle legen ihre Artefakte ab."
+      },
+      "oneElement": {
+        "title": "Ein Element",
+        "text": "Die ganze Truppe teilt sich ein Element."
+      },
+      "fourStarCharacters": {
+        "title": "Nur 4★-Figuren",
+        "text": "Keine 5★-Figuren in der Truppe."
+      },
+      "noSprinting": {
+        "title": "Kein Rennen",
+        "text": "Nur gehen, springen und klettern."
+      },
+      "noDodging": {
+        "title": "Kein Ausweichen",
+        "text": "Kein Sprint aus der Gefahr."
+      },
+      "swapEveryTen": {
+        "title": "Wechsel alle 10 s",
+        "text": "Niemand bleibt länger als zehn Sekunden auf dem Feld."
+      },
+      "noSwapping": {
+        "title": "Kein Wechseln",
+        "text": "Die Figur, die den Kampf beginnt, beendet ihn auch."
+      },
+      "threeCharacters": {
+        "title": "Drei Figuren",
+        "text": "Ein Platz der Truppe bleibt leer."
+      },
+      "underThreeMinutes": {
+        "title": "Unter 3 Minuten",
+        "text": "Der Kampf endet innerhalb von drei Minuten, sonst zählt er nicht."
+      },
+      "underNinetySeconds": {
+        "title": "Unter 90 Sekunden",
+        "text": "Ein Speedrun: neunzig Sekunden auf der Uhr."
+      },
+      "noReviving": {
+        "title": "Kein Wiederbeleben",
+        "text": "Wer fällt, bleibt bis zum Ende des Kampfes liegen."
+      },
+      "sameElementEveryone": {
+        "title": "Gleiches Element für alle",
+        "text": "Alle Spieler bringen dasselbe Element mit."
+      },
+      "oneBurstEach": {
+        "title": "Je eine Spezialfähigkeit",
+        "text": "Jeder Spieler setzt seine Spezialfähigkeit einmal ein."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Wochenbosse\nGewundener Abgrund\nArtefakt-Sphäre\nErkunden\nKanne der Vergänglichkeit\nKoop",
+    "unsaved": "Ungespeicherte Liste",
+    "new": "Neu",
+    "open": "Öffnen",
+    "save": "Speichern",
+    "listName": "Listenname",
+    "deleteList": "{name} löschen",
+    "share": "Link teilen",
+    "copied": "Link kopiert",
+    "spin": "Rad drehen",
+    "hint": "Klick auf das Rad, um es zu drehen, oder drück Strg + Enter",
+    "empty": "Füg Einträge hinzu, um zu drehen",
+    "spinning": "Dreht sich…",
+    "notSpun": "Noch nicht gedreht",
+    "winner": "Wir haben einen Gewinner",
+    "remove": "Entfernen",
+    "close": "Schließen",
+    "full": "Vollbild",
+    "exitFull": "Vollbild beenden",
+    "entries": "Einträge",
+    "results": "Ergebnisse",
+    "perLine": "Ein Eintrag pro Zeile",
+    "shuffle": "Mischen",
+    "sort": "Sortieren",
+    "clearResults": "Ergebnisse löschen",
+    "noResults": "Noch keine Ergebnisse",
+    "options": "Optionen",
+    "option": {
+      "seconds": "Drehdauer",
+      "remove": "Gewinner nach jeder Drehung entfernen",
+      "dialog": "Gewinner in einem Dialog zeigen",
+      "sound": "Ton",
+      "confetti": "Konfetti",
+      "hide": "Einträge beim Drehen ausblenden"
     }
   }
 }

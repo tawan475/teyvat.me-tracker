@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "파티 랜덤 뽑기",
       "pitch": "보유 캐릭터로 무작위 파티 편성"
+    },
+    "bossRandomizer": {
+      "title": "보스 랜덤 뽑기",
+      "pitch": "다음에 싸울 보스 정하기"
+    },
+    "challengeCards": {
+      "title": "챌린지 카드",
+      "pitch": "도전을 더 어렵게 만드는 규칙"
+    },
+    "wheel": {
+      "title": "룰렛",
+      "pitch": "나만의 목록 돌리기"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "규칙에 맞는 원소가 부족합니다",
       "fiveStars": "규칙에 맞는 4★ 캐릭터가 부족합니다",
       "locks": "고정한 캐릭터가 규칙에 어긋납니다"
+    }
+  },
+  "boss": {
+    "loadFailed": "보스를 불러오지 못했습니다",
+    "roll": "보스 뽑기",
+    "rolled": "뽑은 결과",
+    "empty": "후보에 보스가 없습니다",
+    "kindTitle": "종류",
+    "kind": {
+      "weekly": "주간 보스",
+      "world": "필드 보스",
+      "legend": "지방 전설"
+    },
+    "whereTitle": "장소",
+    "where": {
+      "land": "지상",
+      "water": "수중"
+    }
+  },
+  "cards": {
+    "draw": "카드 뽑기",
+    "redraw": "여기서 다른 카드 뽑기",
+    "empty": "덱에 카드가 없습니다",
+    "count": "카드 수",
+    "fewer": "카드 1장 줄이기",
+    "more": "카드 1장 늘리기",
+    "deck": "덱",
+    "deckCount": "덱 {n} / {total}",
+    "modeTitle": "플레이",
+    "mode": {
+      "solo": "싱글",
+      "coop": "멀티"
+    },
+    "soloOnly": "싱글 전용",
+    "coopOnly": "멀티 전용",
+    "timeTrial": "타임어택",
+    "timeTrials": "타임어택",
+    "timeTrialsHint": "전투에 제한 시간을 거는 카드",
+    "level": {
+      "1": "쉬움",
+      "2": "보통",
+      "3": "어려움"
+    },
+    "list": {
+      "noBursts": {
+        "title": "원소폭발 금지",
+        "text": "끝까지 원소폭발을 쓰지 않습니다."
+      },
+      "noSkills": {
+        "title": "원소전투 스킬 금지",
+        "text": "끝까지 원소전투 스킬을 쓰지 않습니다."
+      },
+      "normalAttacksOnly": {
+        "title": "일반 공격만",
+        "text": "원소전투 스킬도 원소폭발도 쓰지 않습니다."
+      },
+      "fourStarWeapons": {
+        "title": "4★ 무기만",
+        "text": "모든 캐릭터가 4★ 이하 무기를 듭니다."
+      },
+      "levelOneWeapons": {
+        "title": "Lv. 1 무기",
+        "text": "모든 캐릭터가 1레벨 무기를 듭니다."
+      },
+      "oneWeaponType": {
+        "title": "무기 타입 통일",
+        "text": "파티 전원이 같은 타입의 무기를 씁니다."
+      },
+      "noHealing": {
+        "title": "회복 금지",
+        "text": "힐러, 회복 스킬, 회복 음식을 쓰지 않습니다."
+      },
+      "noShields": {
+        "title": "보호막 금지",
+        "text": "실드 캐릭터도 보호막 스킬도 쓰지 않습니다."
+      },
+      "noFood": {
+        "title": "음식 금지",
+        "text": "음식도 포션도 쓰지 않습니다."
+      },
+      "noArtifacts": {
+        "title": "성유물 없음",
+        "text": "모두 성유물을 해제합니다."
+      },
+      "oneElement": {
+        "title": "단일 원소",
+        "text": "파티 전원이 같은 원소입니다."
+      },
+      "fourStarCharacters": {
+        "title": "4★ 캐릭터만",
+        "text": "파티에 5★ 캐릭터가 없습니다."
+      },
+      "noSprinting": {
+        "title": "대시 금지",
+        "text": "걷기, 점프, 등반만 합니다."
+      },
+      "noDodging": {
+        "title": "회피 금지",
+        "text": "대시로 공격을 피하지 않습니다."
+      },
+      "swapEveryTen": {
+        "title": "10초마다 교체",
+        "text": "누구도 10초 넘게 필드에 머물지 않습니다."
+      },
+      "noSwapping": {
+        "title": "교체 금지",
+        "text": "전투를 시작한 캐릭터가 끝까지 싸웁니다."
+      },
+      "threeCharacters": {
+        "title": "캐릭터 3명",
+        "text": "파티의 한 자리를 비워 둡니다."
+      },
+      "underThreeMinutes": {
+        "title": "3분 이내",
+        "text": "3분 안에 전투를 끝내지 못하면 무효입니다."
+      },
+      "underNinetySeconds": {
+        "title": "90초 이내",
+        "text": "스피드런: 제한 시간은 90초입니다."
+      },
+      "noReviving": {
+        "title": "부활 금지",
+        "text": "쓰러진 플레이어는 전투가 끝날 때까지 일어나지 않습니다."
+      },
+      "sameElementEveryone": {
+        "title": "모두 같은 원소",
+        "text": "모든 플레이어가 같은 원소를 가져옵니다."
+      },
+      "oneBurstEach": {
+        "title": "원소폭발 1인 1회",
+        "text": "각 플레이어는 원소폭발을 한 번만 씁니다."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "주간 보스\n나선 비경\n성유물 비경\n탐사\n속세의 주전자\n멀티",
+    "unsaved": "저장하지 않은 목록",
+    "new": "새로 만들기",
+    "open": "열기",
+    "save": "저장",
+    "listName": "목록 이름",
+    "deleteList": "{name} 삭제",
+    "share": "링크 공유",
+    "copied": "링크를 복사했습니다",
+    "spin": "룰렛 돌리기",
+    "hint": "룰렛을 클릭하거나 Ctrl + Enter를 눌러 돌립니다",
+    "empty": "항목을 추가하면 돌릴 수 있습니다",
+    "spinning": "돌아가는 중…",
+    "notSpun": "아직 돌리지 않았습니다",
+    "winner": "당첨이 나왔습니다",
+    "remove": "제거",
+    "close": "닫기",
+    "full": "전체 화면",
+    "exitFull": "전체 화면 종료",
+    "entries": "항목",
+    "results": "결과",
+    "perLine": "한 줄에 항목 하나",
+    "shuffle": "섞기",
+    "sort": "정렬",
+    "clearResults": "결과 지우기",
+    "noResults": "아직 결과가 없습니다",
+    "options": "옵션",
+    "option": {
+      "seconds": "회전 시간",
+      "remove": "돌릴 때마다 당첨 항목 제거",
+      "dialog": "당첨 항목을 대화 상자로 표시",
+      "sound": "소리",
+      "confetti": "색종이",
+      "hide": "돌아가는 동안 항목 숨기기"
     }
   }
 }

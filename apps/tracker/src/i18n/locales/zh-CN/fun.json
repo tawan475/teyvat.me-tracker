@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "队伍随机器",
       "pitch": "从你自己的角色中随机组队"
+    },
+    "bossRandomizer": {
+      "title": "首领随机器",
+      "pitch": "下一个打哪个首领"
+    },
+    "challengeCards": {
+      "title": "挑战卡",
+      "pitch": "让挑战更难的规则"
+    },
+    "wheel": {
+      "title": "转盘",
+      "pitch": "转你自己的清单"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "元素不够满足规则",
       "fiveStars": "4★角色不够满足规则",
       "locks": "锁定的角色违反了规则"
+    }
+  },
+  "boss": {
+    "loadFailed": "无法加载首领",
+    "roll": "随机首领",
+    "rolled": "已抽中",
+    "empty": "首领池中没有首领",
+    "kindTitle": "类型",
+    "kind": {
+      "weekly": "周本",
+      "world": "世界首领",
+      "legend": "地方传奇"
+    },
+    "whereTitle": "场地",
+    "where": {
+      "land": "陆地",
+      "water": "水下"
+    }
+  },
+  "cards": {
+    "draw": "抽取卡牌",
+    "redraw": "在此重抽一张",
+    "empty": "牌堆里没有卡牌",
+    "count": "卡牌数量",
+    "fewer": "少一张",
+    "more": "多一张",
+    "deck": "牌堆",
+    "deckCount": "牌堆 {n} / {total}",
+    "modeTitle": "游玩方式",
+    "mode": {
+      "solo": "单人",
+      "coop": "联机"
+    },
+    "soloOnly": "仅单人",
+    "coopOnly": "仅联机",
+    "timeTrial": "限时",
+    "timeTrials": "限时卡",
+    "timeTrialsHint": "为战斗设定时间限制的卡牌",
+    "level": {
+      "1": "简单",
+      "2": "中等",
+      "3": "困难"
+    },
+    "list": {
+      "noBursts": {
+        "title": "禁用元素爆发",
+        "text": "全程不使用元素爆发。"
+      },
+      "noSkills": {
+        "title": "禁用元素战技",
+        "text": "全程不使用元素战技。"
+      },
+      "normalAttacksOnly": {
+        "title": "仅普通攻击",
+        "text": "不用元素战技，也不用元素爆发。"
+      },
+      "fourStarWeapons": {
+        "title": "仅4★武器",
+        "text": "每名角色装备4★或更低的武器。"
+      },
+      "levelOneWeapons": {
+        "title": "Lv. 1 武器",
+        "text": "每名角色装备1级武器。"
+      },
+      "oneWeaponType": {
+        "title": "同一武器类型",
+        "text": "全队使用同一类型的武器。"
+      },
+      "noHealing": {
+        "title": "禁止治疗",
+        "text": "不带治疗角色，不用治疗技能，不吃回血食物。"
+      },
+      "noShields": {
+        "title": "禁止护盾",
+        "text": "不带护盾角色，不用护盾技能。"
+      },
+      "noFood": {
+        "title": "禁止食物",
+        "text": "不用食物，也不用药剂。"
+      },
+      "noArtifacts": {
+        "title": "不带圣遗物",
+        "text": "所有人卸下圣遗物。"
+      },
+      "oneElement": {
+        "title": "单一元素",
+        "text": "全队同一种元素。"
+      },
+      "fourStarCharacters": {
+        "title": "仅4★角色",
+        "text": "队伍中没有5★角色。"
+      },
+      "noSprinting": {
+        "title": "禁止冲刺",
+        "text": "只能走路、跳跃和攀爬。"
+      },
+      "noDodging": {
+        "title": "禁止闪避",
+        "text": "不能冲刺躲开攻击。"
+      },
+      "swapEveryTen": {
+        "title": "每10秒换人",
+        "text": "任何角色在场不超过十秒。"
+      },
+      "noSwapping": {
+        "title": "禁止换人",
+        "text": "开场的角色打完整场战斗。"
+      },
+      "threeCharacters": {
+        "title": "三名角色",
+        "text": "队伍空出一个位置。"
+      },
+      "underThreeMinutes": {
+        "title": "3分钟内",
+        "text": "三分钟内结束战斗，否则不算。"
+      },
+      "underNinetySeconds": {
+        "title": "90秒内",
+        "text": "速通：限时九十秒。"
+      },
+      "noReviving": {
+        "title": "禁止复苏",
+        "text": "倒下的玩家直到战斗结束都不能复苏。"
+      },
+      "sameElementEveryone": {
+        "title": "全员同元素",
+        "text": "所有玩家带同一种元素。"
+      },
+      "oneBurstEach": {
+        "title": "每人一次爆发",
+        "text": "每名玩家只用一次元素爆发。"
+      }
+    }
+  },
+  "wheel": {
+    "sample": "周本\n深境螺旋\n圣遗物秘境\n探索\n尘歌壶\n联机",
+    "unsaved": "未保存的清单",
+    "new": "新建",
+    "open": "打开",
+    "save": "保存",
+    "listName": "清单名称",
+    "deleteList": "删除{name}",
+    "share": "分享链接",
+    "copied": "链接已复制",
+    "spin": "转动转盘",
+    "hint": "点击转盘转动，或按 Ctrl + Enter",
+    "empty": "添加条目后即可转动",
+    "spinning": "转动中…",
+    "notSpun": "尚未转动",
+    "winner": "选出来了",
+    "remove": "移除",
+    "close": "关闭",
+    "full": "全屏",
+    "exitFull": "退出全屏",
+    "entries": "条目",
+    "results": "结果",
+    "perLine": "每行一个条目",
+    "shuffle": "打乱",
+    "sort": "排序",
+    "clearResults": "清空结果",
+    "noResults": "暂无结果",
+    "options": "选项",
+    "option": {
+      "seconds": "转动时间",
+      "remove": "每次转动后移除选中的条目",
+      "dialog": "用对话框显示选中的条目",
+      "sound": "声音",
+      "confetti": "彩纸",
+      "hide": "转动时隐藏条目"
     }
   }
 }

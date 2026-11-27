@@ -330,6 +330,30 @@ Same day, on the design round for the four randomizer pages
 - **Wheel: design A's look**, with the functions people know from name-wheel
   sites (the user named wheelofnames.com as the reference for what it does).
 
+### Built 2026-11-27: boss randomizer, challenge cards, wheel
+
+After two more asks on the revised boards (challenge cards: a Solo / Co-op
+switch and a Time trials chip, with "Solo only" / "Co-op only" / "Time trial"
+badges; the wheel's options folded into one row), the user said "nice build".
+
+- **Boss randomizer** (`components/fun/boss/`, `data/boss-randomizer.ts`):
+  weekly bosses (the archive's `boss` faction), the 40-resin bosses
+  (`loadFarming().bosses`, matched to the archive by English name for the
+  picture and the translated name) and Local Legends. Filters: kind, land /
+  underwater. Underwater is a hand-kept list of nine Fontaine Local Legends
+  (`UNDERWATER`, from the wiki's Local Legend page; a test fails when a name
+  stops matching). No region filter: the data has a region for legends only.
+- **Challenge cards** (`components/fun/cards/`, `data/challenge-cards.ts`):
+  22 hand-written cards, their words in `fun.cards.list.<id>` in all 15
+  languages. A new card = a row in `CHALLENGE_CARDS` + its words.
+- **Wheel** (`components/fun/wheel/`, `data/wheel.ts`): spin by click or
+  Ctrl + Enter, winner dialog with Remove, Entries / Results tabs, Shuffle,
+  Sort, lists saved by name on the device, a share link (`#w=` carries the
+  list), full screen, and the options. **Not built: pictures as entries.**
+- Bans in all three use the team randomizer's click-or-drag (`bench-drag.ts`).
+  Each page remembers what was set per device and account
+  (`fun:boss:` / `fun:cards:` / `fun:wheel:<account id>`).
+
 ### Built (2026-11-24, local commits)
 
 - **Phase 0**, genshin-game-data 773f0ea + a13482c: catalog columns `body`,

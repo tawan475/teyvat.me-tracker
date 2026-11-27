@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Xếp đội ngẫu nhiên",
       "pitch": "Đội ngẫu nhiên từ nhân vật của bạn"
+    },
+    "bossRandomizer": {
+      "title": "Thủ lĩnh ngẫu nhiên",
+      "pitch": "Đánh thủ lĩnh nào tiếp theo"
+    },
+    "challengeCards": {
+      "title": "Thẻ thử thách",
+      "pitch": "Quy tắc khiến trận đấu khó hơn"
+    },
+    "wheel": {
+      "title": "Vòng quay",
+      "pitch": "Quay danh sách của riêng bạn"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Không đủ nguyên tố cho quy tắc",
       "fiveStars": "Không đủ nhân vật 4★ cho quy tắc",
       "locks": "Nhân vật đã khóa vi phạm quy tắc"
+    }
+  },
+  "boss": {
+    "loadFailed": "Không tải được thủ lĩnh",
+    "roll": "Quay thủ lĩnh",
+    "rolled": "Đã quay",
+    "empty": "Không có thủ lĩnh trong nhóm quay",
+    "kindTitle": "Loại",
+    "kind": {
+      "weekly": "Thủ lĩnh tuần",
+      "world": "Thủ lĩnh thế giới",
+      "legend": "Huyền Thoại Địa Phương"
+    },
+    "whereTitle": "Địa điểm",
+    "where": {
+      "land": "Trên cạn",
+      "water": "Dưới nước"
+    }
+  },
+  "cards": {
+    "draw": "Rút thẻ",
+    "redraw": "Rút thẻ khác ở đây",
+    "empty": "Không có thẻ trong bộ bài",
+    "count": "Số thẻ",
+    "fewer": "Bớt một thẻ",
+    "more": "Thêm một thẻ",
+    "deck": "Bộ bài",
+    "deckCount": "{n} trên {total} trong bộ bài",
+    "modeTitle": "Cách chơi",
+    "mode": {
+      "solo": "Đơn",
+      "coop": "Co-op"
+    },
+    "soloOnly": "Chỉ chơi đơn",
+    "coopOnly": "Chỉ Co-op",
+    "timeTrial": "Giới hạn thời gian",
+    "timeTrials": "Thẻ giới hạn thời gian",
+    "timeTrialsHint": "Thẻ đặt giới hạn thời gian cho trận đấu",
+    "level": {
+      "1": "Dễ",
+      "2": "Vừa",
+      "3": "Khó"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Không Kỹ Năng Nộ",
+        "text": "Không dùng Kỹ Năng Nộ suốt cả lượt."
+      },
+      "noSkills": {
+        "title": "Không Kỹ Năng Nguyên Tố",
+        "text": "Không dùng Kỹ Năng Nguyên Tố suốt cả lượt."
+      },
+      "normalAttacksOnly": {
+        "title": "Chỉ Tấn Công Thường",
+        "text": "Không Kỹ Năng Nguyên Tố, không Kỹ Năng Nộ."
+      },
+      "fourStarWeapons": {
+        "title": "Chỉ vũ khí 4★",
+        "text": "Mọi nhân vật cầm vũ khí 4★ trở xuống."
+      },
+      "levelOneWeapons": {
+        "title": "Vũ khí cấp 1",
+        "text": "Mọi nhân vật cầm vũ khí cấp 1."
+      },
+      "oneWeaponType": {
+        "title": "Một loại vũ khí",
+        "text": "Cả đội dùng cùng một loại vũ khí."
+      },
+      "noHealing": {
+        "title": "Không hồi máu",
+        "text": "Không người hồi máu, không kỹ năng hồi máu, không món ăn hồi máu."
+      },
+      "noShields": {
+        "title": "Không khiên",
+        "text": "Không người tạo khiên, không kỹ năng tạo khiên."
+      },
+      "noFood": {
+        "title": "Không đồ ăn",
+        "text": "Không đồ ăn, không thuốc."
+      },
+      "noArtifacts": {
+        "title": "Không Thánh Di Vật",
+        "text": "Mọi người tháo Thánh Di Vật."
+      },
+      "oneElement": {
+        "title": "Một nguyên tố",
+        "text": "Cả đội cùng một nguyên tố."
+      },
+      "fourStarCharacters": {
+        "title": "Chỉ nhân vật 4★",
+        "text": "Không có nhân vật 5★ trong đội."
+      },
+      "noSprinting": {
+        "title": "Không chạy nhanh",
+        "text": "Chỉ đi bộ, nhảy và leo."
+      },
+      "noDodging": {
+        "title": "Không né",
+        "text": "Không lướt để né đòn."
+      },
+      "swapEveryTen": {
+        "title": "Đổi mỗi 10 giây",
+        "text": "Không ai ở trên sân quá mười giây."
+      },
+      "noSwapping": {
+        "title": "Không đổi nhân vật",
+        "text": "Nhân vật mở đầu trận sẽ đánh đến hết trận."
+      },
+      "threeCharacters": {
+        "title": "Ba nhân vật",
+        "text": "Để trống một vị trí trong đội."
+      },
+      "underThreeMinutes": {
+        "title": "Dưới 3 phút",
+        "text": "Trận đấu kết thúc trong ba phút, nếu không thì không tính."
+      },
+      "underNinetySeconds": {
+        "title": "Dưới 90 giây",
+        "text": "Chạy tốc độ: chín mươi giây trên đồng hồ."
+      },
+      "noReviving": {
+        "title": "Không hồi sinh",
+        "text": "Người chơi đã gục nằm lại đến hết trận."
+      },
+      "sameElementEveryone": {
+        "title": "Tất cả cùng nguyên tố",
+        "text": "Mọi người chơi mang cùng một nguyên tố."
+      },
+      "oneBurstEach": {
+        "title": "Mỗi người một lần nộ",
+        "text": "Mỗi người chơi dùng Kỹ Năng Nộ một lần."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Thủ lĩnh tuần\nLa Hoàn Thâm Cảnh\nBí Cảnh Thánh Di Vật\nKhám phá\nẤm Trần Ca\nCo-op",
+    "unsaved": "Danh sách chưa lưu",
+    "new": "Mới",
+    "open": "Mở",
+    "save": "Lưu",
+    "listName": "Tên danh sách",
+    "deleteList": "Xóa {name}",
+    "share": "Chia sẻ liên kết",
+    "copied": "Đã sao chép liên kết",
+    "spin": "Quay vòng quay",
+    "hint": "Nhấp vào vòng quay để quay, hoặc nhấn Ctrl + Enter",
+    "empty": "Thêm mục để quay",
+    "spinning": "Đang quay…",
+    "notSpun": "Chưa quay",
+    "winner": "Đã có mục trúng",
+    "remove": "Gỡ",
+    "close": "Đóng",
+    "full": "Toàn màn hình",
+    "exitFull": "Thoát toàn màn hình",
+    "entries": "Mục",
+    "results": "Kết quả",
+    "perLine": "Mỗi dòng một mục",
+    "shuffle": "Xáo trộn",
+    "sort": "Sắp xếp",
+    "clearResults": "Xóa kết quả",
+    "noResults": "Chưa có kết quả",
+    "options": "Tùy chọn",
+    "option": {
+      "seconds": "Thời gian quay",
+      "remove": "Gỡ mục trúng sau mỗi lần quay",
+      "dialog": "Hiện mục trúng trong hộp thoại",
+      "sound": "Âm thanh",
+      "confetti": "Pháo giấy",
+      "hide": "Ẩn các mục khi đang quay"
     }
   }
 }

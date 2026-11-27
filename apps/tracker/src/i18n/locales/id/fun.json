@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Pengacak party",
       "pitch": "Party acak dari karaktermu sendiri"
+    },
+    "bossRandomizer": {
+      "title": "Pengacak boss",
+      "pitch": "Boss mana yang dilawan berikutnya"
+    },
+    "challengeCards": {
+      "title": "Kartu tantangan",
+      "pitch": "Aturan yang membuat permainan lebih sulit"
+    },
+    "wheel": {
+      "title": "Roda",
+      "pitch": "Putar daftarmu sendiri"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Elemen tidak cukup untuk aturan ini",
       "fiveStars": "Karakter 4★ tidak cukup untuk aturan ini",
       "locks": "Karakter yang dikunci melanggar aturan"
+    }
+  },
+  "boss": {
+    "loadFailed": "Boss tidak dapat dimuat",
+    "roll": "Acak boss",
+    "rolled": "Hasil acak",
+    "empty": "Tidak ada boss dalam kumpulan",
+    "kindTitle": "Jenis",
+    "kind": {
+      "weekly": "Boss mingguan",
+      "world": "Boss dunia",
+      "legend": "Legenda Lokal"
+    },
+    "whereTitle": "Lokasi",
+    "where": {
+      "land": "Darat",
+      "water": "Bawah air"
+    }
+  },
+  "cards": {
+    "draw": "Ambil kartu",
+    "redraw": "Ambil kartu lain di sini",
+    "empty": "Tidak ada kartu di dek",
+    "count": "Jumlah kartu",
+    "fewer": "Kurangi satu kartu",
+    "more": "Tambah satu kartu",
+    "deck": "Dek",
+    "deckCount": "{n} dari {total} di dek",
+    "modeTitle": "Cara bermain",
+    "mode": {
+      "solo": "Solo",
+      "coop": "Co-op"
+    },
+    "soloOnly": "Khusus solo",
+    "coopOnly": "Khusus Co-op",
+    "timeTrial": "Batas waktu",
+    "timeTrials": "Kartu batas waktu",
+    "timeTrialsHint": "Kartu yang memberi batas waktu pada pertarungan",
+    "level": {
+      "1": "Mudah",
+      "2": "Sedang",
+      "3": "Sulit"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Tanpa burst",
+        "text": "Elemental Burst tidak dipakai sepanjang permainan."
+      },
+      "noSkills": {
+        "title": "Tanpa skill",
+        "text": "Elemental Skill tidak dipakai sepanjang permainan."
+      },
+      "normalAttacksOnly": {
+        "title": "Hanya Normal Attack",
+        "text": "Tanpa Elemental Skill, tanpa Elemental Burst."
+      },
+      "fourStarWeapons": {
+        "title": "Hanya senjata 4★",
+        "text": "Setiap karakter memegang senjata 4★ atau lebih rendah."
+      },
+      "levelOneWeapons": {
+        "title": "Senjata Lv. 1",
+        "text": "Setiap karakter memegang senjata level 1."
+      },
+      "oneWeaponType": {
+        "title": "Satu tipe senjata",
+        "text": "Seluruh party memakai tipe senjata yang sama."
+      },
+      "noHealing": {
+        "title": "Tanpa penyembuhan",
+        "text": "Tanpa penyembuh, skill penyembuh, atau makanan penyembuh."
+      },
+      "noShields": {
+        "title": "Tanpa perisai",
+        "text": "Tanpa pemberi perisai dan skill perisai."
+      },
+      "noFood": {
+        "title": "Tanpa makanan",
+        "text": "Tanpa makanan dan potion."
+      },
+      "noArtifacts": {
+        "title": "Tanpa artefak",
+        "text": "Semua melepas artefaknya."
+      },
+      "oneElement": {
+        "title": "Satu elemen",
+        "text": "Seluruh party memakai satu elemen."
+      },
+      "fourStarCharacters": {
+        "title": "Hanya karakter 4★",
+        "text": "Tidak ada karakter 5★ di party."
+      },
+      "noSprinting": {
+        "title": "Tanpa lari",
+        "text": "Hanya berjalan, melompat, dan memanjat."
+      },
+      "noDodging": {
+        "title": "Tanpa menghindar",
+        "text": "Tidak boleh dash untuk menghindar."
+      },
+      "swapEveryTen": {
+        "title": "Ganti tiap 10 dtk",
+        "text": "Tidak ada yang berada di arena lebih dari sepuluh detik."
+      },
+      "noSwapping": {
+        "title": "Tanpa ganti karakter",
+        "text": "Karakter yang memulai pertarungan menyelesaikannya."
+      },
+      "threeCharacters": {
+        "title": "Tiga karakter",
+        "text": "Satu slot party dibiarkan kosong."
+      },
+      "underThreeMinutes": {
+        "title": "Di bawah 3 menit",
+        "text": "Pertarungan selesai dalam tiga menit, atau tidak dihitung."
+      },
+      "underNinetySeconds": {
+        "title": "Di bawah 90 detik",
+        "text": "Speedrun: sembilan puluh detik saja."
+      },
+      "noReviving": {
+        "title": "Tanpa menghidupkan",
+        "text": "Pemain yang tumbang tetap tumbang sampai pertarungan selesai."
+      },
+      "sameElementEveryone": {
+        "title": "Semua elemen sama",
+        "text": "Semua pemain membawa elemen yang sama."
+      },
+      "oneBurstEach": {
+        "title": "Satu burst per pemain",
+        "text": "Setiap pemain memakai Elemental Burst satu kali."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Boss mingguan\nSpiral Abyss\nDomain artefak\nJelajah\nSerenitea Pot\nCo-op",
+    "unsaved": "Daftar belum disimpan",
+    "new": "Baru",
+    "open": "Buka",
+    "save": "Simpan",
+    "listName": "Nama daftar",
+    "deleteList": "Hapus {name}",
+    "share": "Bagikan tautan",
+    "copied": "Tautan disalin",
+    "spin": "Putar roda",
+    "hint": "Klik roda untuk memutar, atau tekan Ctrl + Enter",
+    "empty": "Tambahkan entri untuk memutar",
+    "spinning": "Memutar…",
+    "notSpun": "Belum diputar",
+    "winner": "Ada pemenangnya",
+    "remove": "Keluarkan",
+    "close": "Tutup",
+    "full": "Layar penuh",
+    "exitFull": "Keluar dari layar penuh",
+    "entries": "Entri",
+    "results": "Hasil",
+    "perLine": "Satu entri per baris",
+    "shuffle": "Acak urutan",
+    "sort": "Urutkan",
+    "clearResults": "Hapus hasil",
+    "noResults": "Belum ada hasil",
+    "options": "Opsi",
+    "option": {
+      "seconds": "Waktu putar",
+      "remove": "Keluarkan pemenang setelah tiap putaran",
+      "dialog": "Tampilkan pemenang dalam dialog",
+      "sound": "Suara",
+      "confetti": "Konfeti",
+      "hide": "Sembunyikan entri saat memutar"
     }
   }
 }

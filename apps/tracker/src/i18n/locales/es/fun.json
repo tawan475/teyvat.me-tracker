@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Equipos al azar",
       "pitch": "Equipos al azar con tus propios personajes"
+    },
+    "bossRandomizer": {
+      "title": "Jefe al azar",
+      "pitch": "Qué jefe toca ahora"
+    },
+    "challengeCards": {
+      "title": "Cartas de desafío",
+      "pitch": "Reglas que complican la partida"
+    },
+    "wheel": {
+      "title": "Ruleta",
+      "pitch": "Gira tu propia lista"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "No hay suficientes elementos para la regla",
       "fiveStars": "No hay suficientes personajes 4★ para la regla",
       "locks": "Los personajes fijados incumplen una regla"
+    }
+  },
+  "boss": {
+    "loadFailed": "No se pudieron cargar los jefes",
+    "roll": "Sortear un jefe",
+    "rolled": "Sorteados",
+    "empty": "No hay jefes en el sorteo",
+    "kindTitle": "Tipo",
+    "kind": {
+      "weekly": "Jefe semanal",
+      "world": "Jefe de mundo",
+      "legend": "Leyenda local"
+    },
+    "whereTitle": "Dónde",
+    "where": {
+      "land": "Tierra",
+      "water": "Bajo el agua"
+    }
+  },
+  "cards": {
+    "draw": "Sacar cartas",
+    "redraw": "Sacar otra carta aquí",
+    "empty": "No hay cartas en el mazo",
+    "count": "Cuántas cartas",
+    "fewer": "Una carta menos",
+    "more": "Una carta más",
+    "deck": "Mazo",
+    "deckCount": "{n} de {total} en el mazo",
+    "modeTitle": "Modo de juego",
+    "mode": {
+      "solo": "En solitario",
+      "coop": "Cooperativo"
+    },
+    "soloOnly": "Solo en solitario",
+    "coopOnly": "Solo cooperativo",
+    "timeTrial": "Contrarreloj",
+    "timeTrials": "Contrarreloj",
+    "timeTrialsHint": "Cartas que ponen un límite de tiempo al combate",
+    "level": {
+      "1": "Fácil",
+      "2": "Media",
+      "3": "Difícil"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Sin definitivas",
+        "text": "Las Habilidades Definitivas no se usan en toda la partida."
+      },
+      "noSkills": {
+        "title": "Sin habilidades",
+        "text": "Las Habilidades Elementales no se usan en toda la partida."
+      },
+      "normalAttacksOnly": {
+        "title": "Solo ataques normales",
+        "text": "Sin Habilidades Elementales ni Habilidades Definitivas."
+      },
+      "fourStarWeapons": {
+        "title": "Solo armas 4★",
+        "text": "Cada personaje lleva un arma de 4★ o menos."
+      },
+      "levelOneWeapons": {
+        "title": "Armas de niv. 1",
+        "text": "Cada personaje lleva un arma de nivel 1."
+      },
+      "oneWeaponType": {
+        "title": "Un tipo de arma",
+        "text": "Todo el equipo usa el mismo tipo de arma."
+      },
+      "noHealing": {
+        "title": "Sin curación",
+        "text": "Sin sanadores, sin habilidades de curación y sin comida que cure."
+      },
+      "noShields": {
+        "title": "Sin escudos",
+        "text": "Sin personajes de escudo ni habilidades de escudo."
+      },
+      "noFood": {
+        "title": "Sin comida",
+        "text": "Sin comida ni pociones."
+      },
+      "noArtifacts": {
+        "title": "Sin artefactos",
+        "text": "Todos se quitan los artefactos."
+      },
+      "oneElement": {
+        "title": "Un elemento",
+        "text": "Todo el equipo comparte un elemento."
+      },
+      "fourStarCharacters": {
+        "title": "Solo personajes 4★",
+        "text": "Ningún personaje 5★ en el equipo."
+      },
+      "noSprinting": {
+        "title": "Sin esprintar",
+        "text": "Solo caminar, saltar y escalar."
+      },
+      "noDodging": {
+        "title": "Sin esquivar",
+        "text": "Nada de apartarse con una carrera."
+      },
+      "swapEveryTen": {
+        "title": "Cambio cada 10 s",
+        "text": "Nadie se queda en el campo más de diez segundos."
+      },
+      "noSwapping": {
+        "title": "Sin cambios",
+        "text": "El personaje que empieza el combate lo termina."
+      },
+      "threeCharacters": {
+        "title": "Tres personajes",
+        "text": "Un puesto del equipo queda vacío."
+      },
+      "underThreeMinutes": {
+        "title": "Menos de 3 minutos",
+        "text": "El combate acaba en tres minutos o no cuenta."
+      },
+      "underNinetySeconds": {
+        "title": "Menos de 90 segundos",
+        "text": "A toda velocidad: noventa segundos en el reloj."
+      },
+      "noReviving": {
+        "title": "Sin revivir",
+        "text": "Un jugador caído se queda en el suelo hasta que acabe el combate."
+      },
+      "sameElementEveryone": {
+        "title": "Mismo elemento para todos",
+        "text": "Todos los jugadores llevan el mismo elemento."
+      },
+      "oneBurstEach": {
+        "title": "Una definitiva por jugador",
+        "text": "Cada jugador usa su Habilidad Definitiva una vez."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Jefes semanales\nEspiral del Abismo\nDominio de artefactos\nExplorar\nRelajatetera\nCooperativo",
+    "unsaved": "Lista sin guardar",
+    "new": "Nueva",
+    "open": "Abrir",
+    "save": "Guardar",
+    "listName": "Nombre de la lista",
+    "deleteList": "Eliminar {name}",
+    "share": "Compartir enlace",
+    "copied": "Enlace copiado",
+    "spin": "Girar la ruleta",
+    "hint": "Haz clic en la ruleta para girarla o pulsa Ctrl + Enter",
+    "empty": "Añade entradas para girar",
+    "spinning": "Girando…",
+    "notSpun": "Aún sin girar",
+    "winner": "Tenemos ganador",
+    "remove": "Quitar",
+    "close": "Cerrar",
+    "full": "Pantalla completa",
+    "exitFull": "Salir de pantalla completa",
+    "entries": "Entradas",
+    "results": "Resultados",
+    "perLine": "Una entrada por línea",
+    "shuffle": "Mezclar",
+    "sort": "Ordenar",
+    "clearResults": "Borrar los resultados",
+    "noResults": "Aún no hay resultados",
+    "options": "Opciones",
+    "option": {
+      "seconds": "Duración del giro",
+      "remove": "Quitar al ganador tras cada giro",
+      "dialog": "Mostrar al ganador en un diálogo",
+      "sound": "Sonido",
+      "confetti": "Confeti",
+      "hide": "Ocultar las entradas durante el giro"
     }
   }
 }

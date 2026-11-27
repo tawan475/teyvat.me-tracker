@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Gruppi casuali",
       "pitch": "Gruppi casuali con i tuoi personaggi"
+    },
+    "bossRandomizer": {
+      "title": "Boss casuale",
+      "pitch": "Quale boss affrontare adesso"
+    },
+    "challengeCards": {
+      "title": "Carte sfida",
+      "pitch": "Regole che rendono la partita più dura"
+    },
+    "wheel": {
+      "title": "Ruota",
+      "pitch": "Gira la tua lista"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Elementi insufficienti per la regola",
       "fiveStars": "Personaggi 4★ insufficienti per la regola",
       "locks": "I personaggi bloccati violano una regola"
+    }
+  },
+  "boss": {
+    "loadFailed": "Impossibile caricare i boss",
+    "roll": "Estrai un boss",
+    "rolled": "Estratti",
+    "empty": "Nessun boss nella selezione",
+    "kindTitle": "Tipo",
+    "kind": {
+      "weekly": "Boss settimanale",
+      "world": "Boss del mondo",
+      "legend": "Leggenda locale"
+    },
+    "whereTitle": "Dove",
+    "where": {
+      "land": "Terra",
+      "water": "Sott'acqua"
+    }
+  },
+  "cards": {
+    "draw": "Pesca le carte",
+    "redraw": "Pesca un'altra carta qui",
+    "empty": "Nessuna carta nel mazzo",
+    "count": "Quante carte",
+    "fewer": "Una carta in meno",
+    "more": "Una carta in più",
+    "deck": "Mazzo",
+    "deckCount": "{n} su {total} nel mazzo",
+    "modeTitle": "Modalità",
+    "mode": {
+      "solo": "In solitaria",
+      "coop": "Co-op"
+    },
+    "soloOnly": "Solo in solitaria",
+    "coopOnly": "Solo co-op",
+    "timeTrial": "A tempo",
+    "timeTrials": "A tempo",
+    "timeTrialsHint": "Carte che mettono un limite di tempo allo scontro",
+    "level": {
+      "1": "Facile",
+      "2": "Media",
+      "3": "Difficile"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Niente tripudi",
+        "text": "I Tripudi elementali restano inutilizzati per tutta la partita."
+      },
+      "noSkills": {
+        "title": "Niente abilità",
+        "text": "Le Abilità elementali restano inutilizzate per tutta la partita."
+      },
+      "normalAttacksOnly": {
+        "title": "Solo attacchi normali",
+        "text": "Niente Abilità elementali, niente Tripudi elementali."
+      },
+      "fourStarWeapons": {
+        "title": "Solo armi 4★",
+        "text": "Ogni personaggio impugna un'arma 4★ o inferiore."
+      },
+      "levelOneWeapons": {
+        "title": "Armi Liv. 1",
+        "text": "Ogni personaggio impugna un'arma di livello 1."
+      },
+      "oneWeaponType": {
+        "title": "Un tipo di arma",
+        "text": "Tutto il gruppo usa lo stesso tipo di arma."
+      },
+      "noHealing": {
+        "title": "Niente cure",
+        "text": "Niente guaritori, niente abilità di cura, niente cibo che cura."
+      },
+      "noShields": {
+        "title": "Niente scudi",
+        "text": "Niente personaggi da scudo e niente abilità di scudo."
+      },
+      "noFood": {
+        "title": "Niente cibo",
+        "text": "Niente cibo e niente pozioni."
+      },
+      "noArtifacts": {
+        "title": "Niente manufatti",
+        "text": "Tutti si tolgono i manufatti."
+      },
+      "oneElement": {
+        "title": "Un elemento",
+        "text": "Tutto il gruppo condivide un elemento."
+      },
+      "fourStarCharacters": {
+        "title": "Solo personaggi 4★",
+        "text": "Nessun personaggio 5★ nel gruppo."
+      },
+      "noSprinting": {
+        "title": "Niente scatto",
+        "text": "Solo camminare, saltare e arrampicarsi."
+      },
+      "noDodging": {
+        "title": "Niente schivate",
+        "text": "Niente scatti per togliersi di mezzo."
+      },
+      "swapEveryTen": {
+        "title": "Cambio ogni 10 s",
+        "text": "Nessuno resta in campo più di dieci secondi."
+      },
+      "noSwapping": {
+        "title": "Niente cambi",
+        "text": "Il personaggio che inizia lo scontro lo finisce."
+      },
+      "threeCharacters": {
+        "title": "Tre personaggi",
+        "text": "Un posto del gruppo resta vuoto."
+      },
+      "underThreeMinutes": {
+        "title": "Sotto i 3 minuti",
+        "text": "Lo scontro finisce entro tre minuti, altrimenti non vale."
+      },
+      "underNinetySeconds": {
+        "title": "Sotto i 90 secondi",
+        "text": "Una corsa contro il tempo: novanta secondi sul cronometro."
+      },
+      "noReviving": {
+        "title": "Niente rianimazioni",
+        "text": "Un giocatore caduto resta a terra fino alla fine dello scontro."
+      },
+      "sameElementEveryone": {
+        "title": "Stesso elemento per tutti",
+        "text": "Tutti i giocatori portano lo stesso elemento."
+      },
+      "oneBurstEach": {
+        "title": "Un tripudio a testa",
+        "text": "Ogni giocatore usa il suo Tripudio elementale una volta."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Boss settimanali\nAbisso a spirale\nDominio dei manufatti\nEsplora\nSerenteiera\nCo-op",
+    "unsaved": "Lista non salvata",
+    "new": "Nuova",
+    "open": "Apri",
+    "save": "Salva",
+    "listName": "Nome della lista",
+    "deleteList": "Elimina {name}",
+    "share": "Condividi link",
+    "copied": "Link copiato",
+    "spin": "Gira la ruota",
+    "hint": "Clicca sulla ruota per girarla o premi Ctrl + Enter",
+    "empty": "Aggiungi voci per girare",
+    "spinning": "In rotazione…",
+    "notSpun": "Non ancora girata",
+    "winner": "Abbiamo un vincitore",
+    "remove": "Rimuovi",
+    "close": "Chiudi",
+    "full": "Schermo intero",
+    "exitFull": "Esci da schermo intero",
+    "entries": "Voci",
+    "results": "Risultati",
+    "perLine": "Una voce per riga",
+    "shuffle": "Mescola",
+    "sort": "Ordina",
+    "clearResults": "Cancella i risultati",
+    "noResults": "Ancora nessun risultato",
+    "options": "Opzioni",
+    "option": {
+      "seconds": "Durata del giro",
+      "remove": "Rimuovi il vincitore dopo ogni giro",
+      "dialog": "Mostra il vincitore in una finestra",
+      "sound": "Suono",
+      "confetti": "Coriandoli",
+      "hide": "Nascondi le voci durante il giro"
     }
   }
 }

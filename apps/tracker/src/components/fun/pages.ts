@@ -1,5 +1,5 @@
 import { defineAsyncComponent, type Component } from 'vue'
-import { Dices } from 'lucide-vue-next'
+import { Dices, FerrisWheel, Layers, Target } from 'lucide-vue-next'
 import type { MessageSchema } from '@/i18n'
 
 /**
@@ -27,6 +27,27 @@ export const FUN_PAGES: readonly FunPage[] = [
     icon: Dices,
     component: defineAsyncComponent(() => import('./randomizer/TeamRandomizer.vue')),
     added: '2026-11-24',
+  },
+  {
+    slug: 'boss-randomizer',
+    label: 'bossRandomizer',
+    icon: Target,
+    component: defineAsyncComponent(() => import('./boss/BossRandomizer.vue')),
+    added: '2026-11-27',
+  },
+  {
+    slug: 'challenge-cards',
+    label: 'challengeCards',
+    icon: Layers,
+    component: defineAsyncComponent(() => import('./cards/ChallengeCards.vue')),
+    added: '2026-11-27',
+  },
+  {
+    slug: 'wheel',
+    label: 'wheel',
+    icon: FerrisWheel,
+    component: defineAsyncComponent(() => import('./wheel/WheelPage.vue')),
+    added: '2026-11-27',
   },
 ]
 

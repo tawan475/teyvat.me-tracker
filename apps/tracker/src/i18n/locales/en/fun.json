@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Team randomizer",
       "pitch": "Random teams from your own characters"
+    },
+    "bossRandomizer": {
+      "title": "Boss randomizer",
+      "pitch": "Which boss to fight next"
+    },
+    "challengeCards": {
+      "title": "Challenge cards",
+      "pitch": "Rules that make a run harder"
+    },
+    "wheel": {
+      "title": "Wheel",
+      "pitch": "Spin your own list"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Not enough elements for the rule",
       "fiveStars": "Not enough 4★ characters for the rule",
       "locks": "The locked characters break a rule"
+    }
+  },
+  "boss": {
+    "loadFailed": "Could not load the bosses",
+    "roll": "Roll a boss",
+    "rolled": "Rolled",
+    "empty": "No boss in the pool",
+    "kindTitle": "Kind",
+    "kind": {
+      "weekly": "Weekly boss",
+      "world": "World boss",
+      "legend": "Local Legend"
+    },
+    "whereTitle": "Where",
+    "where": {
+      "land": "Land",
+      "water": "Underwater"
+    }
+  },
+  "cards": {
+    "draw": "Draw cards",
+    "redraw": "Draw another card here",
+    "empty": "No card in the deck",
+    "count": "How many cards",
+    "fewer": "One card fewer",
+    "more": "One card more",
+    "deck": "Deck",
+    "deckCount": "{n} of {total} in the deck",
+    "modeTitle": "Playing",
+    "mode": {
+      "solo": "Solo",
+      "coop": "Co-op"
+    },
+    "soloOnly": "Solo only",
+    "coopOnly": "Co-op only",
+    "timeTrial": "Time trial",
+    "timeTrials": "Time trials",
+    "timeTrialsHint": "Cards that put a time limit on the fight",
+    "level": {
+      "1": "Easy",
+      "2": "Medium",
+      "3": "Hard"
+    },
+    "list": {
+      "noBursts": {
+        "title": "No bursts",
+        "text": "Elemental Bursts stay unused for the whole run."
+      },
+      "noSkills": {
+        "title": "No skills",
+        "text": "Elemental Skills stay unused for the whole run."
+      },
+      "normalAttacksOnly": {
+        "title": "Normal attacks only",
+        "text": "No Elemental Skills, no Elemental Bursts."
+      },
+      "fourStarWeapons": {
+        "title": "4★ weapons only",
+        "text": "Every character holds a 4★ weapon or lower."
+      },
+      "levelOneWeapons": {
+        "title": "Lv. 1 weapons",
+        "text": "Every character holds a weapon at level 1."
+      },
+      "oneWeaponType": {
+        "title": "One weapon type",
+        "text": "The whole team uses the same type of weapon."
+      },
+      "noHealing": {
+        "title": "No healing",
+        "text": "No healers, no healing skills, no food that heals."
+      },
+      "noShields": {
+        "title": "No shields",
+        "text": "No shielders and no shield skills."
+      },
+      "noFood": {
+        "title": "No food",
+        "text": "No food and no potions."
+      },
+      "noArtifacts": {
+        "title": "No artifacts",
+        "text": "Everyone takes their artifacts off."
+      },
+      "oneElement": {
+        "title": "One element",
+        "text": "The whole team shares one element."
+      },
+      "fourStarCharacters": {
+        "title": "4★ characters only",
+        "text": "No 5★ characters in the team."
+      },
+      "noSprinting": {
+        "title": "No sprinting",
+        "text": "Walk, jump and climb only."
+      },
+      "noDodging": {
+        "title": "No dodging",
+        "text": "No dashing out of the way."
+      },
+      "swapEveryTen": {
+        "title": "Swap every 10 s",
+        "text": "Nobody stays on the field longer than ten seconds."
+      },
+      "noSwapping": {
+        "title": "No swapping",
+        "text": "The character who starts the fight finishes it."
+      },
+      "threeCharacters": {
+        "title": "Three characters",
+        "text": "One slot of the team stays empty."
+      },
+      "underThreeMinutes": {
+        "title": "Under 3 minutes",
+        "text": "The fight ends within three minutes, or it does not count."
+      },
+      "underNinetySeconds": {
+        "title": "Under 90 seconds",
+        "text": "A speed run: ninety seconds on the clock."
+      },
+      "noReviving": {
+        "title": "No reviving",
+        "text": "A fallen player stays down until the fight ends."
+      },
+      "sameElementEveryone": {
+        "title": "Same element, everyone",
+        "text": "All players bring the same element."
+      },
+      "oneBurstEach": {
+        "title": "One burst each",
+        "text": "Each player uses their Elemental Burst once."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Weekly bosses\nSpiral Abyss\nArtifact domain\nExplore\nSerenitea Pot\nCo-op",
+    "unsaved": "Unsaved list",
+    "new": "New",
+    "open": "Open",
+    "save": "Save",
+    "listName": "List name",
+    "deleteList": "Delete {name}",
+    "share": "Share link",
+    "copied": "Link copied",
+    "spin": "Spin the wheel",
+    "hint": "Click the wheel to spin, or press Ctrl + Enter",
+    "empty": "Add entries to spin",
+    "spinning": "Spinning…",
+    "notSpun": "Not spun yet",
+    "winner": "We have a winner",
+    "remove": "Remove",
+    "close": "Close",
+    "full": "Full screen",
+    "exitFull": "Exit full screen",
+    "entries": "Entries",
+    "results": "Results",
+    "perLine": "One entry per line",
+    "shuffle": "Shuffle",
+    "sort": "Sort",
+    "clearResults": "Clear the results",
+    "noResults": "No results yet",
+    "options": "Options",
+    "option": {
+      "seconds": "Spin time",
+      "remove": "Remove the winner after each spin",
+      "dialog": "Show the winner in a dialog",
+      "sound": "Sound",
+      "confetti": "Confetti",
+      "hide": "Hide the entries while spinning"
     }
   }
 }

@@ -5,6 +5,18 @@
     "teamRandomizer": {
       "title": "Rastgele gruplar",
       "pitch": "Kendi karakterlerinden rastgele gruplar"
+    },
+    "bossRandomizer": {
+      "title": "Rastgele patron",
+      "pitch": "Sırada hangi patron var"
+    },
+    "challengeCards": {
+      "title": "Meydan okuma kartları",
+      "pitch": "Turu zorlaştıran kurallar"
+    },
+    "wheel": {
+      "title": "Çark",
+      "pitch": "Kendi listeni çevir"
     }
   },
   "randomizer": {
@@ -57,6 +69,175 @@
       "elements": "Kural için yeterli element yok",
       "fiveStars": "Kural için yeterli 4★ karakter yok",
       "locks": "Kilitli karakterler bir kuralı bozuyor"
+    }
+  },
+  "boss": {
+    "loadFailed": "Patronlar yüklenemedi",
+    "roll": "Patron çek",
+    "rolled": "Çekilenler",
+    "empty": "Havuzda patron yok",
+    "kindTitle": "Tür",
+    "kind": {
+      "weekly": "Haftalık patron",
+      "world": "Dünya patronu",
+      "legend": "Yerel Efsane"
+    },
+    "whereTitle": "Nerede",
+    "where": {
+      "land": "Kara",
+      "water": "Su altı"
+    }
+  },
+  "cards": {
+    "draw": "Kart çek",
+    "redraw": "Buraya başka bir kart çek",
+    "empty": "Destede kart yok",
+    "count": "Kaç kart",
+    "fewer": "Bir kart az",
+    "more": "Bir kart fazla",
+    "deck": "Deste",
+    "deckCount": "Destede {n} / {total}",
+    "modeTitle": "Oyun şekli",
+    "mode": {
+      "solo": "Tek",
+      "coop": "Ortak oyun"
+    },
+    "soloOnly": "Yalnızca tek",
+    "coopOnly": "Yalnızca ortak oyun",
+    "timeTrial": "Zamana karşı",
+    "timeTrials": "Zamana karşı",
+    "timeTrialsHint": "Savaşa süre sınırı koyan kartlar",
+    "level": {
+      "1": "Kolay",
+      "2": "Orta",
+      "3": "Zor"
+    },
+    "list": {
+      "noBursts": {
+        "title": "Patlama yok",
+        "text": "Element Patlamaları tüm tur boyunca kullanılmaz."
+      },
+      "noSkills": {
+        "title": "Beceri yok",
+        "text": "Element Becerileri tüm tur boyunca kullanılmaz."
+      },
+      "normalAttacksOnly": {
+        "title": "Yalnızca normal saldırı",
+        "text": "Element Becerisi yok, Element Patlaması yok."
+      },
+      "fourStarWeapons": {
+        "title": "Yalnızca 4★ silahlar",
+        "text": "Her karakter 4★ veya daha düşük bir silah taşır."
+      },
+      "levelOneWeapons": {
+        "title": "Sv. 1 silahlar",
+        "text": "Her karakter 1. seviye bir silah taşır."
+      },
+      "oneWeaponType": {
+        "title": "Tek silah türü",
+        "text": "Tüm grup aynı silah türünü kullanır."
+      },
+      "noHealing": {
+        "title": "İyileştirme yok",
+        "text": "İyileştirici yok, iyileştirme becerisi yok, iyileştiren yiyecek yok."
+      },
+      "noShields": {
+        "title": "Kalkan yok",
+        "text": "Kalkancı yok, kalkan becerisi yok."
+      },
+      "noFood": {
+        "title": "Yiyecek yok",
+        "text": "Yiyecek yok, iksir yok."
+      },
+      "noArtifacts": {
+        "title": "Yadigar yok",
+        "text": "Herkes yadigarlarını çıkarır."
+      },
+      "oneElement": {
+        "title": "Tek element",
+        "text": "Tüm grup tek bir elementi paylaşır."
+      },
+      "fourStarCharacters": {
+        "title": "Yalnızca 4★ karakterler",
+        "text": "Grupta 5★ karakter yok."
+      },
+      "noSprinting": {
+        "title": "Depar yok",
+        "text": "Yalnızca yürü, zıpla ve tırman."
+      },
+      "noDodging": {
+        "title": "Kaçınma yok",
+        "text": "Depar atarak kenara çekilmek yok."
+      },
+      "swapEveryTen": {
+        "title": "10 sn'de bir değiştir",
+        "text": "Kimse sahada on saniyeden uzun kalmaz."
+      },
+      "noSwapping": {
+        "title": "Değiştirme yok",
+        "text": "Savaşı başlatan karakter bitirir."
+      },
+      "threeCharacters": {
+        "title": "Üç karakter",
+        "text": "Grubun bir yeri boş kalır."
+      },
+      "underThreeMinutes": {
+        "title": "3 dakikanın altında",
+        "text": "Savaş üç dakika içinde biter, yoksa sayılmaz."
+      },
+      "underNinetySeconds": {
+        "title": "90 saniyenin altında",
+        "text": "Hız koşusu: saatte doksan saniye var."
+      },
+      "noReviving": {
+        "title": "Canlandırma yok",
+        "text": "Düşen oyuncu savaş bitene kadar yerde kalır."
+      },
+      "sameElementEveryone": {
+        "title": "Herkes aynı element",
+        "text": "Tüm oyuncular aynı elementi getirir."
+      },
+      "oneBurstEach": {
+        "title": "Herkese bir patlama",
+        "text": "Her oyuncu Element Patlamasını bir kez kullanır."
+      }
+    }
+  },
+  "wheel": {
+    "sample": "Haftalık patronlar\nHiçlik Sarmalı\nYadigar zindanı\nKeşfet\nDinginçay Çaydanlığı\nOrtak oyun",
+    "unsaved": "Kaydedilmemiş liste",
+    "new": "Yeni",
+    "open": "Aç",
+    "save": "Kaydet",
+    "listName": "Liste adı",
+    "deleteList": "{name} listesini sil",
+    "share": "Bağlantıyı paylaş",
+    "copied": "Bağlantı kopyalandı",
+    "spin": "Çarkı çevir",
+    "hint": "Çevirmek için çarka tıkla ya da Ctrl + Enter'a bas",
+    "empty": "Çevirmek için giriş ekle",
+    "spinning": "Dönüyor…",
+    "notSpun": "Henüz çevrilmedi",
+    "winner": "Kazanan belli oldu",
+    "remove": "Kaldır",
+    "close": "Kapat",
+    "full": "Tam ekran",
+    "exitFull": "Tam ekrandan çık",
+    "entries": "Girişler",
+    "results": "Sonuçlar",
+    "perLine": "Her satıra bir giriş",
+    "shuffle": "Karıştır",
+    "sort": "Sırala",
+    "clearResults": "Sonuçları temizle",
+    "noResults": "Henüz sonuç yok",
+    "options": "Seçenekler",
+    "option": {
+      "seconds": "Dönme süresi",
+      "remove": "Her çevirmeden sonra kazananı kaldır",
+      "dialog": "Kazananı pencerede göster",
+      "sound": "Ses",
+      "confetti": "Konfeti",
+      "hide": "Dönerken girişleri gizle"
     }
   }
 }

@@ -207,18 +207,20 @@ Progress = { progress: number; total: number; state: 'open' | 'complete' | 'clai
   },
   {
     key: 'gi_wardrobe',
-    what: 'Outfits, gliders, weapon skins and sprint trails owned and worn, and the saved teams.',
+    what: 'Outfits, gliders, weapon skins and sprint trails owned and worn, the namecards owned, and the saved teams.',
     shape: `{
   outfits?: Wardrobe
   gliders?: Wardrobe
   weaponSkins?: Wardrobe
   trails?: Wardrobe
+  namecards?: number[]   // owned, ascending; only when the picker was opened that login (Capture 1.18.6)
   teams?: Record<slot, { name: string; characters: CharacterKey[] }>
   currentTeam?: number
 }
 Wardrobe = { owned: number[]; worn: Record<CharacterKey, number>; expires?: Record<id, number> }`,
     example: {
       gliders: { owned: [140001, 140002], worn: { Traveler: 140002 } },
+      namecards: [210001, 210002, 210051],
       teams: { '1': { name: 'Team 1', characters: ['Furina', 'Bennett', 'Xiangling', 'Kazuha'] } },
       currentTeam: 1,
     } satisfies NonNullable<Leyline['gi_wardrobe']>,

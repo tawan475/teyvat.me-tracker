@@ -149,6 +149,22 @@
         "title": "음식 금지",
         "text": "음식도 포션도 쓰지 않습니다."
       },
+      "removeOneArtifact": {
+        "title": "성유물 1개 해제",
+        "text": "모든 캐릭터가 성유물을 1개 해제합니다."
+      },
+      "removeTwoArtifacts": {
+        "title": "성유물 2개 해제",
+        "text": "모든 캐릭터가 성유물을 2개 해제합니다."
+      },
+      "removeThreeArtifacts": {
+        "title": "성유물 3개 해제",
+        "text": "모든 캐릭터가 성유물을 3개 해제합니다."
+      },
+      "removeFourArtifacts": {
+        "title": "성유물 4개 해제",
+        "text": "모든 캐릭터가 성유물을 4개 해제합니다."
+      },
       "noArtifacts": {
         "title": "성유물 없음",
         "text": "모두 성유물을 해제합니다."

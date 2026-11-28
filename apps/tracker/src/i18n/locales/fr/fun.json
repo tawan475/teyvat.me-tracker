@@ -149,6 +149,22 @@
         "title": "Sans nourriture",
         "text": "Ni nourriture, ni potions."
       },
+      "removeOneArtifact": {
+        "title": "1 artéfact en moins",
+        "text": "Chaque personnage retire 1 artéfact."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 artéfacts en moins",
+        "text": "Chaque personnage retire 2 artéfacts."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 artéfacts en moins",
+        "text": "Chaque personnage retire 3 artéfacts."
+      },
+      "removeFourArtifacts": {
+        "title": "4 artéfacts en moins",
+        "text": "Chaque personnage retire 4 artéfacts."
+      },
       "noArtifacts": {
         "title": "Sans artéfacts",
         "text": "Tout le monde retire ses artéfacts."

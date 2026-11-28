@@ -31,6 +31,8 @@ export interface ChallengeCard {
     | 'shield'
     | 'clock'
     | 'team'
+  /** Cards of one group say the same thing in different amounts: a draw holds one at most. */
+  group?: string
 }
 
 const card = (
@@ -40,20 +42,28 @@ const card = (
   mode: CardMode = 'both',
   timed = false,
 ): ChallengeCard => ({ id, level, mode, timed, icon })
+const artifacts = (id: string, level: CardLevel): ChallengeCard => ({
+  ...card(id, level, 'ban'),
+  group: 'artifacts',
+})
 
 export const CHALLENGE_CARDS: readonly ChallengeCard[] = [
   card('noBursts', 2, 'ban'),
   card('noSkills', 2, 'ban'),
   card('normalAttacksOnly', 3, 'sword'),
-  card('fourStarWeapons', 1, 'sword'),
+  card('fourStarWeapons', 2, 'sword'),
   card('levelOneWeapons', 3, 'sword'),
   card('oneWeaponType', 1, 'sword'),
   card('noHealing', 3, 'heart'),
   card('noShields', 2, 'shield'),
   card('noFood', 1, 'food'),
-  card('noArtifacts', 3, 'ban'),
+  artifacts('removeOneArtifact', 1),
+  artifacts('removeTwoArtifacts', 2),
+  artifacts('removeThreeArtifacts', 2),
+  artifacts('removeFourArtifacts', 3),
+  artifacts('noArtifacts', 3),
   card('oneElement', 2, 'element'),
-  card('fourStarCharacters', 1, 'team'),
+  card('fourStarCharacters', 3, 'team'),
   card('noSprinting', 1, 'walk'),
   card('noDodging', 3, 'walk'),
   card('swapEveryTen', 2, 'swap', 'solo'),
@@ -83,16 +93,32 @@ export function listsCard(c: ChallengeCard, filters: DeckFilters): boolean {
   )
 }
 
-/** `count` different cards of `deck`, in the order drawn; fewer when the deck is smaller. */
-export function drawCards<T>(
+/** How many cards one draw of `deck` can hold: a group counts once. */
+export function drawable(deck: readonly Pick<ChallengeCard, 'group'>[]): number {
+  const groups = new Set<string>()
+  let alone = 0
+  for (const c of deck) c.group ? groups.add(c.group) : alone++
+  return alone + groups.size
+}
+
+/**
+ * `count` different cards of `deck`, in the order drawn, one of a group at
+ * most; fewer when the deck runs out. `held` are cards already on the table:
+ * their groups are taken.
+ */
+export function drawCards<T extends { group?: string }>(
   deck: readonly T[],
   count: number,
   random: () => number = Math.random,
+  held: readonly { group?: string }[] = [],
 ): T[] {
-  const rest = [...deck]
+  const taken = new Set(held.map((c) => c.group).filter(Boolean))
+  let rest = deck.filter((c) => !c.group || !taken.has(c.group))
   const out: T[] = []
   while (out.length < count && rest.length) {
-    out.push(rest.splice(Math.min(rest.length - 1, Math.floor(random() * rest.length)), 1)[0]!)
+    const next = rest[Math.min(rest.length - 1, Math.floor(random() * rest.length))]!
+    out.push(next)
+    rest = rest.filter((c) => c !== next && (!next.group || c.group !== next.group))
   }
   return out
 }

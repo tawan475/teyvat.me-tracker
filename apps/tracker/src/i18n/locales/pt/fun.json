@@ -149,6 +149,22 @@
         "title": "Sem comida",
         "text": "Sem comida e sem poções."
       },
+      "removeOneArtifact": {
+        "title": "1 artefato a menos",
+        "text": "Cada personagem tira 1 artefato."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 artefatos a menos",
+        "text": "Cada personagem tira 2 artefatos."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 artefatos a menos",
+        "text": "Cada personagem tira 3 artefatos."
+      },
+      "removeFourArtifacts": {
+        "title": "4 artefatos a menos",
+        "text": "Cada personagem tira 4 artefatos."
+      },
       "noArtifacts": {
         "title": "Sem artefatos",
         "text": "Todos tiram os artefatos."

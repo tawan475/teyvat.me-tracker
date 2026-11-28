@@ -149,6 +149,22 @@
         "title": "Yiyecek yok",
         "text": "Yiyecek yok, iksir yok."
       },
+      "removeOneArtifact": {
+        "title": "1 yadigar eksik",
+        "text": "Her karakter 1 yadigar çıkarır."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 yadigar eksik",
+        "text": "Her karakter 2 yadigar çıkarır."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 yadigar eksik",
+        "text": "Her karakter 3 yadigar çıkarır."
+      },
+      "removeFourArtifacts": {
+        "title": "4 yadigar eksik",
+        "text": "Her karakter 4 yadigar çıkarır."
+      },
       "noArtifacts": {
         "title": "Yadigar yok",
         "text": "Herkes yadigarlarını çıkarır."

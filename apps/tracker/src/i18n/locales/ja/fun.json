@@ -149,6 +149,22 @@
         "title": "食べ物禁止",
         "text": "食べ物も薬剤も使いません。"
       },
+      "removeOneArtifact": {
+        "title": "聖遺物を1個外す",
+        "text": "全キャラクターが聖遺物を1個外します。"
+      },
+      "removeTwoArtifacts": {
+        "title": "聖遺物を2個外す",
+        "text": "全キャラクターが聖遺物を2個外します。"
+      },
+      "removeThreeArtifacts": {
+        "title": "聖遺物を3個外す",
+        "text": "全キャラクターが聖遺物を3個外します。"
+      },
+      "removeFourArtifacts": {
+        "title": "聖遺物を4個外す",
+        "text": "全キャラクターが聖遺物を4個外します。"
+      },
       "noArtifacts": {
         "title": "聖遺物なし",
         "text": "全員が聖遺物を外します。"

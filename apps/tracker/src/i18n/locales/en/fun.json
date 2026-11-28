@@ -149,6 +149,22 @@
         "title": "No food",
         "text": "No food and no potions."
       },
+      "removeOneArtifact": {
+        "title": "1 artifact off",
+        "text": "Every character takes 1 artifact off."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 artifacts off",
+        "text": "Every character takes 2 artifacts off."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 artifacts off",
+        "text": "Every character takes 3 artifacts off."
+      },
+      "removeFourArtifacts": {
+        "title": "4 artifacts off",
+        "text": "Every character takes 4 artifacts off."
+      },
       "noArtifacts": {
         "title": "No artifacts",
         "text": "Everyone takes their artifacts off."

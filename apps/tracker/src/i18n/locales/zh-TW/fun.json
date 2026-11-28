@@ -149,6 +149,22 @@
         "title": "禁止食物",
         "text": "不用食物，也不用藥劑。"
       },
+      "removeOneArtifact": {
+        "title": "卸下1件聖遺物",
+        "text": "每名角色卸下1件聖遺物。"
+      },
+      "removeTwoArtifacts": {
+        "title": "卸下2件聖遺物",
+        "text": "每名角色卸下2件聖遺物。"
+      },
+      "removeThreeArtifacts": {
+        "title": "卸下3件聖遺物",
+        "text": "每名角色卸下3件聖遺物。"
+      },
+      "removeFourArtifacts": {
+        "title": "卸下4件聖遺物",
+        "text": "每名角色卸下4件聖遺物。"
+      },
       "noArtifacts": {
         "title": "不帶聖遺物",
         "text": "所有人卸下聖遺物。"

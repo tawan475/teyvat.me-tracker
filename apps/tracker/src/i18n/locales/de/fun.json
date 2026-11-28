@@ -149,6 +149,22 @@
         "title": "Keine Nahrung",
         "text": "Keine Nahrung und keine Tränke."
       },
+      "removeOneArtifact": {
+        "title": "1 Artefakt weniger",
+        "text": "Jede Figur legt 1 Artefakt ab."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 Artefakte weniger",
+        "text": "Jede Figur legt 2 Artefakte ab."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 Artefakte weniger",
+        "text": "Jede Figur legt 3 Artefakte ab."
+      },
+      "removeFourArtifacts": {
+        "title": "4 Artefakte weniger",
+        "text": "Jede Figur legt 4 Artefakte ab."
+      },
       "noArtifacts": {
         "title": "Keine Artefakte",
         "text": "Alle legen ihre Artefakte ab."

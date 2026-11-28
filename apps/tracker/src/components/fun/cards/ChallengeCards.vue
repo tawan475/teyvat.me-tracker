@@ -27,6 +27,7 @@ import {
   CARD_LEVELS,
   CHALLENGE_CARDS,
   PLAY_MODES,
+  drawable,
   drawCards,
   listsCard,
   type CardLevel,
@@ -87,7 +88,7 @@ watch(state, (value) => writeJson(storageKey.value, value), { deep: true })
 const shown = computed(() => CHALLENGE_CARDS.filter((c) => listsCard(c, state)))
 const out = computed(() => new Set(state.out))
 const deck = computed(() => shown.value.filter((c) => !out.value.has(c.id)))
-const count = computed(() => Math.max(1, Math.min(state.count, deck.value.length || 1)))
+const count = computed(() => Math.max(1, Math.min(state.count, drawable(deck.value) || 1)))
 
 const modeOptions = computed(() =>
   PLAY_MODES.map((mode) => ({ value: mode, label: t(`fun.cards.mode.${mode}`) })),
@@ -143,7 +144,12 @@ function draw() {
 /** Another card in one place, never one already on the table. */
 function redraw(index: number) {
   const rest = deck.value.filter((c) => !inHand.value.has(c.id))
-  const next = drawCards(rest, 1)[0]
+  // The cards that stay: the one replaced frees its group.
+  const staying = drawn.value
+    .filter((_, i) => i !== index)
+    .map((id) => CHALLENGE_CARDS.find((c) => c.id === id))
+    .filter((c) => !!c)
+  const next = drawCards(rest, 1, Math.random, staying)[0]
   if (!next) return
   show(
     drawn.value.map((id, i) => (i === index ? next.id : id)),
@@ -245,7 +251,7 @@ function tags(c: ChallengeCard): string[] {
         <b class="tabular min-w-9 text-center text-base">{{ formatNumber(count) }}</b>
         <UiIconButton
           :label="$t('fun.cards.more')"
-          :disabled="count >= deck.length"
+          :disabled="count >= drawable(deck)"
           @click="state.count = count + 1"
         >
           <Plus class="size-4" aria-hidden="true" />

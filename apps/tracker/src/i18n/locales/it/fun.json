@@ -149,6 +149,22 @@
         "title": "Niente cibo",
         "text": "Niente cibo e niente pozioni."
       },
+      "removeOneArtifact": {
+        "title": "1 manufatto in meno",
+        "text": "Ogni personaggio si toglie 1 manufatto."
+      },
+      "removeTwoArtifacts": {
+        "title": "2 manufatti in meno",
+        "text": "Ogni personaggio si toglie 2 manufatti."
+      },
+      "removeThreeArtifacts": {
+        "title": "3 manufatti in meno",
+        "text": "Ogni personaggio si toglie 3 manufatti."
+      },
+      "removeFourArtifacts": {
+        "title": "4 manufatti in meno",
+        "text": "Ogni personaggio si toglie 4 manufatti."
+      },
       "noArtifacts": {
         "title": "Niente manufatti",
         "text": "Tutti si tolgono i manufatti."

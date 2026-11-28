@@ -149,6 +149,22 @@
         "title": "Không đồ ăn",
         "text": "Không đồ ăn, không thuốc."
       },
+      "removeOneArtifact": {
+        "title": "Tháo 1 Thánh Di Vật",
+        "text": "Mọi nhân vật tháo 1 Thánh Di Vật."
+      },
+      "removeTwoArtifacts": {
+        "title": "Tháo 2 Thánh Di Vật",
+        "text": "Mọi nhân vật tháo 2 Thánh Di Vật."
+      },
+      "removeThreeArtifacts": {
+        "title": "Tháo 3 Thánh Di Vật",
+        "text": "Mọi nhân vật tháo 3 Thánh Di Vật."
+      },
+      "removeFourArtifacts": {
+        "title": "Tháo 4 Thánh Di Vật",
+        "text": "Mọi nhân vật tháo 4 Thánh Di Vật."
+      },
       "noArtifacts": {
         "title": "Không Thánh Di Vật",
         "text": "Mọi người tháo Thánh Di Vật."

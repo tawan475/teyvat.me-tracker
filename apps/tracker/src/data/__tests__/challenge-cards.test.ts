@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import en from '@/i18n/locales/en/fun.json'
-import { CHALLENGE_CARDS, drawCards, listsCard } from '../challenge-cards'
+import { CHALLENGE_CARDS, drawable, drawCards, listsCard } from '../challenge-cards'
 
 describe('challenge cards', () => {
   it('have unique ids and words for every card, and no words without a card', () => {
@@ -39,11 +39,32 @@ describe('challenge cards', () => {
   })
 
   it('draw different cards, as many as asked while the deck lasts', () => {
-    const deck = [1, 2, 3, 4, 5]
+    const deck: { n: number; group?: string }[] = [1, 2, 3, 4, 5].map((n) => ({ n }))
     const three = drawCards(deck, 3)
     expect(new Set(three).size).toBe(3)
-    expect(drawCards(deck, 9).sort()).toEqual(deck)
+    expect(drawCards(deck, 9).sort((x, y) => x.n - y.n)).toEqual(deck)
     expect(drawCards([], 2)).toEqual([])
-    expect(drawCards(deck, 2, () => 0.999999)).toEqual([5, 4])
+    expect(drawCards(deck, 2, () => 0.999999).map((c) => c.n)).toEqual([5, 4])
+  })
+
+  it('hold one artifact card at most in a draw', () => {
+    const artifacts = CHALLENGE_CARDS.filter((c) => c.group === 'artifacts')
+    expect(artifacts.map((c) => c.id).sort()).toEqual([
+      'noArtifacts',
+      'removeFourArtifacts',
+      'removeOneArtifact',
+      'removeThreeArtifacts',
+      'removeTwoArtifacts',
+    ])
+    expect(drawable(CHALLENGE_CARDS)).toBe(CHALLENGE_CARDS.length - 4)
+    for (let seed = 0; seed < 50; seed++) {
+      let at = seed
+      const random = () => ((at = (at * 9301 + 49297) % 233280), at / 233280)
+      const hand = drawCards(CHALLENGE_CARDS, 99, random)
+      expect(hand.length).toBe(drawable(CHALLENGE_CARDS))
+      expect(hand.filter((c) => c.group === 'artifacts').length).toBe(1)
+    }
+    // A card drawn beside one already on the table keeps to the rule too.
+    expect(drawCards(artifacts, 1, Math.random, [artifacts[0]!])).toEqual([])
   })
 })

@@ -149,6 +149,22 @@
         "title": "Tanpa makanan",
         "text": "Tanpa makanan dan potion."
       },
+      "removeOneArtifact": {
+        "title": "Lepas 1 artefak",
+        "text": "Setiap karakter melepas 1 artefak."
+      },
+      "removeTwoArtifacts": {
+        "title": "Lepas 2 artefak",
+        "text": "Setiap karakter melepas 2 artefak."
+      },
+      "removeThreeArtifacts": {
+        "title": "Lepas 3 artefak",
+        "text": "Setiap karakter melepas 3 artefak."
+      },
+      "removeFourArtifacts": {
+        "title": "Lepas 4 artefak",
+        "text": "Setiap karakter melepas 4 artefak."
+      },
       "noArtifacts": {
         "title": "Tanpa artefak",
         "text": "Semua melepas artefaknya."

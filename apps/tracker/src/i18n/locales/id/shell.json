@@ -94,7 +94,12 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privasi",
-    "fun": "Seru-seruan"
+    "fun": "Seru-seruan",
+    "funHub": "Seru-seruan",
+    "randomizer": "Pengacak party",
+    "bossRandomizer": "Pengacak boss",
+    "challengeCards": "Kartu tantangan",
+    "wheel": "Roda"
   },
   "notFound": {
     "title": "Halaman tidak ditemukan",
@@ -203,7 +208,12 @@
     "endgame": "Spiral Abyss, Imaginarium Theater, dan Stygian Onslaught: musuh setiap musim dan rekormu sendiri.",
     "developersApi": "API Teyvat.me: baca dan ubah akun Genshin, snapshot, permohonan, dan rencanamu dengan token pribadi.",
     "privacy": "Apa yang disimpan Teyvat.me tentangmu, berapa lama, siapa yang bisa melihatnya, dan cara mengekspor atau menghapusnya.",
-    "fun": "Hal seru dengan akun Genshin Impact-mu: pengacak party dari karaktermu sendiri, dan lainnya."
+    "fun": "Hal seru dengan akun Genshin Impact-mu: pengacak party dari karaktermu sendiri, dan lainnya.",
+    "funHub": "Alat seru gratis untuk Genshin Impact: pengacak party, pengacak boss, kartu tantangan, dan roda putar. Tanpa akun.",
+    "randomizer": "Pengacak party Genshin Impact gratis: dua party acak dari semua karakter yang sudah rilis, dengan filter, aturan, kunci, dan pengecualian. Tanpa akun.",
+    "bossRandomizer": "Pengacak boss Genshin Impact gratis: biarkan acak memilih boss berikutnya, dengan filter dan pengecualian. Tanpa akun.",
+    "challengeCards": "Kartu tantangan Genshin Impact gratis: ambil aturan yang membuat permainan lebih sulit, untuk solo atau Co-op. Tanpa akun.",
+    "wheel": "Roda putar gratis: tulis daftarmu sendiri, putar, dan bagikan sebagai tautan. Tanpa akun."
   },
   "support": "Dukung Teyvat.me di Ko-fi",
   "timeTravel": {

@@ -93,6 +93,18 @@ export function encodeShare(entries: readonly string[]): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
+/** The public wheel page every share link opens (signed out too). */
+export const WHEEL_PUBLIC_PATH = '/fun/wheel'
+
+/**
+ * The link Share copies: always the public wheel page on this site's origin
+ * (`location.origin`, so the dev server and a self-host link to themselves),
+ * from the app, the guest, the demo and the public page alike.
+ */
+export function wheelShareUrl(origin: string, entries: readonly string[]): string {
+  return `${origin.replace(/\/+$/, '')}${WHEEL_PUBLIC_PATH}#w=${encodeShare(entries)}`
+}
+
 /** The list a link carries; null when it carries none or it cannot be read. */
 export function decodeShare(hash: string): string[] | null {
   const match = /(?:^|[#&])w=([A-Za-z0-9_-]+)/.exec(hash)

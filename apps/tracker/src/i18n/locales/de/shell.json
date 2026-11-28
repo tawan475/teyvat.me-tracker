@@ -94,7 +94,12 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Datenschutz",
-    "fun": "Spaß"
+    "fun": "Spaß",
+    "funHub": "Spaß",
+    "randomizer": "Truppen-Zufallsgenerator",
+    "bossRandomizer": "Boss-Zufallsgenerator",
+    "challengeCards": "Herausforderungskarten",
+    "wheel": "Glücksrad"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -203,7 +208,12 @@
     "endgame": "Gewundener Abgrund, Theater der träumerischen Realität und Düsterer Ansturm: die Gegner jeder Saison und deine eigenen Rekorde.",
     "developersApi": "Die Teyvat.me-API: Lies und ändere deine Genshin-Konten, Snapshots, Gebete und Pläne mit einem persönlichen Token.",
     "privacy": "Was Teyvat.me über dich speichert, wie lange, wer es sehen kann und wie du es exportierst oder löschst.",
-    "fun": "Spaß mit deinem Genshin-Impact-Konto: ein Truppen-Zufallsgenerator, der aus deinen eigenen Figuren würfelt, und mehr."
+    "fun": "Spaß mit deinem Genshin-Impact-Konto: ein Truppen-Zufallsgenerator, der aus deinen eigenen Figuren würfelt, und mehr.",
+    "funHub": "Kostenlose Spaß-Werkzeuge für Genshin Impact: ein Truppen-Zufallsgenerator, ein Boss-Zufallsgenerator, Herausforderungskarten und ein Glücksrad. Ganz ohne Konto.",
+    "randomizer": "Kostenloser Truppen-Zufallsgenerator für Genshin Impact: zwei zufällige Truppen aus allen veröffentlichten Figuren, mit Filtern, Regeln, Sperren und Ausschlüssen. Ganz ohne Konto.",
+    "bossRandomizer": "Kostenloser Boss-Zufallsgenerator für Genshin Impact: Der Zufall wählt den nächsten Boss, mit Filtern und Ausschlüssen. Ganz ohne Konto.",
+    "challengeCards": "Kostenlose Herausforderungskarten für Genshin Impact: Zieh Regeln, die einen Durchlauf schwerer machen, für Solo oder Koop. Ganz ohne Konto.",
+    "wheel": "Ein kostenloses Glücksrad: Gib deine eigene Liste ein, dreh es und teile es als Link. Ganz ohne Konto."
   },
   "support": "Teyvat.me auf Ko-fi unterstützen",
   "timeTravel": {

@@ -13,6 +13,8 @@ import robotsFile from '../../../public/robots.txt?raw'
 import llms from '../../../public/llms.txt?raw'
 import shellMessages from '../../i18n/locales/en/shell.json'
 import router from '../index.ts?raw'
+// As text: the registry imports the pages' components, which this test's project has no DOM types for.
+import funPagesSource from '../../components/fun/pages.ts?raw'
 import { canonicalUrl, INDEXED_PAGES, SITE_ORIGIN, sitemapXml } from '../public-pages'
 
 // The repository keeps these files with CRLF line endings (Windows checkouts,
@@ -61,6 +63,34 @@ describe('indexed pages', () => {
 
   it('are in llms.txt', () => {
     for (const page of INDEXED_PAGES) expect(llms).toContain(`(${SITE_ORIGIN}${page.path})`)
+  })
+})
+
+describe('the public Fun pages', () => {
+  const slugs = [...funPagesSource.matchAll(/^    slug: '([a-z-]+)',$/gm)].map((m) => m[1]!)
+
+  it('give every Fun page a public route of its own, with its own title, indexed', () => {
+    const hub = routeSource('/fun')
+    expect(hub).toContain("component: () => import('@/views/FunPublicView.vue')")
+    const titles = new Set<string>()
+    expect(slugs.length).toBeGreaterThan(3)
+    for (const slug of slugs) {
+      const path = `/fun/${slug}`
+      const source = routeSource(path)
+      expect(source).toContain("component: () => import('@/views/FunPublicView.vue')")
+      expect(source).toContain('public: true')
+      const title = /title: '([A-Za-z]+)'/.exec(source)?.[1]
+      expect(title, path).toBeDefined()
+      expect(Object.keys(shellMessages.page)).toContain(title)
+      titles.add(title!)
+      expect(INDEXED_PAGES.some((p) => p.path === path)).toBe(true)
+    }
+    expect(titles.size).toBe(slugs.length)
+    expect(INDEXED_PAGES.some((p) => p.path === '/fun')).toBe(true)
+  })
+
+  it('send the old randomizer address to the public one', () => {
+    expect(router).toContain("{ path: '/randomizer', redirect: '/fun/team-randomizer' }")
   })
 })
 

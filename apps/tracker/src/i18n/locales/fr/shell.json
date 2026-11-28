@@ -94,7 +94,12 @@
     "endgame": "Fin de jeu",
     "developersApi": "API",
     "privacy": "Confidentialité",
-    "fun": "Détente"
+    "fun": "Détente",
+    "funHub": "Détente",
+    "randomizer": "Équipes aléatoires",
+    "bossRandomizer": "Boss aléatoire",
+    "challengeCards": "Cartes de défi",
+    "wheel": "Roue"
   },
   "notFound": {
     "title": "Page introuvable",
@@ -203,7 +208,12 @@
     "endgame": "Profondeurs spiralées, Théâtre de l'imaginarium et Carnage chtonien : les ennemis de chaque saison et vos propres records.",
     "developersApi": "L'API Teyvat.me : lisez et modifiez vos comptes Genshin, instantanés, vœux et plans avec un jeton personnel.",
     "privacy": "Ce que Teyvat.me garde sur vous, combien de temps, qui peut le voir, et comment l'exporter ou le supprimer.",
-    "fun": "De quoi vous amuser avec votre compte Genshin Impact : des équipes tirées au hasard parmi vos personnages, et plus encore."
+    "fun": "De quoi vous amuser avec votre compte Genshin Impact : des équipes tirées au hasard parmi vos personnages, et plus encore.",
+    "funHub": "Des outils amusants et gratuits pour Genshin Impact : équipes aléatoires, boss aléatoire, cartes de défi et une roue à faire tourner. Sans compte.",
+    "randomizer": "Tirage d'équipes gratuit pour Genshin Impact : deux équipes au hasard parmi tous les personnages sortis, avec filtres, règles, verrous et exclusions. Sans compte.",
+    "bossRandomizer": "Boss aléatoire gratuit pour Genshin Impact : laissez le hasard choisir le prochain boss à affronter, avec filtres et exclusions. Sans compte.",
+    "challengeCards": "Cartes de défi gratuites pour Genshin Impact : tirez des règles qui corsent la partie, en solo ou en coop. Sans compte.",
+    "wheel": "Une roue gratuite : saisissez votre propre liste, faites-la tourner et partagez-la par un lien. Sans compte."
   },
   "support": "Soutenir Teyvat.me sur Ko-fi",
   "timeTravel": {

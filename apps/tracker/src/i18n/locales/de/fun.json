@@ -255,5 +255,6 @@
       "confetti": "Konfetti",
       "hide": "Einträge beim Drehen ausblenden"
     }
-  }
+  },
+  "publicPitch": "Zwei zufällige Truppen aus allen veröffentlichten Figuren"
 }

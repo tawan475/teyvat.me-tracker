@@ -36,8 +36,10 @@ import {
 } from '@/data/challenge-cards'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { readJson, writeJson } from '@/lib/storage'
-import { useAccount } from '@/views/account/context'
+import { funStateKey } from '@/data/fun-storage'
+import { writeJson } from '@/lib/storage'
+import { readFunJson } from '../fun-state'
+import { useFunHost } from '../host'
 import { useBenchDrag } from '../randomizer/bench-drag'
 import { POP, SNAP, play } from '../randomizer/motion'
 
@@ -62,8 +64,9 @@ const ICONS: Record<ChallengeCard['icon'], Component> = {
   team: Users,
 }
 
-const account = useAccount()
-const storageKey = computed(() => `fun:cards:${account.value.id}`)
+const host = useFunHost()
+// One per device (data/fun-storage.ts): the public page and every account share it.
+const storageKey = funStateKey('cards')
 
 interface Saved {
   mode: PlayMode
@@ -73,7 +76,7 @@ interface Saved {
   count: number
 }
 function load(): Saved {
-  const saved = readJson<Partial<Saved>>(storageKey.value, {})
+  const saved = readFunJson<Partial<Saved>>('cards', host.value.accountId, {})
   return {
     mode: saved.mode === 'coop' ? 'coop' : 'solo',
     timed: saved.timed !== false,
@@ -83,7 +86,7 @@ function load(): Saved {
   }
 }
 const state = reactive<Saved>(load())
-watch(state, (value) => writeJson(storageKey.value, value), { deep: true })
+watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
 const shown = computed(() => CHALLENGE_CARDS.filter((c) => listsCard(c, state)))
 const out = computed(() => new Set(state.out))

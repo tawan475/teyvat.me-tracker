@@ -94,7 +94,12 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privacy",
-    "fun": "Divertimento"
+    "fun": "Divertimento",
+    "funHub": "Divertimento",
+    "randomizer": "Gruppi casuali",
+    "bossRandomizer": "Boss casuale",
+    "challengeCards": "Carte sfida",
+    "wheel": "Ruota"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -203,7 +208,12 @@
     "endgame": "Abisso a spirale, Teatro immaginario e Battaglia nel regno oscuro: i nemici di ogni stagione e i tuoi record.",
     "developersApi": "L'API di Teyvat.me: leggi e modifica i tuoi account di Genshin, istantanee, desideri e piani con un token personale.",
     "privacy": "Cosa conserva Teyvat.me su di te, per quanto tempo, chi può vederlo e come esportarlo o eliminarlo.",
-    "fun": "Cose divertenti con il tuo account di Genshin Impact: gruppi casuali estratti dai tuoi personaggi e altro."
+    "fun": "Cose divertenti con il tuo account di Genshin Impact: gruppi casuali estratti dai tuoi personaggi e altro.",
+    "funHub": "Strumenti divertenti e gratis per Genshin Impact: gruppi casuali, boss casuale, carte sfida e una ruota da girare. Senza account.",
+    "randomizer": "Gruppi casuali gratis per Genshin Impact: due gruppi casuali tra tutti i personaggi usciti, con filtri, regole, blocchi ed esclusioni. Senza account.",
+    "bossRandomizer": "Boss casuale gratis per Genshin Impact: lascia al caso il prossimo boss da affrontare, con filtri ed esclusioni. Senza account.",
+    "challengeCards": "Carte sfida gratis per Genshin Impact: pesca regole che rendono la partita più dura, in solitaria o in co-op. Senza account.",
+    "wheel": "Una ruota gratis: scrivi la tua lista, falla girare e condividila con un link. Senza account."
   },
   "support": "Sostieni Teyvat.me su Ko-fi",
   "timeTravel": {

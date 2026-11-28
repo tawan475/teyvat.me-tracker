@@ -30,13 +30,16 @@ import {
   landing,
   parseEntries,
   shuffled,
+  wheelShareUrl,
   wheelGradient,
   withoutEntry,
 } from '@/data/wheel'
 import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { readJson, writeJson } from '@/lib/storage'
-import { useAccount } from '@/views/account/context'
+import { funStateKey } from '@/data/fun-storage'
+import { writeJson } from '@/lib/storage'
+import { readFunJson } from '../fun-state'
+import { useFunHost } from '../host'
 import { reducedMotion } from '../randomizer/motion'
 
 /**
@@ -49,8 +52,9 @@ import { reducedMotion } from '../randomizer/motion'
  * entries while spinning) sit in one folded row. All of it lives on this
  * device.
  */
-const account = useAccount()
-const storageKey = computed(() => `fun:wheel:${account.value.id}`)
+const host = useFunHost()
+// One per device (data/fun-storage.ts): the public page and every account share the lists.
+const storageKey = funStateKey('wheel')
 
 const SECONDS = [3, 5, 10] as const
 interface Options {
@@ -83,7 +87,7 @@ const MAX_RESULTS = 200
 const MAX_LISTS = 30
 
 function load(): Saved {
-  const saved = readJson<Partial<Saved>>(storageKey.value, {})
+  const saved = readFunJson<Partial<Saved>>('wheel', host.value.accountId, {})
   const options = { ...DEFAULT_OPTIONS, ...saved.options }
   return {
     text: typeof saved.text === 'string' ? saved.text : t('fun.wheel.sample'),
@@ -98,7 +102,7 @@ function load(): Saved {
 }
 const winner = ref<string | null>(null)
 const state = reactive<Saved>(load())
-watch(state, (value) => writeJson(storageKey.value, value), { deep: true })
+watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
 // A shared link opens its list (the link is then cleaned, so a reload keeps edits).
 function openShared() {
@@ -317,7 +321,8 @@ function saveList() {
 const copied = ref(false)
 let copiedTimer = 0
 async function share() {
-  const url = `${location.origin}${location.pathname}#w=${encodeShare(entries.value)}`
+  // Always the public page (data/wheel.ts), so the link opens signed out too.
+  const url = wheelShareUrl(location.origin, entries.value)
   try {
     await navigator.clipboard.writeText(url)
     copied.value = true

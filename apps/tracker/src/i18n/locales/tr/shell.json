@@ -94,7 +94,12 @@
     "endgame": "Oyun sonu",
     "developersApi": "API",
     "privacy": "Gizlilik",
-    "fun": "Eğlence"
+    "fun": "Eğlence",
+    "funHub": "Eğlence",
+    "randomizer": "Rastgele gruplar",
+    "bossRandomizer": "Rastgele patron",
+    "challengeCards": "Meydan okuma kartları",
+    "wheel": "Çark"
   },
   "notFound": {
     "title": "Sayfa bulunamadı",
@@ -203,7 +208,12 @@
     "endgame": "Hiçlik Sarmalı, Hayal Dünyası Tiyatrosu ve Kasvetli Taarruz: her sezonun düşmanları ve kendi rekorların.",
     "developersApi": "Teyvat.me API'si: Genshin hesaplarını, anlık görüntülerini, dileklerini ve planlarını kişisel bir token ile oku ve değiştir.",
     "privacy": "Teyvat.me'nin senin hakkında ne sakladığı, ne kadar süre sakladığı, kimin görebildiği ve nasıl dışa aktarılıp silineceği.",
-    "fun": "Genshin Impact hesabınla eğlenceli şeyler: kendi karakterlerinden çeken rastgele gruplar ve daha fazlası."
+    "fun": "Genshin Impact hesabınla eğlenceli şeyler: kendi karakterlerinden çeken rastgele gruplar ve daha fazlası.",
+    "funHub": "Genshin Impact için ücretsiz eğlence araçları: rastgele gruplar, rastgele patron, meydan okuma kartları ve bir çark. Hesap gerekmez.",
+    "randomizer": "Ücretsiz Genshin Impact rastgele grup aracı: çıkmış tüm karakterlerden iki rastgele grup; filtreler, kurallar, kilitler ve hariç tutma ile. Hesap gerekmez.",
+    "bossRandomizer": "Ücretsiz Genshin Impact rastgele patron aracı: sıradaki patronu şans seçsin; filtreler ve hariç tutma ile. Hesap gerekmez.",
+    "challengeCards": "Ücretsiz Genshin Impact meydan okuma kartları: turu zorlaştıran kurallar çek, tek başına ya da ortak oyunda. Hesap gerekmez.",
+    "wheel": "Ücretsiz bir çark: kendi listeni yaz, çevir ve bağlantı olarak paylaş. Hesap gerekmez."
   },
   "support": "Teyvat.me'yi Ko-fi'de destekle",
   "timeTravel": {

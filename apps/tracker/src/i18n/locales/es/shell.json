@@ -94,7 +94,12 @@
     "endgame": "Contenido final",
     "developersApi": "API",
     "privacy": "Privacidad",
-    "fun": "Diversión"
+    "fun": "Diversión",
+    "funHub": "Diversión",
+    "randomizer": "Equipos al azar",
+    "bossRandomizer": "Jefe al azar",
+    "challengeCards": "Cartas de desafío",
+    "wheel": "Ruleta"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -203,7 +208,12 @@
     "endgame": "Espiral del Abismo, Teatro Fantasía y Conflagración estigia: los enemigos de cada temporada y tus propios récords.",
     "developersApi": "La API de Teyvat.me: lee y cambia tus cuentas de Genshin, capturas, deseos y planes con un token personal.",
     "privacy": "Qué guarda Teyvat.me sobre ti, durante cuánto tiempo, quién puede verlo y cómo exportarlo o borrarlo.",
-    "fun": "Cosas divertidas con tu cuenta de Genshin Impact: un sorteo de equipos con tus propios personajes y más."
+    "fun": "Cosas divertidas con tu cuenta de Genshin Impact: un sorteo de equipos con tus propios personajes y más.",
+    "funHub": "Herramientas divertidas gratis para Genshin Impact: equipos al azar, jefe al azar, cartas de desafío y una ruleta. Sin cuenta.",
+    "randomizer": "Sorteo de equipos gratis para Genshin Impact: dos equipos al azar entre todos los personajes lanzados, con filtros, reglas, fijados y exclusiones. Sin cuenta.",
+    "bossRandomizer": "Jefe al azar gratis para Genshin Impact: deja que el azar elija el próximo jefe, con filtros y exclusiones. Sin cuenta.",
+    "challengeCards": "Cartas de desafío gratis para Genshin Impact: saca reglas que complican la partida, en solitario o en cooperativo. Sin cuenta.",
+    "wheel": "Una ruleta gratis: escribe tu propia lista, gírala y compártela con un enlace. Sin cuenta."
   },
   "support": "Apoya a Teyvat.me en Ko-fi",
   "timeTravel": {

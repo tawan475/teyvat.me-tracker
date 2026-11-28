@@ -1,9 +1,9 @@
 /// <reference lib="dom" />
 // (DOM types: the page.evaluate callbacks run in the page.)
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { extname, join, resolve, sep } from 'node:path'
+import { dirname, extname, join, resolve, sep } from 'node:path'
 import type { Plugin } from 'vite'
 import { canonicalUrl, INDEXED_PAGES, sitemapXml } from '../src/router/public-pages.ts'
 import { injectPrerender, type RenderedPage } from './prerender-html.ts'
@@ -210,6 +210,10 @@ async function renderPages(dir: string, siteOrigin: string): Promise<string[]> {
     await new Promise((done) => server.close(done))
   }
   // Written last: every page renders against the untouched shell.
-  for (const { file, html } of written) writeFileSync(file, html)
+  for (const { file, html } of written) {
+    // A page under a folder nothing else fills (fun/wheel.html) needs the folder.
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(file, html)
+  }
   return report
 }

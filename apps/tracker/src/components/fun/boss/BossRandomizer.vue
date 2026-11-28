@@ -22,8 +22,10 @@ import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
 import { gameIcon, loadGameIcons } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
-import { readJson, writeJson } from '@/lib/storage'
-import { useAccount } from '@/views/account/context'
+import { funStateKey } from '@/data/fun-storage'
+import { writeJson } from '@/lib/storage'
+import { readFunJson } from '../fun-state'
+import { useFunHost } from '../host'
 import { useBenchDrag } from '../randomizer/bench-drag'
 import { play, reducedMotion } from '../randomizer/motion'
 import BossTile from './BossTile.vue'
@@ -36,8 +38,9 @@ import BossTile from './BossTile.vue'
  * data only, so it is the same for every account; what was last set is
  * remembered per device.
  */
-const account = useAccount()
-const storageKey = computed(() => `fun:boss:${account.value.id}`)
+const host = useFunHost()
+// One per device (data/fun-storage.ts): the public page and every account share it.
+const storageKey = funStateKey('boss')
 
 const resource = useResource(
   () => locale.value,
@@ -58,7 +61,7 @@ interface Saved {
   benched: string[]
 }
 function load(): Saved {
-  const saved = readJson<Partial<Saved>>(storageKey.value, {})
+  const saved = readFunJson<Partial<Saved>>('boss', host.value.accountId, {})
   const list = <T extends string>(value: unknown, all: readonly T[]) =>
     Array.isArray(value) ? all.filter((v) => value.includes(v)) : []
   return {
@@ -68,7 +71,7 @@ function load(): Saved {
   }
 }
 const state = reactive<Saved>(load())
-watch(state, (value) => writeJson(storageKey.value, value), { deep: true })
+watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
 const all = computed(() => resource.data.value ?? [])
 const shown = computed(() => all.value.filter((b) => listsBoss(b, state.kinds, state.wheres)))

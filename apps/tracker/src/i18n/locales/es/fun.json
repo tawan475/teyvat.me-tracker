@@ -255,5 +255,6 @@
       "confetti": "Confeti",
       "hide": "Ocultar las entradas durante el giro"
     }
-  }
+  },
+  "publicPitch": "Dos equipos al azar entre todos los personajes lanzados"
 }

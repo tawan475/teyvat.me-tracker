@@ -168,8 +168,43 @@ const router = createRouter({
       component: () => import('@/views/PrivacyView.vue'),
       meta: { public: true, themed: true, title: 'privacy' },
     },
-    // The public randomizer page is gone (2026-11-26): its links land on the guest's.
-    { path: '/randomizer', redirect: '/guest/fun/team-randomizer' },
+    // Fun for anyone, signed out too (docs/plans/fun.md, 2026-11-28; public,
+    // follows the theme): the hub and one route per page of
+    // components/fun/pages.ts (a test checks each has one, with its own title).
+    {
+      path: '/fun',
+      name: 'fun-public',
+      component: () => import('@/views/FunPublicView.vue'),
+      meta: { public: true, themed: true, title: 'funHub' },
+    },
+    {
+      path: '/fun/team-randomizer',
+      name: 'fun-public-team-randomizer',
+      component: () => import('@/views/FunPublicView.vue'),
+      meta: { public: true, themed: true, title: 'randomizer' },
+    },
+    {
+      path: '/fun/boss-randomizer',
+      name: 'fun-public-boss-randomizer',
+      component: () => import('@/views/FunPublicView.vue'),
+      meta: { public: true, themed: true, title: 'bossRandomizer' },
+    },
+    {
+      path: '/fun/challenge-cards',
+      name: 'fun-public-challenge-cards',
+      component: () => import('@/views/FunPublicView.vue'),
+      meta: { public: true, themed: true, title: 'challengeCards' },
+    },
+    {
+      path: '/fun/wheel',
+      name: 'fun-public-wheel',
+      component: () => import('@/views/FunPublicView.vue'),
+      meta: { public: true, themed: true, title: 'wheel' },
+    },
+    // A slug no page has (an old link): the hub.
+    { path: '/fun/:page(.*)', redirect: '/fun' },
+    // The old public randomizer's address.
+    { path: '/randomizer', redirect: '/fun/team-randomizer' },
     {
       path: '/login',
       name: 'login',

@@ -6,6 +6,7 @@ import {
   landing,
   parseEntries,
   wheelGradient,
+  wheelShareUrl,
   withoutEntry,
 } from '../wheel'
 
@@ -61,5 +62,15 @@ describe('the wheel', () => {
     expect(decodeShare('#w=%%%')).toBeNull()
     expect(decodeShare(`#w=${encodeShare([])}`)).toEqual([])
     expect(decodeShare('#w=e30')).toBeNull()
+  })
+
+  it('shares a link to the public wheel page on the given origin', () => {
+    const list = ['Amber', 'Kaeya', 'Lisa']
+    const url = wheelShareUrl('https://tracker.example', list)
+    expect(url).toBe(`https://tracker.example/fun/wheel#w=${encodeShare(list)}`)
+    expect(wheelShareUrl('http://localhost:5173/', list)).toBe(
+      `http://localhost:5173/fun/wheel#w=${encodeShare(list)}`,
+    )
+    expect(decodeShare(new URL(url).hash)).toEqual(list)
   })
 })

@@ -29,6 +29,26 @@ export const INDEXED_PAGES: readonly IndexedPage[] = [
   { path: '/developers', file: 'developers.html', changefreq: 'monthly', priority: 0.6 },
   { path: '/developers/api', file: 'developers/api.html', changefreq: 'monthly', priority: 0.5 },
   { path: '/privacy', file: 'privacy.html', changefreq: 'monthly', priority: 0.5 },
+  { path: '/fun', file: 'fun.html', changefreq: 'weekly', priority: 0.7 },
+  {
+    path: '/fun/team-randomizer',
+    file: 'fun/team-randomizer.html',
+    changefreq: 'weekly',
+    priority: 0.7,
+  },
+  {
+    path: '/fun/boss-randomizer',
+    file: 'fun/boss-randomizer.html',
+    changefreq: 'weekly',
+    priority: 0.6,
+  },
+  {
+    path: '/fun/challenge-cards',
+    file: 'fun/challenge-cards.html',
+    changefreq: 'monthly',
+    priority: 0.6,
+  },
+  { path: '/fun/wheel', file: 'fun/wheel.html', changefreq: 'monthly', priority: 0.6 },
 ]
 
 /** The page's canonical address, or null for a page crawlers shouldn't index. */

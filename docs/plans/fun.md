@@ -351,8 +351,51 @@ badges; the wheel's options folded into one row), the user said "nice build".
   Sort, lists saved by name on the device, a share link (`#w=` carries the
   list), full screen, and the options. **Not built: pictures as entries.**
 - Bans in all three use the team randomizer's click-or-drag (`bench-drag.ts`).
-  Each page remembers what was set per device and account
-  (`fun:boss:` / `fun:cards:` / `fun:wheel:<account id>`).
+  Each page remembered what was set per device and account
+  (`fun:boss:` / `fun:cards:` / `fun:wheel:<account id>`); since 2026-11-28
+  once per device (below).
+
+### Built 2026-11-28: public Fun pages (plumbing only)
+
+Branch `fun-public`, not pushed. The look of the public frame is the
+owner's call in a design round running at the same time: nothing here
+restyles the wheel or the boss randomizer.
+
+- **Routes:** `/fun` (the hub: the same `FunCard` grid over `FUN_PAGES`) and
+  `/fun/<slug>` for the four pages, open signed out (`meta.public`, follows
+  the theme). One literal route per page in `router/index.ts`, each with its
+  own title key (a test checks every `FUN_PAGES` row has one, indexed); an
+  unknown `/fun/<slug>` goes to `/fun`; `/randomizer` now goes to
+  `/fun/team-randomizer`. The in-app routes are unchanged.
+- **The view:** `views/FunPublicView.vue` holds only structure (hero title
+  and line, the back arrow to the hub, the page). Its frame is /privacy's
+  (public bar, hero over the art, footer), **a placeholder** until the owner
+  picks the public look.
+- **No account needed:** the pages read where they are from
+  `components/fun/host.ts` (`provideFunHost` / `useFunHost`: account id or
+  null, whether a roster exists, the team randomizer's storage key, hub and
+  page links), provided by `FunView` in an account and by `FunPublicView` on
+  the public pages. `TeamRandomizer.vue` picks `AccountTeamRandomizer.vue`
+  (the account's roster, as before) inside an account and the bare board on
+  the public page: pool "All released" only, no "My characters" switch (the
+  board hides it without a roster, as the old /randomizer did), its own key
+  `fun:randomizer:public`.
+- **Storage stays in the browser** (`localStorage` through `lib/storage.ts`;
+  nothing of Fun reaches the server). Boss randomizer, challenge cards and
+  wheel now keep one value per device, `fun:boss`, `fun:cards`, `fun:wheel`,
+  shared by the public page and every account. The first read with no
+  device-wide value copies the current account's old `fun:<kind>:<account
+  id>` value; old keys are left alone (`data/fun-storage.ts`
+  `readDeviceWide`, tested). The team randomizer stays per account.
+- **Wheel share links** always open the public page:
+  `<location.origin>/fun/wheel#w=<list>` (`wheelShareUrl` in `data/wheel.ts`,
+  tested), from the app, guest, demo and public page alike; the public page
+  opens the list through the existing `decodeShare`.
+- **SEO:** tab titles and descriptions `shell.page` / `shell.description`
+  `funHub`, `randomizer`, `bossRandomizer`, `challengeCards`, `wheel` in all
+  15 languages (the team randomizer's restored from before 22bb735a, with
+  `fun.publicPitch`); all five pages in `INDEXED_PAGES` (sitemap, prerender)
+  and `public/llms.txt`. `robots.txt` needed no change (it allows `/fun`).
 
 ### Built (2026-11-24, local commits)
 
@@ -366,6 +409,8 @@ badges; the wheel's options folded into one row), the user said "nice build".
 - **Phase 2 was removed on 2026-11-26** (the user: not good, and in the old
   public-page look): `/randomizer` now redirects to the guest's page,
   `/guest/fun/team-randomizer`. No public randomizer page.
+  Public Fun pages came back on 2026-11-28 (`/fun`, section above), and
+  `/randomizer` now goes to `/fun/team-randomizer`.
 - The role, body type and gender filters and the healer rule read those columns.
 - "All released" leaves out a character whose first banner has not opened
   yet (`release-dates.ts`), though the game data already knows it.

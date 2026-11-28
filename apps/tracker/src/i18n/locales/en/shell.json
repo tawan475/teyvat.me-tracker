@@ -94,7 +94,12 @@
     "endgame": "Endgame",
     "developersApi": "API",
     "privacy": "Privacy",
-    "fun": "Fun"
+    "fun": "Fun",
+    "funHub": "Fun",
+    "randomizer": "Team randomizer",
+    "bossRandomizer": "Boss randomizer",
+    "challengeCards": "Challenge cards",
+    "wheel": "Wheel"
   },
   "notFound": {
     "title": "Page not found",
@@ -203,7 +208,12 @@
     "endgame": "Spiral Abyss, Imaginarium Theater and Stygian Onslaught: each season's enemies and your own records.",
     "developersApi": "The Teyvat.me API: read and change your Genshin accounts, snapshots, wishes and plans with a personal token.",
     "privacy": "What Teyvat.me keeps about you, for how long, who can see it, and how to export or delete it.",
-    "fun": "Fun things to do with your Genshin Impact account: a team randomizer that rolls from your own characters, and more."
+    "fun": "Fun things to do with your Genshin Impact account: a team randomizer that rolls from your own characters, and more.",
+    "funHub": "Free Genshin Impact fun tools: a team randomizer, a boss randomizer, challenge cards and a wheel to spin. No account needed.",
+    "randomizer": "Free Genshin Impact team randomizer: roll two random teams from every released character, with filters, rules, locks and bans. No account needed.",
+    "bossRandomizer": "Free Genshin Impact boss randomizer: let chance pick the next boss to fight, with filters and bans. No account needed.",
+    "challengeCards": "Free Genshin Impact challenge cards: draw rules that make a run harder, for solo or co-op play. No account needed.",
+    "wheel": "A free wheel to spin: enter your own list, spin it and share it as a link. No account needed."
   },
   "support": "Support Teyvat.me on Ko-fi",
   "timeTravel": {

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import FunCard from '@/components/fun/FunCard.vue'
+import { provideFunHost } from '@/components/fun/host'
 import { FUN_PAGES, funPage, isNewPage } from '@/components/fun/pages'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
@@ -27,6 +28,18 @@ const to = (slug?: string) => ({
   params: { accountId: account.value.id, ...(slug ? { page: slug } : {}) },
 })
 const now = Date.now()
+
+// The pages read the account only through this (components/fun/host.ts), so
+// the public pages (views/FunPublicView.vue) show the same components.
+provideFunHost(
+  computed(() => ({
+    accountId: account.value.id,
+    roster: true,
+    teamKey: `fun:randomizer:${account.value.id}`,
+    hub: to(),
+    page: to,
+  })),
+)
 </script>
 
 <template>

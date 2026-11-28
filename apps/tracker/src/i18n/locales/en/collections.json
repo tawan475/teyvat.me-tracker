@@ -162,7 +162,8 @@
       "outfits": "Outfits",
       "gliders": "Wind Gliders",
       "weaponSkins": "Weapon appearances",
-      "trails": "Trails"
+      "trails": "Trails",
+      "namecards": "Namecards"
     },
     "wornBy": "Worn by {n}",
     "expiring": "{n} expiring",
@@ -170,7 +171,9 @@
     "inUse": "In use",
     "noTeams": "No teams",
     "items": "Items",
-    "trialUntil": "Trial until {time}"
+    "trialUntil": "Trial until {time}",
+    "capturedOn": "Captured {date}",
+    "namecardsHow": "Open Edit Profile > Change Namecard in the game while Teyvat.me Capture is running. Needs Capture 1.18.6 or newer."
   },
   "aranara": {
     "type": "Collection {n}",

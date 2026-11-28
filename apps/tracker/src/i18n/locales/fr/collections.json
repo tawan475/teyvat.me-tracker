@@ -162,7 +162,8 @@
       "outfits": "Tenues",
       "gliders": "Planeurs",
       "weaponSkins": "Apparences d'arme",
-      "trails": "Traînées"
+      "trails": "Traînées",
+      "namecards": "Thèmes"
     },
     "wornBy": "Porté par {n}",
     "expiring": "{n} expirent",
@@ -170,7 +171,9 @@
     "inUse": "Utilisée",
     "noTeams": "Aucune équipe",
     "items": "Objets",
-    "trialUntil": "À l'essai jusqu'au {time}"
+    "trialUntil": "À l'essai jusqu'au {time}",
+    "capturedOn": "Enregistré le {date}",
+    "namecardsHow": "Ouvrez Modifier le profil > Thème dans le jeu pendant que Teyvat.me Capture tourne. Nécessite Capture 1.18.6 ou plus récent."
   },
   "aranara": {
     "type": "Collection {n}",

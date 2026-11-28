@@ -162,7 +162,8 @@
       "outfits": "Trang Phục",
       "gliders": "Phong Chi Dực",
       "weaponSkins": "Ngoại Hình Vũ Khí",
-      "trails": "Vệt kéo"
+      "trails": "Vệt kéo",
+      "namecards": "Danh Thiếp"
     },
     "wornBy": "{n} người mặc",
     "expiring": "{n} sắp hết hạn",
@@ -170,7 +171,9 @@
     "inUse": "Đang dùng",
     "noTeams": "Không có đội",
     "items": "Vật phẩm",
-    "trialUntil": "Dùng thử đến {time}"
+    "trialUntil": "Dùng thử đến {time}",
+    "capturedOn": "Ghi lại ngày {date}",
+    "namecardsHow": "Mở Chỉnh Sửa Hồ Sơ > Đổi Danh Thiếp trong game khi Teyvat.me Capture đang chạy. Cần Capture 1.18.6 trở lên."
   },
   "aranara": {
     "type": "Bộ sưu tập {n}",

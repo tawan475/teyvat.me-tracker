@@ -1224,6 +1224,8 @@ const WARDROBE_PARTS: readonly (readonly [string, TaggedPart])[] = [
   ['t', wardrobeKindPart],
   ['m', teamsPart],
   ['c', numberPart],
+  // Owned namecards: an ascending list.
+  ['n', ascendingPart],
 ]
 
 const wardrobeLayout = taggedLayout('wardrobe', WARDROBE_PARTS)

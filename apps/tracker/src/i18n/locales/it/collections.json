@@ -162,7 +162,8 @@
       "outfits": "Completi",
       "gliders": "Alianti",
       "weaponSkins": "Aspetti dell'arma",
-      "trails": "Scie"
+      "trails": "Scie",
+      "namecards": "Carte giocatore"
     },
     "wornBy": "Indossato da {n}",
     "expiring": "{n} in scadenza",
@@ -170,7 +171,9 @@
     "inUse": "In uso",
     "noTeams": "Nessun gruppo",
     "items": "Oggetti",
-    "trialUntil": "In prova fino al {time}"
+    "trialUntil": "In prova fino al {time}",
+    "capturedOn": "Registrato il {date}",
+    "namecardsHow": "Apri Modifica profilo > Cambia carta giocatore nel gioco mentre Teyvat.me Capture è in esecuzione. Richiede Capture 1.18.6 o successivo."
   },
   "aranara": {
     "type": "Collezione {n}",

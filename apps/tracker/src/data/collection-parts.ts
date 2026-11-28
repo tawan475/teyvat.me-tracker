@@ -34,6 +34,11 @@ export interface Captured<T> {
 
 type Parts = Required<GiCollections> & {
   wardrobe: GiWardrobe
+  /**
+   * The owned namecards (`gi_wardrobe.namecards`), a part of their own: the game sends the list
+   * only when the player opens the namecard picker, so the newest wardrobe usually lacks it.
+   */
+  namecards: number[]
   exploration: GiExploration
   /** gi_teapot (Capture 1.8.0): the Serenitea Pot's comfort. */
   teapot: GiTeapot
@@ -71,7 +76,9 @@ export function capturedCollections(bundle: CollectionsBundle): CapturedCollecti
     }
     const wardrobe = snapshot.wardrobe ? bundle.texts.get(snapshot.wardrobe) : undefined
     if (wardrobe !== undefined) {
-      put('wardrobe', decodeWardrobe(JSON.parse(wardrobe) as WardrobeSection), snapshot.takenAt)
+      const value = decodeWardrobe(JSON.parse(wardrobe) as WardrobeSection)
+      put('wardrobe', value, snapshot.takenAt)
+      put('namecards', value.namecards, snapshot.takenAt)
     }
     const exploration = snapshot.exploration ? bundle.texts.get(snapshot.exploration) : undefined
     if (exploration !== undefined) {

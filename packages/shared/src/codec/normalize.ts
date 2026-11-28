@@ -1251,6 +1251,9 @@ function isPlayerText(value: unknown): value is string {
 /** Cosmetic ids (outfits, gliders, weapon skins, trails). */
 const COSMETIC_ID = [1, 99_999_999] as const
 
+/** Namecard item ids (the range `gi_player.nameCard` is checked against). */
+const NAMECARD_ID = [210_000, 219_999] as const
+
 const byKey = ([a]: [string, unknown], [b]: [string, unknown]) => (a < b ? -1 : a > b ? 1 : 0)
 
 function toWardrobeKind(raw: unknown): GiWardrobeKind | null {
@@ -1299,6 +1302,9 @@ function toWardrobe(raw: unknown): GiWardrobe | null {
     )
   }
   if (isIntIn(raw.currentTeam, 0, 1_000)) wardrobe.currentTeam = raw.currentTeam
+  // Ids the game data does not know yet are kept: a new version's cards arrive before its data.
+  const namecards = idList(raw.namecards, ...NAMECARD_ID, GOOD_LIMITS.namecards)
+  if (namecards) wardrobe.namecards = namecards
   return Object.keys(wardrobe).length > 0 ? wardrobe : null
 }
 

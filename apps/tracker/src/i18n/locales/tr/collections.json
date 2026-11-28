@@ -162,7 +162,8 @@
       "outfits": "Giysiler",
       "gliders": "Kanatlar",
       "weaponSkins": "Silah Görünümleri",
-      "trails": "İzler"
+      "trails": "İzler",
+      "namecards": "İsim Kartları"
     },
     "wornBy": "{n} kişi giyiyor",
     "expiring": "{n} süresi dolacak",
@@ -170,7 +171,9 @@
     "inUse": "Kullanımda",
     "noTeams": "Grup yok",
     "items": "Eşyalar",
-    "trialUntil": "{time} tarihine kadar deneme"
+    "trialUntil": "{time} tarihine kadar deneme",
+    "capturedOn": "{date} tarihinde kaydedildi",
+    "namecardsHow": "Teyvat.me Capture çalışırken oyunda Profili Düzenle > İsim Kartını Değiştir ekranını aç. Capture 1.18.6 veya üstü gerekir."
   },
   "aranara": {
     "type": "Koleksiyon {n}",

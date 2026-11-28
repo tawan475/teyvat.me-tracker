@@ -56,6 +56,30 @@ describe('capturedCollections', () => {
     })
   })
 
+  it('reads the namecards past newer wardrobes that lack the list', () => {
+    const outfits = { owned: [200_301], worn: {} }
+    const texts = new Map<string, string>([
+      ['w1', JSON.stringify(encodeWardrobe({ outfits, namecards: [210_001] }))],
+      ['w2', JSON.stringify(encodeWardrobe({ outfits, namecards: [210_001, 210_050] }))],
+      // The usual login: the picker was not opened, so the wardrobe has no list.
+      ['w3', JSON.stringify(encodeWardrobe({ outfits, currentTeam: 3 }))],
+    ])
+    const captured = capturedCollections({
+      snapshots: [
+        snapshot(1, { wardrobe: 'w1' }),
+        snapshot(2, { wardrobe: 'w2' }),
+        snapshot(3, { wardrobe: 'w3' }),
+      ],
+      texts,
+    })
+    expect(captured.namecards).toEqual({ value: [210_001, 210_050], takenAt: 2_000 })
+    expect(captured.wardrobe).toEqual({ value: { outfits, currentTeam: 3 }, takenAt: 3_000 })
+    // No capture with the list: absent, never "owns none".
+    expect(
+      capturedCollections({ snapshots: [snapshot(3, { wardrobe: 'w3' })], texts }).namecards,
+    ).toBeUndefined()
+  })
+
   it('is empty for a bundle without collections', () => {
     expect(capturedCollections({ snapshots: [snapshot(1, {})], texts: new Map() })).toEqual({})
   })

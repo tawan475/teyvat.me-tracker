@@ -162,7 +162,8 @@
       "outfits": "코스튬",
       "gliders": "바람의 날개",
       "weaponSkins": "무기 외형",
-      "trails": "잔상"
+      "trails": "잔상",
+      "namecards": "명함"
     },
     "wornBy": "{n}명 착용",
     "expiring": "{n}개 기한 있음",
@@ -170,7 +171,9 @@
     "inUse": "사용 중",
     "noTeams": "파티 없음",
     "items": "아이템",
-    "trialUntil": "{time}까지 체험"
+    "trialUntil": "{time}까지 체험",
+    "capturedOn": "{date} 기록",
+    "namecardsHow": "Teyvat.me Capture를 실행한 상태에서 게임의 「프로필 설정」 > 「명함 바꾸기」를 여세요. Capture 1.18.6 이상이 필요합니다."
   },
   "aranara": {
     "type": "컬렉션 {n}",

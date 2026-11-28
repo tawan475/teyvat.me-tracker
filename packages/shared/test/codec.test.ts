@@ -1882,6 +1882,46 @@ describe("Teyvat.me Capture 1.4.0's collections and wardrobe", () => {
     expect(read(null, { currentTeam: 2 }).wardrobe).toEqual({ currentTeam: 2 })
   })
 
+  it('keeps the owned namecards (Capture 1.18.6), and a file without them as before', async () => {
+    const namecards = [210_203, 210_001, 210_999, 210_050]
+    const read = (raw: unknown) => normalizeGood({ ...sample, gi_wardrobe: raw }).wardrobe
+    // Sorted; an id the game data does not know yet stays (210999).
+    expect(read({ namecards })).toEqual({ namecards: [210_001, 210_050, 210_203, 210_999] })
+    // A repeat, an id out of range or too many: the list goes, the rest stays.
+    for (const bad of [
+      [210_001, 210_001],
+      [210_001, 100],
+      Array.from({ length: 2_001 }, (_, i) => 210_000 + i),
+    ]) {
+      expect(read({ namecards: bad, currentTeam: 2 })).toEqual({ currentTeam: 2 })
+    }
+    expect(read({ namecards: [] })).toEqual({ namecards: [] })
+
+    const { decoded } = await roundTrip({ ...sample, gi_wardrobe: { ...wardrobe, namecards } })
+    expect(decoded.gi_wardrobe!.namecards).toEqual([210_001, 210_050, 210_203, 210_999])
+    expect(decoded.gi_wardrobe!.outfits).toEqual(normalizeGood(input).wardrobe!.outfits)
+
+    // The binary layout carries it; a wardrobe without it keeps its bytes.
+    const section = (value: unknown) =>
+      JSON.parse(
+        JSON.stringify(encodeWardrobe(normalizeGood({ ...sample, gi_wardrobe: value }).wardrobe!)),
+      )
+    const withCards = encodeSectionBlob(
+      'wardrobe',
+      section({ ...wardrobe, namecards }),
+      false,
+      null,
+    )
+    expect(withCards.payload[0]).toBe(0x10)
+    const back = decodeSectionBlob(kindCode('wardrobe', false), withCards.data, null, null)
+    expect(decodeWardrobe(back.value as never).namecards).toEqual([
+      210_001, 210_050, 210_203, 210_999,
+    ])
+    const without = encodeSectionBlob('wardrobe', section(wardrobe), false, null)
+    expect(withCards.payload.length - without.payload.length).toBeLessThan(16)
+    expect('n' in section(wardrobe)).toBe(false)
+  })
+
   it('stores the 1.4.0 parts and the wardrobe in their binary layouts, small', () => {
     const collectionsValue = JSON.parse(
       JSON.stringify(encodeCollections2(normalizeGood(input).collections!)),

@@ -162,7 +162,8 @@
       "outfits": "Костюмы",
       "gliders": "Воздушные планеры",
       "weaponSkins": "Облик оружия",
-      "trails": "Следы"
+      "trails": "Следы",
+      "namecards": "Именные карты"
     },
     "wornBy": "Носят: {n}",
     "expiring": "Истекает: {n}",
@@ -170,7 +171,9 @@
     "inUse": "Используется",
     "noTeams": "Нет отрядов",
     "items": "Предметы",
-    "trialUntil": "Пробный до {time}"
+    "trialUntil": "Пробный до {time}",
+    "capturedOn": "Записано {date}",
+    "namecardsHow": "Откройте в игре «Редактировать профиль» > «Именная карта», пока работает Teyvat.me Capture. Нужен Capture 1.18.6 или новее."
   },
   "aranara": {
     "type": "Коллекция {n}",

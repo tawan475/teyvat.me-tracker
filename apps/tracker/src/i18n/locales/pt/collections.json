@@ -162,7 +162,8 @@
       "outfits": "Vestuário",
       "gliders": "Planadores",
       "weaponSkins": "Aparências de arma",
-      "trails": "Rastros"
+      "trails": "Rastros",
+      "namecards": "Cartões de Visita"
     },
     "wornBy": "Usado por {n}",
     "expiring": "{n} expirando",
@@ -170,7 +171,9 @@
     "inUse": "Em uso",
     "noTeams": "Nenhuma equipe",
     "items": "Itens",
-    "trialUntil": "Em teste até {time}"
+    "trialUntil": "Em teste até {time}",
+    "capturedOn": "Registrado em {date}",
+    "namecardsHow": "Abra Editar perfil > Alterar Cartão no jogo com o Teyvat.me Capture em execução. Requer Capture 1.18.6 ou mais recente."
   },
   "aranara": {
     "type": "Coleção {n}",

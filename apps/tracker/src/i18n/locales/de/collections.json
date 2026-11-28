@@ -162,7 +162,8 @@
       "outfits": "Kleidung",
       "gliders": "Windgleiter",
       "weaponSkins": "Aussehen der Waffe",
-      "trails": "Schweife"
+      "trails": "Schweife",
+      "namecards": "Namenskärtchen"
     },
     "wornBy": "Getragen von {n}",
     "expiring": "{n} laufen ab",
@@ -170,7 +171,9 @@
     "inUse": "In Benutzung",
     "noTeams": "Keine Truppen",
     "items": "Gegenstände",
-    "trialUntil": "Zum Probieren bis {time}"
+    "trialUntil": "Zum Probieren bis {time}",
+    "capturedOn": "Erfasst am {date}",
+    "namecardsHow": "Öffne im Spiel „Profil bearbeiten“ > „Namenskärtchen ändern“, während Teyvat.me Capture läuft. Benötigt Capture 1.18.6 oder neuer."
   },
   "aranara": {
     "type": "Sammlung {n}",

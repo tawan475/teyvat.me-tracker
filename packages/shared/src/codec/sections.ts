@@ -1111,6 +1111,8 @@ export interface WardrobeSection {
   t?: WardrobeKindSection
   m?: TeamRow[]
   c?: number
+  /** Owned namecard ids, ascending. */
+  n?: number[]
 }
 
 /** Wardrobe kind -> its letter in the section, in WARDROBE_KINDS order. */
@@ -1139,6 +1141,7 @@ export function encodeWardrobe(wardrobe: GiWardrobe): WardrobeSection {
     })
   }
   if (wardrobe.currentTeam !== undefined) section.c = wardrobe.currentTeam
+  if (wardrobe.namecards) section.n = [...wardrobe.namecards]
   return section
 }
 
@@ -1160,6 +1163,7 @@ export function decodeWardrobe(section: WardrobeSection): GiWardrobe {
     )
   }
   if (section.c !== undefined) wardrobe.currentTeam = section.c
+  if (section.n) wardrobe.namecards = [...section.n]
   return wardrobe
 }
 

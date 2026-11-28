@@ -162,7 +162,8 @@
       "outfits": "コスチューム",
       "gliders": "風の翼",
       "weaponSkins": "武器の外観",
-      "trails": "トレイル"
+      "trails": "トレイル",
+      "namecards": "名刺"
     },
     "wornBy": "{n} 人が装備",
     "expiring": "{n} 件が期限付き",
@@ -170,7 +171,9 @@
     "inUse": "使用中",
     "noTeams": "チームなし",
     "items": "アイテム",
-    "trialUntil": "{time} までテストプレイ"
+    "trialUntil": "{time} までテストプレイ",
+    "capturedOn": "{date} に記録",
+    "namecardsHow": "Teyvat.me Capture を起動したまま、ゲーム内で「プロフィール編集」>「名刺を変更する」を開いてください。Capture 1.18.6 以降が必要です。"
   },
   "aranara": {
     "type": "コレクション {n}",

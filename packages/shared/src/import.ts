@@ -64,6 +64,8 @@ export const GOOD_LIMITS = {
   deckCards: 60,
   /** Owned ids of one wardrobe kind (24 weapon skins real), and saved teams (14 real). */
   wardrobeOwned: 3_000,
+  /** Owned namecards: 298 in the 7.2 game data, 210 in a real capture. */
+  namecards: 2_000,
   teams: 200,
   teamCharacters: 8,
   /** Unlocked cooking recipes: 284 in the 7.1 game data, 252 in a real capture. */

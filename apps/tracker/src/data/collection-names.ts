@@ -67,7 +67,7 @@ const num = (value: unknown) => (typeof value === 'number' ? value : 0)
 export function entriesOf(
   catalog: CollectionCatalog,
   section: CollectionSection,
-  icon: 'icon' | 'image' | null = 'icon',
+  icon: 'icon' | 'image' | 'picture' | null = 'icon',
 ): CatalogEntry[] {
   return (catalog.data[section] as unknown as Record<string, unknown>[])
     .map((row) => ({

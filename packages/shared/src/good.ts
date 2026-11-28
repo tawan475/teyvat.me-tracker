@@ -377,6 +377,11 @@ export interface GiWardrobe {
   gliders?: GiWardrobeKind
   weaponSkins?: GiWardrobeKind
   trails?: GiWardrobeKind
+  /**
+   * Owned namecards (item ids, ascending), from Capture 1.18.6: the game sends the list only
+   * when the player opens the namecard picker, so most captures lack it. Absent = not seen.
+   */
+  namecards?: number[]
   /** Saved teams by slot; `name` is the player's own text, `characters` character keys. */
   teams?: Record<string, { name: string; characters: string[] }>
   /** The team slot in use. */

@@ -87,9 +87,13 @@
       "land": "地上",
       "water": "水中"
     },
+    "playTitle": "プレイ人数",
+    "play": {
+      "coop": "マルチプレイ",
+      "solo": "ソロプレイ"
+    },
     "leaveOut": "除外する",
     "details": "敵の詳細",
-    "fight": "{n}体と戦闘",
     "hint": "ボスをクリックすると除外できます。ドラッグでまとめて除外できます。",
     "announce": "抽選結果：{name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "タイムアタック",
     "timeTrialsHint": "戦闘に制限時間を設けるカード",
     "level": {
+      "0": "ベリーイージー",
       "1": "イージー",
       "2": "ノーマル",
-      "3": "ハード"
+      "3": "ハード",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "最も難しいカードです。1回に引かれるのは1枚までです。",
+    "categoryTitle": "カテゴリ",
+    "category": {
+      "all": "すべて",
+      "team": "チーム",
+      "gear": "装備",
+      "combat": "戦闘",
+      "trials": "試練",
+      "party": "マルチ",
+      "fun": "おふざけ"
+    },
+    "allIn": "すべて入れる",
+    "allOut": "すべて外す",
+    "inCount": "{total}枚中{n}枚入り",
     "list": {
-      "noBursts": {
-        "title": "元素爆発禁止",
-        "text": "最後まで元素爆発を使いません。"
+      "fourElements": {
+        "title": "4元素",
+        "text": "同じ元素のキャラクターを2人入れません。"
       },
-      "noSkills": {
-        "title": "元素スキル禁止",
-        "text": "最後まで元素スキルを使いません。"
+      "twoElements": {
+        "title": "2元素",
+        "text": "チームの元素はちょうど2種類です。"
       },
-      "normalAttacksOnly": {
-        "title": "通常攻撃のみ",
-        "text": "元素スキルも元素爆発も使いません。"
+      "fourRegions": {
+        "title": "4地域",
+        "text": "全キャラクターの出身地域が異なります。"
       },
-      "fourStarWeapons": {
-        "title": "★4武器のみ",
-        "text": "全キャラクターが★4以下の武器を装備します。"
+      "oneFiveStar": {
+        "title": "★5は1人",
+        "text": "チームの★5キャラクターは1人までです。"
       },
-      "levelOneWeapons": {
-        "title": "Lv.1 武器",
-        "text": "全キャラクターがLv.1の武器を装備します。"
+      "noBowsNoCatalysts": {
+        "title": "弓・法器禁止",
+        "text": "片手剣、両手剣、長柄武器だけを使います。"
       },
       "oneWeaponType": {
         "title": "武器タイプ統一",
         "text": "チーム全員が同じタイプの武器を使います。"
       },
-      "noHealing": {
-        "title": "回復禁止",
-        "text": "ヒーラーも回復スキルも回復する食べ物も使いません。"
+      "oneElement": {
+        "title": "元素統一",
+        "text": "チーム全員が同じ元素です。"
       },
-      "noShields": {
-        "title": "シールド禁止",
-        "text": "シールド役もシールドスキルも使いません。"
+      "oneRegion": {
+        "title": "地域統一",
+        "text": "チーム全員が同じ地域の出身です。"
       },
-      "noFood": {
-        "title": "食べ物禁止",
-        "text": "食べ物も薬剤も使いません。"
+      "threeCharacters": {
+        "title": "キャラクター3人",
+        "text": "チームの枠を1つ空けます。"
+      },
+      "fourStarCharacters": {
+        "title": "★4キャラクターのみ",
+        "text": "チームに★5キャラクターを入れません。"
+      },
+      "twoCharacters": {
+        "title": "キャラクター2人",
+        "text": "チームの枠を2つ空けます。"
+      },
+      "oneCharacter": {
+        "title": "キャラクター1人",
+        "text": "チームを組まず、1人で戦います。"
+      },
+      "refinementOne": {
+        "title": "精錬ランク1",
+        "text": "精錬した武器を使いません。"
       },
       "removeOneArtifact": {
         "title": "聖遺物を1個外す",
@@ -166,6 +202,22 @@
         "title": "聖遺物を3個外す",
         "text": "全キャラクターが聖遺物を3個外します。"
       },
+      "fourStarWeapons": {
+        "title": "★4武器のみ",
+        "text": "全キャラクターが★4以下の武器を装備します。"
+      },
+      "noFourPieceSets": {
+        "title": "4セット禁止",
+        "text": "4セット効果を発動させません。"
+      },
+      "oneSetForAll": {
+        "title": "セット統一",
+        "text": "チーム全員が同じ4セットを装備します。"
+      },
+      "fourStarArtifacts": {
+        "title": "★4聖遺物のみ",
+        "text": "★5聖遺物を使いません。"
+      },
       "removeFourArtifacts": {
         "title": "聖遺物を4個外す",
         "text": "全キャラクターが聖遺物を4個外します。"
@@ -174,21 +226,49 @@
         "title": "聖遺物なし",
         "text": "全員が聖遺物を外します。"
       },
-      "oneElement": {
-        "title": "元素統一",
-        "text": "チーム全員が同じ元素です。"
+      "levelOneWeapons": {
+        "title": "Lv.1 武器",
+        "text": "全キャラクターがLv.1の武器を装備します。"
       },
-      "fourStarCharacters": {
-        "title": "★4キャラクターのみ",
-        "text": "チームに★5キャラクターを入れません。"
+      "threeStarWeapons": {
+        "title": "★3武器のみ",
+        "text": "全キャラクターが★3以下の武器を装備します。"
+      },
+      "nothingOn": {
+        "title": "ほぼ装備なし",
+        "text": "武器はLv.1、聖遺物はなしです。"
+      },
+      "noFood": {
+        "title": "食べ物禁止",
+        "text": "食べ物も薬剤も使いません。"
+      },
+      "noJumping": {
+        "title": "ジャンプ禁止",
+        "text": "足を地面から離しません。"
       },
       "noSprinting": {
         "title": "ダッシュ禁止",
         "text": "歩き、ジャンプ、登りだけで移動します。"
       },
-      "noDodging": {
-        "title": "回避禁止",
-        "text": "ダッシュで攻撃を避けません。"
+      "swapInSlotOrder": {
+        "title": "編成順に交代",
+        "text": "次の枠にだけ交代します：1、2、3、4、1。"
+      },
+      "noBursts": {
+        "title": "元素爆発禁止",
+        "text": "最後まで元素爆発を使いません。"
+      },
+      "noSkills": {
+        "title": "元素スキル禁止",
+        "text": "最後まで元素スキルを使いません。"
+      },
+      "skillsOnly": {
+        "title": "元素スキルのみ",
+        "text": "元素スキルだけを使います。通常攻撃も元素爆発も使いません。"
+      },
+      "noShields": {
+        "title": "シールド禁止",
+        "text": "シールド役もシールドスキルも使いません。"
       },
       "swapEveryTen": {
         "title": "10秒ごとに交代",
@@ -198,17 +278,73 @@
         "title": "交代禁止",
         "text": "戦闘を始めたキャラクターが最後まで戦います。"
       },
-      "threeCharacters": {
-        "title": "キャラクター3人",
-        "text": "チームの枠を1つ空けます。"
+      "allBurstsTogether": {
+        "title": "元素爆発は4人同時",
+        "text": "元素爆発は4人全員が使えるときにだけ使います。"
+      },
+      "nobodyFalls": {
+        "title": "誰も倒れない",
+        "text": "キャラクターが1人でも倒れたら失敗です。"
+      },
+      "normalAttacksOnly": {
+        "title": "通常攻撃のみ",
+        "text": "元素スキルも元素爆発も使いません。"
+      },
+      "chargedAttacksOnly": {
+        "title": "重撃のみ",
+        "text": "重撃でダメージを与えます。元素スキルも元素爆発も使いません。"
+      },
+      "noHealing": {
+        "title": "回復禁止",
+        "text": "ヒーラーも回復スキルも回復する食べ物も使いません。"
+      },
+      "noDodging": {
+        "title": "回避禁止",
+        "text": "ダッシュで攻撃を避けません。"
+      },
+      "noHits": {
+        "title": "被弾禁止",
+        "text": "誰かがダメージを受けたらやり直します。"
+      },
+      "underFiveMinutes": {
+        "title": "5分以内",
+        "text": "5分以内に戦闘を終えます。"
       },
       "underThreeMinutes": {
         "title": "3分以内",
         "text": "3分以内に戦闘を終えなければ無効です。"
       },
+      "firstTry": {
+        "title": "挑戦は1回",
+        "text": "挑戦は1回だけです。何が起きてもその結果で決まります。"
+      },
+      "threeBursts": {
+        "title": "元素爆発は3回",
+        "text": "チーム全体で元素爆発を3回だけ使います。"
+      },
       "underNinetySeconds": {
         "title": "90秒以内",
         "text": "スピードラン：制限時間は90秒です。"
+      },
+      "underSixtySeconds": {
+        "title": "60秒以内",
+        "text": "制限時間は60秒です。"
+      },
+      "pickForNext": {
+        "title": "次の人の分を選ぶ",
+        "text": "各プレイヤーが次のプレイヤーのキャラクターを選びます。"
+      },
+      "oneBurstEach": {
+        "title": "元素爆発は1人1回",
+        "text": "各プレイヤーは元素爆発を1回だけ使います。"
+      },
+      "oneRoleEach": {
+        "title": "役割は1人ずつ",
+        "text": "ヒーラー、シールド、メインアタッカー、サポーターを1人ずつ入れます。"
+      },
+      "oneCaller": {
+        "title": "指示役は1人",
+        "text": "1人のプレイヤーがすべての元素爆発を指示します。指示なしでは誰も使いません。"
       },
       "noReviving": {
         "title": "復活禁止",
@@ -218,9 +354,41 @@
         "title": "全員同じ元素",
         "text": "プレイヤー全員が同じ元素を持ち込みます。"
       },
-      "oneBurstEach": {
-        "title": "元素爆発は1人1回",
-        "text": "各プレイヤーは元素爆発を1回だけ使います。"
+      "sameCharacterEveryone": {
+        "title": "全員同じキャラクター",
+        "text": "プレイヤー全員が同じキャラクターを持ち込みます。"
+      },
+      "burstsInPlayerOrder": {
+        "title": "元素爆発はプレイヤー順",
+        "text": "元素爆発は1P、2P、3P、4Pの順に使い、また1Pに戻ります。"
+      },
+      "noTeleporting": {
+        "title": "ワープ禁止",
+        "text": "戦闘の場所まで歩いて行きます。"
+      },
+      "noGadgets": {
+        "title": "便利アイテム禁止",
+        "text": "戦闘中に便利アイテムを使いません。"
+      },
+      "noPausing": {
+        "title": "一時停止禁止",
+        "text": "戦闘中はメニューを開きません。"
+      },
+      "sayItOutLoud": {
+        "title": "声に出す",
+        "text": "元素スキルと元素爆発は、使う前に必ず声に出して言います。"
+      },
+      "noSound": {
+        "title": "音なし",
+        "text": "ゲームをミュートにします。"
+      },
+      "travelerLeads": {
+        "title": "とどめは旅人",
+        "text": "旅人をチームに入れ、最後の一撃を旅人が決めます。"
+      },
+      "failAddsCard": {
+        "title": "失敗でカード追加",
+        "text": "失敗するたびにカードをもう1枚引きます。"
       }
     }
   },

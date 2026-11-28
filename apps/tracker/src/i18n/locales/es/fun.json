@@ -87,9 +87,13 @@
       "land": "Tierra",
       "water": "Bajo el agua"
     },
+    "playTitle": "Jugadores",
+    "play": {
+      "coop": "Multijugador",
+      "solo": "Un jugador"
+    },
     "leaveOut": "Dejar fuera",
     "details": "Detalles del enemigo",
-    "fight": "{n} a derrotar",
     "hint": "Haz clic en un jefe para dejarlo fuera o arrastra sobre varios.",
     "announce": "Sorteado: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Contrarreloj",
     "timeTrialsHint": "Cartas que ponen un límite de tiempo al combate",
     "level": {
+      "0": "Trivial",
       "1": "Fácil",
       "2": "Media",
-      "3": "Difícil"
+      "3": "Difícil",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Las cartas más difíciles. Cada mano lleva una como mucho.",
+    "categoryTitle": "Categoría",
+    "category": {
+      "all": "Todas",
+      "team": "Equipo",
+      "gear": "Equipamiento",
+      "combat": "Combate",
+      "trials": "Pruebas",
+      "party": "Cooperativo",
+      "fun": "Diversión"
+    },
+    "allIn": "Meter todas",
+    "allOut": "Quitar todas",
+    "inCount": "{n} de {total} dentro",
     "list": {
-      "noBursts": {
-        "title": "Sin definitivas",
-        "text": "Las Habilidades Definitivas no se usan en toda la partida."
+      "fourElements": {
+        "title": "Cuatro elementos",
+        "text": "Ningún personaje comparte elemento con otro."
       },
-      "noSkills": {
-        "title": "Sin habilidades",
-        "text": "Las Habilidades Elementales no se usan en toda la partida."
+      "twoElements": {
+        "title": "Dos elementos",
+        "text": "El equipo tiene exactamente dos elementos."
       },
-      "normalAttacksOnly": {
-        "title": "Solo ataques normales",
-        "text": "Sin Habilidades Elementales ni Habilidades Definitivas."
+      "fourRegions": {
+        "title": "Cuatro regiones",
+        "text": "Cada personaje viene de una región distinta."
       },
-      "fourStarWeapons": {
-        "title": "Solo armas 4★",
-        "text": "Cada personaje lleva un arma de 4★ o menos."
+      "oneFiveStar": {
+        "title": "Un 5★",
+        "text": "Como mucho un personaje 5★ en el equipo."
       },
-      "levelOneWeapons": {
-        "title": "Armas de niv. 1",
-        "text": "Cada personaje lleva un arma de nivel 1."
+      "noBowsNoCatalysts": {
+        "title": "Sin arcos ni catalizadores",
+        "text": "Solo espadas ligeras, mandobles y lanzas."
       },
       "oneWeaponType": {
         "title": "Un tipo de arma",
         "text": "Todo el equipo usa el mismo tipo de arma."
       },
-      "noHealing": {
-        "title": "Sin curación",
-        "text": "Sin sanadores, sin habilidades de curación y sin comida que cure."
+      "oneElement": {
+        "title": "Un elemento",
+        "text": "Todo el equipo comparte un elemento."
       },
-      "noShields": {
-        "title": "Sin escudos",
-        "text": "Sin personajes de escudo ni habilidades de escudo."
+      "oneRegion": {
+        "title": "Una región",
+        "text": "Todo el equipo viene de la misma región."
       },
-      "noFood": {
-        "title": "Sin comida",
-        "text": "Sin comida ni pociones."
+      "threeCharacters": {
+        "title": "Tres personajes",
+        "text": "Un puesto del equipo queda vacío."
+      },
+      "fourStarCharacters": {
+        "title": "Solo personajes 4★",
+        "text": "Ningún personaje 5★ en el equipo."
+      },
+      "twoCharacters": {
+        "title": "Dos personajes",
+        "text": "Dos puestos del equipo quedan vacíos."
+      },
+      "oneCharacter": {
+        "title": "Un personaje",
+        "text": "Un personaje, sin equipo."
+      },
+      "refinementOne": {
+        "title": "Nivel de refinamiento 1",
+        "text": "Sin armas refinadas."
       },
       "removeOneArtifact": {
         "title": "1 artefacto menos",
@@ -166,6 +202,22 @@
         "title": "3 artefactos menos",
         "text": "Cada personaje se quita 3 artefactos."
       },
+      "fourStarWeapons": {
+        "title": "Solo armas 4★",
+        "text": "Cada personaje lleva un arma de 4★ o menos."
+      },
+      "noFourPieceSets": {
+        "title": "Sin conjuntos de 4 piezas",
+        "text": "Ningún bono de conjunto de 4 piezas está activo."
+      },
+      "oneSetForAll": {
+        "title": "Un conjunto para todos",
+        "text": "Todo el equipo lleva el mismo conjunto de 4 piezas."
+      },
+      "fourStarArtifacts": {
+        "title": "Solo artefactos 4★",
+        "text": "Ningún artefacto 5★."
+      },
       "removeFourArtifacts": {
         "title": "4 artefactos menos",
         "text": "Cada personaje se quita 4 artefactos."
@@ -174,21 +226,49 @@
         "title": "Sin artefactos",
         "text": "Todos se quitan los artefactos."
       },
-      "oneElement": {
-        "title": "Un elemento",
-        "text": "Todo el equipo comparte un elemento."
+      "levelOneWeapons": {
+        "title": "Armas de niv. 1",
+        "text": "Cada personaje lleva un arma de nivel 1."
       },
-      "fourStarCharacters": {
-        "title": "Solo personajes 4★",
-        "text": "Ningún personaje 5★ en el equipo."
+      "threeStarWeapons": {
+        "title": "Solo armas 3★",
+        "text": "Cada personaje lleva un arma de 3★ o menos."
+      },
+      "nothingOn": {
+        "title": "Sin nada puesto",
+        "text": "Armas de niv. 1 y sin artefactos."
+      },
+      "noFood": {
+        "title": "Sin comida",
+        "text": "Sin comida ni pociones."
+      },
+      "noJumping": {
+        "title": "Sin saltar",
+        "text": "Los pies no se despegan del suelo."
       },
       "noSprinting": {
         "title": "Sin esprintar",
         "text": "Solo caminar, saltar y escalar."
       },
-      "noDodging": {
-        "title": "Sin esquivar",
-        "text": "Nada de apartarse con una carrera."
+      "swapInSlotOrder": {
+        "title": "Cambio por orden de puesto",
+        "text": "Solo se cambia al puesto siguiente: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Sin definitivas",
+        "text": "Las Habilidades Definitivas no se usan en toda la partida."
+      },
+      "noSkills": {
+        "title": "Sin habilidades",
+        "text": "Las Habilidades Elementales no se usan en toda la partida."
+      },
+      "skillsOnly": {
+        "title": "Solo habilidades",
+        "text": "Solo Habilidades Elementales. Sin ataques normales ni Habilidades Definitivas."
+      },
+      "noShields": {
+        "title": "Sin escudos",
+        "text": "Sin personajes de escudo ni habilidades de escudo."
       },
       "swapEveryTen": {
         "title": "Cambio cada 10 s",
@@ -198,17 +278,73 @@
         "title": "Sin cambios",
         "text": "El personaje que empieza el combate lo termina."
       },
-      "threeCharacters": {
-        "title": "Tres personajes",
-        "text": "Un puesto del equipo queda vacío."
+      "allBurstsTogether": {
+        "title": "Todas las definitivas juntas",
+        "text": "Las Habilidades Definitivas se usan solo cuando las cuatro están listas."
+      },
+      "nobodyFalls": {
+        "title": "Nadie cae",
+        "text": "La partida se pierde cuando cae un personaje."
+      },
+      "normalAttacksOnly": {
+        "title": "Solo ataques normales",
+        "text": "Sin Habilidades Elementales ni Habilidades Definitivas."
+      },
+      "chargedAttacksOnly": {
+        "title": "Solo ataques cargados",
+        "text": "El daño lo hacen los Ataques Cargados. Sin Habilidades Elementales ni Habilidades Definitivas."
+      },
+      "noHealing": {
+        "title": "Sin curación",
+        "text": "Sin sanadores, sin habilidades de curación y sin comida que cure."
+      },
+      "noDodging": {
+        "title": "Sin esquivar",
+        "text": "Nada de apartarse con una carrera."
+      },
+      "noHits": {
+        "title": "Sin recibir golpes",
+        "text": "Se empieza de nuevo cuando alguien recibe daño."
+      },
+      "underFiveMinutes": {
+        "title": "Menos de 5 minutos",
+        "text": "El combate acaba en cinco minutos."
       },
       "underThreeMinutes": {
         "title": "Menos de 3 minutos",
         "text": "El combate acaba en tres minutos o no cuenta."
       },
+      "firstTry": {
+        "title": "A la primera",
+        "text": "Un solo intento. Cuenta, pase lo que pase."
+      },
+      "threeBursts": {
+        "title": "Tres definitivas",
+        "text": "El equipo usa tres Habilidades Definitivas en total."
+      },
       "underNinetySeconds": {
         "title": "Menos de 90 segundos",
         "text": "A toda velocidad: noventa segundos en el reloj."
+      },
+      "underSixtySeconds": {
+        "title": "Menos de 60 segundos",
+        "text": "Sesenta segundos en el reloj."
+      },
+      "pickForNext": {
+        "title": "Elige para el siguiente",
+        "text": "Cada jugador elige el personaje del jugador siguiente."
+      },
+      "oneBurstEach": {
+        "title": "Una definitiva por jugador",
+        "text": "Cada jugador usa su Habilidad Definitiva una vez."
+      },
+      "oneRoleEach": {
+        "title": "Un rol cada uno",
+        "text": "Un sanador, un escudo, un DPS principal y un apoyo."
+      },
+      "oneCaller": {
+        "title": "Una sola voz",
+        "text": "Un jugador da la orden de cada Habilidad Definitiva. Nadie usa la suya sin la orden."
       },
       "noReviving": {
         "title": "Sin revivir",
@@ -218,9 +354,41 @@
         "title": "Mismo elemento para todos",
         "text": "Todos los jugadores llevan el mismo elemento."
       },
-      "oneBurstEach": {
-        "title": "Una definitiva por jugador",
-        "text": "Cada jugador usa su Habilidad Definitiva una vez."
+      "sameCharacterEveryone": {
+        "title": "Mismo personaje para todos",
+        "text": "Todos los jugadores llevan el mismo personaje."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Definitivas por orden de jugador",
+        "text": "Las Habilidades Definitivas van 1P, 2P, 3P, 4P y vuelta a empezar."
+      },
+      "noTeleporting": {
+        "title": "Sin teletransporte",
+        "text": "Al combate se llega andando."
+      },
+      "noGadgets": {
+        "title": "Sin artilugios",
+        "text": "No se usa ningún artilugio en el combate."
+      },
+      "noPausing": {
+        "title": "Sin pausa",
+        "text": "El menú no se abre durante el combate."
+      },
+      "sayItOutLoud": {
+        "title": "Dilo en voz alta",
+        "text": "Di cada Habilidad Elemental y cada Habilidad Definitiva antes de usarla."
+      },
+      "noSound": {
+        "title": "Sin sonido",
+        "text": "El juego está en silencio."
+      },
+      "travelerLeads": {
+        "title": "El Viajero al frente",
+        "text": "El Viajero está en el equipo y da el último golpe."
+      },
+      "failAddsCard": {
+        "title": "Cada fallo, una carta",
+        "text": "Cada intento fallido saca una carta más."
       }
     }
   },

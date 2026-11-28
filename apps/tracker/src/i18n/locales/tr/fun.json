@@ -87,9 +87,13 @@
       "land": "Kara",
       "water": "Su altı"
     },
+    "playTitle": "Oyuncular",
+    "play": {
+      "coop": "Eşli",
+      "solo": "Tek Oyunculu"
+    },
     "leaveOut": "Dışarıda bırak",
     "details": "Düşman ayrıntıları",
-    "fight": "{n} rakip",
     "hint": "Dışarıda bırakmak için bir boss’a tıkla veya birkaçının üzerinden sürükle.",
     "announce": "Çıkan: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Zamana karşı",
     "timeTrialsHint": "Savaşa süre sınırı koyan kartlar",
     "level": {
+      "0": "Çok kolay",
       "1": "Kolay",
       "2": "Orta",
-      "3": "Zor"
+      "3": "Zor",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "En zor kartlar. Bir çekilişte en fazla bir tane olur.",
+    "categoryTitle": "Kategori",
+    "category": {
+      "all": "Tümü",
+      "team": "Grup",
+      "gear": "Ekipman",
+      "combat": "Savaş",
+      "trials": "Sınamalar",
+      "party": "Ortak oyun",
+      "fun": "Eğlence"
+    },
+    "allIn": "Hepsini ekle",
+    "allOut": "Hepsini çıkar",
+    "inCount": "{n} / {total} destede",
     "list": {
-      "noBursts": {
-        "title": "Patlama yok",
-        "text": "Element Patlamaları tüm tur boyunca kullanılmaz."
+      "fourElements": {
+        "title": "Dört element",
+        "text": "Hiçbir iki karakter aynı elementten değildir."
       },
-      "noSkills": {
-        "title": "Beceri yok",
-        "text": "Element Becerileri tüm tur boyunca kullanılmaz."
+      "twoElements": {
+        "title": "İki element",
+        "text": "Grupta tam olarak iki element vardır."
       },
-      "normalAttacksOnly": {
-        "title": "Yalnızca normal saldırı",
-        "text": "Element Becerisi yok, Element Patlaması yok."
+      "fourRegions": {
+        "title": "Dört bölge",
+        "text": "Her karakter farklı bir bölgedendir."
       },
-      "fourStarWeapons": {
-        "title": "Yalnızca 4★ silahlar",
-        "text": "Her karakter 4★ veya daha düşük bir silah taşır."
+      "oneFiveStar": {
+        "title": "Tek 5★",
+        "text": "Grupta en fazla bir 5★ karakter."
       },
-      "levelOneWeapons": {
-        "title": "Sv. 1 silahlar",
-        "text": "Her karakter 1. seviye bir silah taşır."
+      "noBowsNoCatalysts": {
+        "title": "Yay yok, katalizör yok",
+        "text": "Yalnızca kılıç, çift elli kılıç ve mızrak."
       },
       "oneWeaponType": {
         "title": "Tek silah türü",
         "text": "Tüm grup aynı silah türünü kullanır."
       },
-      "noHealing": {
-        "title": "İyileştirme yok",
-        "text": "İyileştirici yok, iyileştirme becerisi yok, iyileştiren yiyecek yok."
+      "oneElement": {
+        "title": "Tek element",
+        "text": "Tüm grup tek bir elementi paylaşır."
       },
-      "noShields": {
-        "title": "Kalkan yok",
-        "text": "Kalkancı yok, kalkan becerisi yok."
+      "oneRegion": {
+        "title": "Tek bölge",
+        "text": "Tüm grup aynı bölgedendir."
       },
-      "noFood": {
-        "title": "Yiyecek yok",
-        "text": "Yiyecek yok, iksir yok."
+      "threeCharacters": {
+        "title": "Üç karakter",
+        "text": "Grubun bir yeri boş kalır."
+      },
+      "fourStarCharacters": {
+        "title": "Yalnızca 4★ karakterler",
+        "text": "Grupta 5★ karakter yok."
+      },
+      "twoCharacters": {
+        "title": "İki karakter",
+        "text": "Grubun iki yeri boş kalır."
+      },
+      "oneCharacter": {
+        "title": "Tek karakter",
+        "text": "Tek karakter, grup yok."
+      },
+      "refinementOne": {
+        "title": "Saflaştırma Seviyesi 1",
+        "text": "Saflaştırılmış silah yok."
       },
       "removeOneArtifact": {
         "title": "1 yadigar eksik",
@@ -166,6 +202,22 @@
         "title": "3 yadigar eksik",
         "text": "Her karakter 3 yadigar çıkarır."
       },
+      "fourStarWeapons": {
+        "title": "Yalnızca 4★ silahlar",
+        "text": "Her karakter 4★ veya daha düşük bir silah taşır."
+      },
+      "noFourPieceSets": {
+        "title": "4 parçalı set yok",
+        "text": "Hiçbir 4 parçalı set bonusu etkin değildir."
+      },
+      "oneSetForAll": {
+        "title": "Herkese aynı set",
+        "text": "Tüm grup aynı 4 parçalı seti takar."
+      },
+      "fourStarArtifacts": {
+        "title": "Yalnızca 4★ yadigarlar",
+        "text": "5★ yadigar yok."
+      },
       "removeFourArtifacts": {
         "title": "4 yadigar eksik",
         "text": "Her karakter 4 yadigar çıkarır."
@@ -174,21 +226,49 @@
         "title": "Yadigar yok",
         "text": "Herkes yadigarlarını çıkarır."
       },
-      "oneElement": {
-        "title": "Tek element",
-        "text": "Tüm grup tek bir elementi paylaşır."
+      "levelOneWeapons": {
+        "title": "Sv. 1 silahlar",
+        "text": "Her karakter 1. seviye bir silah taşır."
       },
-      "fourStarCharacters": {
-        "title": "Yalnızca 4★ karakterler",
-        "text": "Grupta 5★ karakter yok."
+      "threeStarWeapons": {
+        "title": "Yalnızca 3★ silahlar",
+        "text": "Her karakter 3★ veya daha düşük bir silah taşır."
+      },
+      "nothingOn": {
+        "title": "Ekipman yok",
+        "text": "Sv. 1 silahlar, yadigar yok."
+      },
+      "noFood": {
+        "title": "Yiyecek yok",
+        "text": "Yiyecek yok, iksir yok."
+      },
+      "noJumping": {
+        "title": "Zıplama yok",
+        "text": "Ayaklar yerden kesilmez."
       },
       "noSprinting": {
         "title": "Depar yok",
         "text": "Yalnızca yürü, zıpla ve tırman."
       },
-      "noDodging": {
-        "title": "Kaçınma yok",
-        "text": "Depar atarak kenara çekilmek yok."
+      "swapInSlotOrder": {
+        "title": "Sırayla değiştir",
+        "text": "Yalnızca sıradaki yere geç: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Patlama yok",
+        "text": "Element Patlamaları tüm tur boyunca kullanılmaz."
+      },
+      "noSkills": {
+        "title": "Beceri yok",
+        "text": "Element Becerileri tüm tur boyunca kullanılmaz."
+      },
+      "skillsOnly": {
+        "title": "Yalnızca beceri",
+        "text": "Yalnızca Element Becerileri. Normal saldırı yok, Element Patlaması yok."
+      },
+      "noShields": {
+        "title": "Kalkan yok",
+        "text": "Kalkancı yok, kalkan becerisi yok."
       },
       "swapEveryTen": {
         "title": "10 sn'de bir değiştir",
@@ -198,17 +278,73 @@
         "title": "Değiştirme yok",
         "text": "Savaşı başlatan karakter bitirir."
       },
-      "threeCharacters": {
-        "title": "Üç karakter",
-        "text": "Grubun bir yeri boş kalır."
+      "allBurstsTogether": {
+        "title": "Patlamalar birlikte",
+        "text": "Element Patlamaları yalnızca dördü de hazır olduğunda kullanılır."
+      },
+      "nobodyFalls": {
+        "title": "Kimse düşmez",
+        "text": "Bir karakter düşerse tur başarısız olur."
+      },
+      "normalAttacksOnly": {
+        "title": "Yalnızca normal saldırı",
+        "text": "Element Becerisi yok, Element Patlaması yok."
+      },
+      "chargedAttacksOnly": {
+        "title": "Yalnızca yüklü saldırı",
+        "text": "Hasarı Yüklü Saldırılar verir. Element Becerisi yok, Element Patlaması yok."
+      },
+      "noHealing": {
+        "title": "İyileştirme yok",
+        "text": "İyileştirici yok, iyileştirme becerisi yok, iyileştiren yiyecek yok."
+      },
+      "noDodging": {
+        "title": "Kaçınma yok",
+        "text": "Depar atarak kenara çekilmek yok."
+      },
+      "noHits": {
+        "title": "Hasar almak yok",
+        "text": "Biri hasar alırsa baştan başla."
+      },
+      "underFiveMinutes": {
+        "title": "5 dakikanın altında",
+        "text": "Savaş beş dakika içinde biter."
       },
       "underThreeMinutes": {
         "title": "3 dakikanın altında",
         "text": "Savaş üç dakika içinde biter, yoksa sayılmaz."
       },
+      "firstTry": {
+        "title": "İlk deneme",
+        "text": "Tek deneme. Ne olursa olsun sayılır."
+      },
+      "threeBursts": {
+        "title": "Üç patlama",
+        "text": "Grup toplamda üç Element Patlaması kullanır."
+      },
       "underNinetySeconds": {
         "title": "90 saniyenin altında",
         "text": "Hız koşusu: saatte doksan saniye var."
+      },
+      "underSixtySeconds": {
+        "title": "60 saniyenin altında",
+        "text": "Saatte altmış saniye var."
+      },
+      "pickForNext": {
+        "title": "Sıradaki oyuncuya seç",
+        "text": "Her oyuncu, sıradaki oyuncunun karakterini seçer."
+      },
+      "oneBurstEach": {
+        "title": "Herkese bir patlama",
+        "text": "Her oyuncu Element Patlamasını bir kez kullanır."
+      },
+      "oneRoleEach": {
+        "title": "Herkese bir rol",
+        "text": "Bir iyileştirici, bir kalkancı, bir ana hasar, bir destek."
+      },
+      "oneCaller": {
+        "title": "Tek komut veren",
+        "text": "Her Element Patlamasının komutunu tek bir oyuncu verir. Komut gelmeden kimse kullanmaz."
       },
       "noReviving": {
         "title": "Canlandırma yok",
@@ -218,9 +354,41 @@
         "title": "Herkes aynı element",
         "text": "Tüm oyuncular aynı elementi getirir."
       },
-      "oneBurstEach": {
-        "title": "Herkese bir patlama",
-        "text": "Her oyuncu Element Patlamasını bir kez kullanır."
+      "sameCharacterEveryone": {
+        "title": "Herkes aynı karakter",
+        "text": "Tüm oyuncular aynı karakteri getirir."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Patlamalar oyuncu sırasıyla",
+        "text": "Element Patlamaları 1P, 2P, 3P, 4P sırasıyla kullanılır, sonra baştan."
+      },
+      "noTeleporting": {
+        "title": "Işınlanma yok",
+        "text": "Savaşa yürüyerek git."
+      },
+      "noGadgets": {
+        "title": "Aygıt yok",
+        "text": "Savaşta hiçbir aygıt kullanılmaz."
+      },
+      "noPausing": {
+        "title": "Duraklatma yok",
+        "text": "Savaş boyunca menü kapalı kalır."
+      },
+      "sayItOutLoud": {
+        "title": "Yüksek sesle söyle",
+        "text": "Her Element Becerisini ve Element Patlamasını kullanmadan önce söyle."
+      },
+      "noSound": {
+        "title": "Ses yok",
+        "text": "Oyunun sesi kapalıdır."
+      },
+      "travelerLeads": {
+        "title": "Gezgin önde",
+        "text": "Gezgin gruptadır ve son vuruşu o yapar."
+      },
+      "failAddsCard": {
+        "title": "Başarısızlık kart ekler",
+        "text": "Her başarısız denemede bir kart daha çekilir."
       }
     }
   },

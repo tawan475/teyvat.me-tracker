@@ -344,7 +344,7 @@ badges; the wheel's options folded into one row), the user said "nice build".
   (`UNDERWATER`, from the wiki's Local Legend page; a test fails when a name
   stops matching). No region filter: the data has a region for legends only.
 - **Challenge cards** (`components/fun/cards/`, `data/challenge-cards.ts`):
-  22 hand-written cards, their words in `fun.cards.list.<id>` in all 15
+  22 hand-written cards (63 since 2026-11-29, below), their words in `fun.cards.list.<id>` in all 15
   languages. A new card = a row in `CHALLENGE_CARDS` + its words.
 - **Wheel** (`components/fun/wheel/`, `data/wheel.ts`): spin by click or
   Ctrl + Enter, winner dialog with Remove, Entries / Results tabs, Shuffle,
@@ -411,6 +411,44 @@ restyles the wheel or the boss randomizer.
   15 languages (the team randomizer's restored from before 22bb735a, with
   `fun.publicPitch`); all five pages in `INDEXED_PAGES` (sitemap, prerender)
   and `public/llms.txt`. `robots.txt` needed no change (it allows `/fun`).
+
+### Built 2026-11-29: the challenge deck's categories, five levels, 63 cards
+
+The user's picks, on the ideas list and then on the design canvas
+https://claude.ai/artifact/Q2kqTAaBqDd5xPwhrC4eD5 (board E = D's side list +
+B's signal bars + the Ⓜ️ emoji):
+
+- **63 cards** (26 + 37 new; "around 60, a little more, not too many"), in six
+  categories: Team, Gear, Combat, Trials, Party (co-op only), Fun.
+- **Every card works in every content** (open world, domain, boss, Stygian
+  Onslaught, Imaginarium Theater, Spiral Abyss): no by-content pool. A card
+  that costs nothing somewhere is fine (No teleporting inside the Abyss).
+- **No card reads the account** (level caps, C0 only, talent caps, "lowest
+  four"): on a maxed account they leave nobody. Do not propose them again.
+- **Five levels**: Trivial, Easy, Medium, Hard and Ⓜ️ (the emoji itself, no
+  word, no drawn mark; it stands for the hardest of the hard). Levels show
+  as four rising bars, 1 lit for Trivial to 4 for Hard. Stored as 0-4, so the
+  1-3 a device saved keep their meaning.
+- **Ⓜ️ cards** (One character, Nothing on, No hits, Under 60 seconds) are in
+  the deck only while the Ⓜ️ chip is on (off at first), and a draw holds one
+  at most.
+- **Categories** are a list at the side from `lg` (a row of chips that
+  scrolls sideways below it), each with what is in / total, and "All in" /
+  "All out" over the tiles. The category open only says which tiles are
+  listed: a draw always takes from every card still in the deck.
+- **`groups`** (a card may be in several) replace the one `group`: two cards
+  of a group never lie on the table together. Pairs that cannot both be
+  followed are groups of two; `challenge-cards.test.ts` lists the pairs.
+  The count offered is what a draw in the deck's own order holds; a draw in
+  another order can hold a few fewer.
+- The drawn card keeps two lines for its title, so the texts under it start
+  level across the cards.
+
+Left out of the ideas list on purpose: cards needing data the site lacks or
+a rolled value (Launch roster, No signature weapons, One element out),
+cards nobody can check (No Melt no Vaporize, No main DPS), cards for one
+place only, and Starter team / Random team (neither enters the Theater).
+The ideas list and the deck draft are session notes, not in the repo.
 
 ### Built (2026-11-24, local commits)
 

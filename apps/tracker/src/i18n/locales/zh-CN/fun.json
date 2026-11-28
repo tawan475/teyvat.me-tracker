@@ -87,9 +87,13 @@
       "land": "陆地",
       "water": "水下"
     },
+    "playTitle": "人数",
+    "play": {
+      "coop": "多人游戏",
+      "solo": "单人游玩"
+    },
     "leaveOut": "排除",
     "details": "敌人详情",
-    "fight": "需击败{n}个",
     "hint": "点击首领即可排除，或拖动以排除多个。",
     "announce": "抽中：{name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "限时卡",
     "timeTrialsHint": "为战斗设定时间限制的卡牌",
     "level": {
+      "0": "轻松",
       "1": "简单",
       "2": "中等",
-      "3": "困难"
+      "3": "困难",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "最难的卡牌。每次抽取至多出现一张。",
+    "categoryTitle": "分类",
+    "category": {
+      "all": "全部",
+      "team": "队伍",
+      "gear": "装备",
+      "combat": "战斗",
+      "trials": "试炼",
+      "party": "联机",
+      "fun": "趣味"
+    },
+    "allIn": "全部加入",
+    "allOut": "全部移出",
+    "inCount": "已加入 {n} / {total}",
     "list": {
-      "noBursts": {
-        "title": "禁用元素爆发",
-        "text": "全程不使用元素爆发。"
+      "fourElements": {
+        "title": "四种元素",
+        "text": "队伍中没有元素相同的角色。"
       },
-      "noSkills": {
-        "title": "禁用元素战技",
-        "text": "全程不使用元素战技。"
+      "twoElements": {
+        "title": "两种元素",
+        "text": "队伍中恰好有两种元素。"
       },
-      "normalAttacksOnly": {
-        "title": "仅普通攻击",
-        "text": "不用元素战技，也不用元素爆发。"
+      "fourRegions": {
+        "title": "四个地区",
+        "text": "每名角色来自不同的地区。"
       },
-      "fourStarWeapons": {
-        "title": "仅4★武器",
-        "text": "每名角色装备4★或更低的武器。"
+      "oneFiveStar": {
+        "title": "一名5★",
+        "text": "队伍中至多一名5★角色。"
       },
-      "levelOneWeapons": {
-        "title": "Lv. 1 武器",
-        "text": "每名角色装备1级武器。"
+      "noBowsNoCatalysts": {
+        "title": "禁用弓和法器",
+        "text": "只用单手剑、双手剑和长柄武器。"
       },
       "oneWeaponType": {
         "title": "同一武器类型",
         "text": "全队使用同一类型的武器。"
       },
-      "noHealing": {
-        "title": "禁止治疗",
-        "text": "不带治疗角色，不用治疗技能，不吃回血食物。"
+      "oneElement": {
+        "title": "单一元素",
+        "text": "全队同一种元素。"
       },
-      "noShields": {
-        "title": "禁止护盾",
-        "text": "不带护盾角色，不用护盾技能。"
+      "oneRegion": {
+        "title": "同一地区",
+        "text": "全队来自同一个地区。"
       },
-      "noFood": {
-        "title": "禁止食物",
-        "text": "不用食物，也不用药剂。"
+      "threeCharacters": {
+        "title": "三名角色",
+        "text": "队伍空出一个位置。"
+      },
+      "fourStarCharacters": {
+        "title": "仅4★角色",
+        "text": "队伍中没有5★角色。"
+      },
+      "twoCharacters": {
+        "title": "两名角色",
+        "text": "队伍空出两个位置。"
+      },
+      "oneCharacter": {
+        "title": "一名角色",
+        "text": "只带一名角色，不组队。"
+      },
+      "refinementOne": {
+        "title": "精炼1阶",
+        "text": "不用精炼过的武器。"
       },
       "removeOneArtifact": {
         "title": "卸下1件圣遗物",
@@ -166,6 +202,22 @@
         "title": "卸下3件圣遗物",
         "text": "每名角色卸下3件圣遗物。"
       },
+      "fourStarWeapons": {
+        "title": "仅4★武器",
+        "text": "每名角色装备4★或更低的武器。"
+      },
+      "noFourPieceSets": {
+        "title": "禁用4件套",
+        "text": "不触发任何4件套效果。"
+      },
+      "oneSetForAll": {
+        "title": "全队同一套装",
+        "text": "全队装备同一种4件套。"
+      },
+      "fourStarArtifacts": {
+        "title": "仅4★圣遗物",
+        "text": "不用5★圣遗物。"
+      },
       "removeFourArtifacts": {
         "title": "卸下4件圣遗物",
         "text": "每名角色卸下4件圣遗物。"
@@ -174,21 +226,49 @@
         "title": "不带圣遗物",
         "text": "所有人卸下圣遗物。"
       },
-      "oneElement": {
-        "title": "单一元素",
-        "text": "全队同一种元素。"
+      "levelOneWeapons": {
+        "title": "Lv. 1 武器",
+        "text": "每名角色装备1级武器。"
       },
-      "fourStarCharacters": {
-        "title": "仅4★角色",
-        "text": "队伍中没有5★角色。"
+      "threeStarWeapons": {
+        "title": "仅3★武器",
+        "text": "每名角色装备3★或更低的武器。"
+      },
+      "nothingOn": {
+        "title": "裸装",
+        "text": "装备1级武器，不带圣遗物。"
+      },
+      "noFood": {
+        "title": "禁止食物",
+        "text": "不用食物，也不用药剂。"
+      },
+      "noJumping": {
+        "title": "禁止跳跃",
+        "text": "双脚不离开地面。"
       },
       "noSprinting": {
         "title": "禁止冲刺",
         "text": "只能走路、跳跃和攀爬。"
       },
-      "noDodging": {
-        "title": "禁止闪避",
-        "text": "不能冲刺躲开攻击。"
+      "swapInSlotOrder": {
+        "title": "按顺序换人",
+        "text": "只能换到下一个位置：1、2、3、4、1。"
+      },
+      "noBursts": {
+        "title": "禁用元素爆发",
+        "text": "全程不使用元素爆发。"
+      },
+      "noSkills": {
+        "title": "禁用元素战技",
+        "text": "全程不使用元素战技。"
+      },
+      "skillsOnly": {
+        "title": "仅元素战技",
+        "text": "只用元素战技。不用普通攻击，也不用元素爆发。"
+      },
+      "noShields": {
+        "title": "禁止护盾",
+        "text": "不带护盾角色，不用护盾技能。"
       },
       "swapEveryTen": {
         "title": "每10秒换人",
@@ -198,17 +278,73 @@
         "title": "禁止换人",
         "text": "开场的角色打完整场战斗。"
       },
-      "threeCharacters": {
-        "title": "三名角色",
-        "text": "队伍空出一个位置。"
+      "allBurstsTogether": {
+        "title": "同时爆发",
+        "text": "四人的元素爆发全部就绪时才能使用。"
+      },
+      "nobodyFalls": {
+        "title": "无人倒下",
+        "text": "有角色倒下即为失败。"
+      },
+      "normalAttacksOnly": {
+        "title": "仅普通攻击",
+        "text": "不用元素战技，也不用元素爆发。"
+      },
+      "chargedAttacksOnly": {
+        "title": "仅重击",
+        "text": "用重击造成伤害。不用元素战技，也不用元素爆发。"
+      },
+      "noHealing": {
+        "title": "禁止治疗",
+        "text": "不带治疗角色，不用治疗技能，不吃回血食物。"
+      },
+      "noDodging": {
+        "title": "禁止闪避",
+        "text": "不能冲刺躲开攻击。"
+      },
+      "noHits": {
+        "title": "无伤",
+        "text": "任何人受到伤害就重新开始。"
+      },
+      "underFiveMinutes": {
+        "title": "5分钟内",
+        "text": "五分钟内结束战斗。"
       },
       "underThreeMinutes": {
         "title": "3分钟内",
         "text": "三分钟内结束战斗，否则不算。"
       },
+      "firstTry": {
+        "title": "只打一次",
+        "text": "只有一次机会。无论结果如何都算数。"
+      },
+      "threeBursts": {
+        "title": "三次爆发",
+        "text": "全队总共只用三次元素爆发。"
+      },
       "underNinetySeconds": {
         "title": "90秒内",
         "text": "速通：限时九十秒。"
+      },
+      "underSixtySeconds": {
+        "title": "60秒内",
+        "text": "限时六十秒。"
+      },
+      "pickForNext": {
+        "title": "为下一位选角色",
+        "text": "每名玩家为下一名玩家选角色。"
+      },
+      "oneBurstEach": {
+        "title": "每人一次爆发",
+        "text": "每名玩家只用一次元素爆发。"
+      },
+      "oneRoleEach": {
+        "title": "定位各一名",
+        "text": "一名治疗、一名护盾、一名主C、一名辅助。"
+      },
+      "oneCaller": {
+        "title": "一人指挥",
+        "text": "由一名玩家指挥所有元素爆发。没有指令，谁也不能用。"
       },
       "noReviving": {
         "title": "禁止复苏",
@@ -218,9 +354,41 @@
         "title": "全员同元素",
         "text": "所有玩家带同一种元素。"
       },
-      "oneBurstEach": {
-        "title": "每人一次爆发",
-        "text": "每名玩家只用一次元素爆发。"
+      "sameCharacterEveryone": {
+        "title": "全员同角色",
+        "text": "所有玩家带同一名角色。"
+      },
+      "burstsInPlayerOrder": {
+        "title": "按玩家顺序爆发",
+        "text": "元素爆发按1P、2P、3P、4P的顺序使用，然后再从1P开始。"
+      },
+      "noTeleporting": {
+        "title": "禁止传送",
+        "text": "走路前往战斗地点。"
+      },
+      "noGadgets": {
+        "title": "禁用小道具",
+        "text": "战斗中不使用任何小道具。"
+      },
+      "noPausing": {
+        "title": "禁止暂停",
+        "text": "战斗中不打开菜单。"
+      },
+      "sayItOutLoud": {
+        "title": "先说出口",
+        "text": "每次使用元素战技和元素爆发前，先大声说出来。"
+      },
+      "noSound": {
+        "title": "静音",
+        "text": "游戏全程静音。"
+      },
+      "travelerLeads": {
+        "title": "旅行者收尾",
+        "text": "旅行者在队伍中，并由旅行者打出最后一击。"
+      },
+      "failAddsCard": {
+        "title": "失败加一张",
+        "text": "每次失败再抽一张卡牌。"
       }
     }
   },

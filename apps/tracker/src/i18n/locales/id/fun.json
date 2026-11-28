@@ -87,9 +87,13 @@
       "land": "Darat",
       "water": "Bawah air"
     },
+    "playTitle": "Pemain",
+    "play": {
+      "coop": "Co-Op",
+      "solo": "Solo"
+    },
     "leaveOut": "Keluarkan",
     "details": "Detail musuh",
-    "fight": "{n} untuk dilawan",
     "hint": "Klik boss untuk mengeluarkannya, atau seret melewati beberapa.",
     "announce": "Hasil acak: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Kartu batas waktu",
     "timeTrialsHint": "Kartu yang memberi batas waktu pada pertarungan",
     "level": {
+      "0": "Sangat mudah",
       "1": "Mudah",
       "2": "Sedang",
-      "3": "Sulit"
+      "3": "Sulit",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Kartu tersulit. Sekali ambil paling banyak berisi satu.",
+    "categoryTitle": "Kategori",
+    "category": {
+      "all": "Semua",
+      "team": "Party",
+      "gear": "Perlengkapan",
+      "combat": "Pertarungan",
+      "trials": "Ujian",
+      "party": "Co-op",
+      "fun": "Iseng"
+    },
+    "allIn": "Masukkan semua",
+    "allOut": "Keluarkan semua",
+    "inCount": "{n} dari {total} masuk",
     "list": {
-      "noBursts": {
-        "title": "Tanpa burst",
-        "text": "Elemental Burst tidak dipakai sepanjang permainan."
+      "fourElements": {
+        "title": "Empat elemen",
+        "text": "Tidak ada dua karakter dengan elemen yang sama."
       },
-      "noSkills": {
-        "title": "Tanpa skill",
-        "text": "Elemental Skill tidak dipakai sepanjang permainan."
+      "twoElements": {
+        "title": "Dua elemen",
+        "text": "Party memakai tepat dua elemen."
       },
-      "normalAttacksOnly": {
-        "title": "Hanya Normal Attack",
-        "text": "Tanpa Elemental Skill, tanpa Elemental Burst."
+      "fourRegions": {
+        "title": "Empat wilayah",
+        "text": "Setiap karakter berasal dari wilayah yang berbeda."
       },
-      "fourStarWeapons": {
-        "title": "Hanya senjata 4★",
-        "text": "Setiap karakter memegang senjata 4★ atau lebih rendah."
+      "oneFiveStar": {
+        "title": "Satu 5★",
+        "text": "Paling banyak satu karakter 5★ di party."
       },
-      "levelOneWeapons": {
-        "title": "Senjata Lv. 1",
-        "text": "Setiap karakter memegang senjata level 1."
+      "noBowsNoCatalysts": {
+        "title": "Tanpa Bow dan Catalyst",
+        "text": "Hanya Sword, Claymore, dan Polearm."
       },
       "oneWeaponType": {
         "title": "Satu tipe senjata",
         "text": "Seluruh party memakai tipe senjata yang sama."
       },
-      "noHealing": {
-        "title": "Tanpa penyembuhan",
-        "text": "Tanpa penyembuh, skill penyembuh, atau makanan penyembuh."
+      "oneElement": {
+        "title": "Satu elemen",
+        "text": "Seluruh party memakai satu elemen."
       },
-      "noShields": {
-        "title": "Tanpa perisai",
-        "text": "Tanpa pemberi perisai dan skill perisai."
+      "oneRegion": {
+        "title": "Satu wilayah",
+        "text": "Seluruh party berasal dari satu wilayah."
       },
-      "noFood": {
-        "title": "Tanpa makanan",
-        "text": "Tanpa makanan dan potion."
+      "threeCharacters": {
+        "title": "Tiga karakter",
+        "text": "Satu slot party dibiarkan kosong."
+      },
+      "fourStarCharacters": {
+        "title": "Hanya karakter 4★",
+        "text": "Tidak ada karakter 5★ di party."
+      },
+      "twoCharacters": {
+        "title": "Dua karakter",
+        "text": "Dua slot party dibiarkan kosong."
+      },
+      "oneCharacter": {
+        "title": "Satu karakter",
+        "text": "Satu karakter, tanpa party."
+      },
+      "refinementOne": {
+        "title": "Refinement 1",
+        "text": "Tanpa senjata yang sudah di-refine."
       },
       "removeOneArtifact": {
         "title": "Lepas 1 artefak",
@@ -166,6 +202,22 @@
         "title": "Lepas 3 artefak",
         "text": "Setiap karakter melepas 3 artefak."
       },
+      "fourStarWeapons": {
+        "title": "Hanya senjata 4★",
+        "text": "Setiap karakter memegang senjata 4★ atau lebih rendah."
+      },
+      "noFourPieceSets": {
+        "title": "Tanpa Set 4 Bagian",
+        "text": "Tidak ada bonus Set 4 Bagian yang aktif."
+      },
+      "oneSetForAll": {
+        "title": "Satu set untuk semua",
+        "text": "Seluruh party memakai Set 4 Bagian yang sama."
+      },
+      "fourStarArtifacts": {
+        "title": "Hanya artefak 4★",
+        "text": "Tanpa artefak 5★."
+      },
       "removeFourArtifacts": {
         "title": "Lepas 4 artefak",
         "text": "Setiap karakter melepas 4 artefak."
@@ -174,21 +226,49 @@
         "title": "Tanpa artefak",
         "text": "Semua melepas artefaknya."
       },
-      "oneElement": {
-        "title": "Satu elemen",
-        "text": "Seluruh party memakai satu elemen."
+      "levelOneWeapons": {
+        "title": "Senjata Lv. 1",
+        "text": "Setiap karakter memegang senjata level 1."
       },
-      "fourStarCharacters": {
-        "title": "Hanya karakter 4★",
-        "text": "Tidak ada karakter 5★ di party."
+      "threeStarWeapons": {
+        "title": "Hanya senjata 3★",
+        "text": "Setiap karakter memegang senjata 3★ atau lebih rendah."
+      },
+      "nothingOn": {
+        "title": "Tanpa perlengkapan",
+        "text": "Senjata Lv. 1 dan tanpa artefak."
+      },
+      "noFood": {
+        "title": "Tanpa makanan",
+        "text": "Tanpa makanan dan potion."
+      },
+      "noJumping": {
+        "title": "Tanpa melompat",
+        "text": "Kaki tetap di tanah."
       },
       "noSprinting": {
         "title": "Tanpa lari",
         "text": "Hanya berjalan, melompat, dan memanjat."
       },
-      "noDodging": {
-        "title": "Tanpa menghindar",
-        "text": "Tidak boleh dash untuk menghindar."
+      "swapInSlotOrder": {
+        "title": "Ganti sesuai urutan slot",
+        "text": "Hanya ganti ke slot berikutnya: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Tanpa burst",
+        "text": "Elemental Burst tidak dipakai sepanjang permainan."
+      },
+      "noSkills": {
+        "title": "Tanpa skill",
+        "text": "Elemental Skill tidak dipakai sepanjang permainan."
+      },
+      "skillsOnly": {
+        "title": "Hanya skill",
+        "text": "Hanya Elemental Skill. Tanpa Normal Attack, tanpa Elemental Burst."
+      },
+      "noShields": {
+        "title": "Tanpa perisai",
+        "text": "Tanpa pemberi perisai dan skill perisai."
       },
       "swapEveryTen": {
         "title": "Ganti tiap 10 dtk",
@@ -198,17 +278,73 @@
         "title": "Tanpa ganti karakter",
         "text": "Karakter yang memulai pertarungan menyelesaikannya."
       },
-      "threeCharacters": {
-        "title": "Tiga karakter",
-        "text": "Satu slot party dibiarkan kosong."
+      "allBurstsTogether": {
+        "title": "Semua burst bersamaan",
+        "text": "Elemental Burst hanya dipakai saat keempatnya siap."
+      },
+      "nobodyFalls": {
+        "title": "Tidak ada yang tumbang",
+        "text": "Permainan gagal saat satu karakter tumbang."
+      },
+      "normalAttacksOnly": {
+        "title": "Hanya Normal Attack",
+        "text": "Tanpa Elemental Skill, tanpa Elemental Burst."
+      },
+      "chargedAttacksOnly": {
+        "title": "Hanya Charged Attack",
+        "text": "DMG berasal dari Charged Attack. Tanpa Elemental Skill, tanpa Elemental Burst."
+      },
+      "noHealing": {
+        "title": "Tanpa penyembuhan",
+        "text": "Tanpa penyembuh, skill penyembuh, atau makanan penyembuh."
+      },
+      "noDodging": {
+        "title": "Tanpa menghindar",
+        "text": "Tidak boleh dash untuk menghindar."
+      },
+      "noHits": {
+        "title": "Tanpa terkena serangan",
+        "text": "Ulangi dari awal saat siapa pun menerima DMG."
+      },
+      "underFiveMinutes": {
+        "title": "Di bawah 5 menit",
+        "text": "Pertarungan selesai dalam lima menit."
       },
       "underThreeMinutes": {
         "title": "Di bawah 3 menit",
         "text": "Pertarungan selesai dalam tiga menit, atau tidak dihitung."
       },
+      "firstTry": {
+        "title": "Percobaan pertama",
+        "text": "Satu kali percobaan. Apa pun hasilnya, itu yang dihitung."
+      },
+      "threeBursts": {
+        "title": "Tiga burst",
+        "text": "Party memakai total tiga Elemental Burst."
+      },
       "underNinetySeconds": {
         "title": "Di bawah 90 detik",
         "text": "Speedrun: sembilan puluh detik saja."
+      },
+      "underSixtySeconds": {
+        "title": "Di bawah 60 detik",
+        "text": "Waktunya enam puluh detik saja."
+      },
+      "pickForNext": {
+        "title": "Pilihkan untuk pemain berikutnya",
+        "text": "Setiap pemain memilih karakter untuk pemain berikutnya."
+      },
+      "oneBurstEach": {
+        "title": "Satu burst per pemain",
+        "text": "Setiap pemain memakai Elemental Burst satu kali."
+      },
+      "oneRoleEach": {
+        "title": "Satu peran per pemain",
+        "text": "Satu penyembuh, satu pemberi perisai, satu DPS utama, satu pendukung."
+      },
+      "oneCaller": {
+        "title": "Satu pemberi aba-aba",
+        "text": "Satu pemain memberi aba-aba untuk setiap Elemental Burst. Tidak ada yang memakainya tanpa aba-aba."
       },
       "noReviving": {
         "title": "Tanpa menghidupkan",
@@ -218,9 +354,41 @@
         "title": "Semua elemen sama",
         "text": "Semua pemain membawa elemen yang sama."
       },
-      "oneBurstEach": {
-        "title": "Satu burst per pemain",
-        "text": "Setiap pemain memakai Elemental Burst satu kali."
+      "sameCharacterEveryone": {
+        "title": "Semua karakter sama",
+        "text": "Semua pemain membawa karakter yang sama."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Burst sesuai urutan pemain",
+        "text": "Elemental Burst bergiliran 1P, 2P, 3P, 4P, lalu kembali ke awal."
+      },
+      "noTeleporting": {
+        "title": "Tanpa teleport",
+        "text": "Jalan kaki ke tempat pertarungan."
+      },
+      "noGadgets": {
+        "title": "Tanpa peralatan",
+        "text": "Tidak ada peralatan yang dipakai dalam pertarungan."
+      },
+      "noPausing": {
+        "title": "Tanpa jeda",
+        "text": "Menu tetap tertutup selama pertarungan."
+      },
+      "sayItOutLoud": {
+        "title": "Ucapkan dengan lantang",
+        "text": "Sebutkan setiap Elemental Skill dan Elemental Burst sebelum memakainya."
+      },
+      "noSound": {
+        "title": "Tanpa suara",
+        "text": "Suara game dimatikan."
+      },
+      "travelerLeads": {
+        "title": "Pengembara memimpin",
+        "text": "Pengembara ada di party dan memberi serangan terakhir."
+      },
+      "failAddsCard": {
+        "title": "Gagal, tambah kartu",
+        "text": "Setiap percobaan yang gagal mengambil satu kartu lagi."
       }
     }
   },

@@ -87,9 +87,13 @@
       "land": "Trên cạn",
       "water": "Dưới nước"
     },
+    "playTitle": "Người chơi",
+    "play": {
+      "coop": "Nhiều Người Chơi",
+      "solo": "Chơi Đơn"
+    },
     "leaveOut": "Loại ra",
     "details": "Chi tiết kẻ địch",
-    "fight": "Đánh {n} con",
     "hint": "Nhấn vào một boss để loại ra, hoặc kéo qua nhiều boss.",
     "announce": "Kết quả: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Thẻ giới hạn thời gian",
     "timeTrialsHint": "Thẻ đặt giới hạn thời gian cho trận đấu",
     "level": {
+      "0": "Rất dễ",
       "1": "Dễ",
       "2": "Vừa",
-      "3": "Khó"
+      "3": "Khó",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Những thẻ khó nhất. Mỗi lần rút có tối đa một thẻ.",
+    "categoryTitle": "Nhóm",
+    "category": {
+      "all": "Tất cả",
+      "team": "Đội",
+      "gear": "Trang bị",
+      "combat": "Chiến đấu",
+      "trials": "Thử thách",
+      "party": "Co-op",
+      "fun": "Vui"
+    },
+    "allIn": "Thêm hết",
+    "allOut": "Bỏ hết",
+    "inCount": "Đã thêm {n} trên {total}",
     "list": {
-      "noBursts": {
-        "title": "Không Kỹ Năng Nộ",
-        "text": "Không dùng Kỹ Năng Nộ suốt cả lượt."
+      "fourElements": {
+        "title": "Bốn nguyên tố",
+        "text": "Không có hai nhân vật cùng nguyên tố."
       },
-      "noSkills": {
-        "title": "Không Kỹ Năng Nguyên Tố",
-        "text": "Không dùng Kỹ Năng Nguyên Tố suốt cả lượt."
+      "twoElements": {
+        "title": "Hai nguyên tố",
+        "text": "Cả đội có đúng hai nguyên tố."
       },
-      "normalAttacksOnly": {
-        "title": "Chỉ Tấn Công Thường",
-        "text": "Không Kỹ Năng Nguyên Tố, không Kỹ Năng Nộ."
+      "fourRegions": {
+        "title": "Bốn quốc gia",
+        "text": "Mỗi nhân vật đến từ một quốc gia khác nhau."
       },
-      "fourStarWeapons": {
-        "title": "Chỉ vũ khí 4★",
-        "text": "Mọi nhân vật cầm vũ khí 4★ trở xuống."
+      "oneFiveStar": {
+        "title": "Một 5★",
+        "text": "Tối đa một nhân vật 5★ trong đội."
       },
-      "levelOneWeapons": {
-        "title": "Vũ khí cấp 1",
-        "text": "Mọi nhân vật cầm vũ khí cấp 1."
+      "noBowsNoCatalysts": {
+        "title": "Không Cung, không Pháp Khí",
+        "text": "Chỉ Kiếm Đơn, Trọng Kiếm và Vũ Khí Cán Dài."
       },
       "oneWeaponType": {
         "title": "Một loại vũ khí",
         "text": "Cả đội dùng cùng một loại vũ khí."
       },
-      "noHealing": {
-        "title": "Không hồi máu",
-        "text": "Không người hồi máu, không kỹ năng hồi máu, không món ăn hồi máu."
+      "oneElement": {
+        "title": "Một nguyên tố",
+        "text": "Cả đội cùng một nguyên tố."
       },
-      "noShields": {
-        "title": "Không khiên",
-        "text": "Không người tạo khiên, không kỹ năng tạo khiên."
+      "oneRegion": {
+        "title": "Một quốc gia",
+        "text": "Cả đội đến từ cùng một quốc gia."
       },
-      "noFood": {
-        "title": "Không đồ ăn",
-        "text": "Không đồ ăn, không thuốc."
+      "threeCharacters": {
+        "title": "Ba nhân vật",
+        "text": "Để trống một vị trí trong đội."
+      },
+      "fourStarCharacters": {
+        "title": "Chỉ nhân vật 4★",
+        "text": "Không có nhân vật 5★ trong đội."
+      },
+      "twoCharacters": {
+        "title": "Hai nhân vật",
+        "text": "Để trống hai vị trí trong đội."
+      },
+      "oneCharacter": {
+        "title": "Một nhân vật",
+        "text": "Một nhân vật, không có đội."
+      },
+      "refinementOne": {
+        "title": "Tinh Luyện Bậc 1",
+        "text": "Không dùng vũ khí đã Tinh Luyện."
       },
       "removeOneArtifact": {
         "title": "Tháo 1 Thánh Di Vật",
@@ -166,6 +202,22 @@
         "title": "Tháo 3 Thánh Di Vật",
         "text": "Mọi nhân vật tháo 3 Thánh Di Vật."
       },
+      "fourStarWeapons": {
+        "title": "Chỉ vũ khí 4★",
+        "text": "Mọi nhân vật cầm vũ khí 4★ trở xuống."
+      },
+      "noFourPieceSets": {
+        "title": "Không Bộ 4 Món",
+        "text": "Không kích hoạt hiệu quả Bộ 4 Món nào."
+      },
+      "oneSetForAll": {
+        "title": "Cả đội một bộ",
+        "text": "Cả đội mặc cùng một Bộ 4 Món."
+      },
+      "fourStarArtifacts": {
+        "title": "Chỉ Thánh Di Vật 4★",
+        "text": "Không dùng Thánh Di Vật 5★."
+      },
       "removeFourArtifacts": {
         "title": "Tháo 4 Thánh Di Vật",
         "text": "Mọi nhân vật tháo 4 Thánh Di Vật."
@@ -174,21 +226,49 @@
         "title": "Không Thánh Di Vật",
         "text": "Mọi người tháo Thánh Di Vật."
       },
-      "oneElement": {
-        "title": "Một nguyên tố",
-        "text": "Cả đội cùng một nguyên tố."
+      "levelOneWeapons": {
+        "title": "Vũ khí cấp 1",
+        "text": "Mọi nhân vật cầm vũ khí cấp 1."
       },
-      "fourStarCharacters": {
-        "title": "Chỉ nhân vật 4★",
-        "text": "Không có nhân vật 5★ trong đội."
+      "threeStarWeapons": {
+        "title": "Chỉ vũ khí 3★",
+        "text": "Mọi nhân vật cầm vũ khí 3★ trở xuống."
+      },
+      "nothingOn": {
+        "title": "Tay trắng",
+        "text": "Vũ khí cấp 1 và không Thánh Di Vật."
+      },
+      "noFood": {
+        "title": "Không đồ ăn",
+        "text": "Không đồ ăn, không thuốc."
+      },
+      "noJumping": {
+        "title": "Không nhảy",
+        "text": "Chân luôn ở trên mặt đất."
       },
       "noSprinting": {
         "title": "Không chạy nhanh",
         "text": "Chỉ đi bộ, nhảy và leo."
       },
-      "noDodging": {
-        "title": "Không né",
-        "text": "Không lướt để né đòn."
+      "swapInSlotOrder": {
+        "title": "Đổi theo thứ tự vị trí",
+        "text": "Chỉ đổi sang vị trí kế tiếp: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Không Kỹ Năng Nộ",
+        "text": "Không dùng Kỹ Năng Nộ suốt cả lượt."
+      },
+      "noSkills": {
+        "title": "Không Kỹ Năng Nguyên Tố",
+        "text": "Không dùng Kỹ Năng Nguyên Tố suốt cả lượt."
+      },
+      "skillsOnly": {
+        "title": "Chỉ Kỹ Năng Nguyên Tố",
+        "text": "Chỉ dùng Kỹ Năng Nguyên Tố. Không Tấn Công Thường, không Kỹ Năng Nộ."
+      },
+      "noShields": {
+        "title": "Không khiên",
+        "text": "Không người tạo khiên, không kỹ năng tạo khiên."
       },
       "swapEveryTen": {
         "title": "Đổi mỗi 10 giây",
@@ -198,17 +278,73 @@
         "title": "Không đổi nhân vật",
         "text": "Nhân vật mở đầu trận sẽ đánh đến hết trận."
       },
-      "threeCharacters": {
-        "title": "Ba nhân vật",
-        "text": "Để trống một vị trí trong đội."
+      "allBurstsTogether": {
+        "title": "Dùng nộ cùng lúc",
+        "text": "Chỉ dùng Kỹ Năng Nộ khi cả bốn đã sẵn sàng."
+      },
+      "nobodyFalls": {
+        "title": "Không ai gục",
+        "text": "Lượt chơi thất bại khi có nhân vật gục."
+      },
+      "normalAttacksOnly": {
+        "title": "Chỉ Tấn Công Thường",
+        "text": "Không Kỹ Năng Nguyên Tố, không Kỹ Năng Nộ."
+      },
+      "chargedAttacksOnly": {
+        "title": "Chỉ Trọng Kích",
+        "text": "Gây sát thương bằng Trọng Kích. Không Kỹ Năng Nguyên Tố, không Kỹ Năng Nộ."
+      },
+      "noHealing": {
+        "title": "Không hồi máu",
+        "text": "Không người hồi máu, không kỹ năng hồi máu, không món ăn hồi máu."
+      },
+      "noDodging": {
+        "title": "Không né",
+        "text": "Không lướt để né đòn."
+      },
+      "noHits": {
+        "title": "Không trúng đòn",
+        "text": "Bắt đầu lại khi có ai chịu sát thương."
+      },
+      "underFiveMinutes": {
+        "title": "Dưới 5 phút",
+        "text": "Trận đấu kết thúc trong năm phút."
       },
       "underThreeMinutes": {
         "title": "Dưới 3 phút",
         "text": "Trận đấu kết thúc trong ba phút, nếu không thì không tính."
       },
+      "firstTry": {
+        "title": "Lần đầu tiên",
+        "text": "Chỉ một lần thử. Kết quả thế nào cũng được tính."
+      },
+      "threeBursts": {
+        "title": "Ba lần nộ",
+        "text": "Cả đội dùng tổng cộng ba lần Kỹ Năng Nộ."
+      },
       "underNinetySeconds": {
         "title": "Dưới 90 giây",
         "text": "Chạy tốc độ: chín mươi giây trên đồng hồ."
+      },
+      "underSixtySeconds": {
+        "title": "Dưới 60 giây",
+        "text": "Sáu mươi giây trên đồng hồ."
+      },
+      "pickForNext": {
+        "title": "Chọn cho người kế tiếp",
+        "text": "Mỗi người chơi chọn nhân vật cho người chơi kế tiếp."
+      },
+      "oneBurstEach": {
+        "title": "Mỗi người một lần nộ",
+        "text": "Mỗi người chơi dùng Kỹ Năng Nộ một lần."
+      },
+      "oneRoleEach": {
+        "title": "Mỗi người một vai trò",
+        "text": "Một hồi máu, một tạo khiên, một sát thương chính, một hỗ trợ."
+      },
+      "oneCaller": {
+        "title": "Một người chỉ huy",
+        "text": "Một người chơi hô mọi Kỹ Năng Nộ. Không ai dùng khi chưa được hô."
       },
       "noReviving": {
         "title": "Không hồi sinh",
@@ -218,9 +354,41 @@
         "title": "Tất cả cùng nguyên tố",
         "text": "Mọi người chơi mang cùng một nguyên tố."
       },
-      "oneBurstEach": {
-        "title": "Mỗi người một lần nộ",
-        "text": "Mỗi người chơi dùng Kỹ Năng Nộ một lần."
+      "sameCharacterEveryone": {
+        "title": "Tất cả cùng nhân vật",
+        "text": "Mọi người chơi mang cùng một nhân vật."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Nộ theo thứ tự người chơi",
+        "text": "Kỹ Năng Nộ lần lượt theo 1P, 2P, 3P, 4P, rồi quay lại từ đầu."
+      },
+      "noTeleporting": {
+        "title": "Không dịch chuyển",
+        "text": "Đi bộ đến nơi chiến đấu."
+      },
+      "noGadgets": {
+        "title": "Không đạo cụ nhỏ",
+        "text": "Không dùng đạo cụ nhỏ nào trong trận đấu."
+      },
+      "noPausing": {
+        "title": "Không tạm dừng",
+        "text": "Không mở menu trong trận đấu."
+      },
+      "sayItOutLoud": {
+        "title": "Nói to lên",
+        "text": "Nói to tên mỗi Kỹ Năng Nguyên Tố và Kỹ Năng Nộ trước khi dùng."
+      },
+      "noSound": {
+        "title": "Không âm thanh",
+        "text": "Tắt tiếng trò chơi."
+      },
+      "travelerLeads": {
+        "title": "Nhà Lữ Hành kết liễu",
+        "text": "Nhà Lữ Hành có trong đội và ra đòn cuối cùng."
+      },
+      "failAddsCard": {
+        "title": "Thất bại thêm thẻ",
+        "text": "Mỗi lần thất bại rút thêm một thẻ."
       }
     }
   },

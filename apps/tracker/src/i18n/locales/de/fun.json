@@ -87,9 +87,13 @@
       "land": "Land",
       "water": "Unter Wasser"
     },
+    "playTitle": "Spieler",
+    "play": {
+      "coop": "Mehrspielermodus",
+      "solo": "Einzelspieler"
+    },
     "leaveOut": "Auslassen",
     "details": "Gegnerdetails",
-    "fight": "{n} im Kampf",
     "hint": "Klicke auf einen Boss, um ihn auszulassen, oder ziehe über mehrere.",
     "announce": "Ausgewürfelt: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Zeitlimits",
     "timeTrialsHint": "Karten, die dem Kampf ein Zeitlimit setzen",
     "level": {
+      "0": "Sehr leicht",
       "1": "Leicht",
       "2": "Mittel",
-      "3": "Schwer"
+      "3": "Schwer",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Die schwersten Karten. Ein Zug enthält höchstens eine davon.",
+    "categoryTitle": "Kategorie",
+    "category": {
+      "all": "Alle",
+      "team": "Truppe",
+      "gear": "Ausrüstung",
+      "combat": "Kampf",
+      "trials": "Prüfungen",
+      "party": "Koop",
+      "fun": "Spaß"
+    },
+    "allIn": "Alle rein",
+    "allOut": "Alle raus",
+    "inCount": "{n} von {total} im Stapel",
     "list": {
-      "noBursts": {
-        "title": "Keine Spezialfähigkeiten",
-        "text": "Spezialfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      "fourElements": {
+        "title": "Vier Elemente",
+        "text": "Keine zwei Figuren haben dasselbe Element."
       },
-      "noSkills": {
-        "title": "Keine Elementarfähigkeiten",
-        "text": "Elementarfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      "twoElements": {
+        "title": "Zwei Elemente",
+        "text": "Die Truppe hat genau zwei Elemente."
       },
-      "normalAttacksOnly": {
-        "title": "Nur Standardangriffe",
-        "text": "Keine Elementarfähigkeiten, keine Spezialfähigkeiten."
+      "fourRegions": {
+        "title": "Vier Regionen",
+        "text": "Jede Figur kommt aus einer anderen Region."
       },
-      "fourStarWeapons": {
-        "title": "Nur 4★-Waffen",
-        "text": "Jede Figur trägt eine Waffe mit höchstens 4★."
+      "oneFiveStar": {
+        "title": "Ein 5★",
+        "text": "Höchstens eine 5★-Figur in der Truppe."
       },
-      "levelOneWeapons": {
-        "title": "Waffen auf St. 1",
-        "text": "Jede Figur trägt eine Waffe auf Stufe 1."
+      "noBowsNoCatalysts": {
+        "title": "Keine Bögen, keine Katalysatoren",
+        "text": "Nur Einhänder, Zweihänder und Stangenwaffen."
       },
       "oneWeaponType": {
         "title": "Ein Waffentyp",
         "text": "Die ganze Truppe nutzt denselben Waffentyp."
       },
-      "noHealing": {
-        "title": "Keine Heilung",
-        "text": "Keine Heiler, keine Heilfähigkeiten, keine heilende Nahrung."
+      "oneElement": {
+        "title": "Ein Element",
+        "text": "Die ganze Truppe teilt sich ein Element."
       },
-      "noShields": {
-        "title": "Keine Schilde",
-        "text": "Keine Schildgeber und keine Schildfähigkeiten."
+      "oneRegion": {
+        "title": "Eine Region",
+        "text": "Die ganze Truppe kommt aus einer Region."
       },
-      "noFood": {
-        "title": "Keine Nahrung",
-        "text": "Keine Nahrung und keine Tränke."
+      "threeCharacters": {
+        "title": "Drei Figuren",
+        "text": "Ein Platz der Truppe bleibt leer."
+      },
+      "fourStarCharacters": {
+        "title": "Nur 4★-Figuren",
+        "text": "Keine 5★-Figuren in der Truppe."
+      },
+      "twoCharacters": {
+        "title": "Zwei Figuren",
+        "text": "Zwei Plätze der Truppe bleiben leer."
+      },
+      "oneCharacter": {
+        "title": "Eine Figur",
+        "text": "Eine Figur, keine Truppe."
+      },
+      "refinementOne": {
+        "title": "Verfeinerungsstufe 1",
+        "text": "Keine verfeinerten Waffen."
       },
       "removeOneArtifact": {
         "title": "1 Artefakt weniger",
@@ -166,6 +202,22 @@
         "title": "3 Artefakte weniger",
         "text": "Jede Figur legt 3 Artefakte ab."
       },
+      "fourStarWeapons": {
+        "title": "Nur 4★-Waffen",
+        "text": "Jede Figur trägt eine Waffe mit höchstens 4★."
+      },
+      "noFourPieceSets": {
+        "title": "Keine Sets mit 4 Teilen",
+        "text": "Kein Setbonus für 4 Teile ist aktiv."
+      },
+      "oneSetForAll": {
+        "title": "Ein Set für alle",
+        "text": "Die ganze Truppe trägt dasselbe Set mit 4 Teilen."
+      },
+      "fourStarArtifacts": {
+        "title": "Nur 4★-Artefakte",
+        "text": "Keine 5★-Artefakte."
+      },
       "removeFourArtifacts": {
         "title": "4 Artefakte weniger",
         "text": "Jede Figur legt 4 Artefakte ab."
@@ -174,21 +226,49 @@
         "title": "Keine Artefakte",
         "text": "Alle legen ihre Artefakte ab."
       },
-      "oneElement": {
-        "title": "Ein Element",
-        "text": "Die ganze Truppe teilt sich ein Element."
+      "levelOneWeapons": {
+        "title": "Waffen auf St. 1",
+        "text": "Jede Figur trägt eine Waffe auf Stufe 1."
       },
-      "fourStarCharacters": {
-        "title": "Nur 4★-Figuren",
-        "text": "Keine 5★-Figuren in der Truppe."
+      "threeStarWeapons": {
+        "title": "Nur 3★-Waffen",
+        "text": "Jede Figur trägt eine Waffe mit höchstens 3★."
+      },
+      "nothingOn": {
+        "title": "Ohne alles",
+        "text": "Waffen auf St. 1 und keine Artefakte."
+      },
+      "noFood": {
+        "title": "Keine Nahrung",
+        "text": "Keine Nahrung und keine Tränke."
+      },
+      "noJumping": {
+        "title": "Kein Springen",
+        "text": "Die Füße bleiben am Boden."
       },
       "noSprinting": {
         "title": "Kein Rennen",
         "text": "Nur gehen, springen und klettern."
       },
-      "noDodging": {
-        "title": "Kein Ausweichen",
-        "text": "Kein Sprint aus der Gefahr."
+      "swapInSlotOrder": {
+        "title": "Wechsel der Reihe nach",
+        "text": "Gewechselt wird nur auf den nächsten Platz: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Keine Spezialfähigkeiten",
+        "text": "Spezialfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      },
+      "noSkills": {
+        "title": "Keine Elementarfähigkeiten",
+        "text": "Elementarfähigkeiten bleiben den ganzen Durchlauf ungenutzt."
+      },
+      "skillsOnly": {
+        "title": "Nur Elementarfähigkeiten",
+        "text": "Nur Elementarfähigkeiten. Keine Standardangriffe, keine Spezialfähigkeiten."
+      },
+      "noShields": {
+        "title": "Keine Schilde",
+        "text": "Keine Schildgeber und keine Schildfähigkeiten."
       },
       "swapEveryTen": {
         "title": "Wechsel alle 10 s",
@@ -198,17 +278,73 @@
         "title": "Kein Wechseln",
         "text": "Die Figur, die den Kampf beginnt, beendet ihn auch."
       },
-      "threeCharacters": {
-        "title": "Drei Figuren",
-        "text": "Ein Platz der Truppe bleibt leer."
+      "allBurstsTogether": {
+        "title": "Spezialfähigkeiten gemeinsam",
+        "text": "Spezialfähigkeiten werden nur eingesetzt, wenn alle vier bereit sind."
+      },
+      "nobodyFalls": {
+        "title": "Niemand fällt",
+        "text": "Der Durchlauf scheitert, sobald eine Figur fällt."
+      },
+      "normalAttacksOnly": {
+        "title": "Nur Standardangriffe",
+        "text": "Keine Elementarfähigkeiten, keine Spezialfähigkeiten."
+      },
+      "chargedAttacksOnly": {
+        "title": "Nur Heftige Schläge",
+        "text": "Heftige Schläge machen den Schaden. Keine Elementarfähigkeiten, keine Spezialfähigkeiten."
+      },
+      "noHealing": {
+        "title": "Keine Heilung",
+        "text": "Keine Heiler, keine Heilfähigkeiten, keine heilende Nahrung."
+      },
+      "noDodging": {
+        "title": "Kein Ausweichen",
+        "text": "Kein Sprint aus der Gefahr."
+      },
+      "noHits": {
+        "title": "Keine Treffer",
+        "text": "Von vorn beginnen, sobald jemand Schaden nimmt."
+      },
+      "underFiveMinutes": {
+        "title": "Unter 5 Minuten",
+        "text": "Der Kampf endet innerhalb von fünf Minuten."
       },
       "underThreeMinutes": {
         "title": "Unter 3 Minuten",
         "text": "Der Kampf endet innerhalb von drei Minuten, sonst zählt er nicht."
       },
+      "firstTry": {
+        "title": "Erster Versuch",
+        "text": "Ein Versuch. Er zählt, egal was passiert."
+      },
+      "threeBursts": {
+        "title": "Drei Spezialfähigkeiten",
+        "text": "Die Truppe setzt insgesamt drei Spezialfähigkeiten ein."
+      },
       "underNinetySeconds": {
         "title": "Unter 90 Sekunden",
         "text": "Ein Speedrun: neunzig Sekunden auf der Uhr."
+      },
+      "underSixtySeconds": {
+        "title": "Unter 60 Sekunden",
+        "text": "Sechzig Sekunden auf der Uhr."
+      },
+      "pickForNext": {
+        "title": "Für den Nächsten wählen",
+        "text": "Jeder Spieler wählt die Figur des nächsten Spielers."
+      },
+      "oneBurstEach": {
+        "title": "Je eine Spezialfähigkeit",
+        "text": "Jeder Spieler setzt seine Spezialfähigkeit einmal ein."
+      },
+      "oneRoleEach": {
+        "title": "Je eine Rolle",
+        "text": "Ein Heiler, ein Schildgeber, ein Haupt-DPS, ein Unterstützer."
+      },
+      "oneCaller": {
+        "title": "Einer sagt an",
+        "text": "Ein Spieler sagt jede Spezialfähigkeit an. Ohne Ansage setzt niemand eine ein."
       },
       "noReviving": {
         "title": "Kein Wiederbeleben",
@@ -218,9 +354,41 @@
         "title": "Gleiches Element für alle",
         "text": "Alle Spieler bringen dasselbe Element mit."
       },
-      "oneBurstEach": {
-        "title": "Je eine Spezialfähigkeit",
-        "text": "Jeder Spieler setzt seine Spezialfähigkeit einmal ein."
+      "sameCharacterEveryone": {
+        "title": "Gleiche Figur für alle",
+        "text": "Alle Spieler bringen dieselbe Figur mit."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Spezialfähigkeiten nach Spieler",
+        "text": "Spezialfähigkeiten folgen der Reihe 1P, 2P, 3P, 4P, dann wieder von vorn."
+      },
+      "noTeleporting": {
+        "title": "Kein Teleportieren",
+        "text": "Zum Kampf wird gelaufen."
+      },
+      "noGadgets": {
+        "title": "Keine Hilfsmittel",
+        "text": "Im Kampf wird kein Hilfsmittel benutzt."
+      },
+      "noPausing": {
+        "title": "Keine Pause",
+        "text": "Das Menü bleibt während des Kampfes zu."
+      },
+      "sayItOutLoud": {
+        "title": "Laut ansagen",
+        "text": "Sag jede Elementarfähigkeit und jede Spezialfähigkeit an, bevor du sie einsetzt."
+      },
+      "noSound": {
+        "title": "Kein Ton",
+        "text": "Das Spiel ist stummgeschaltet."
+      },
+      "travelerLeads": {
+        "title": "Der Reisende führt",
+        "text": "Der Reisende ist in der Truppe und landet den letzten Treffer."
+      },
+      "failAddsCard": {
+        "title": "Fehlversuch bringt Karte",
+        "text": "Nach jedem Fehlversuch wird eine weitere Karte gezogen."
       }
     }
   },

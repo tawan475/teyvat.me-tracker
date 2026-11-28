@@ -87,9 +87,13 @@
       "land": "지상",
       "water": "수중"
     },
+    "playTitle": "인원",
+    "play": {
+      "coop": "다인 모드",
+      "solo": "개인 플레이"
+    },
     "leaveOut": "제외하기",
     "details": "적 상세 정보",
-    "fight": "{n}마리와 전투",
     "hint": "보스를 클릭하면 제외되며, 드래그해서 여러 보스를 제외할 수 있습니다.",
     "announce": "추첨 결과: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "타임어택",
     "timeTrialsHint": "전투에 제한 시간을 거는 카드",
     "level": {
+      "0": "아주 쉬움",
       "1": "쉬움",
       "2": "보통",
-      "3": "어려움"
+      "3": "어려움",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "가장 어려운 카드입니다. 한 번에 최대 1장만 나옵니다.",
+    "categoryTitle": "분류",
+    "category": {
+      "all": "전체",
+      "team": "파티",
+      "gear": "장비",
+      "combat": "전투",
+      "trials": "시련",
+      "party": "멀티",
+      "fun": "재미"
+    },
+    "allIn": "모두 넣기",
+    "allOut": "모두 빼기",
+    "inCount": "{n} / {total} 포함",
     "list": {
-      "noBursts": {
-        "title": "원소폭발 금지",
-        "text": "끝까지 원소폭발을 쓰지 않습니다."
+      "fourElements": {
+        "title": "원소 4종",
+        "text": "같은 원소의 캐릭터가 둘 이상 없습니다."
       },
-      "noSkills": {
-        "title": "원소전투 스킬 금지",
-        "text": "끝까지 원소전투 스킬을 쓰지 않습니다."
+      "twoElements": {
+        "title": "원소 2종",
+        "text": "파티의 원소는 정확히 두 가지입니다."
       },
-      "normalAttacksOnly": {
-        "title": "일반 공격만",
-        "text": "원소전투 스킬도 원소폭발도 쓰지 않습니다."
+      "fourRegions": {
+        "title": "국가 4곳",
+        "text": "모든 캐릭터의 소속 국가가 서로 다릅니다."
       },
-      "fourStarWeapons": {
-        "title": "4★ 무기만",
-        "text": "모든 캐릭터가 4★ 이하 무기를 듭니다."
+      "oneFiveStar": {
+        "title": "5★ 1명",
+        "text": "파티에 5★ 캐릭터는 최대 1명입니다."
       },
-      "levelOneWeapons": {
-        "title": "Lv. 1 무기",
-        "text": "모든 캐릭터가 1레벨 무기를 듭니다."
+      "noBowsNoCatalysts": {
+        "title": "활·법구 금지",
+        "text": "한손검, 양손검, 장병기만 씁니다."
       },
       "oneWeaponType": {
         "title": "무기 타입 통일",
         "text": "파티 전원이 같은 타입의 무기를 씁니다."
       },
-      "noHealing": {
-        "title": "회복 금지",
-        "text": "힐러, 회복 스킬, 회복 음식을 쓰지 않습니다."
+      "oneElement": {
+        "title": "단일 원소",
+        "text": "파티 전원이 같은 원소입니다."
       },
-      "noShields": {
-        "title": "보호막 금지",
-        "text": "실드 캐릭터도 보호막 스킬도 쓰지 않습니다."
+      "oneRegion": {
+        "title": "한 국가",
+        "text": "파티 전원의 소속 국가가 같습니다."
       },
-      "noFood": {
-        "title": "음식 금지",
-        "text": "음식도 포션도 쓰지 않습니다."
+      "threeCharacters": {
+        "title": "캐릭터 3명",
+        "text": "파티의 한 자리를 비워 둡니다."
+      },
+      "fourStarCharacters": {
+        "title": "4★ 캐릭터만",
+        "text": "파티에 5★ 캐릭터가 없습니다."
+      },
+      "twoCharacters": {
+        "title": "캐릭터 2명",
+        "text": "파티의 두 자리를 비워 둡니다."
+      },
+      "oneCharacter": {
+        "title": "캐릭터 1명",
+        "text": "파티 없이 캐릭터 1명만 씁니다."
+      },
+      "refinementOne": {
+        "title": "재련 1단계",
+        "text": "재련한 무기를 쓰지 않습니다."
       },
       "removeOneArtifact": {
         "title": "성유물 1개 해제",
@@ -166,6 +202,22 @@
         "title": "성유물 3개 해제",
         "text": "모든 캐릭터가 성유물을 3개 해제합니다."
       },
+      "fourStarWeapons": {
+        "title": "4★ 무기만",
+        "text": "모든 캐릭터가 4★ 이하 무기를 듭니다."
+      },
+      "noFourPieceSets": {
+        "title": "4세트 금지",
+        "text": "4세트 효과를 발동하지 않습니다."
+      },
+      "oneSetForAll": {
+        "title": "모두 같은 세트",
+        "text": "파티 전원이 같은 4세트를 착용합니다."
+      },
+      "fourStarArtifacts": {
+        "title": "4★ 성유물만",
+        "text": "5★ 성유물을 쓰지 않습니다."
+      },
       "removeFourArtifacts": {
         "title": "성유물 4개 해제",
         "text": "모든 캐릭터가 성유물을 4개 해제합니다."
@@ -174,21 +226,49 @@
         "title": "성유물 없음",
         "text": "모두 성유물을 해제합니다."
       },
-      "oneElement": {
-        "title": "단일 원소",
-        "text": "파티 전원이 같은 원소입니다."
+      "levelOneWeapons": {
+        "title": "Lv. 1 무기",
+        "text": "모든 캐릭터가 1레벨 무기를 듭니다."
       },
-      "fourStarCharacters": {
-        "title": "4★ 캐릭터만",
-        "text": "파티에 5★ 캐릭터가 없습니다."
+      "threeStarWeapons": {
+        "title": "3★ 무기만",
+        "text": "모든 캐릭터가 3★ 이하 무기를 듭니다."
+      },
+      "nothingOn": {
+        "title": "맨몸",
+        "text": "1레벨 무기를 들고 성유물은 착용하지 않습니다."
+      },
+      "noFood": {
+        "title": "음식 금지",
+        "text": "음식도 포션도 쓰지 않습니다."
+      },
+      "noJumping": {
+        "title": "점프 금지",
+        "text": "발이 땅에서 떨어지지 않습니다."
       },
       "noSprinting": {
         "title": "대시 금지",
         "text": "걷기, 점프, 등반만 합니다."
       },
-      "noDodging": {
-        "title": "회피 금지",
-        "text": "대시로 공격을 피하지 않습니다."
+      "swapInSlotOrder": {
+        "title": "자리 순서대로 교체",
+        "text": "다음 자리로만 교체합니다: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "원소폭발 금지",
+        "text": "끝까지 원소폭발을 쓰지 않습니다."
+      },
+      "noSkills": {
+        "title": "원소전투 스킬 금지",
+        "text": "끝까지 원소전투 스킬을 쓰지 않습니다."
+      },
+      "skillsOnly": {
+        "title": "원소전투 스킬만",
+        "text": "원소전투 스킬만 씁니다. 일반 공격도 원소폭발도 쓰지 않습니다."
+      },
+      "noShields": {
+        "title": "보호막 금지",
+        "text": "실드 캐릭터도 보호막 스킬도 쓰지 않습니다."
       },
       "swapEveryTen": {
         "title": "10초마다 교체",
@@ -198,17 +278,73 @@
         "title": "교체 금지",
         "text": "전투를 시작한 캐릭터가 끝까지 싸웁니다."
       },
-      "threeCharacters": {
-        "title": "캐릭터 3명",
-        "text": "파티의 한 자리를 비워 둡니다."
+      "allBurstsTogether": {
+        "title": "원소폭발 한꺼번에",
+        "text": "네 명 모두 준비됐을 때만 원소폭발을 씁니다."
+      },
+      "nobodyFalls": {
+        "title": "전원 생존",
+        "text": "캐릭터가 한 명이라도 쓰러지면 실패입니다."
+      },
+      "normalAttacksOnly": {
+        "title": "일반 공격만",
+        "text": "원소전투 스킬도 원소폭발도 쓰지 않습니다."
+      },
+      "chargedAttacksOnly": {
+        "title": "강공격만",
+        "text": "강공격으로 피해를 줍니다. 원소전투 스킬도 원소폭발도 쓰지 않습니다."
+      },
+      "noHealing": {
+        "title": "회복 금지",
+        "text": "힐러, 회복 스킬, 회복 음식을 쓰지 않습니다."
+      },
+      "noDodging": {
+        "title": "회피 금지",
+        "text": "대시로 공격을 피하지 않습니다."
+      },
+      "noHits": {
+        "title": "피격 금지",
+        "text": "누구든 피해를 받으면 처음부터 다시 합니다."
+      },
+      "underFiveMinutes": {
+        "title": "5분 이내",
+        "text": "5분 안에 전투를 끝냅니다."
       },
       "underThreeMinutes": {
         "title": "3분 이내",
         "text": "3분 안에 전투를 끝내지 못하면 무효입니다."
       },
+      "firstTry": {
+        "title": "첫 시도",
+        "text": "도전은 한 번뿐입니다. 결과가 어떻든 그대로 인정합니다."
+      },
+      "threeBursts": {
+        "title": "원소폭발 3회",
+        "text": "파티 전체가 원소폭발을 모두 세 번만 씁니다."
+      },
       "underNinetySeconds": {
         "title": "90초 이내",
         "text": "스피드런: 제한 시간은 90초입니다."
+      },
+      "underSixtySeconds": {
+        "title": "60초 이내",
+        "text": "제한 시간은 60초입니다."
+      },
+      "pickForNext": {
+        "title": "다음 플레이어 대신 고르기",
+        "text": "각 플레이어가 다음 플레이어의 캐릭터를 고릅니다."
+      },
+      "oneBurstEach": {
+        "title": "원소폭발 1인 1회",
+        "text": "각 플레이어는 원소폭발을 한 번만 씁니다."
+      },
+      "oneRoleEach": {
+        "title": "역할 하나씩",
+        "text": "힐러 1명, 실드 1명, 메인 딜러 1명, 서포터 1명입니다."
+      },
+      "oneCaller": {
+        "title": "지휘자 1명",
+        "text": "한 플레이어가 모든 원소폭발을 지시합니다. 지시 없이는 아무도 쓰지 않습니다."
       },
       "noReviving": {
         "title": "부활 금지",
@@ -218,9 +354,41 @@
         "title": "모두 같은 원소",
         "text": "모든 플레이어가 같은 원소를 가져옵니다."
       },
-      "oneBurstEach": {
-        "title": "원소폭발 1인 1회",
-        "text": "각 플레이어는 원소폭발을 한 번만 씁니다."
+      "sameCharacterEveryone": {
+        "title": "모두 같은 캐릭터",
+        "text": "모든 플레이어가 같은 캐릭터를 가져옵니다."
+      },
+      "burstsInPlayerOrder": {
+        "title": "플레이어 순서대로 원소폭발",
+        "text": "원소폭발은 1P, 2P, 3P, 4P 순서로 쓰고 다시 처음부터 돕니다."
+      },
+      "noTeleporting": {
+        "title": "워프 금지",
+        "text": "전투 장소까지 걸어갑니다."
+      },
+      "noGadgets": {
+        "title": "간편 아이템 금지",
+        "text": "전투 중에 간편 아이템을 쓰지 않습니다."
+      },
+      "noPausing": {
+        "title": "일시 정지 금지",
+        "text": "전투 중에는 메뉴를 열지 않습니다."
+      },
+      "sayItOutLoud": {
+        "title": "소리 내어 말하기",
+        "text": "원소전투 스킬과 원소폭발은 쓰기 전에 매번 소리 내어 말합니다."
+      },
+      "noSound": {
+        "title": "무음",
+        "text": "게임 소리를 끕니다."
+      },
+      "travelerLeads": {
+        "title": "여행자가 마무리",
+        "text": "여행자를 파티에 넣고 마지막 일격을 여행자가 날립니다."
+      },
+      "failAddsCard": {
+        "title": "실패하면 카드 추가",
+        "text": "실패할 때마다 카드를 1장 더 뽑습니다."
       }
     }
   },

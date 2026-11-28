@@ -87,9 +87,13 @@
       "land": "陸地",
       "water": "水下"
     },
+    "playTitle": "人數",
+    "play": {
+      "coop": "多人遊戲",
+      "solo": "單人遊玩"
+    },
     "leaveOut": "排除",
     "details": "敵人詳情",
-    "fight": "需擊敗{n}個",
     "hint": "點擊首領即可排除，或拖曳以排除多個。",
     "announce": "抽中：{name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "限時卡",
     "timeTrialsHint": "為戰鬥設定時間限制的卡牌",
     "level": {
+      "0": "輕鬆",
       "1": "簡單",
       "2": "中等",
-      "3": "困難"
+      "3": "困難",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "最難的卡牌。每次抽取至多出現一張。",
+    "categoryTitle": "分類",
+    "category": {
+      "all": "全部",
+      "team": "隊伍",
+      "gear": "裝備",
+      "combat": "戰鬥",
+      "trials": "試煉",
+      "party": "連線",
+      "fun": "趣味"
+    },
+    "allIn": "全部加入",
+    "allOut": "全部移出",
+    "inCount": "已加入 {n} / {total}",
     "list": {
-      "noBursts": {
-        "title": "禁用元素爆發",
-        "text": "全程不使用元素爆發。"
+      "fourElements": {
+        "title": "四種元素",
+        "text": "隊伍中沒有元素相同的角色。"
       },
-      "noSkills": {
-        "title": "禁用元素戰技",
-        "text": "全程不使用元素戰技。"
+      "twoElements": {
+        "title": "兩種元素",
+        "text": "隊伍中恰好有兩種元素。"
       },
-      "normalAttacksOnly": {
-        "title": "僅普通攻擊",
-        "text": "不用元素戰技，也不用元素爆發。"
+      "fourRegions": {
+        "title": "四個地區",
+        "text": "每名角色來自不同的地區。"
       },
-      "fourStarWeapons": {
-        "title": "僅4★武器",
-        "text": "每名角色裝備4★或更低的武器。"
+      "oneFiveStar": {
+        "title": "一名5★",
+        "text": "隊伍中至多一名5★角色。"
       },
-      "levelOneWeapons": {
-        "title": "Lv. 1 武器",
-        "text": "每名角色裝備1級武器。"
+      "noBowsNoCatalysts": {
+        "title": "禁用弓和法器",
+        "text": "只用單手劍、雙手劍和長柄武器。"
       },
       "oneWeaponType": {
         "title": "同一武器類型",
         "text": "全隊使用同一類型的武器。"
       },
-      "noHealing": {
-        "title": "禁止治療",
-        "text": "不帶治療角色，不用治療技能，不吃回血食物。"
+      "oneElement": {
+        "title": "單一元素",
+        "text": "全隊同一種元素。"
       },
-      "noShields": {
-        "title": "禁止護盾",
-        "text": "不帶護盾角色，不用護盾技能。"
+      "oneRegion": {
+        "title": "同一地區",
+        "text": "全隊來自同一個地區。"
       },
-      "noFood": {
-        "title": "禁止食物",
-        "text": "不用食物，也不用藥劑。"
+      "threeCharacters": {
+        "title": "三名角色",
+        "text": "隊伍空出一個位置。"
+      },
+      "fourStarCharacters": {
+        "title": "僅4★角色",
+        "text": "隊伍中沒有5★角色。"
+      },
+      "twoCharacters": {
+        "title": "兩名角色",
+        "text": "隊伍空出兩個位置。"
+      },
+      "oneCharacter": {
+        "title": "一名角色",
+        "text": "只帶一名角色，不組隊。"
+      },
+      "refinementOne": {
+        "title": "精煉1階",
+        "text": "不用精煉過的武器。"
       },
       "removeOneArtifact": {
         "title": "卸下1件聖遺物",
@@ -166,6 +202,22 @@
         "title": "卸下3件聖遺物",
         "text": "每名角色卸下3件聖遺物。"
       },
+      "fourStarWeapons": {
+        "title": "僅4★武器",
+        "text": "每名角色裝備4★或更低的武器。"
+      },
+      "noFourPieceSets": {
+        "title": "禁用4件套裝",
+        "text": "不觸發任何4件套裝效果。"
+      },
+      "oneSetForAll": {
+        "title": "全隊同一套裝",
+        "text": "全隊裝備同一種4件套裝。"
+      },
+      "fourStarArtifacts": {
+        "title": "僅4★聖遺物",
+        "text": "不用5★聖遺物。"
+      },
       "removeFourArtifacts": {
         "title": "卸下4件聖遺物",
         "text": "每名角色卸下4件聖遺物。"
@@ -174,21 +226,49 @@
         "title": "不帶聖遺物",
         "text": "所有人卸下聖遺物。"
       },
-      "oneElement": {
-        "title": "單一元素",
-        "text": "全隊同一種元素。"
+      "levelOneWeapons": {
+        "title": "Lv. 1 武器",
+        "text": "每名角色裝備1級武器。"
       },
-      "fourStarCharacters": {
-        "title": "僅4★角色",
-        "text": "隊伍中沒有5★角色。"
+      "threeStarWeapons": {
+        "title": "僅3★武器",
+        "text": "每名角色裝備3★或更低的武器。"
+      },
+      "nothingOn": {
+        "title": "裸裝",
+        "text": "裝備1級武器，不帶聖遺物。"
+      },
+      "noFood": {
+        "title": "禁止食物",
+        "text": "不用食物，也不用藥劑。"
+      },
+      "noJumping": {
+        "title": "禁止跳躍",
+        "text": "雙腳不離開地面。"
       },
       "noSprinting": {
         "title": "禁止衝刺",
         "text": "只能走路、跳躍和攀爬。"
       },
-      "noDodging": {
-        "title": "禁止閃避",
-        "text": "不能衝刺躲開攻擊。"
+      "swapInSlotOrder": {
+        "title": "按順序換人",
+        "text": "只能換到下一個位置：1、2、3、4、1。"
+      },
+      "noBursts": {
+        "title": "禁用元素爆發",
+        "text": "全程不使用元素爆發。"
+      },
+      "noSkills": {
+        "title": "禁用元素戰技",
+        "text": "全程不使用元素戰技。"
+      },
+      "skillsOnly": {
+        "title": "僅元素戰技",
+        "text": "只用元素戰技。不用普通攻擊，也不用元素爆發。"
+      },
+      "noShields": {
+        "title": "禁止護盾",
+        "text": "不帶護盾角色，不用護盾技能。"
       },
       "swapEveryTen": {
         "title": "每10秒換人",
@@ -198,17 +278,73 @@
         "title": "禁止換人",
         "text": "開場的角色打完整場戰鬥。"
       },
-      "threeCharacters": {
-        "title": "三名角色",
-        "text": "隊伍空出一個位置。"
+      "allBurstsTogether": {
+        "title": "同時爆發",
+        "text": "四人的元素爆發全部就緒時才能使用。"
+      },
+      "nobodyFalls": {
+        "title": "無人倒下",
+        "text": "有角色倒下即為失敗。"
+      },
+      "normalAttacksOnly": {
+        "title": "僅普通攻擊",
+        "text": "不用元素戰技，也不用元素爆發。"
+      },
+      "chargedAttacksOnly": {
+        "title": "僅重擊",
+        "text": "用重擊造成傷害。不用元素戰技，也不用元素爆發。"
+      },
+      "noHealing": {
+        "title": "禁止治療",
+        "text": "不帶治療角色，不用治療技能，不吃回血食物。"
+      },
+      "noDodging": {
+        "title": "禁止閃避",
+        "text": "不能衝刺躲開攻擊。"
+      },
+      "noHits": {
+        "title": "無傷",
+        "text": "任何人受到傷害就重新開始。"
+      },
+      "underFiveMinutes": {
+        "title": "5分鐘內",
+        "text": "五分鐘內結束戰鬥。"
       },
       "underThreeMinutes": {
         "title": "3分鐘內",
         "text": "三分鐘內結束戰鬥，否則不算。"
       },
+      "firstTry": {
+        "title": "只打一次",
+        "text": "只有一次機會。無論結果如何都算數。"
+      },
+      "threeBursts": {
+        "title": "三次爆發",
+        "text": "全隊總共只用三次元素爆發。"
+      },
       "underNinetySeconds": {
         "title": "90秒內",
         "text": "速通：限時九十秒。"
+      },
+      "underSixtySeconds": {
+        "title": "60秒內",
+        "text": "限時六十秒。"
+      },
+      "pickForNext": {
+        "title": "為下一位選角色",
+        "text": "每名玩家為下一名玩家選角色。"
+      },
+      "oneBurstEach": {
+        "title": "每人一次爆發",
+        "text": "每名玩家只用一次元素爆發。"
+      },
+      "oneRoleEach": {
+        "title": "定位各一名",
+        "text": "一名治療、一名護盾、一名主C、一名輔助。"
+      },
+      "oneCaller": {
+        "title": "一人指揮",
+        "text": "由一名玩家指揮所有元素爆發。沒有指令，誰也不能用。"
       },
       "noReviving": {
         "title": "禁止復甦",
@@ -218,9 +354,41 @@
         "title": "全員同元素",
         "text": "所有玩家帶同一種元素。"
       },
-      "oneBurstEach": {
-        "title": "每人一次爆發",
-        "text": "每名玩家只用一次元素爆發。"
+      "sameCharacterEveryone": {
+        "title": "全員同角色",
+        "text": "所有玩家帶同一名角色。"
+      },
+      "burstsInPlayerOrder": {
+        "title": "按玩家順序爆發",
+        "text": "元素爆發按1P、2P、3P、4P的順序使用，然後再從1P開始。"
+      },
+      "noTeleporting": {
+        "title": "禁止傳送",
+        "text": "走路前往戰鬥地點。"
+      },
+      "noGadgets": {
+        "title": "禁用小道具",
+        "text": "戰鬥中不使用任何小道具。"
+      },
+      "noPausing": {
+        "title": "禁止暫停",
+        "text": "戰鬥中不打開選單。"
+      },
+      "sayItOutLoud": {
+        "title": "先說出口",
+        "text": "每次使用元素戰技和元素爆發前，先大聲說出來。"
+      },
+      "noSound": {
+        "title": "靜音",
+        "text": "遊戲全程靜音。"
+      },
+      "travelerLeads": {
+        "title": "旅行者收尾",
+        "text": "旅行者在隊伍中，並由旅行者打出最後一擊。"
+      },
+      "failAddsCard": {
+        "title": "失敗加一張",
+        "text": "每次失敗再抽一張卡牌。"
       }
     }
   },

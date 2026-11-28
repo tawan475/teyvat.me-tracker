@@ -87,9 +87,13 @@
       "land": "Terre",
       "water": "Sous l'eau"
     },
+    "playTitle": "Joueurs",
+    "play": {
+      "coop": "Multijoueur",
+      "solo": "Solo"
+    },
     "leaveOut": "Exclure",
     "details": "Détails de l'ennemi",
-    "fight": "{n} à combattre",
     "hint": "Cliquez sur un boss pour l’exclure, ou faites glisser sur plusieurs.",
     "announce": "Tirage : {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "Contre-la-montre",
     "timeTrialsHint": "Des cartes qui imposent une limite de temps au combat",
     "level": {
+      "0": "Très facile",
       "1": "Facile",
       "2": "Moyen",
-      "3": "Difficile"
+      "3": "Difficile",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Les cartes les plus difficiles. Un tirage en contient une au plus.",
+    "categoryTitle": "Catégorie",
+    "category": {
+      "all": "Toutes",
+      "team": "Équipe",
+      "gear": "Équipement",
+      "combat": "Combat",
+      "trials": "Épreuves",
+      "party": "Coop",
+      "fun": "Pour rire"
+    },
+    "allIn": "Tout ajouter",
+    "allOut": "Tout retirer",
+    "inCount": "{n} sur {total} dans le paquet",
     "list": {
-      "noBursts": {
-        "title": "Sans déchaînements",
-        "text": "Les déchaînements élémentaires restent inutilisés pendant toute la partie."
+      "fourElements": {
+        "title": "Quatre éléments",
+        "text": "Aucun élément n'est partagé par deux personnages."
       },
-      "noSkills": {
-        "title": "Sans compétences",
-        "text": "Les compétences élémentaires restent inutilisées pendant toute la partie."
+      "twoElements": {
+        "title": "Deux éléments",
+        "text": "L'équipe compte exactement deux éléments."
       },
-      "normalAttacksOnly": {
-        "title": "Attaques normales seulement",
-        "text": "Ni compétences élémentaires, ni déchaînements élémentaires."
+      "fourRegions": {
+        "title": "Quatre régions",
+        "text": "Chaque personnage vient d'une région différente."
       },
-      "fourStarWeapons": {
-        "title": "Armes 4★ seulement",
-        "text": "Chaque personnage porte une arme 4★ ou moins."
+      "oneFiveStar": {
+        "title": "Un seul 5★",
+        "text": "Un personnage 5★ au plus dans l'équipe."
       },
-      "levelOneWeapons": {
-        "title": "Armes niv. 1",
-        "text": "Chaque personnage porte une arme de niveau 1."
+      "noBowsNoCatalysts": {
+        "title": "Ni arcs, ni catalyseurs",
+        "text": "Épées à une main, épées à deux mains et armes d'hast seulement."
       },
       "oneWeaponType": {
         "title": "Un seul type d'arme",
         "text": "Toute l'équipe utilise le même type d'arme."
       },
-      "noHealing": {
-        "title": "Sans soins",
-        "text": "Ni soigneurs, ni compétences de soin, ni nourriture qui soigne."
+      "oneElement": {
+        "title": "Un seul élément",
+        "text": "Toute l'équipe partage le même élément."
       },
-      "noShields": {
-        "title": "Sans boucliers",
-        "text": "Ni personnages à bouclier, ni compétences de bouclier."
+      "oneRegion": {
+        "title": "Une seule région",
+        "text": "Toute l'équipe vient de la même région."
       },
-      "noFood": {
-        "title": "Sans nourriture",
-        "text": "Ni nourriture, ni potions."
+      "threeCharacters": {
+        "title": "Trois personnages",
+        "text": "Un emplacement de l'équipe reste vide."
+      },
+      "fourStarCharacters": {
+        "title": "Personnages 4★ seulement",
+        "text": "Aucun personnage 5★ dans l'équipe."
+      },
+      "twoCharacters": {
+        "title": "Deux personnages",
+        "text": "Deux emplacements de l'équipe restent vides."
+      },
+      "oneCharacter": {
+        "title": "Un seul personnage",
+        "text": "Un personnage, sans équipe."
+      },
+      "refinementOne": {
+        "title": "Rang de raffinement 1",
+        "text": "Aucune arme raffinée."
       },
       "removeOneArtifact": {
         "title": "1 artéfact en moins",
@@ -166,6 +202,22 @@
         "title": "3 artéfacts en moins",
         "text": "Chaque personnage retire 3 artéfacts."
       },
+      "fourStarWeapons": {
+        "title": "Armes 4★ seulement",
+        "text": "Chaque personnage porte une arme 4★ ou moins."
+      },
+      "noFourPieceSets": {
+        "title": "Sans sets de 4 pièces",
+        "text": "Aucun bonus de set de 4 pièces n'est actif."
+      },
+      "oneSetForAll": {
+        "title": "Un set pour tous",
+        "text": "Toute l'équipe porte le même set de 4 pièces."
+      },
+      "fourStarArtifacts": {
+        "title": "Artéfacts 4★ seulement",
+        "text": "Aucun artéfact 5★."
+      },
       "removeFourArtifacts": {
         "title": "4 artéfacts en moins",
         "text": "Chaque personnage retire 4 artéfacts."
@@ -174,21 +226,49 @@
         "title": "Sans artéfacts",
         "text": "Tout le monde retire ses artéfacts."
       },
-      "oneElement": {
-        "title": "Un seul élément",
-        "text": "Toute l'équipe partage le même élément."
+      "levelOneWeapons": {
+        "title": "Armes niv. 1",
+        "text": "Chaque personnage porte une arme de niveau 1."
       },
-      "fourStarCharacters": {
-        "title": "Personnages 4★ seulement",
-        "text": "Aucun personnage 5★ dans l'équipe."
+      "threeStarWeapons": {
+        "title": "Armes 3★ seulement",
+        "text": "Chaque personnage porte une arme 3★ ou moins."
+      },
+      "nothingOn": {
+        "title": "Sans rien",
+        "text": "Armes niv. 1 et aucun artéfact."
+      },
+      "noFood": {
+        "title": "Sans nourriture",
+        "text": "Ni nourriture, ni potions."
+      },
+      "noJumping": {
+        "title": "Sans saut",
+        "text": "Les pieds restent au sol."
       },
       "noSprinting": {
         "title": "Sans sprint",
         "text": "Marcher, sauter et grimper seulement."
       },
-      "noDodging": {
-        "title": "Sans esquive",
-        "text": "Pas de ruée pour éviter les coups."
+      "swapInSlotOrder": {
+        "title": "Changement dans l'ordre",
+        "text": "On ne passe qu'à l'emplacement suivant : 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Sans déchaînements",
+        "text": "Les déchaînements élémentaires restent inutilisés pendant toute la partie."
+      },
+      "noSkills": {
+        "title": "Sans compétences",
+        "text": "Les compétences élémentaires restent inutilisées pendant toute la partie."
+      },
+      "skillsOnly": {
+        "title": "Compétences seulement",
+        "text": "Compétences élémentaires seulement. Ni attaques normales, ni déchaînements élémentaires."
+      },
+      "noShields": {
+        "title": "Sans boucliers",
+        "text": "Ni personnages à bouclier, ni compétences de bouclier."
       },
       "swapEveryTen": {
         "title": "Changement toutes les 10 s",
@@ -198,17 +278,73 @@
         "title": "Sans changement",
         "text": "Le personnage qui commence le combat le termine."
       },
-      "threeCharacters": {
-        "title": "Trois personnages",
-        "text": "Un emplacement de l'équipe reste vide."
+      "allBurstsTogether": {
+        "title": "Déchaînements ensemble",
+        "text": "Les déchaînements élémentaires ne s'utilisent que lorsque les quatre sont prêts."
+      },
+      "nobodyFalls": {
+        "title": "Personne ne tombe",
+        "text": "La partie échoue dès qu'un personnage tombe."
+      },
+      "normalAttacksOnly": {
+        "title": "Attaques normales seulement",
+        "text": "Ni compétences élémentaires, ni déchaînements élémentaires."
+      },
+      "chargedAttacksOnly": {
+        "title": "Attaques chargées seulement",
+        "text": "Les attaques chargées infligent les dégâts. Ni compétences élémentaires, ni déchaînements élémentaires."
+      },
+      "noHealing": {
+        "title": "Sans soins",
+        "text": "Ni soigneurs, ni compétences de soin, ni nourriture qui soigne."
+      },
+      "noDodging": {
+        "title": "Sans esquive",
+        "text": "Pas de ruée pour éviter les coups."
+      },
+      "noHits": {
+        "title": "Sans dégâts subis",
+        "text": "On recommence dès que quelqu'un subit des dégâts."
+      },
+      "underFiveMinutes": {
+        "title": "Moins de 5 minutes",
+        "text": "Le combat se termine en cinq minutes."
       },
       "underThreeMinutes": {
         "title": "Moins de 3 minutes",
         "text": "Le combat se termine en trois minutes, sinon il ne compte pas."
       },
+      "firstTry": {
+        "title": "Premier essai",
+        "text": "Une seule tentative. Elle compte, quoi qu'il arrive."
+      },
+      "threeBursts": {
+        "title": "Trois déchaînements",
+        "text": "L'équipe utilise trois déchaînements élémentaires en tout."
+      },
       "underNinetySeconds": {
         "title": "Moins de 90 secondes",
         "text": "Une course de vitesse, quatre-vingt-dix secondes au chrono."
+      },
+      "underSixtySeconds": {
+        "title": "Moins de 60 secondes",
+        "text": "Soixante secondes au chrono."
+      },
+      "pickForNext": {
+        "title": "Choisir pour le suivant",
+        "text": "Chaque joueur choisit le personnage du joueur suivant."
+      },
+      "oneBurstEach": {
+        "title": "Un déchaînement chacun",
+        "text": "Chaque joueur utilise son déchaînement élémentaire une seule fois."
+      },
+      "oneRoleEach": {
+        "title": "Un rôle chacun",
+        "text": "Un soigneur, un bouclier, un DPS principal, un soutien."
+      },
+      "oneCaller": {
+        "title": "Un seul meneur",
+        "text": "Un joueur annonce chaque déchaînement élémentaire. Personne n'en utilise sans son annonce."
       },
       "noReviving": {
         "title": "Sans réanimation",
@@ -218,9 +354,41 @@
         "title": "Même élément pour tous",
         "text": "Tous les joueurs apportent le même élément."
       },
-      "oneBurstEach": {
-        "title": "Un déchaînement chacun",
-        "text": "Chaque joueur utilise son déchaînement élémentaire une seule fois."
+      "sameCharacterEveryone": {
+        "title": "Même personnage pour tous",
+        "text": "Tous les joueurs apportent le même personnage."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Déchaînements dans l'ordre",
+        "text": "Les déchaînements élémentaires suivent l'ordre 1P, 2P, 3P, 4P, puis on recommence."
+      },
+      "noTeleporting": {
+        "title": "Sans téléportation",
+        "text": "On va au combat à pied."
+      },
+      "noGadgets": {
+        "title": "Sans gadgets",
+        "text": "Aucun gadget n'est utilisé pendant le combat."
+      },
+      "noPausing": {
+        "title": "Sans pause",
+        "text": "Le menu reste fermé pendant le combat."
+      },
+      "sayItOutLoud": {
+        "title": "À voix haute",
+        "text": "Annoncez chaque compétence élémentaire et chaque déchaînement élémentaire avant de l'utiliser."
+      },
+      "noSound": {
+        "title": "Sans son",
+        "text": "Le son du jeu est coupé."
+      },
+      "travelerLeads": {
+        "title": "Le Voyageur mène",
+        "text": "Le Voyageur est dans l'équipe et porte le dernier coup."
+      },
+      "failAddsCard": {
+        "title": "Un échec, une carte",
+        "text": "Chaque essai raté fait tirer une carte de plus."
       }
     }
   },

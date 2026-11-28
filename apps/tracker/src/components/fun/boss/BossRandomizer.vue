@@ -10,8 +10,10 @@ import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import {
   BOSS_KINDS,
+  BOSS_PLAYS,
   BOSS_REEL_MS,
   BOSS_WHERES,
+  bossPlay,
   bossPool,
   bossWhere,
   listsBoss,
@@ -19,6 +21,7 @@ import {
   reelOf,
   type BossEntry,
   type BossKind,
+  type BossPlay,
   type BossWhere,
 } from '@/data/boss-randomizer'
 import { loadEnemyData } from '@/data/enemies'
@@ -44,7 +47,8 @@ const EnemyDialog = defineAsyncComponent(() => import('@/components/collections/
  * roll runs a reel of pictures through (BossStage), its kind, name and
  * subtitle beside it with "Leave it out" and "Enemy details" (the site's
  * enemy dialog, from game data alone); "Roll a boss" with Undo; then the
- * pool: kind and land / underwater filters, and every boss as a tile where a
+ * pool: kind, land / underwater and co-op / single player filters (some
+ * Local Legends are fought alone only), and every boss as a tile where a
  * click, or a drag across several, leaves bosses out. Game data only, so it
  * is the same for every account; what was last set is remembered per device.
  */
@@ -68,6 +72,7 @@ const resource = useResource(
 interface Saved {
   kinds: BossKind[]
   wheres: BossWhere[]
+  plays: BossPlay[]
   benched: string[]
 }
 function load(): Saved {
@@ -77,6 +82,7 @@ function load(): Saved {
   return {
     kinds: list(saved.kinds, BOSS_KINDS),
     wheres: list(saved.wheres, BOSS_WHERES),
+    plays: list(saved.plays, BOSS_PLAYS),
     benched: Array.isArray(saved.benched) ? saved.benched.filter((k) => typeof k === 'string') : [],
   }
 }
@@ -84,7 +90,9 @@ const state = reactive<Saved>(load())
 watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
 const all = computed(() => resource.data.value?.pool ?? [])
-const shown = computed(() => all.value.filter((b) => listsBoss(b, state.kinds, state.wheres)))
+const shown = computed(() =>
+  all.value.filter((b) => listsBoss(b, state.kinds, state.wheres, state.plays)),
+)
 const benched = computed(() => new Set(state.benched))
 const pool = computed(() => shown.value.filter((b) => !benched.value.has(b.key)))
 
@@ -98,6 +106,12 @@ const whereCounts = computed(() =>
     n: all.value.filter((b) => listsBoss(b, state.kinds, []) && bossWhere(b) === where).length,
   })),
 )
+const playCounts = computed(() =>
+  BOSS_PLAYS.map((mode) => ({
+    mode,
+    n: all.value.filter((b) => listsBoss(b, state.kinds, []) && bossPlay(b) === mode).length,
+  })),
+)
 function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
 }
@@ -107,6 +121,7 @@ function toggleBench(key: string) {
 function clearFilters() {
   state.kinds = []
   state.wheres = []
+  state.plays = []
 }
 
 const grid = ref<HTMLElement | null>(null)
@@ -230,6 +245,7 @@ const hasDetails = (boss: BossEntry) => boss.codex != null || boss.kind === 'leg
           >
             <p class="text-xs font-semibold tracking-wider text-text-secondary uppercase">
               {{ $t(`fun.boss.kind.${hit.kind}`) }} · {{ $t(`fun.boss.where.${bossWhere(hit)}`) }}
+              <template v-if="hit.solo"> · {{ $t('fun.boss.play.solo') }}</template>
             </p>
             <p class="text-2xl leading-tight font-bold break-words sm:text-4xl">{{ hit.name }}</p>
             <p v-if="hit.subtitle" class="text-sm text-text-secondary">{{ hit.subtitle }}</p>
@@ -311,6 +327,22 @@ const hasDetails = (boss: BossEntry) => boss.codex != null || boss.kind === 'leg
             @toggle="state.wheres = toggle(state.wheres, where)"
           >
             {{ $t(`fun.boss.where.${where}`) }}
+          </FilterChip>
+        </div>
+        <span class="mx-1 h-6 w-px shrink-0 bg-border-strong" aria-hidden="true" />
+        <div
+          class="flex min-w-0 flex-wrap gap-2"
+          role="group"
+          :aria-label="$t('fun.boss.playTitle')"
+        >
+          <FilterChip
+            v-for="{ mode, n } in playCounts"
+            :key="mode"
+            :pressed="state.plays.includes(mode)"
+            :count="n"
+            @toggle="state.plays = toggle(state.plays, mode)"
+          >
+            {{ $t(`fun.boss.play.${mode}`) }}
           </FilterChip>
         </div>
         <span class="tabular ml-auto pl-2 text-sm text-text-secondary">

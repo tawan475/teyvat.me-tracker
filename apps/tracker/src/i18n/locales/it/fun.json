@@ -87,9 +87,13 @@
       "land": "Terra",
       "water": "Sott'acqua"
     },
+    "playTitle": "Giocatori",
+    "play": {
+      "coop": "Cooperativa",
+      "solo": "Giocatore singolo"
+    },
     "leaveOut": "Escludi",
     "details": "Dettagli nemico",
-    "fight": "{n} da sconfiggere",
     "hint": "Fai clic su un boss per escluderlo, o trascina su più boss.",
     "announce": "Estratto: {name}"
   },
@@ -113,46 +117,78 @@
     "timeTrials": "A tempo",
     "timeTrialsHint": "Carte che mettono un limite di tempo allo scontro",
     "level": {
+      "0": "Banale",
       "1": "Facile",
       "2": "Media",
-      "3": "Difficile"
+      "3": "Difficile",
+      "4": "Ⓜ️"
     },
+    "hardestHint": "Le carte più difficili. Ogni pescata ne contiene al massimo una.",
+    "categoryTitle": "Categoria",
+    "category": {
+      "all": "Tutte",
+      "team": "Gruppo",
+      "gear": "Equipaggiamento",
+      "combat": "Combattimento",
+      "trials": "Prove",
+      "party": "Co-op",
+      "fun": "Divertimento"
+    },
+    "allIn": "Metti tutte",
+    "allOut": "Togli tutte",
+    "inCount": "{n} su {total} dentro",
     "list": {
-      "noBursts": {
-        "title": "Niente tripudi",
-        "text": "I Tripudi elementali restano inutilizzati per tutta la partita."
+      "fourElements": {
+        "title": "Quattro elementi",
+        "text": "Nessun personaggio ha lo stesso elemento di un altro."
       },
-      "noSkills": {
-        "title": "Niente abilità",
-        "text": "Le Abilità elementali restano inutilizzate per tutta la partita."
+      "twoElements": {
+        "title": "Due elementi",
+        "text": "Il gruppo ha esattamente due elementi."
       },
-      "normalAttacksOnly": {
-        "title": "Solo attacchi normali",
-        "text": "Niente Abilità elementali, niente Tripudi elementali."
+      "fourRegions": {
+        "title": "Quattro regioni",
+        "text": "Ogni personaggio viene da una regione diversa."
       },
-      "fourStarWeapons": {
-        "title": "Solo armi 4★",
-        "text": "Ogni personaggio impugna un'arma 4★ o inferiore."
+      "oneFiveStar": {
+        "title": "Un 5★",
+        "text": "Al massimo un personaggio 5★ nel gruppo."
       },
-      "levelOneWeapons": {
-        "title": "Armi Liv. 1",
-        "text": "Ogni personaggio impugna un'arma di livello 1."
+      "noBowsNoCatalysts": {
+        "title": "Niente archi né catalizzatori",
+        "text": "Solo spade, claymore e lance."
       },
       "oneWeaponType": {
         "title": "Un tipo di arma",
         "text": "Tutto il gruppo usa lo stesso tipo di arma."
       },
-      "noHealing": {
-        "title": "Niente cure",
-        "text": "Niente guaritori, niente abilità di cura, niente cibo che cura."
+      "oneElement": {
+        "title": "Un elemento",
+        "text": "Tutto il gruppo condivide un elemento."
       },
-      "noShields": {
-        "title": "Niente scudi",
-        "text": "Niente personaggi da scudo e niente abilità di scudo."
+      "oneRegion": {
+        "title": "Una regione",
+        "text": "Tutto il gruppo viene dalla stessa regione."
       },
-      "noFood": {
-        "title": "Niente cibo",
-        "text": "Niente cibo e niente pozioni."
+      "threeCharacters": {
+        "title": "Tre personaggi",
+        "text": "Un posto del gruppo resta vuoto."
+      },
+      "fourStarCharacters": {
+        "title": "Solo personaggi 4★",
+        "text": "Nessun personaggio 5★ nel gruppo."
+      },
+      "twoCharacters": {
+        "title": "Due personaggi",
+        "text": "Due posti del gruppo restano vuoti."
+      },
+      "oneCharacter": {
+        "title": "Un personaggio",
+        "text": "Un personaggio, nessun gruppo."
+      },
+      "refinementOne": {
+        "title": "Grado di miglioramento 1",
+        "text": "Niente armi migliorate."
       },
       "removeOneArtifact": {
         "title": "1 manufatto in meno",
@@ -166,6 +202,22 @@
         "title": "3 manufatti in meno",
         "text": "Ogni personaggio si toglie 3 manufatti."
       },
+      "fourStarWeapons": {
+        "title": "Solo armi 4★",
+        "text": "Ogni personaggio impugna un'arma 4★ o inferiore."
+      },
+      "noFourPieceSets": {
+        "title": "Niente set da 4 pezzi",
+        "text": "Nessun bonus del set da 4 pezzi è attivo."
+      },
+      "oneSetForAll": {
+        "title": "Un set per tutti",
+        "text": "Tutto il gruppo indossa lo stesso set da 4 pezzi."
+      },
+      "fourStarArtifacts": {
+        "title": "Solo manufatti 4★",
+        "text": "Nessun manufatto 5★."
+      },
       "removeFourArtifacts": {
         "title": "4 manufatti in meno",
         "text": "Ogni personaggio si toglie 4 manufatti."
@@ -174,21 +226,49 @@
         "title": "Niente manufatti",
         "text": "Tutti si tolgono i manufatti."
       },
-      "oneElement": {
-        "title": "Un elemento",
-        "text": "Tutto il gruppo condivide un elemento."
+      "levelOneWeapons": {
+        "title": "Armi Liv. 1",
+        "text": "Ogni personaggio impugna un'arma di livello 1."
       },
-      "fourStarCharacters": {
-        "title": "Solo personaggi 4★",
-        "text": "Nessun personaggio 5★ nel gruppo."
+      "threeStarWeapons": {
+        "title": "Solo armi 3★",
+        "text": "Ogni personaggio impugna un'arma 3★ o inferiore."
+      },
+      "nothingOn": {
+        "title": "Niente addosso",
+        "text": "Armi Liv. 1 e nessun manufatto."
+      },
+      "noFood": {
+        "title": "Niente cibo",
+        "text": "Niente cibo e niente pozioni."
+      },
+      "noJumping": {
+        "title": "Niente salti",
+        "text": "I piedi restano a terra."
       },
       "noSprinting": {
         "title": "Niente scatto",
         "text": "Solo camminare, saltare e arrampicarsi."
       },
-      "noDodging": {
-        "title": "Niente schivate",
-        "text": "Niente scatti per togliersi di mezzo."
+      "swapInSlotOrder": {
+        "title": "Cambio in ordine di posto",
+        "text": "Si cambia solo con il posto successivo: 1, 2, 3, 4, 1."
+      },
+      "noBursts": {
+        "title": "Niente tripudi",
+        "text": "I Tripudi elementali restano inutilizzati per tutta la partita."
+      },
+      "noSkills": {
+        "title": "Niente abilità",
+        "text": "Le Abilità elementali restano inutilizzate per tutta la partita."
+      },
+      "skillsOnly": {
+        "title": "Solo abilità",
+        "text": "Solo Abilità elementali. Niente attacchi normali, niente Tripudi elementali."
+      },
+      "noShields": {
+        "title": "Niente scudi",
+        "text": "Niente personaggi da scudo e niente abilità di scudo."
       },
       "swapEveryTen": {
         "title": "Cambio ogni 10 s",
@@ -198,17 +278,73 @@
         "title": "Niente cambi",
         "text": "Il personaggio che inizia lo scontro lo finisce."
       },
-      "threeCharacters": {
-        "title": "Tre personaggi",
-        "text": "Un posto del gruppo resta vuoto."
+      "allBurstsTogether": {
+        "title": "Tutti i tripudi insieme",
+        "text": "I Tripudi elementali si usano solo quando tutti e quattro sono pronti."
+      },
+      "nobodyFalls": {
+        "title": "Nessuno cade",
+        "text": "La partita è persa quando un personaggio cade."
+      },
+      "normalAttacksOnly": {
+        "title": "Solo attacchi normali",
+        "text": "Niente Abilità elementali, niente Tripudi elementali."
+      },
+      "chargedAttacksOnly": {
+        "title": "Solo attacchi caricati",
+        "text": "I danni li fanno gli Attacchi caricati. Niente Abilità elementali, niente Tripudi elementali."
+      },
+      "noHealing": {
+        "title": "Niente cure",
+        "text": "Niente guaritori, niente abilità di cura, niente cibo che cura."
+      },
+      "noDodging": {
+        "title": "Niente schivate",
+        "text": "Niente scatti per togliersi di mezzo."
+      },
+      "noHits": {
+        "title": "Nessun colpo subito",
+        "text": "Si ricomincia quando qualcuno subisce danni."
+      },
+      "underFiveMinutes": {
+        "title": "Sotto i 5 minuti",
+        "text": "Lo scontro finisce entro cinque minuti."
       },
       "underThreeMinutes": {
         "title": "Sotto i 3 minuti",
         "text": "Lo scontro finisce entro tre minuti, altrimenti non vale."
       },
+      "firstTry": {
+        "title": "Al primo tentativo",
+        "text": "Un solo tentativo. Vale, comunque vada."
+      },
+      "threeBursts": {
+        "title": "Tre tripudi",
+        "text": "Il gruppo usa tre Tripudi elementali in tutto."
+      },
       "underNinetySeconds": {
         "title": "Sotto i 90 secondi",
         "text": "Una corsa contro il tempo: novanta secondi sul cronometro."
+      },
+      "underSixtySeconds": {
+        "title": "Sotto i 60 secondi",
+        "text": "Sessanta secondi sul cronometro."
+      },
+      "pickForNext": {
+        "title": "Scegli per il prossimo",
+        "text": "Ogni giocatore sceglie il personaggio del giocatore successivo."
+      },
+      "oneBurstEach": {
+        "title": "Un tripudio a testa",
+        "text": "Ogni giocatore usa il suo Tripudio elementale una volta."
+      },
+      "oneRoleEach": {
+        "title": "Un ruolo a testa",
+        "text": "Un guaritore, uno scudo, un DPS principale, un supporto."
+      },
+      "oneCaller": {
+        "title": "Uno solo dà il via",
+        "text": "Un giocatore dà il via a ogni Tripudio elementale. Nessuno usa il suo senza il via."
       },
       "noReviving": {
         "title": "Niente rianimazioni",
@@ -218,9 +354,41 @@
         "title": "Stesso elemento per tutti",
         "text": "Tutti i giocatori portano lo stesso elemento."
       },
-      "oneBurstEach": {
-        "title": "Un tripudio a testa",
-        "text": "Ogni giocatore usa il suo Tripudio elementale una volta."
+      "sameCharacterEveryone": {
+        "title": "Stesso personaggio per tutti",
+        "text": "Tutti i giocatori portano lo stesso personaggio."
+      },
+      "burstsInPlayerOrder": {
+        "title": "Tripudi in ordine di giocatore",
+        "text": "I Tripudi elementali vanno 1P, 2P, 3P, 4P, poi si ricomincia."
+      },
+      "noTeleporting": {
+        "title": "Niente teletrasporto",
+        "text": "Allo scontro si va a piedi."
+      },
+      "noGadgets": {
+        "title": "Niente gadget",
+        "text": "Nessun gadget viene usato nello scontro."
+      },
+      "noPausing": {
+        "title": "Niente pausa",
+        "text": "Il menu resta chiuso durante lo scontro."
+      },
+      "sayItOutLoud": {
+        "title": "Dillo ad alta voce",
+        "text": "Annuncia ogni Abilità elementale e ogni Tripudio elementale prima di usarli."
+      },
+      "noSound": {
+        "title": "Niente audio",
+        "text": "Il gioco è senza audio."
+      },
+      "travelerLeads": {
+        "title": "Guida il Viaggiatore",
+        "text": "Il Viaggiatore è nel gruppo e dà l'ultimo colpo."
+      },
+      "failAddsCard": {
+        "title": "Ogni errore, una carta",
+        "text": "Ogni tentativo fallito pesca un'altra carta."
       }
     }
   },

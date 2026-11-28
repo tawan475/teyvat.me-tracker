@@ -4,9 +4,9 @@ import { loadFarming } from '@gdt/game-data/farming'
 import {
   BOSS_KINDS,
   BOSS_REEL,
+  SOLO_ONLY,
   UNDERWATER,
   bossPool,
-  fightSize,
   listsBoss,
   otherIcons,
   pickOne,
@@ -48,6 +48,28 @@ describe('the boss randomizer', () => {
     }
   })
 
+  it('marks exactly the Local Legends fought alone only', async () => {
+    const solo = (await pool()).filter((b) => b.solo)
+    expect(solo.every((b) => b.kind === 'legend')).toBe(true)
+    expect(solo).toHaveLength(SOLO_ONLY.length)
+    for (const part of SOLO_ONLY) {
+      expect(
+        solo.some((b) => b.name.includes(part)),
+        part,
+      ).toBe(true)
+    }
+  })
+
+  it('filters by co-op or single player', async () => {
+    const list = await pool()
+    const solo = list.filter((b) => listsBoss(b, [], [], ['solo']))
+    const coop = list.filter((b) => listsBoss(b, [], [], ['coop']))
+    expect(solo).toHaveLength(SOLO_ONLY.length)
+    expect(solo.length + coop.length).toBe(list.length)
+    expect(list.filter((b) => listsBoss(b, [], [], ['coop', 'solo']))).toHaveLength(list.length)
+    expect(list.filter((b) => listsBoss(b, ['weekly'], [], ['solo']))).toHaveLength(0)
+  })
+
   it('filters by kind and by where; an empty filter lists all', async () => {
     const list = await pool()
     expect(list.filter((b) => listsBoss(b, [], []))).toHaveLength(list.length)
@@ -65,14 +87,12 @@ describe('the boss randomizer', () => {
     expect(pickOne(['a', 'b'], () => 1)).toBe('b')
   })
 
-  it('counts the monsters of a fight and shows the different ones small', async () => {
-    expect(fightSize({ icons: [] })).toBe(1)
-    expect(fightSize({ icons: ['a', 'a'] })).toBe(2)
+  it('shows the different monsters of a fight small', async () => {
     expect(otherIcons({ icons: ['a', 'a'] })).toEqual([])
     expect(otherIcons({ icons: ['a', 'b', 'b'] })).toEqual(['b'])
     expect(otherIcons({ icons: ['a'] })).toEqual([])
     const list = await pool()
-    expect(list.some((b) => fightSize(b) === 3)).toBe(true)
+    expect(list.some((b) => b.icons.length === 3)).toBe(true)
   })
 
   it('runs the reel past pictured bosses, never one twice in a row or the result last', () => {

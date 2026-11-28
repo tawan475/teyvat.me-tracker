@@ -10,6 +10,8 @@ export const BOSS_KINDS = ['weekly', 'world', 'legend'] as const
 export type BossKind = (typeof BOSS_KINDS)[number]
 export const BOSS_WHERES = ['land', 'water'] as const
 export type BossWhere = (typeof BOSS_WHERES)[number]
+export const BOSS_PLAYS = ['coop', 'solo'] as const
+export type BossPlay = (typeof BOSS_PLAYS)[number]
 
 export interface BossEntry {
   /** Stable per boss: what a ban and the last roll remember. */
@@ -22,6 +24,8 @@ export interface BossEntry {
   icons: string[]
   /** Fought while diving. */
   water: boolean
+  /** Fought alone only: not in Co-Op Mode. */
+  solo: boolean
   /** Its Living Beings entry, when it has one. */
   codex: number | null
 }
@@ -45,6 +49,29 @@ export const UNDERWATER = [
 
 const underwater = (english: string) => UNDERWATER.some((part) => english.includes(part))
 
+/**
+ * The fights that cannot be had in Co-Op Mode, by a part of the English name:
+ * Natlan's Local Legends met through a Nightsoul Totem, a trial held alone in
+ * the Night Kingdom. The wiki's Local Legend page lists these twelve under
+ * "Natlan — Totems" (read 2026-11-29); Natlan's other ten are in the open world.
+ */
+export const SOLO_ONLY = [
+  'He Never Dies',
+  "Ichcahuipilli's Aegis",
+  "Atlatl's Blessing",
+  'Cihuacoatl of Chimeric Bone',
+  'Tlatzacuilotl',
+  "Chimalli's Shade",
+  'Spirit of the Fallen Dawnstar',
+  "Potapo's Solidarity",
+  "Tupayo's Aid",
+  'Ironbeard',
+  "Tupu's Lushness",
+  'Reji',
+] as const
+
+const soloOnly = (english: string) => SOLO_ONLY.some((part) => english.includes(part))
+
 /** Every boss, in the order weekly, 40-resin, Local Legend, each in the game's own order. */
 export function bossPool(
   enemies: Pick<Enemies, 'enemies' | 'legends'>,
@@ -63,6 +90,7 @@ export function bossPool(
       subtitle: '',
       icons: [enemy.icon],
       water: underwater(english.name(enemy.id)),
+      solo: false,
       codex: enemy.id,
     })
   }
@@ -77,6 +105,7 @@ export function bossPool(
       subtitle: '',
       icons: enemy ? [enemy.icon] : [],
       water: underwater(boss.name),
+      solo: false,
       codex: enemy?.id ?? null,
     })
   }
@@ -90,6 +119,7 @@ export function bossPool(
       subtitle: text.subtitle,
       icons: legend.icons,
       water: underwater(en.name),
+      solo: soloOnly(en.name),
       codex: null,
     })
   }
@@ -97,16 +127,19 @@ export function bossPool(
 }
 
 export const bossWhere = (boss: BossEntry): BossWhere => (boss.water ? 'water' : 'land')
+export const bossPlay = (boss: BossEntry): BossPlay => (boss.solo ? 'solo' : 'coop')
 
 /** Whether the filters list the boss. An empty filter lists everything of its kind. */
 export function listsBoss(
   boss: BossEntry,
   kinds: readonly BossKind[],
   wheres: readonly BossWhere[],
+  plays: readonly BossPlay[] = [],
 ): boolean {
   return (
     (!kinds.length || kinds.includes(boss.kind)) &&
-    (!wheres.length || wheres.includes(bossWhere(boss)))
+    (!wheres.length || wheres.includes(bossWhere(boss))) &&
+    (!plays.length || plays.includes(bossPlay(boss)))
   )
 }
 
@@ -114,9 +147,6 @@ export function listsBoss(
 export function pickOne<T>(list: readonly T[], random: () => number = Math.random): T | null {
   return list.length ? list[Math.min(list.length - 1, Math.floor(random() * list.length))]! : null
 }
-
-/** How many monsters the fight has (a pair of Local Legends: 2; one legend: 3). */
-export const fightSize = (boss: Pick<BossEntry, 'icons'>): number => Math.max(1, boss.icons.length)
 
 /**
  * The pictures shown small beside the first: the fight's other monsters

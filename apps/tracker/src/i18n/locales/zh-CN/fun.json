@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "周本\n深境螺旋\n圣遗物秘境\n探索\n尘歌壶\n联机",
-    "unsaved": "未保存的清单",
-    "new": "新建",
-    "open": "打开",
-    "save": "保存",
     "listName": "清单名称",
     "deleteList": "删除{name}",
     "share": "分享链接",
@@ -233,7 +229,6 @@
     "hint": "点击转盘转动，或按 Ctrl + Enter",
     "empty": "添加条目后即可转动",
     "spinning": "转动中…",
-    "notSpun": "尚未转动",
     "winner": "选出来了",
     "remove": "移除",
     "close": "关闭",
@@ -254,7 +249,27 @@
       "sound": "声音",
       "confetti": "彩纸",
       "hide": "转动时隐藏条目"
-    }
+    },
+    "namePlaceholder": "给清单起个名字即可保存",
+    "nameHint": "有名字的清单在编辑时会自动保存到“我的清单”",
+    "myLists": "我的清单",
+    "newList": "新建清单",
+    "noLists": "还没有清单：起个名字就能保存",
+    "overline": "选中",
+    "spinAgain": "再转一次",
+    "hub": "转",
+    "kept": "每行一个条目 · 只保存在此浏览器中",
+    "copyByHand": "复制此链接来分享清单：",
+    "soundOn": "声音开",
+    "soundOff": "声音关"
   },
-  "publicPitch": "从全部已上线角色中随机两支队伍"
+  "publicPitch": "从全部已上线角色中随机两支队伍",
+  "public": {
+    "nav": "主菜单",
+    "lead": "原神的随机器和转盘。免费，无需账号。",
+    "openTracker": "打开追踪器",
+    "guestTitle": "从你自己的角色中抽取",
+    "guestBody": "在追踪器里，队伍随机器使用你实际拥有的角色。",
+    "guestButton": "以访客身份试用"
+  }
 }

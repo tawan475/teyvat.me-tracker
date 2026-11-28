@@ -1,37 +1,40 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import {
   ArrowDownAZ,
   Check,
   ChevronDown,
   ChevronUp,
+  Eraser,
   FilePlus2,
-  FolderOpen,
   Maximize,
   Minimize,
-  Save,
+  Pencil,
   Share2,
   Shuffle,
   SlidersHorizontal,
   Trash2,
-  X,
 } from 'lucide-vue-next'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
+import UiInput from '@/components/ui/UiInput.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import UiPopover from '@/components/ui/UiPopover.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import {
+  WHEEL_TONES,
   decodeShare,
-  encodeShare,
+  faceTurn,
   indexAt,
   labelAngle,
   landing,
   parseEntries,
   shuffled,
-  wheelShareUrl,
+  sliceTone,
   wheelGradient,
+  wheelShareUrl,
   withoutEntry,
 } from '@/data/wheel'
 import { t } from '@/i18n'
@@ -40,17 +43,19 @@ import { funStateKey } from '@/data/fun-storage'
 import { writeJson } from '@/lib/storage'
 import { readFunJson } from '../fun-state'
 import { useFunHost } from '../host'
+import { FUN_TOOLS_TARGET } from '../page-tools'
 import { reducedMotion } from '../randomizer/motion'
 
 /**
- * The wheel (docs/plans/fun.md; the user's pick: design A's look, with what
- * people know from name-wheel sites): a wheel that spins on a click (or
- * Ctrl + Enter) beside a text box, one entry per line. The winner shows in a
- * dialog with Remove; results are kept in a second tab; the list can be
- * shuffled, sorted, saved by name, opened again and shared as a link. The
- * options (spin time, remove the winner, dialog, sound, confetti, hide the
- * entries while spinning) sit in one folded row. All of it lives on this
- * device.
+ * The wheel (docs/plans/fun.md; the owner's pick 2026-11-28: board "Wheel A",
+ * the wheel beside the list, "Many colours"). The wheel spins on a click
+ * anywhere on it, its SPIN hub or Ctrl + Enter, and stops under the amber
+ * pointer at the right, so the winner reads level. The winner card under it
+ * has Remove and Spin again. The list card beside it holds the text box (one
+ * entry per line) and the results. The title row carries the list's name
+ * (a named list saves itself as it is edited), My lists and Share link.
+ * Options fold under the card; Full screen sizes the wheel to the screen.
+ * Everything lives in this browser, one value per device.
  */
 const host = useFunHost()
 // One per device (data/fun-storage.ts): the public page and every account share the lists.
@@ -65,52 +70,95 @@ interface Options {
   confetti: boolean
   hide: boolean
 }
+interface SavedList {
+  id: string
+  name: string
+  text: string
+}
 interface Saved {
   text: string
   results: string[]
   options: Options
   optionsOpen: boolean
-  /** Lists saved by name, newest first. */
-  lists: { name: string; text: string }[]
-  /** The saved list being edited; null for one never saved. */
-  name: string | null
+  /** Lists kept by name, newest first. */
+  lists: SavedList[]
+  /** The kept list being edited; null for the working list (no name). */
+  current: string | null
+  /** The name typed in the title row; '' = not kept. */
+  name: string
 }
+// The winner shows in the card under the wheel; the dialog is an option.
 const DEFAULT_OPTIONS: Options = {
   seconds: 5,
   remove: false,
-  dialog: true,
+  dialog: false,
   sound: true,
   confetti: true,
   hide: false,
 }
 const MAX_RESULTS = 200
 const MAX_LISTS = 30
+const MAX_NAME = 40
 
+const newId = () => Math.random().toString(36).slice(2, 10)
+
+/** What was kept; older values (lists without ids, `name` naming a list) read too. */
 function load(): Saved {
-  const saved = readFunJson<Partial<Saved>>('wheel', host.value.accountId, {})
+  const saved = readFunJson<Partial<Saved> & { name?: unknown }>('wheel', host.value.accountId, {})
   const options = { ...DEFAULT_OPTIONS, ...saved.options }
+  const lists: SavedList[] = Array.isArray(saved.lists)
+    ? saved.lists
+        .filter((l) => l && typeof l.name === 'string' && typeof l.text === 'string')
+        .map((l) => ({ id: typeof l.id === 'string' ? l.id : newId(), name: l.name, text: l.text }))
+    : []
+  const name = typeof saved.name === 'string' ? saved.name : ''
+  const current =
+    lists.find((l) => l.id === saved.current) ?? (name ? lists.find((l) => l.name === name) : null)
   return {
     text: typeof saved.text === 'string' ? saved.text : t('fun.wheel.sample'),
     results: Array.isArray(saved.results) ? saved.results.filter((r) => typeof r === 'string') : [],
     options: { ...options, seconds: SECONDS.includes(options.seconds) ? options.seconds : 5 },
     optionsOpen: saved.optionsOpen === true,
-    lists: Array.isArray(saved.lists)
-      ? saved.lists.filter((l) => l && typeof l.name === 'string' && typeof l.text === 'string')
-      : [],
-    name: typeof saved.name === 'string' ? saved.name : null,
+    lists,
+    current: current?.id ?? null,
+    name: current?.name ?? '',
   }
 }
 const winner = ref<string | null>(null)
 const state = reactive<Saved>(load())
 watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
+// A named list keeps itself: typing a name keeps the list under it, edits
+// follow, and a cleared name makes it the working list again.
+watch(
+  () => [state.name, state.text] as const,
+  ([raw, text]) => {
+    const name = raw.trim().slice(0, MAX_NAME)
+    const at = state.lists.findIndex((l) => l.id === state.current)
+    if (!name) {
+      if (at >= 0) state.lists.splice(at, 1)
+      state.current = null
+      return
+    }
+    if (at >= 0) {
+      const list = state.lists[at]!
+      if (list.name !== name || list.text !== text) state.lists[at] = { ...list, name, text }
+      return
+    }
+    const id = newId()
+    state.lists = [{ id, name, text }, ...state.lists].slice(0, MAX_LISTS)
+    state.current = id
+  },
+)
+
 // A shared link opens its list (the link is then cleaned, so a reload keeps edits).
 function openShared() {
   const shared = decodeShare(location.hash)
   if (!shared?.length) return
-  state.text = shared.join(String.fromCharCode(10))
+  state.current = null
+  state.name = ''
+  state.text = shared.join('\n')
   state.results = []
-  state.name = null
   winner.value = null
   history.replaceState(history.state, '', location.pathname + location.search)
 }
@@ -124,32 +172,55 @@ const tabs = computed(() => [
   { value: 'results' as const, label: t('fun.wheel.results'), count: state.results.length },
 ])
 const secondOptions = SECONDS.map((value) => ({ value, label: `${value} s` }))
+const optionsSummary = computed(
+  () =>
+    `${state.options.seconds} s · ${state.options.sound ? t('fun.wheel.soundOn') : t('fun.wheel.soundOff')}`,
+)
 
 // ------------------------------------------------------------ the wheel's face
 
-const TONES = [
-  'var(--color-surface-overlay)',
-  'var(--color-surface-raised)',
-  'var(--color-surface-base)',
-]
-const face = computed(() =>
-  wheelGradient(entries.value.length, TONES, 'var(--color-border-strong)'),
-)
-/** Past this many the slices are too thin to read. */
-const MAX_LABELS = 80
+const face = computed(() => wheelGradient(entries.value.length, 'rgba(255, 255, 255, 0.85)'))
+
+/** The drawn wheel's diameter (px): label sizes follow it. */
+const wheel = useTemplateRef<HTMLElement>('wheel')
+const diameter = ref(468)
+useResizeObserver(wheel, (resize) => {
+  const width = resize[0]?.contentRect.width
+  if (width) diameter.value = width
+})
+
+/**
+ * Label size: steps down with the count and never outgrows its slice; past
+ * the count where it would be under 9.5px there are no labels (the slices
+ * alone, and the winner card names the winner).
+ */
+const label = computed(() => {
+  const n = entries.value.length
+  const radius = diameter.value / 2
+  const share = n <= 4 ? 0.085 : n <= 8 ? 0.075 : n <= 14 ? 0.065 : n <= 24 ? 0.056 : 0.05
+  // The room between two labels at 62% of the radius.
+  const room = (2 * Math.PI * radius * 0.62) / Math.max(1, n)
+  const size = Math.min(Math.max(10, radius * share), n > 1 ? room * 0.75 : Infinity)
+  return {
+    shown: n > 0 && size >= 9.5,
+    style: { fontSize: `${size.toFixed(1)}px`, maxWidth: `${Math.round(radius * 0.62)}px` },
+  }
+})
 const labels = computed(() => {
   const n = entries.value.length
-  if (n > MAX_LABELS) return []
-  return entries.value.map((text, i) => ({ text, angle: labelAngle(i, n) }))
+  if (n < 2 || !label.value.shown) return []
+  return entries.value.map((text, i) => ({
+    text,
+    angle: labelAngle(i, n),
+    ink: sliceTone(i, n).ink,
+  }))
 })
-const labelSize = computed(() => {
-  const n = entries.value.length
-  return n <= 12 ? '0.875rem' : n <= 24 ? '0.75rem' : n <= 40 ? '0.625rem' : '0.5rem'
-})
+const hubFont = computed(() => `${Math.max(12, diameter.value * 0.045).toFixed(1)}px`)
 
 // ------------------------------------------------------------ the spin
 
-const rotation = ref(0)
+// The first entry starts in the middle of the pointer, not on a line.
+const rotation = ref(entries.value.length ? -180 / entries.value.length : 0)
 const spinning = ref(false)
 const dialog = ref(false)
 let frame = 0
@@ -182,7 +253,6 @@ interface Piece {
   turn: string
 }
 const pieces = ref<Piece[]>([])
-const CONFETTI = ['var(--color-accent)', 'var(--paimon, #f59e0b)', 'var(--color-text-primary)']
 let confettiTimer = 0
 function celebrate() {
   if (!state.options.confetti || reducedMotion()) return
@@ -190,7 +260,7 @@ function celebrate() {
     id,
     left: `${Math.random() * 100}%`,
     delay: `${Math.random() * 0.25}s`,
-    tone: CONFETTI[id % CONFETTI.length]!,
+    tone: WHEEL_TONES[id % WHEEL_TONES.length]!.fill,
     turn: `${Math.round(Math.random() * 720 - 360)}deg`,
   }))
   window.clearTimeout(confettiTimer)
@@ -244,9 +314,11 @@ function spin() {
 
 function removeWinner() {
   if (winner.value !== null) state.text = withoutEntry(state.text, winner.value)
+  winner.value = null
   dialog.value = false
 }
 const winnerListed = computed(() => winner.value !== null && entries.value.includes(winner.value))
+const shownWinner = computed(() => (spinning.value ? null : winner.value))
 
 function onKey(event: KeyboardEvent) {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
@@ -280,46 +352,38 @@ function sortResults() {
   state.results = [...state.results].sort((a, b) => a.localeCompare(b))
 }
 
-const openAnchor = ref<HTMLElement | null>(null)
-const openShown = ref(false)
-const saveAnchor = ref<HTMLElement | null>(null)
-const saveShown = ref(false)
-const saveName = ref('')
+const listsAnchor = ref<HTMLElement | null>(null)
+const listsShown = ref(false)
 
 function newList() {
+  state.current = null
+  state.name = ''
   state.text = ''
   state.results = []
-  state.name = null
   winner.value = null
+  listsShown.value = false
 }
-function openList(list: { name: string; text: string }) {
+function openList(list: SavedList) {
+  state.current = list.id
+  state.name = list.name
   state.text = list.text
   state.results = []
-  state.name = list.name
   winner.value = null
-  openShown.value = false
+  listsShown.value = false
 }
-function deleteList(name: string) {
-  state.lists = state.lists.filter((l) => l.name !== name)
-  if (state.name === name) state.name = null
-}
-function startSave() {
-  saveName.value = state.name ?? ''
-  saveShown.value = true
-}
-function saveList() {
-  const name = saveName.value.trim().slice(0, 40)
-  if (!name) return
-  state.lists = [{ name, text: state.text }, ...state.lists.filter((l) => l.name !== name)].slice(
-    0,
-    MAX_LISTS,
-  )
-  state.name = name
-  saveShown.value = false
+function deleteList(id: string) {
+  state.lists = state.lists.filter((l) => l.id !== id)
+  // The list stays on the wheel, as the working list.
+  if (state.current === id) {
+    state.current = null
+    state.name = ''
+  }
 }
 
 const copied = ref(false)
 let copiedTimer = 0
+/** The link to copy by hand when this browser gives no clipboard; null when not asked. */
+const handLink = ref<string | null>(null)
 async function share() {
   // Always the public page (data/wheel.ts), so the link opens signed out too.
   const url = wheelShareUrl(location.origin, entries.value)
@@ -329,9 +393,11 @@ async function share() {
     window.clearTimeout(copiedTimer)
     copiedTimer = window.setTimeout(() => (copied.value = false), 2000)
   } catch {
-    // No clipboard: the link is put in the address bar to copy by hand.
-    location.hash = `w=${encodeShare(entries.value)}`
+    handLink.value = url
   }
+}
+function selectAll(event: Event) {
+  ;(event.target as HTMLInputElement).select()
 }
 
 const stage = ref<HTMLElement | null>(null)
@@ -347,118 +413,151 @@ function toggleFull() {
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-col gap-4">
-    <div class="flex min-w-0 flex-wrap items-center gap-2">
-      <span class="min-w-0 flex-1 truncate text-sm text-text-secondary">{{
-        state.name ?? $t('fun.wheel.unsaved')
-      }}</span>
-      <UiButton variant="ghost" @click="newList">
-        <FilePlus2 class="size-4" aria-hidden="true" />{{ $t('fun.wheel.new') }}
-      </UiButton>
-      <span ref="openAnchor" class="inline-flex">
-        <UiButton variant="ghost" :disabled="!state.lists.length" @click="openShown = !openShown">
-          <FolderOpen class="size-4" aria-hidden="true" />{{ $t('fun.wheel.open') }}
-        </UiButton>
-      </span>
-      <span ref="saveAnchor" class="inline-flex">
-        <UiButton variant="ghost" :disabled="!entries.length" @click="startSave">
-          <Save class="size-4" aria-hidden="true" />{{ $t('fun.wheel.save') }}
+  <div class="min-w-0">
+    <!-- The title row's tools (components/fun/page-tools.ts). -->
+    <Teleport defer :to="FUN_TOOLS_TARGET">
+      <label class="relative flex min-w-0 flex-[1_1_12rem] max-sm:basis-full sm:max-w-64">
+        <span class="sr-only">{{ $t('fun.wheel.listName') }}</span>
+        <UiInput
+          v-model="state.name"
+          :maxlength="MAX_NAME"
+          :placeholder="$t('fun.wheel.namePlaceholder')"
+          :title="$t('fun.wheel.nameHint')"
+          class="truncate pr-9"
+        />
+        <Pencil
+          class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-text-muted"
+          aria-hidden="true"
+        />
+      </label>
+      <span ref="listsAnchor" class="inline-flex">
+        <UiButton :aria-expanded="listsShown" @click="listsShown = !listsShown">
+          {{ $t('fun.wheel.myLists') }}
+          <ChevronDown class="size-4" aria-hidden="true" />
         </UiButton>
       </span>
       <UiButton :disabled="!entries.length" @click="share">
         <component :is="copied ? Check : Share2" class="size-4" aria-hidden="true" />
         {{ copied ? $t('fun.wheel.copied') : $t('fun.wheel.share') }}
       </UiButton>
-    </div>
+    </Teleport>
 
     <UiPopover
-      :open="openShown"
-      :anchor="openAnchor"
-      :label="$t('fun.wheel.open')"
-      @close="openShown = false"
+      :open="listsShown"
+      :anchor="listsAnchor"
+      :label="$t('fun.wheel.myLists')"
+      align="end"
+      @close="listsShown = false"
     >
-      <ul class="flex max-h-80 w-64 max-w-full flex-col overflow-y-auto p-1">
-        <li v-for="list in state.lists" :key="list.name" class="flex min-w-0 items-center">
-          <button
-            type="button"
-            class="min-h-10 min-w-0 flex-1 truncate rounded-md px-3 text-left text-sm font-medium hover:bg-surface-overlay"
-            @click="openList(list)"
-          >
-            {{ list.name }}
-          </button>
-          <UiIconButton
-            :label="$t('fun.wheel.deleteList', { name: list.name })"
-            @click="deleteList(list.name)"
-          >
-            <Trash2 class="size-4" aria-hidden="true" />
-          </UiIconButton>
-        </li>
-      </ul>
-    </UiPopover>
-    <UiPopover
-      :open="saveShown"
-      :anchor="saveAnchor"
-      :label="$t('fun.wheel.save')"
-      @close="saveShown = false"
-    >
-      <form class="flex w-64 max-w-full flex-col gap-2 p-3" @submit.prevent="saveList">
-        <label class="text-sm font-medium" for="wheel-save-name">{{
-          $t('fun.wheel.listName')
-        }}</label>
-        <input
-          id="wheel-save-name"
-          v-model="saveName"
-          autofocus
-          maxlength="40"
-          class="min-h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-sm"
-        />
-        <UiButton variant="primary" type="submit" :disabled="!saveName.trim()">
-          {{ $t('fun.wheel.save') }}
-        </UiButton>
-      </form>
+      <div class="flex flex-col p-1.5">
+        <button
+          type="button"
+          class="flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-md px-3 text-left text-sm font-semibold text-accent-text hover:bg-surface-overlay"
+          @click="newList"
+        >
+          <FilePlus2 class="size-4 shrink-0" aria-hidden="true" />
+          {{ $t('fun.wheel.newList') }}
+        </button>
+        <div class="my-1 border-t border-border-default" />
+        <ul v-if="state.lists.length" class="flex flex-col">
+          <li v-for="list in state.lists" :key="list.id" class="flex w-full min-w-0 items-center">
+            <button
+              type="button"
+              class="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-md px-3 text-left text-sm hover:bg-surface-overlay"
+              :aria-current="list.id === state.current ? 'true' : undefined"
+              @click="openList(list)"
+            >
+              <Check
+                class="size-4 shrink-0"
+                :class="list.id === state.current ? 'text-accent-text' : 'invisible'"
+                aria-hidden="true"
+              />
+              <span class="min-w-0 flex-1 truncate font-medium">{{ list.name }}</span>
+              <span class="tabular shrink-0 text-xs text-text-muted">{{
+                formatNumber(parseEntries(list.text).length)
+              }}</span>
+            </button>
+            <UiIconButton
+              :label="$t('fun.wheel.deleteList', { name: list.name })"
+              @click="deleteList(list.id)"
+            >
+              <Trash2 class="size-4" aria-hidden="true" />
+            </UiIconButton>
+          </li>
+        </ul>
+        <p v-else class="px-3 py-2.5 text-sm text-text-secondary">
+          {{ $t('fun.wheel.noLists') }}
+        </p>
+      </div>
     </UiPopover>
 
-    <div class="flex min-w-0 flex-wrap items-start gap-5">
-      <!-- The wheel -->
+    <div class="grid min-w-0 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,27.5rem)]">
+      <!-- The wheel and the winner card -->
       <div
         ref="stage"
-        class="relative flex min-w-0 flex-[1_1_22rem] flex-col items-center gap-3"
-        :class="full ? 'justify-center bg-surface-base p-8' : ''"
+        class="wheel-stage flex min-w-0 flex-col items-center gap-5"
+        :class="full ? 'is-full justify-center overflow-auto bg-surface-base px-8 pt-10 pb-6' : ''"
       >
-        <div
-          class="relative aspect-square max-w-full"
-          :class="full ? 'w-[min(78vh,90vw)]' : 'w-[26rem]'"
-        >
-          <span
-            class="absolute -top-2 left-1/2 z-10 size-0 -translate-x-1/2 border-x-[0.8rem] border-t-[1.5rem] border-x-transparent border-t-accent-text"
+        <div class="wheel-box relative aspect-square shrink-0">
+          <!-- The rim stays put and clips; only the face inside turns, so the
+               turned square never reaches past the page's edge. -->
+          <div
+            ref="wheel"
+            class="absolute inset-0 cursor-pointer overflow-hidden rounded-full border-[6px] border-border-strong shadow-lg"
+            :class="!entries.length || spinning ? 'cursor-default' : ''"
             aria-hidden="true"
-          />
-          <button
-            type="button"
-            class="absolute inset-0 overflow-hidden rounded-full border-[6px] border-border-strong will-change-transform disabled:cursor-default"
-            :style="{ background: face, transform: `rotate(${rotation}deg)` }"
-            :disabled="spinning || !entries.length"
-            :aria-label="$t('fun.wheel.spin')"
             @click="spin"
           >
-            <span
-              v-for="(label, i) in labels"
-              :key="i"
-              class="absolute top-1/2 left-1/2 h-0 w-[46%] origin-left"
-              :style="{ transform: `rotate(${label.angle}deg)` }"
-              aria-hidden="true"
+            <div
+              class="absolute inset-0 rounded-full will-change-transform"
+              :style="{ background: face, transform: `rotate(${faceTurn(rotation)}deg)` }"
             >
               <span
-                class="absolute right-2 max-w-[78%] -translate-y-1/2 truncate font-semibold"
-                :style="{ fontSize: labelSize }"
-                >{{ label.text }}</span
+                v-for="(item, i) in labels"
+                :key="i"
+                class="absolute top-1/2 left-1/2 h-0 w-[47%] origin-left"
+                :style="{ transform: `rotate(${item.angle}deg)` }"
               >
-            </span>
-          </button>
+                <span
+                  class="absolute right-[6%] -translate-y-1/2 truncate leading-tight font-semibold"
+                  :style="{ ...label.style, color: item.ink }"
+                  >{{ item.text }}</span
+                >
+              </span>
+            </div>
+          </div>
+          <!-- One entry: one colour, its name level on the pointer's side. -->
           <span
-            class="pointer-events-none absolute top-1/2 left-1/2 size-[14%] -translate-1/2 rounded-full border-4 border-border-strong bg-surface-raised"
+            v-if="entries.length === 1 && label.shown"
+            class="pointer-events-none absolute top-1/2 right-[9%] -translate-y-1/2 truncate text-right leading-tight font-semibold"
+            :style="{ ...label.style, color: sliceTone(0, 1).ink }"
             aria-hidden="true"
-          />
+            >{{ entries[0] }}</span
+          >
+          <button
+            type="button"
+            class="absolute top-1/2 left-1/2 grid size-[23%] -translate-1/2 place-items-center rounded-full border-4 border-border-strong bg-surface-raised font-bold tracking-[0.08em] text-text-primary uppercase shadow-md transition-colors hover:bg-surface-overlay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-default disabled:hover:bg-surface-raised"
+            :style="{ fontSize: hubFont }"
+            :disabled="spinning || !entries.length"
+            :aria-label="$t('fun.wheel.spin')"
+            :title="$t('fun.wheel.hint')"
+            @click="spin"
+          >
+            {{ $t('fun.wheel.hub') }}
+          </button>
+          <svg
+            class="wheel-pointer pointer-events-none absolute top-1/2 -right-3.5 z-10 h-9 w-8 -translate-y-1/2"
+            viewBox="0 0 32 36"
+            aria-hidden="true"
+          >
+            <path
+              d="M2 18 30 3v30z"
+              fill="var(--color-paimon)"
+              stroke="var(--color-surface-base)"
+              stroke-width="2.5"
+              stroke-linejoin="round"
+            />
+          </svg>
           <span
             v-for="piece in pieces"
             :key="piece.id"
@@ -473,104 +572,146 @@ function toggleFull() {
           />
         </div>
 
-        <p class="text-sm text-text-secondary">
-          {{ entries.length ? $t('fun.wheel.hint') : $t('fun.wheel.empty') }}
-        </p>
-
         <section
-          class="flex min-h-24 w-[26rem] max-w-full flex-col items-center justify-center gap-2 rounded-xl border border-border-default bg-surface-raised p-3 text-center shadow-sm"
+          class="winner-card flex min-h-[6.5rem] max-w-full min-w-0 flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border border-border-default bg-surface-raised px-5 py-4 shadow-sm"
           aria-live="polite"
         >
-          <template v-if="winner !== null && !spinning">
-            <p class="text-xs font-semibold tracking-wider text-text-secondary uppercase">
-              {{ $t('fun.wheel.winner') }}
-            </p>
-            <p class="max-w-full text-2xl leading-tight font-bold break-words">{{ winner }}</p>
-            <UiButton v-if="winnerListed" size="sm" @click="removeWinner">
-              <X class="size-4" aria-hidden="true" />{{ $t('fun.wheel.remove') }}
-            </UiButton>
+          <template v-if="shownWinner !== null">
+            <div class="min-w-0 flex-[1_1_10rem]">
+              <p class="text-xs font-semibold tracking-wider text-text-secondary uppercase">
+                {{ $t('fun.wheel.overline') }}
+              </p>
+              <p class="line-clamp-2 text-2xl leading-tight font-bold break-words">
+                {{ shownWinner }}
+              </p>
+            </div>
+            <div class="flex shrink-0 flex-wrap gap-2">
+              <UiButton v-if="winnerListed" @click="removeWinner">
+                {{ $t('fun.wheel.remove') }}
+              </UiButton>
+              <UiButton variant="primary" :disabled="!entries.length" @click="spin">
+                {{ $t('fun.wheel.spinAgain') }}
+              </UiButton>
+            </div>
           </template>
-          <p v-else class="text-sm text-text-muted">
-            {{ spinning ? $t('fun.wheel.spinning') : $t('fun.wheel.notSpun') }}
+          <p v-else class="w-full text-center text-sm text-text-secondary">
+            {{
+              spinning
+                ? $t('fun.wheel.spinning')
+                : entries.length
+                  ? $t('fun.wheel.hint')
+                  : $t('fun.wheel.empty')
+            }}
           </p>
         </section>
 
-        <UiButton variant="ghost" @click="toggleFull">
-          <component :is="full ? Minimize : Maximize" class="size-4" aria-hidden="true" />
-          {{ full ? $t('fun.wheel.exitFull') : $t('fun.wheel.full') }}
+        <UiButton v-if="full" variant="ghost" @click="toggleFull">
+          <Minimize class="size-4" aria-hidden="true" />{{ $t('fun.wheel.exitFull') }}
         </UiButton>
       </div>
 
       <!-- The list -->
-      <div
-        class="flex min-w-0 flex-[1_1_18rem] flex-col gap-3"
-        :class="spinning && state.options.hide ? 'invisible' : ''"
-      >
-        <UiSegmented v-model="tab" :options="tabs" :label="$t('fun.wheel.entries')" fill />
-
-        <template v-if="tab === 'entries'">
-          <div class="flex flex-wrap gap-2">
-            <UiButton :disabled="entries.length < 2" @click="shuffleEntries">
-              <Shuffle class="size-4" aria-hidden="true" />{{ $t('fun.wheel.shuffle') }}
-            </UiButton>
-            <UiButton :disabled="entries.length < 2" @click="sortEntries">
-              <ArrowDownAZ class="size-4" aria-hidden="true" />{{ $t('fun.wheel.sort') }}
-            </UiButton>
-          </div>
-          <label
-            class="text-xs font-semibold tracking-wider text-text-secondary uppercase"
-            for="wheel-entries"
+      <div class="flex min-w-0 flex-col gap-3.5">
+        <section
+          class="flex min-h-[22rem] min-w-0 flex-1 flex-col rounded-xl border border-border-default bg-surface-raised shadow-sm"
+          :class="spinning && state.options.hide ? 'invisible' : ''"
+        >
+          <div
+            class="flex min-w-0 flex-wrap items-center gap-2 border-b border-border-default px-3 py-2.5"
           >
-            {{ $t('fun.wheel.perLine') }}
-          </label>
-          <textarea
-            id="wheel-entries"
-            v-model="state.text"
-            rows="10"
-            spellcheck="false"
-            class="min-h-56 w-full resize-y rounded-lg border border-border-strong bg-surface-raised px-3 py-2 text-sm leading-relaxed"
-          />
-        </template>
-
-        <template v-else>
-          <div class="flex flex-wrap gap-2">
-            <UiButton :disabled="state.results.length < 2" @click="sortResults">
-              <ArrowDownAZ class="size-4" aria-hidden="true" />{{ $t('fun.wheel.sort') }}
-            </UiButton>
-            <UiButton variant="ghost" :disabled="!state.results.length" @click="state.results = []">
-              {{ $t('fun.wheel.clearResults') }}
-            </UiButton>
+            <UiSegmented v-model="tab" :options="tabs" :label="$t('fun.wheel.entries')" />
+            <span class="ml-auto flex shrink-0 items-center">
+              <template v-if="tab === 'entries'">
+                <UiIconButton
+                  :label="$t('fun.wheel.shuffle')"
+                  class="disabled:pointer-events-none disabled:opacity-40"
+                  :disabled="entries.length < 2"
+                  @click="shuffleEntries"
+                >
+                  <Shuffle class="size-5" aria-hidden="true" />
+                </UiIconButton>
+                <UiIconButton
+                  :label="$t('fun.wheel.sort')"
+                  class="disabled:pointer-events-none disabled:opacity-40"
+                  :disabled="entries.length < 2"
+                  @click="sortEntries"
+                >
+                  <ArrowDownAZ class="size-5" aria-hidden="true" />
+                </UiIconButton>
+              </template>
+              <template v-else>
+                <UiIconButton
+                  :label="$t('fun.wheel.sort')"
+                  class="disabled:pointer-events-none disabled:opacity-40"
+                  :disabled="state.results.length < 2"
+                  @click="sortResults"
+                >
+                  <ArrowDownAZ class="size-5" aria-hidden="true" />
+                </UiIconButton>
+                <UiIconButton
+                  :label="$t('fun.wheel.clearResults')"
+                  class="disabled:pointer-events-none disabled:opacity-40"
+                  :disabled="!state.results.length"
+                  @click="state.results = []"
+                >
+                  <Eraser class="size-5" aria-hidden="true" />
+                </UiIconButton>
+              </template>
+            </span>
           </div>
-          <ol
-            v-if="state.results.length"
-            class="flex max-h-96 flex-col overflow-y-auto rounded-lg border border-border-default bg-surface-raised"
-          >
-            <li
-              v-for="(result, i) in state.results"
-              :key="i"
-              class="flex min-w-0 items-center gap-3 border-t border-border-default px-3 py-2 first:border-t-0"
-            >
-              <span class="tabular w-7 shrink-0 text-right text-sm text-text-secondary">{{
-                formatNumber(i + 1)
-              }}</span>
-              <b class="min-w-0 flex-1 truncate text-sm">{{ result }}</b>
-            </li>
-          </ol>
-          <p v-else class="text-sm text-text-secondary">{{ $t('fun.wheel.noResults') }}</p>
-        </template>
 
-        <section class="rounded-xl border border-border-default bg-surface-raised shadow-sm">
+          <div class="flex min-h-0 min-w-0 flex-1 flex-col gap-2.5 p-3.5">
+            <template v-if="tab === 'entries'">
+              <label class="sr-only" for="wheel-entries">{{ $t('fun.wheel.perLine') }}</label>
+              <textarea
+                id="wheel-entries"
+                v-model="state.text"
+                rows="10"
+                spellcheck="false"
+                class="min-h-64 w-full flex-1 resize-y rounded-lg border border-border-strong bg-surface-base px-3.5 py-3 text-sm leading-relaxed font-medium text-text-primary focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none"
+              />
+              <p class="text-xs text-text-muted">{{ $t('fun.wheel.kept') }}</p>
+            </template>
+
+            <template v-else>
+              <ol
+                v-if="state.results.length"
+                class="flex max-h-[26rem] min-w-0 flex-col overflow-y-auto rounded-lg border border-border-default bg-surface-base"
+              >
+                <li
+                  v-for="(result, i) in state.results"
+                  :key="i"
+                  class="flex min-w-0 items-center gap-3 border-t border-border-default px-3 py-2 first:border-t-0"
+                >
+                  <span class="tabular w-7 shrink-0 text-right text-sm text-text-secondary">{{
+                    formatNumber(i + 1)
+                  }}</span>
+                  <b class="min-w-0 flex-1 truncate text-sm">{{ result }}</b>
+                </li>
+              </ol>
+              <p v-else class="py-6 text-center text-sm text-text-secondary">
+                {{ $t('fun.wheel.noResults') }}
+              </p>
+            </template>
+          </div>
+        </section>
+
+        <section
+          class="min-w-0 rounded-xl border border-border-default bg-surface-raised shadow-sm"
+        >
           <button
             type="button"
-            class="flex min-h-12 w-full min-w-0 items-center gap-2 px-3 text-left"
+            class="flex min-h-13 w-full min-w-0 items-center gap-2.5 px-3.5 text-left"
             :aria-expanded="state.optionsOpen"
             @click="state.optionsOpen = !state.optionsOpen"
           >
             <SlidersHorizontal class="size-4 shrink-0" aria-hidden="true" />
-            <b class="min-w-0 flex-1 truncate text-sm">{{ $t('fun.wheel.options') }}</b>
-            <span class="tabular shrink-0 text-xs text-text-secondary"
-              >{{ state.options.seconds }} s</span
-            >
+            <b class="min-w-0 flex-1 truncate text-sm font-semibold">{{
+              $t('fun.wheel.options')
+            }}</b>
+            <span class="tabular min-w-0 shrink truncate text-xs text-text-secondary">{{
+              optionsSummary
+            }}</span>
             <component
               :is="state.optionsOpen ? ChevronUp : ChevronDown"
               class="size-4 shrink-0"
@@ -579,7 +720,7 @@ function toggleFull() {
           </button>
           <div
             v-if="state.optionsOpen"
-            class="flex flex-col border-t border-border-default px-3 py-2"
+            class="flex flex-col border-t border-border-default px-3.5 py-2"
           >
             <div class="flex min-w-0 flex-wrap items-center justify-between gap-2 py-2">
               <span class="text-sm font-medium">{{ $t('fun.wheel.option.seconds') }}</span>
@@ -596,6 +737,10 @@ function toggleFull() {
             <UiSwitch v-model="state.options.hide" :label="$t('fun.wheel.option.hide')" />
           </div>
         </section>
+
+        <UiButton variant="ghost" class="self-start" @click="toggleFull">
+          <Maximize class="size-4" aria-hidden="true" />{{ $t('fun.wheel.full') }}
+        </UiButton>
       </div>
     </div>
 
@@ -608,10 +753,49 @@ function toggleFull() {
         </UiButton>
       </template>
     </UiModal>
+
+    <UiModal :open="handLink !== null" :title="$t('fun.wheel.share')" @close="handLink = null">
+      <p class="text-sm text-text-secondary">{{ $t('fun.wheel.copyByHand') }}</p>
+      <UiInput
+        :model-value="handLink ?? ''"
+        readonly
+        autofocus
+        class="mt-3 font-code"
+        :aria-label="$t('fun.wheel.share')"
+        @focus="selectAll"
+        @click="selectAll"
+      />
+      <template #footer>
+        <UiButton @click="handLink = null">{{ $t('fun.wheel.close') }}</UiButton>
+      </template>
+    </UiModal>
   </div>
 </template>
 
 <style scoped>
+/*
+ * The wheel's size: beside the list up to 26rem, never wider than its column
+ * (less the pointer's reach); in full screen, from the screen's height and
+ * width, leaving room for the top padding, the winner card and the exit
+ * button. The winner card is as wide as the wheel, never narrower than 24rem
+ * where the page allows.
+ */
+.wheel-stage {
+  --wheel: min(26rem, calc(100% - 1.5rem));
+}
+.wheel-stage.is-full {
+  --wheel: min(calc(100dvh - 18rem), calc(100vw - 5rem), 54rem);
+  min-height: 100dvh;
+}
+.wheel-box {
+  width: var(--wheel);
+}
+.winner-card {
+  width: max(var(--wheel), min(24rem, 100%));
+}
+.wheel-pointer {
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.35));
+}
 .confetti {
   animation: confetti 1.5s ease-in forwards;
 }

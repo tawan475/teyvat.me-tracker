@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Haftalık patronlar\nHiçlik Sarmalı\nYadigar zindanı\nKeşfet\nDinginçay Çaydanlığı\nOrtak oyun",
-    "unsaved": "Kaydedilmemiş liste",
-    "new": "Yeni",
-    "open": "Aç",
-    "save": "Kaydet",
     "listName": "Liste adı",
     "deleteList": "{name} listesini sil",
     "share": "Bağlantıyı paylaş",
@@ -233,7 +229,6 @@
     "hint": "Çevirmek için çarka tıkla ya da Ctrl + Enter'a bas",
     "empty": "Çevirmek için giriş ekle",
     "spinning": "Dönüyor…",
-    "notSpun": "Henüz çevrilmedi",
     "winner": "Kazanan belli oldu",
     "remove": "Kaldır",
     "close": "Kapat",
@@ -254,7 +249,27 @@
       "sound": "Ses",
       "confetti": "Konfeti",
       "hide": "Dönerken girişleri gizle"
-    }
+    },
+    "namePlaceholder": "Saklamak için listeye ad ver",
+    "nameHint": "Adı olan bir liste, düzenledikçe Listelerim’e kendiliğinden kaydedilir",
+    "myLists": "Listelerim",
+    "newList": "Yeni liste",
+    "noLists": "Henüz liste yok: saklamak için birine ad ver",
+    "overline": "Kazanan",
+    "spinAgain": "Yeniden çevir",
+    "hub": "Çevir",
+    "kept": "Her satıra bir giriş · yalnızca bu tarayıcıda saklanır",
+    "copyByHand": "Listeyi paylaşmak için bu bağlantıyı kopyala:",
+    "soundOn": "ses açık",
+    "soundOff": "ses kapalı"
   },
-  "publicPitch": "Çıkmış tüm karakterlerden iki rastgele grup"
+  "publicPitch": "Çıkmış tüm karakterlerden iki rastgele grup",
+  "public": {
+    "nav": "Ana menü",
+    "lead": "Genshin Impact için rastgele seçiciler ve bir çark. Ücretsiz, hesap gerekmez.",
+    "openTracker": "Takipçiyi aç",
+    "guestTitle": "Kendi karakterlerinden seç",
+    "guestBody": "Takipçide grup seçici gerçekten sahip olduğun karakterleri kullanır.",
+    "guestButton": "Misafir olarak dene"
+  }
 }

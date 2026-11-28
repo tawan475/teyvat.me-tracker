@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Weekly bosses\nSpiral Abyss\nArtifact domain\nExplore\nSerenitea Pot\nCo-op",
-    "unsaved": "Unsaved list",
-    "new": "New",
-    "open": "Open",
-    "save": "Save",
     "listName": "List name",
     "deleteList": "Delete {name}",
     "share": "Share link",
@@ -233,7 +229,6 @@
     "hint": "Click the wheel to spin, or press Ctrl + Enter",
     "empty": "Add entries to spin",
     "spinning": "Spinning…",
-    "notSpun": "Not spun yet",
     "winner": "We have a winner",
     "remove": "Remove",
     "close": "Close",
@@ -254,7 +249,27 @@
       "sound": "Sound",
       "confetti": "Confetti",
       "hide": "Hide the entries while spinning"
-    }
+    },
+    "namePlaceholder": "Name this list to keep it",
+    "nameHint": "A named list keeps itself in My lists as you edit it",
+    "myLists": "My lists",
+    "newList": "New list",
+    "noLists": "No lists yet: name one to keep it",
+    "overline": "Winner",
+    "spinAgain": "Spin again",
+    "hub": "Spin",
+    "kept": "One entry per line · kept in this browser only",
+    "copyByHand": "Copy this link to share the list:",
+    "soundOn": "sound on",
+    "soundOff": "sound off"
   },
-  "publicPitch": "Two random teams from every released character"
+  "publicPitch": "Two random teams from every released character",
+  "public": {
+    "nav": "Main menu",
+    "lead": "Randomizers and a wheel for Genshin Impact. Free, no account needed.",
+    "openTracker": "Open the tracker",
+    "guestTitle": "Roll from your own characters",
+    "guestBody": "In the tracker the team randomizer uses the characters you really have.",
+    "guestButton": "Try as guest"
+  }
 }

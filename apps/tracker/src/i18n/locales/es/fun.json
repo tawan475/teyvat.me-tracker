@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Jefes semanales\nEspiral del Abismo\nDominio de artefactos\nExplorar\nRelajatetera\nCooperativo",
-    "unsaved": "Lista sin guardar",
-    "new": "Nueva",
-    "open": "Abrir",
-    "save": "Guardar",
     "listName": "Nombre de la lista",
     "deleteList": "Eliminar {name}",
     "share": "Compartir enlace",
@@ -233,7 +229,6 @@
     "hint": "Haz clic en la ruleta para girarla o pulsa Ctrl + Enter",
     "empty": "Añade entradas para girar",
     "spinning": "Girando…",
-    "notSpun": "Aún sin girar",
     "winner": "Tenemos ganador",
     "remove": "Quitar",
     "close": "Cerrar",
@@ -254,7 +249,27 @@
       "sound": "Sonido",
       "confetti": "Confeti",
       "hide": "Ocultar las entradas durante el giro"
-    }
+    },
+    "namePlaceholder": "Pon nombre a la lista para guardarla",
+    "nameHint": "Una lista con nombre se guarda sola en Mis listas mientras la editas",
+    "myLists": "Mis listas",
+    "newList": "Nueva lista",
+    "noLists": "Aún no hay listas: ponle nombre a una para guardarla",
+    "overline": "Ganador",
+    "spinAgain": "Girar otra vez",
+    "hub": "Girar",
+    "kept": "Una entrada por línea · guardada solo en este navegador",
+    "copyByHand": "Copia este enlace para compartir la lista:",
+    "soundOn": "sonido activado",
+    "soundOff": "sonido desactivado"
   },
-  "publicPitch": "Dos equipos al azar entre todos los personajes lanzados"
+  "publicPitch": "Dos equipos al azar entre todos los personajes lanzados",
+  "public": {
+    "nav": "Menú principal",
+    "lead": "Generadores aleatorios y una ruleta para Genshin Impact. Gratis, sin cuenta.",
+    "openTracker": "Abrir el tracker",
+    "guestTitle": "Sortea con tus propios personajes",
+    "guestBody": "En el tracker, el generador de equipos usa los personajes que tienes de verdad.",
+    "guestButton": "Probar como invitado"
+  }
 }

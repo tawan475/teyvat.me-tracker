@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-vue-next'
 import FunCard from '@/components/fun/FunCard.vue'
 import { provideFunHost } from '@/components/fun/host'
 import { FUN_PAGES, funPage, isNewPage } from '@/components/fun/pages'
+import { FUN_TOOLS_ID } from '@/components/fun/page-tools'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
 import { t } from '@/i18n'
@@ -47,11 +48,16 @@ provideFunHost(
     <PageHeader :title="title" />
 
     <template v-if="page">
-      <div class="mb-4 flex min-w-0 items-center gap-x-3">
+      <div class="mb-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-3">
         <UiIconButton :label="$t('fun.title')" :to="to()">
           <ArrowLeft class="size-5" aria-hidden="true" />
         </UiIconButton>
-        <h2 class="min-w-0 flex-1 truncate text-lg font-semibold">{{ title }}</h2>
+        <h2 class="min-w-[8rem] flex-1 truncate text-lg font-semibold">{{ title }}</h2>
+        <!-- A page's own controls (components/fun/page-tools.ts). -->
+        <div
+          :id="FUN_TOOLS_ID"
+          class="flex min-w-0 flex-wrap items-center gap-2 empty:hidden max-sm:w-full"
+        />
       </div>
       <!-- Per account too: a page keeps its own state (a roll, what was set). -->
       <component :is="page.component" :key="`${page.slug}:${account.id}`" />

@@ -367,10 +367,25 @@ restyles the wheel or the boss randomizer.
   own title key (a test checks every `FUN_PAGES` row has one, indexed); an
   unknown `/fun/<slug>` goes to `/fun`; `/randomizer` now goes to
   `/fun/team-randomizer`. The in-app routes are unchanged.
-- **The view:** `views/FunPublicView.vue` holds only structure (hero title
-  and line, the back arrow to the hub, the page). Its frame is /privacy's
-  (public bar, hero over the art, footer), **a placeholder** until the owner
-  picks the public look.
+- **The view:** `views/FunPublicView.vue`, the owner's pick "A" (App look,
+  slim bar; 2026-11-28): never the landing's look (no hero art, no glass, no
+  always-dark page). One solid bar like the app shell's (brand, "/ Fun",
+  language, theme toggle, Sign in, Open the tracker; signed in only Open the
+  tracker; it sets `--app-bar-bottom`), the visitor's theme, the app's
+  content column (`max-w-7xl`). Hub: `h1` "Fun" and one line, the four cards,
+  a "Try as guest" card; a plain footer line (Privacy, Developers, Discord,
+  the fan-project sentence). A page: back arrow, title as `h1`, and the
+  page's own tools at the right (`components/fun/page-tools.ts`: both Fun
+  views hold the `#fun-page-tools` element, a page teleports into it).
+- **The wheel (pick "Wheel A", colours "Many colours", 2026-11-28):** pointer
+  at the right (`POINTER_ANGLE`, `faceTurn` in `data/wheel.ts`, tested), six
+  colours alternating light and dark (`WHEEL_TONES`, an orange closing tone
+  for odd counts, inks checked 4.5:1 in a test), SPIN hub, winner card under
+  the wheel (Remove, Spin again), list card beside it, title-row tools: the
+  list's name typed in place (a named list keeps itself in My lists; a
+  cleared name makes it the working list again), My lists (`UiPopover`
+  `align="end"`), Share link (no clipboard: a dialog with the link). The
+  winner dialog option now starts off.
 - **No account needed:** the pages read where they are from
   `components/fun/host.ts` (`provideFunHost` / `useFunHost`: account id or
   null, whether a roster exists, the team randomizer's storage key, hub and

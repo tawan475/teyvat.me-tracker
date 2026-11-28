@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Boss mingguan\nSpiral Abyss\nDomain artefak\nJelajah\nSerenitea Pot\nCo-op",
-    "unsaved": "Daftar belum disimpan",
-    "new": "Baru",
-    "open": "Buka",
-    "save": "Simpan",
     "listName": "Nama daftar",
     "deleteList": "Hapus {name}",
     "share": "Bagikan tautan",
@@ -233,7 +229,6 @@
     "hint": "Klik roda untuk memutar, atau tekan Ctrl + Enter",
     "empty": "Tambahkan entri untuk memutar",
     "spinning": "Memutar…",
-    "notSpun": "Belum diputar",
     "winner": "Ada pemenangnya",
     "remove": "Keluarkan",
     "close": "Tutup",
@@ -254,7 +249,27 @@
       "sound": "Suara",
       "confetti": "Konfeti",
       "hide": "Sembunyikan entri saat memutar"
-    }
+    },
+    "namePlaceholder": "Beri nama daftar ini untuk menyimpannya",
+    "nameHint": "Daftar bernama tersimpan sendiri di Daftarku saat kamu mengeditnya",
+    "myLists": "Daftarku",
+    "newList": "Daftar baru",
+    "noLists": "Belum ada daftar: beri nama satu untuk menyimpannya",
+    "overline": "Pemenang",
+    "spinAgain": "Putar lagi",
+    "hub": "Putar",
+    "kept": "Satu entri per baris · hanya disimpan di browser ini",
+    "copyByHand": "Salin tautan ini untuk membagikan daftarnya:",
+    "soundOn": "suara nyala",
+    "soundOff": "suara mati"
   },
-  "publicPitch": "Dua party acak dari semua karakter yang sudah rilis"
+  "publicPitch": "Dua party acak dari semua karakter yang sudah rilis",
+  "public": {
+    "nav": "Menu utama",
+    "lead": "Pengacak dan roda putar untuk Genshin Impact. Gratis, tanpa akun.",
+    "openTracker": "Buka pelacak",
+    "guestTitle": "Acak dari karaktermu sendiri",
+    "guestBody": "Di pelacak, pengacak party memakai karakter yang benar-benar kamu punya.",
+    "guestButton": "Coba sebagai tamu"
+  }
 }

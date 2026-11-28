@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Chefes Semanais\nAbismo do Espiral\nDomínio de artefatos\nExplorar\nBule de Relachá\nCooperativo",
-    "unsaved": "Lista não salva",
-    "new": "Nova",
-    "open": "Abrir",
-    "save": "Salvar",
     "listName": "Nome da lista",
     "deleteList": "Excluir {name}",
     "share": "Compartilhar link",
@@ -233,7 +229,6 @@
     "hint": "Clique na roleta para girar ou pressione Ctrl + Enter",
     "empty": "Adicione entradas para girar",
     "spinning": "Girando…",
-    "notSpun": "Ainda não girou",
     "winner": "Temos um vencedor",
     "remove": "Remover",
     "close": "Fechar",
@@ -254,7 +249,27 @@
       "sound": "Som",
       "confetti": "Confete",
       "hide": "Ocultar as entradas durante o giro"
-    }
+    },
+    "namePlaceholder": "Dê um nome à lista para guardá-la",
+    "nameHint": "Uma lista com nome se salva sozinha em Minhas listas enquanto você a edita",
+    "myLists": "Minhas listas",
+    "newList": "Nova lista",
+    "noLists": "Ainda não há listas: dê nome a uma para guardá-la",
+    "overline": "Vencedor",
+    "spinAgain": "Girar de novo",
+    "hub": "Girar",
+    "kept": "Uma entrada por linha · guardada só neste navegador",
+    "copyByHand": "Copie este link para compartilhar a lista:",
+    "soundOn": "som ligado",
+    "soundOff": "som desligado"
   },
-  "publicPitch": "Duas equipes aleatórias com todos os personagens lançados"
+  "publicPitch": "Duas equipes aleatórias com todos os personagens lançados",
+  "public": {
+    "nav": "Menu principal",
+    "lead": "Sorteadores e uma roleta para Genshin Impact. Grátis, sem conta.",
+    "openTracker": "Abrir o rastreador",
+    "guestTitle": "Sorteie com seus próprios personagens",
+    "guestBody": "No rastreador, o sorteador de equipes usa os personagens que você realmente tem.",
+    "guestButton": "Experimentar como convidado"
+  }
 }

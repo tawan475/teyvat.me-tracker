@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Boss settimanali\nAbisso a spirale\nDominio dei manufatti\nEsplora\nSerenteiera\nCo-op",
-    "unsaved": "Lista non salvata",
-    "new": "Nuova",
-    "open": "Apri",
-    "save": "Salva",
     "listName": "Nome della lista",
     "deleteList": "Elimina {name}",
     "share": "Condividi link",
@@ -233,7 +229,6 @@
     "hint": "Clicca sulla ruota per girarla o premi Ctrl + Enter",
     "empty": "Aggiungi voci per girare",
     "spinning": "In rotazione…",
-    "notSpun": "Non ancora girata",
     "winner": "Abbiamo un vincitore",
     "remove": "Rimuovi",
     "close": "Chiudi",
@@ -254,7 +249,27 @@
       "sound": "Suono",
       "confetti": "Coriandoli",
       "hide": "Nascondi le voci durante il giro"
-    }
+    },
+    "namePlaceholder": "Dai un nome alla lista per tenerla",
+    "nameHint": "Una lista con un nome si salva da sola in Le mie liste mentre la modifichi",
+    "myLists": "Le mie liste",
+    "newList": "Nuova lista",
+    "noLists": "Ancora nessuna lista: dai un nome a una per tenerla",
+    "overline": "Vincitore",
+    "spinAgain": "Gira ancora",
+    "hub": "Gira",
+    "kept": "Una voce per riga · salvata solo in questo browser",
+    "copyByHand": "Copia questo link per condividere la lista:",
+    "soundOn": "audio attivo",
+    "soundOff": "audio disattivato"
   },
-  "publicPitch": "Due gruppi casuali tra tutti i personaggi usciti"
+  "publicPitch": "Due gruppi casuali tra tutti i personaggi usciti",
+  "public": {
+    "nav": "Menu principale",
+    "lead": "Generatori casuali e una ruota per Genshin Impact. Gratis, senza account.",
+    "openTracker": "Apri il tracker",
+    "guestTitle": "Estrai dai tuoi personaggi",
+    "guestBody": "Nel tracker il generatore di gruppi usa i personaggi che hai davvero.",
+    "guestButton": "Prova come ospite"
+  }
 }

@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "주간 보스\n나선 비경\n성유물 비경\n탐사\n속세의 주전자\n멀티",
-    "unsaved": "저장하지 않은 목록",
-    "new": "새로 만들기",
-    "open": "열기",
-    "save": "저장",
     "listName": "목록 이름",
     "deleteList": "{name} 삭제",
     "share": "링크 공유",
@@ -233,7 +229,6 @@
     "hint": "룰렛을 클릭하거나 Ctrl + Enter를 눌러 돌립니다",
     "empty": "항목을 추가하면 돌릴 수 있습니다",
     "spinning": "돌아가는 중…",
-    "notSpun": "아직 돌리지 않았습니다",
     "winner": "당첨이 나왔습니다",
     "remove": "제거",
     "close": "닫기",
@@ -254,7 +249,27 @@
       "sound": "소리",
       "confetti": "색종이",
       "hide": "돌아가는 동안 항목 숨기기"
-    }
+    },
+    "namePlaceholder": "이름을 붙이면 저장됩니다",
+    "nameHint": "이름을 붙인 목록은 편집할 때마다 내 목록에 자동으로 저장됩니다",
+    "myLists": "내 목록",
+    "newList": "새 목록",
+    "noLists": "아직 목록이 없습니다. 이름을 붙이면 저장됩니다",
+    "overline": "당첨",
+    "spinAgain": "다시 돌리기",
+    "hub": "돌리기",
+    "kept": "한 줄에 항목 하나 · 이 브라우저에만 저장됩니다",
+    "copyByHand": "이 링크를 복사해 목록을 공유하세요:",
+    "soundOn": "소리 켬",
+    "soundOff": "소리 끔"
   },
-  "publicPitch": "출시된 모든 캐릭터로 무작위 파티 둘"
+  "publicPitch": "출시된 모든 캐릭터로 무작위 파티 둘",
+  "public": {
+    "nav": "메인 메뉴",
+    "lead": "원신용 랜덤 뽑기와 룰렛. 무료이며 계정이 필요 없습니다.",
+    "openTracker": "트래커 열기",
+    "guestTitle": "내 캐릭터로 뽑기",
+    "guestBody": "트래커에서는 파티 랜덤 뽑기가 실제로 보유한 캐릭터를 사용합니다.",
+    "guestButton": "게스트로 사용해 보기"
+  }
 }

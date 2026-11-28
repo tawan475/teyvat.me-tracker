@@ -12,7 +12,9 @@ import UiIconButton from './UiIconButton.vue'
  * in that dialog (the top layer), so it shows above it and stays usable.
  * `autofocus` inside the content takes focus on open (`focus` false skips
  * it: a tap shouldn't pop the phone's keyboard). Holds live updates while
- * open, like a dialog.
+ * open, like a dialog. `align="end"` lines its right edge up with the
+ * anchor's (a control at the end of a row); either way it stays inside the
+ * page, scrollbar excluded.
  */
 const props = withDefaults(
   defineProps<{
@@ -21,8 +23,10 @@ const props = withDefaults(
     label: string
     /** Focus the content's `[autofocus]` element on open. */
     focus?: boolean
+    /** Which edge lines up with the anchor's on wider screens. */
+    align?: 'start' | 'end'
   }>(),
-  { focus: true },
+  { focus: true, align: 'start' },
 )
 const emit = defineEmits<{ close: [] }>()
 useUpdateHold(() => props.open)
@@ -47,13 +51,17 @@ function place() {
   }
   const margin = 8
   const box = anchor.getBoundingClientRect()
-  const width = Math.min(el.offsetWidth || 400, window.innerWidth - 2 * margin)
+  // The page's width without a scrollbar: innerWidth counts it, so a panel
+  // clamped to innerWidth could sit under it.
+  const pageWidth = document.documentElement.clientWidth || window.innerWidth
+  const width = Math.min(el.offsetWidth || 400, pageWidth - 2 * margin)
   const below = window.innerHeight - box.bottom - margin
   const above = box.top - margin
   const height = el.scrollHeight
   const down = below >= height + margin || below >= above
   const room = Math.max(160, (down ? below : above) - margin)
-  const left = Math.min(Math.max(margin, box.left), window.innerWidth - width - margin)
+  const start = props.align === 'end' ? box.right - width : box.left
+  const left = Math.min(Math.max(margin, start), pageWidth - width - margin)
   style.value = {
     left: `${left}px`,
     maxHeight: `${room}px`,

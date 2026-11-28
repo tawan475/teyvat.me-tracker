@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Boss hebdomadaires\nProfondeurs spiralées\nDonjon d'artéfacts\nExplorer\nSérénithéière\nCoop",
-    "unsaved": "Liste non enregistrée",
-    "new": "Nouvelle",
-    "open": "Ouvrir",
-    "save": "Enregistrer",
     "listName": "Nom de la liste",
     "deleteList": "Supprimer {name}",
     "share": "Partager le lien",
@@ -233,7 +229,6 @@
     "hint": "Cliquez sur la roue pour la faire tourner, ou appuyez sur Ctrl + Enter",
     "empty": "Ajoutez des entrées pour tourner",
     "spinning": "Rotation…",
-    "notSpun": "Pas encore tournée",
     "winner": "Nous avons un gagnant",
     "remove": "Retirer",
     "close": "Fermer",
@@ -254,7 +249,27 @@
       "sound": "Son",
       "confetti": "Confettis",
       "hide": "Masquer les entrées pendant la rotation"
-    }
+    },
+    "namePlaceholder": "Nommez la liste pour la garder",
+    "nameHint": "Une liste nommée s’enregistre seule dans Mes listes pendant que vous la modifiez",
+    "myLists": "Mes listes",
+    "newList": "Nouvelle liste",
+    "noLists": "Pas encore de liste : nommez-en une pour la garder",
+    "overline": "Gagnant",
+    "spinAgain": "Relancer",
+    "hub": "Tourner",
+    "kept": "Une entrée par ligne · gardée dans ce navigateur uniquement",
+    "copyByHand": "Copiez ce lien pour partager la liste :",
+    "soundOn": "son activé",
+    "soundOff": "son coupé"
   },
-  "publicPitch": "Deux équipes au hasard parmi tous les personnages sortis"
+  "publicPitch": "Deux équipes au hasard parmi tous les personnages sortis",
+  "public": {
+    "nav": "Menu principal",
+    "lead": "Des tirages au sort et une roue pour Genshin Impact. Gratuit, sans compte.",
+    "openTracker": "Ouvrir le suivi",
+    "guestTitle": "Tirer parmi vos propres personnages",
+    "guestBody": "Dans le suivi, le tirage d’équipes utilise les personnages que vous avez vraiment.",
+    "guestButton": "Essayer en invité"
+  }
 }

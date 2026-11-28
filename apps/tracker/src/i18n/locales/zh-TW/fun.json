@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "週本\n深境螺旋\n聖遺物秘境\n探索\n塵歌壺\n連線",
-    "unsaved": "未儲存的清單",
-    "new": "新增",
-    "open": "開啟",
-    "save": "儲存",
     "listName": "清單名稱",
     "deleteList": "刪除{name}",
     "share": "分享連結",
@@ -233,7 +229,6 @@
     "hint": "點擊轉盤轉動，或按 Ctrl + Enter",
     "empty": "新增項目後即可轉動",
     "spinning": "轉動中…",
-    "notSpun": "尚未轉動",
     "winner": "選出來了",
     "remove": "移除",
     "close": "關閉",
@@ -254,7 +249,27 @@
       "sound": "音效",
       "confetti": "彩紙",
       "hide": "轉動時隱藏項目"
-    }
+    },
+    "namePlaceholder": "為清單取個名字即可保存",
+    "nameHint": "有名字的清單在編輯時會自動保存到「我的清單」",
+    "myLists": "我的清單",
+    "newList": "新增清單",
+    "noLists": "還沒有清單：取個名字就能保存",
+    "overline": "選中",
+    "spinAgain": "再轉一次",
+    "hub": "轉",
+    "kept": "每行一個項目 · 只保存在此瀏覽器中",
+    "copyByHand": "複製此連結來分享清單：",
+    "soundOn": "聲音開",
+    "soundOff": "聲音關"
   },
-  "publicPitch": "從全部已上線角色中隨機兩支隊伍"
+  "publicPitch": "從全部已上線角色中隨機兩支隊伍",
+  "public": {
+    "nav": "主選單",
+    "lead": "原神的隨機器和轉盤。免費，無需帳號。",
+    "openTracker": "開啟追蹤器",
+    "guestTitle": "從你自己的角色中抽取",
+    "guestBody": "在追蹤器裡，隊伍隨機器使用你實際擁有的角色。",
+    "guestButton": "以訪客身分試用"
+  }
 }

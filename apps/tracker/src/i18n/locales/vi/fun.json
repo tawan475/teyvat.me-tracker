@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Thủ lĩnh tuần\nLa Hoàn Thâm Cảnh\nBí Cảnh Thánh Di Vật\nKhám phá\nẤm Trần Ca\nCo-op",
-    "unsaved": "Danh sách chưa lưu",
-    "new": "Mới",
-    "open": "Mở",
-    "save": "Lưu",
     "listName": "Tên danh sách",
     "deleteList": "Xóa {name}",
     "share": "Chia sẻ liên kết",
@@ -233,7 +229,6 @@
     "hint": "Nhấp vào vòng quay để quay, hoặc nhấn Ctrl + Enter",
     "empty": "Thêm mục để quay",
     "spinning": "Đang quay…",
-    "notSpun": "Chưa quay",
     "winner": "Đã có mục trúng",
     "remove": "Gỡ",
     "close": "Đóng",
@@ -254,7 +249,27 @@
       "sound": "Âm thanh",
       "confetti": "Pháo giấy",
       "hide": "Ẩn các mục khi đang quay"
-    }
+    },
+    "namePlaceholder": "Đặt tên để lưu danh sách này",
+    "nameHint": "Danh sách có tên sẽ tự lưu vào Danh sách của tôi khi bạn sửa",
+    "myLists": "Danh sách của tôi",
+    "newList": "Danh sách mới",
+    "noLists": "Chưa có danh sách: đặt tên cho một danh sách để lưu",
+    "overline": "Mục trúng",
+    "spinAgain": "Quay lại",
+    "hub": "Quay",
+    "kept": "Mỗi dòng một mục · chỉ lưu trong trình duyệt này",
+    "copyByHand": "Sao chép liên kết này để chia sẻ danh sách:",
+    "soundOn": "bật âm thanh",
+    "soundOff": "tắt âm thanh"
   },
-  "publicPitch": "Hai đội ngẫu nhiên từ mọi nhân vật đã ra mắt"
+  "publicPitch": "Hai đội ngẫu nhiên từ mọi nhân vật đã ra mắt",
+  "public": {
+    "nav": "Menu chính",
+    "lead": "Công cụ chọn ngẫu nhiên và vòng quay cho Genshin Impact. Miễn phí, không cần tài khoản.",
+    "openTracker": "Mở trình theo dõi",
+    "guestTitle": "Chọn từ nhân vật của chính bạn",
+    "guestBody": "Trong trình theo dõi, công cụ chọn đội ngẫu nhiên dùng những nhân vật bạn thật sự có.",
+    "guestButton": "Dùng thử với tư cách khách"
+  }
 }

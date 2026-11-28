@@ -221,10 +221,6 @@
   },
   "wheel": {
     "sample": "Wochenbosse\nGewundener Abgrund\nArtefakt-Sphäre\nErkunden\nKanne der Vergänglichkeit\nKoop",
-    "unsaved": "Ungespeicherte Liste",
-    "new": "Neu",
-    "open": "Öffnen",
-    "save": "Speichern",
     "listName": "Listenname",
     "deleteList": "{name} löschen",
     "share": "Link teilen",
@@ -233,7 +229,6 @@
     "hint": "Klick auf das Rad, um es zu drehen, oder drück Strg + Enter",
     "empty": "Füg Einträge hinzu, um zu drehen",
     "spinning": "Dreht sich…",
-    "notSpun": "Noch nicht gedreht",
     "winner": "Wir haben einen Gewinner",
     "remove": "Entfernen",
     "close": "Schließen",
@@ -254,7 +249,27 @@
       "sound": "Ton",
       "confetti": "Konfetti",
       "hide": "Einträge beim Drehen ausblenden"
-    }
+    },
+    "namePlaceholder": "Liste benennen, um sie zu behalten",
+    "nameHint": "Eine benannte Liste speichert sich beim Bearbeiten selbst unter Meine Listen",
+    "myLists": "Meine Listen",
+    "newList": "Neue Liste",
+    "noLists": "Noch keine Listen: Benenne eine, um sie zu behalten",
+    "overline": "Gewinner",
+    "spinAgain": "Noch mal drehen",
+    "hub": "Drehen",
+    "kept": "Ein Eintrag pro Zeile · nur in diesem Browser gespeichert",
+    "copyByHand": "Kopiere diesen Link, um die Liste zu teilen:",
+    "soundOn": "Ton an",
+    "soundOff": "Ton aus"
   },
-  "publicPitch": "Zwei zufällige Truppen aus allen veröffentlichten Figuren"
+  "publicPitch": "Zwei zufällige Truppen aus allen veröffentlichten Figuren",
+  "public": {
+    "nav": "Hauptmenü",
+    "lead": "Zufallsgeneratoren und ein Glücksrad für Genshin Impact. Kostenlos, ohne Konto.",
+    "openTracker": "Tracker öffnen",
+    "guestTitle": "Mit deinen eigenen Figuren würfeln",
+    "guestBody": "Im Tracker nimmt der Truppen-Zufallsgenerator die Figuren, die du wirklich hast.",
+    "guestButton": "Als Gast ausprobieren"
+  }
 }

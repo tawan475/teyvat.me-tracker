@@ -3,8 +3,9 @@
  * and a spin that lands on one. Pure geometry and text handling; the
  * component draws and animates.
  *
- * Angles are degrees clockwise from the top, where the pointer is. At
- * rotation 0 entry `i` of `n` covers `[i, i + 1) * 360 / n`.
+ * Angles are degrees clockwise from the top. At rotation 0 entry `i` of `n`
+ * covers `[i, i + 1) * 360 / n`, and the maths' pointer is at the top; the
+ * drawn pointer is at the right (`POINTER_ANGLE`, `faceTurn`).
  */
 
 export const MAX_ENTRIES = 500
@@ -64,15 +65,69 @@ export function landing(
   return least + mod360(-at - least)
 }
 
-/** The wheel's face: slices in the tones given, never the same tone side by side, a line between. */
-export function wheelGradient(n: number, tones: readonly string[], line: string): string {
-  if (n <= 1) return tones[0] ?? 'transparent'
+/**
+ * Where the pointer sits on screen, degrees clockwise from the top: at the
+ * right (3 o'clock), so the winning entry's label reads level, left to right
+ * from the hub outwards. The maths above keeps its pointer at the top; the
+ * drawn face is turned by this much more (`faceTurn`), which puts the same
+ * entry under the drawn pointer.
+ */
+export const POINTER_ANGLE = 90
+
+/** The CSS rotation of the drawn face (degrees clockwise) at `rotation`. */
+export const faceTurn = (rotation: number) => rotation + POINTER_ANGLE
+
+/** Which entry the drawn face shows under the pointer when turned `turn` degrees (the check of `faceTurn`). */
+export function indexOnScreen(turn: number, n: number): number {
+  if (n <= 0) return -1
+  return Math.min(n - 1, Math.floor(mod360(POINTER_ANGLE - turn) / (360 / n)))
+}
+
+/** A slice's fill and the ink of its label (at least 4.5:1 on it). */
+export interface WheelTone {
+  fill: string
+  ink: string
+}
+
+const INK = '#0f172a'
+const WHITE = '#ffffff'
+
+/**
+ * The slices' colours, the same in both themes: light and dark in turn, so
+ * neighbours differ in lightness and never by hue alone (the site's
+ * colour-blind rule). Dark ink on the light ones, white on the dark ones.
+ */
+export const WHEEL_TONES: readonly WheelTone[] = [
+  { fill: '#38bdf8', ink: INK },
+  { fill: '#4338ca', ink: WHITE },
+  { fill: '#fbbf24', ink: INK },
+  { fill: '#0f766e', ink: WHITE },
+  { fill: '#f9a8d4', ink: INK },
+  { fill: '#1d4ed8', ink: WHITE },
+]
+
+/**
+ * The last slice of an odd count: it sits between a dark slice and the first
+ * (light) one, so it takes a mid tone, lighter than every dark tone and darker
+ * than every light one.
+ */
+export const CLOSING_TONE: WheelTone = { fill: '#ea580c', ink: INK }
+
+/** Slice `i` of `n`'s colours. */
+export function sliceTone(i: number, n: number): WheelTone {
+  if (n > 1 && n % 2 === 1 && i === n - 1) return CLOSING_TONE
+  return WHEEL_TONES[i % WHEEL_TONES.length]!
+}
+
+/** The wheel's face: each slice in its tone, a thin line between two. */
+export function wheelGradient(n: number, line: string): string {
+  if (n <= 0) return 'transparent'
+  if (n === 1) return sliceTone(0, 1).fill
   const slice = 360 / n
-  const edge = Math.min(0.4, slice / 8)
+  const edge = Math.min(0.35, slice / 8)
   const stops: string[] = []
   for (let i = 0; i < n; i++) {
-    // An odd count would put the first tone beside itself where the wheel closes.
-    const tone = tones.length > 2 && n % 2 && i === n - 1 ? tones[2]! : tones[i % 2]!
+    const tone = sliceTone(i, n).fill
     const from = i * slice
     const to = (i + 1) * slice
     stops.push(`${line} ${from}deg ${from + edge}deg`, `${tone} ${from + edge}deg ${to}deg`)
@@ -80,7 +135,7 @@ export function wheelGradient(n: number, tones: readonly string[], line: string)
   return `conic-gradient(${stops.join(', ')})`
 }
 
-/** How a label's centre line is turned: along the middle of its slice, reading outwards. */
+/** How a label's centre line is turned on the face: along the middle of its slice, reading outwards. */
 export const labelAngle = (index: number, n: number) => (index + 0.5) * (360 / n) - 90
 
 // ------------------------------------------------------------ share link

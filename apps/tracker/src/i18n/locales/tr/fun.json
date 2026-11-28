@@ -86,7 +86,12 @@
     "where": {
       "land": "Kara",
       "water": "Su altı"
-    }
+    },
+    "leaveOut": "Dışarıda bırak",
+    "details": "Düşman ayrıntıları",
+    "fight": "{n} rakip",
+    "hint": "Dışarıda bırakmak için bir boss’a tıkla veya birkaçının üzerinden sürükle.",
+    "announce": "Çıkan: {name}"
   },
   "cards": {
     "draw": "Kart çek",

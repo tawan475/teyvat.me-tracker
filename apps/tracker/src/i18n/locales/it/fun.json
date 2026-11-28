@@ -86,7 +86,12 @@
     "where": {
       "land": "Terra",
       "water": "Sott'acqua"
-    }
+    },
+    "leaveOut": "Escludi",
+    "details": "Dettagli nemico",
+    "fight": "{n} da sconfiggere",
+    "hint": "Fai clic su un boss per escluderlo, o trascina su più boss.",
+    "announce": "Estratto: {name}"
   },
   "cards": {
     "draw": "Pesca le carte",

@@ -86,7 +86,12 @@
     "where": {
       "land": "Trên cạn",
       "water": "Dưới nước"
-    }
+    },
+    "leaveOut": "Loại ra",
+    "details": "Chi tiết kẻ địch",
+    "fight": "Đánh {n} con",
+    "hint": "Nhấn vào một boss để loại ra, hoặc kéo qua nhiều boss.",
+    "announce": "Kết quả: {name}"
   },
   "cards": {
     "draw": "Rút thẻ",

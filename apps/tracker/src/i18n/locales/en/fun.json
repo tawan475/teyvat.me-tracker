@@ -86,7 +86,12 @@
     "where": {
       "land": "Land",
       "water": "Underwater"
-    }
+    },
+    "leaveOut": "Leave it out",
+    "details": "Enemy details",
+    "fight": "{n} to fight",
+    "hint": "Click a boss to leave it out, or drag across several.",
+    "announce": "Rolled: {name}"
   },
   "cards": {
     "draw": "Draw cards",

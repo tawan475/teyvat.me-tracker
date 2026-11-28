@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { loadFarming } from '@gdt/game-data/farming'
-import { Dices, SearchX, Undo2 } from 'lucide-vue-next'
+import { localLegendLevel } from '@gdt/game-data/enemies'
+import { Ban, Dices, Info, SearchX, Undo2 } from 'lucide-vue-next'
 import FilterChip from '@/components/ui/FilterChip.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiEmpty from '@/components/ui/UiEmpty.vue'
@@ -9,18 +10,22 @@ import UiError from '@/components/ui/UiError.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import {
   BOSS_KINDS,
+  BOSS_REEL_MS,
   BOSS_WHERES,
   bossPool,
   bossWhere,
   listsBoss,
   pickOne,
+  reelOf,
+  type BossEntry,
   type BossKind,
   type BossWhere,
 } from '@/data/boss-randomizer'
 import { loadEnemyData } from '@/data/enemies'
+import type { LegendView } from '@/data/local-legends'
 import { useResource } from '@/data/use-resource'
 import { locale } from '@/i18n/locale'
-import { gameIcon, loadGameIcons } from '@/lib/assets'
+import { loadGameIcons } from '@/lib/assets'
 import { formatNumber } from '@/lib/format'
 import { funStateKey } from '@/data/fun-storage'
 import { writeJson } from '@/lib/storage'
@@ -28,15 +33,20 @@ import { readFunJson } from '../fun-state'
 import { useFunHost } from '../host'
 import { useBenchDrag } from '../randomizer/bench-drag'
 import { play, reducedMotion } from '../randomizer/motion'
+import BossStage, { type BossSpin } from './BossStage.vue'
 import BossTile from './BossTile.vue'
 
+const EnemyDialog = defineAsyncComponent(() => import('@/components/collections/EnemyDialog.vue'))
+
 /**
- * The boss randomizer (docs/plans/fun.md; the user's pick: design C, made
- * like the team randomizer): the roll's answer on top, "Roll a boss" with
- * Undo, then the pool: kind and land / underwater filters, and every boss as
- * a tile where a click, or a drag across several, leaves bosses out. Game
- * data only, so it is the same for every account; what was last set is
- * remembered per device.
+ * The boss randomizer (docs/plans/fun.md; the user's pick: design B, "one
+ * slot, like the team randomizer"): on top the rolled boss as one big tile a
+ * roll runs a reel of pictures through (BossStage), its kind, name and
+ * subtitle beside it with "Leave it out" and "Enemy details" (the site's
+ * enemy dialog, from game data alone); "Roll a boss" with Undo; then the
+ * pool: kind and land / underwater filters, and every boss as a tile where a
+ * click, or a drag across several, leaves bosses out. Game data only, so it
+ * is the same for every account; what was last set is remembered per device.
  */
 const host = useFunHost()
 // One per device (data/fun-storage.ts): the public page and every account share it.
@@ -51,7 +61,7 @@ const resource = useResource(
       loadFarming(),
       loadGameIcons(),
     ])
-    return bossPool(data.enemies, data.names, english.names, farming.bosses)
+    return { data, pool: bossPool(data.enemies, data.names, english.names, farming.bosses) }
   },
 )
 
@@ -73,7 +83,7 @@ function load(): Saved {
 const state = reactive<Saved>(load())
 watch(state, (value) => writeJson(storageKey, value), { deep: true })
 
-const all = computed(() => resource.data.value ?? [])
+const all = computed(() => resource.data.value?.pool ?? [])
 const shown = computed(() => all.value.filter((b) => listsBoss(b, state.kinds, state.wheres)))
 const benched = computed(() => new Set(state.benched))
 const pool = computed(() => shown.value.filter((b) => !benched.value.has(b.key)))
@@ -110,50 +120,35 @@ useBenchDrag(grid, {
 
 const result = ref<string | null>(null)
 const history = ref<(string | null)[]>([])
-/** The tile the roll is passing over. */
-const lit = ref<string | null>(null)
 const dice = ref<HTMLElement | null>(null)
-const card = ref<HTMLElement | null>(null)
-let timer = 0
+const spin = ref<BossSpin | null>(null)
+/** While the reel runs: the text, the buttons and the pool's ring wait for it to stop. */
+const spinning = ref(false)
+let spinId = 0
 
-const STEPS = 9
-const STEP_MS = 70
-
-function land(key: string) {
-  lit.value = null
-  result.value = key
-  play(card.value, [{ transform: 'scale(0.97)' }, { transform: 'scale(1)' }], 180)
-}
-
-/** A click while the roll runs rolls again at once. */
+/** A click while the reel runs rolls again at once (the stage ends the old reel). */
 function roll() {
-  window.clearTimeout(timer)
   const picked = pickOne(
     pool.value.length > 1 ? pool.value.filter((b) => b.key !== result.value) : pool.value,
   )
   if (!picked) return
   history.value = [...history.value.slice(-49), result.value]
+  result.value = picked.key
   play(dice.value, [{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], 420)
-  if (reducedMotion() || pool.value.length < 3) return land(picked.key)
-  let step = 0
-  const tick = () => {
-    if (step++ >= STEPS) return land(picked.key)
-    lit.value = pickOne(pool.value.filter((b) => b.key !== lit.value))?.key ?? null
-    timer = window.setTimeout(tick, STEP_MS + step * 8)
-  }
-  tick()
+  const through = reducedMotion() ? [] : reelOf(pool.value, picked.key)
+  spinning.value = through.length > 0
+  spin.value = { id: ++spinId, kind: 'roll', through, duration: BOSS_REEL_MS }
 }
 function undo() {
   if (!history.value.length) return
-  window.clearTimeout(timer)
-  lit.value = null
   result.value = history.value[history.value.length - 1] ?? null
   history.value = history.value.slice(0, -1)
+  spinning.value = false
+  spin.value = { id: ++spinId, kind: 'snap', through: [], duration: 0 }
 }
-onBeforeUnmount(() => window.clearTimeout(timer))
 
 const hit = computed(() => all.value.find((b) => b.key === result.value) ?? null)
-// The first roll is free: the page opens with an answer.
+// The first roll is free and still: the page opens with an answer.
 watch(
   () => pool.value.length > 0 && result.value === null,
   (ready) => {
@@ -161,6 +156,44 @@ watch(
   },
   { immediate: true },
 )
+
+function leaveOut() {
+  const key = result.value
+  if (key && !benched.value.has(key)) state.benched = [...state.benched, key]
+}
+
+// ------------------------------------------------------------ enemy details
+
+/** The site's enemy dialog, opened on the rolled boss (game data only). */
+const details = ref<BossEntry | null>(null)
+const detailEnemy = computed(() => {
+  const boss = details.value
+  const data = resource.data.value?.data
+  if (!boss || !data || boss.codex == null) return null
+  return data.enemies.enemies.find((e) => e.id === boss.codex) ?? null
+})
+const detailLegend = computed<LegendView | null>(() => {
+  const boss = details.value
+  const data = resource.data.value?.data
+  if (!boss || !data || boss.kind !== 'legend') return null
+  const id = Number(boss.key.slice(2))
+  const legend = data.enemies.legends.find((l) => l.id === id)
+  if (!legend) return null
+  const text = data.names.legend(id)
+  return {
+    id,
+    name: text.name || boss.name,
+    subtitle: text.subtitle,
+    description: text.description,
+    members: legend.monsters.map((stats, i) => ({ icon: legend.icons[i] ?? '', stats })),
+  }
+})
+/** A legend fights at the top World Level's level (Lv. 103 at World Level 9); the rest at 90. */
+const detailLevel = computed(() => {
+  const levels = resource.data.value?.data.enemies.worldLevels ?? []
+  return detailLegend.value && levels.length ? localLegendLevel(levels.length, levels) : 90
+})
+const hasDetails = (boss: BossEntry) => boss.codex != null || boss.kind === 'legend'
 </script>
 
 <template>
@@ -171,7 +204,7 @@ watch(
     @retry="resource.reload()"
   />
   <div v-else-if="!resource.data.value" aria-busy="true" class="flex flex-col gap-4">
-    <UiSkeleton class="h-40 w-full" />
+    <UiSkeleton class="h-56 w-full" />
     <UiSkeleton class="h-14 w-full" />
     <UiSkeleton class="h-96 w-full" />
   </div>
@@ -179,34 +212,49 @@ watch(
   <div v-else class="flex min-w-0 flex-col gap-4">
     <!-- The answer -->
     <section
-      ref="card"
-      class="flex min-h-36 min-w-0 flex-wrap items-center gap-x-5 gap-y-3 rounded-xl border border-border-default bg-surface-raised p-4 shadow-sm"
-      aria-live="polite"
+      class="flex min-w-0 flex-col items-center gap-5 rounded-xl border border-border-default bg-surface-raised p-4 shadow-sm sm:flex-row sm:items-center sm:gap-6 sm:p-5"
       :aria-label="$t('fun.boss.rolled')"
     >
       <template v-if="hit">
-        <span
-          class="flex h-28 w-36 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-sunken"
-          aria-hidden="true"
+        <div class="w-[min(12.5rem,70%)] shrink-0 sm:w-[12.5rem]">
+          <BossStage :boss="hit" :spin="spin" @start="spinning = true" @end="spinning = false" />
+        </div>
+        <div
+          class="flex w-full min-w-0 flex-1 flex-col items-center gap-2 text-center sm:items-start sm:text-left"
         >
-          <img
-            v-for="(icon, i) in hit.icons.slice(0, 2)"
-            :key="`${hit.key}:${i}`"
-            :src="gameIcon(icon)"
-            alt=""
-            class="h-full min-w-0 object-contain"
-            :class="hit.icons.length > 1 ? 'w-1/2' : 'w-full'"
-          />
-        </span>
-        <div class="flex min-w-0 flex-[1_1_14rem] flex-col gap-1">
-          <p class="text-xs font-semibold tracking-wider text-text-secondary uppercase">
-            {{ $t(`fun.boss.kind.${hit.kind}`) }} · {{ $t(`fun.boss.where.${bossWhere(hit)}`) }}
-          </p>
-          <p class="text-2xl leading-tight font-bold break-words">{{ hit.name }}</p>
-          <p v-if="hit.subtitle" class="text-sm text-text-secondary">{{ hit.subtitle }}</p>
+          <!-- Hidden (keeping its height) while the reel runs: the text would give it away. -->
+          <div
+            class="flex min-w-0 flex-col gap-1 transition-opacity duration-150 motion-reduce:transition-none"
+            :class="spinning ? 'opacity-0' : ''"
+            :aria-hidden="spinning || undefined"
+          >
+            <p class="text-xs font-semibold tracking-wider text-text-secondary uppercase">
+              {{ $t(`fun.boss.kind.${hit.kind}`) }} · {{ $t(`fun.boss.where.${bossWhere(hit)}`) }}
+            </p>
+            <p class="text-2xl leading-tight font-bold break-words sm:text-4xl">{{ hit.name }}</p>
+            <p v-if="hit.subtitle" class="text-sm text-text-secondary">{{ hit.subtitle }}</p>
+          </div>
+          <div class="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
+            <UiButton v-if="hasDetails(hit)" :disabled="spinning" @click="details = hit">
+              <Info class="size-4" aria-hidden="true" />
+              {{ $t('fun.boss.details') }}
+            </UiButton>
+            <UiButton
+              variant="ghost"
+              :disabled="spinning || benched.has(hit.key)"
+              @click="leaveOut"
+            >
+              <Ban class="size-4" aria-hidden="true" />
+              {{ $t('fun.boss.leaveOut') }}
+            </UiButton>
+          </div>
         </div>
       </template>
-      <p v-else class="text-sm text-text-secondary">{{ $t('fun.boss.empty') }}</p>
+      <p v-else class="py-10 text-sm text-text-secondary">{{ $t('fun.boss.empty') }}</p>
+      <!-- Said once the reel stops. -->
+      <p class="sr-only" aria-live="polite">
+        {{ hit && !spinning ? $t('fun.boss.announce', { name: hit.name }) : '' }}
+      </p>
     </section>
 
     <!-- Roll -->
@@ -233,7 +281,7 @@ watch(
       class="flex min-w-0 flex-col gap-3 rounded-xl border border-border-default bg-surface-raised p-3 shadow-sm sm:p-4"
       :aria-label="$t('fun.randomizer.pool.label')"
     >
-      <div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+      <div class="flex min-w-0 flex-wrap items-center gap-2">
         <div
           class="flex min-w-0 flex-wrap gap-2"
           role="group"
@@ -249,7 +297,23 @@ watch(
             {{ $t(`fun.boss.kind.${kind}`) }}
           </FilterChip>
         </div>
-        <span class="tabular ml-auto text-sm text-text-secondary">
+        <span class="mx-1 h-6 w-px shrink-0 bg-border-strong" aria-hidden="true" />
+        <div
+          class="flex min-w-0 flex-wrap gap-2"
+          role="group"
+          :aria-label="$t('fun.boss.whereTitle')"
+        >
+          <FilterChip
+            v-for="{ where, n } in whereCounts"
+            :key="where"
+            :pressed="state.wheres.includes(where)"
+            :count="n"
+            @toggle="state.wheres = toggle(state.wheres, where)"
+          >
+            {{ $t(`fun.boss.where.${where}`) }}
+          </FilterChip>
+        </div>
+        <span class="tabular ml-auto pl-2 text-sm text-text-secondary">
           <i18n-t keypath="fun.randomizer.pool.count" scope="global">
             <template #n
               ><b class="text-base font-semibold text-text-primary">{{
@@ -260,23 +324,6 @@ watch(
           </i18n-t>
         </span>
       </div>
-      <div
-        class="flex min-w-0 flex-wrap gap-2"
-        role="group"
-        :aria-label="$t('fun.boss.whereTitle')"
-      >
-        <FilterChip
-          v-for="{ where, n } in whereCounts"
-          :key="where"
-          :pressed="state.wheres.includes(where)"
-          :count="n"
-          @toggle="state.wheres = toggle(state.wheres, where)"
-        >
-          {{ $t(`fun.boss.where.${where}`) }}
-        </FilterChip>
-      </div>
-
-      <hr class="border-border-default" />
 
       <UiEmpty v-if="!shown.length" :title="$t('achievements.noMatches')">
         <template #icon><SearchX aria-hidden="true" /></template>
@@ -285,28 +332,35 @@ watch(
       <div
         v-show="shown.length"
         ref="grid"
-        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,6.5rem),1fr))] gap-2 select-none [-webkit-touch-callout:none] sm:grid-cols-[repeat(auto-fill,minmax(min(100%,8rem),1fr))] sm:gap-2.5"
+        class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,5.5rem),1fr))] gap-2 select-none [-webkit-touch-callout:none] sm:grid-cols-[repeat(auto-fill,minmax(min(100%,7.5rem),1fr))] sm:gap-2.5"
       >
         <BossTile
           v-for="(boss, index) in shown"
           :key="boss.key"
           :boss="boss"
           :banned="benched.has(boss.key)"
-          :hit="boss.key === result && lit === null"
-          :lit="boss.key === lit"
+          :hit="boss.key === result && !spinning"
           :priority="index < 24"
           :data-bench-key="boss.key"
           :label="
             $t(
               benched.has(boss.key) ? 'fun.randomizer.pool.unbench' : 'fun.randomizer.pool.bench',
-              {
-                name: boss.name,
-              },
+              { name: boss.name },
             )
           "
           @toggle="toggleBench(boss.key)"
         />
       </div>
+      <p v-if="shown.length" class="text-xs text-text-muted">{{ $t('fun.boss.hint') }}</p>
     </section>
+
+    <EnemyDialog
+      v-if="details && (detailEnemy || detailLegend)"
+      :enemy="detailEnemy"
+      :legend="detailLegend"
+      :data="resource.data.value.data"
+      :level="detailLevel"
+      @close="details = null"
+    />
   </div>
 </template>

@@ -86,7 +86,12 @@
     "where": {
       "land": "陆地",
       "water": "水下"
-    }
+    },
+    "leaveOut": "排除",
+    "details": "敌人详情",
+    "fight": "需击败{n}个",
+    "hint": "点击首领即可排除，或拖动以排除多个。",
+    "announce": "抽中：{name}"
   },
   "cards": {
     "draw": "抽取卡牌",

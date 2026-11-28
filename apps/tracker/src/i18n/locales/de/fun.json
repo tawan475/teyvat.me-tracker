@@ -86,7 +86,12 @@
     "where": {
       "land": "Land",
       "water": "Unter Wasser"
-    }
+    },
+    "leaveOut": "Auslassen",
+    "details": "Gegnerdetails",
+    "fight": "{n} im Kampf",
+    "hint": "Klicke auf einen Boss, um ihn auszulassen, oder ziehe über mehrere.",
+    "announce": "Ausgewürfelt: {name}"
   },
   "cards": {
     "draw": "Karten ziehen",

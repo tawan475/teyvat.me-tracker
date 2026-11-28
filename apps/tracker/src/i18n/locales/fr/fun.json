@@ -86,7 +86,12 @@
     "where": {
       "land": "Terre",
       "water": "Sous l'eau"
-    }
+    },
+    "leaveOut": "Exclure",
+    "details": "Détails de l'ennemi",
+    "fight": "{n} à combattre",
+    "hint": "Cliquez sur un boss pour l’exclure, ou faites glisser sur plusieurs.",
+    "announce": "Tirage : {name}"
   },
   "cards": {
     "draw": "Tirer des cartes",

@@ -86,7 +86,12 @@
     "where": {
       "land": "Tierra",
       "water": "Bajo el agua"
-    }
+    },
+    "leaveOut": "Dejar fuera",
+    "details": "Detalles del enemigo",
+    "fight": "{n} a derrotar",
+    "hint": "Haz clic en un jefe para dejarlo fuera o arrastra sobre varios.",
+    "announce": "Sorteado: {name}"
   },
   "cards": {
     "draw": "Sacar cartas",

@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { loadEnemies, loadEnemyNames } from '@gdt/game-data/enemies'
 import { loadFarming } from '@gdt/game-data/farming'
-import { BOSS_KINDS, UNDERWATER, bossPool, listsBoss, pickOne } from '../boss-randomizer'
+import {
+  BOSS_KINDS,
+  BOSS_REEL,
+  UNDERWATER,
+  bossPool,
+  fightSize,
+  listsBoss,
+  otherIcons,
+  pickOne,
+  reelOf,
+} from '../boss-randomizer'
 
 async function pool() {
   const [enemies, names, farming] = await Promise.all([
@@ -53,5 +63,29 @@ describe('the boss randomizer', () => {
     expect(pickOne(['a', 'b'], () => 0)).toBe('a')
     expect(pickOne(['a', 'b'], () => 0.9999999)).toBe('b')
     expect(pickOne(['a', 'b'], () => 1)).toBe('b')
+  })
+
+  it('counts the monsters of a fight and shows the different ones small', async () => {
+    expect(fightSize({ icons: [] })).toBe(1)
+    expect(fightSize({ icons: ['a', 'a'] })).toBe(2)
+    expect(otherIcons({ icons: ['a', 'a'] })).toEqual([])
+    expect(otherIcons({ icons: ['a', 'b', 'b'] })).toEqual(['b'])
+    expect(otherIcons({ icons: ['a'] })).toEqual([])
+    const list = await pool()
+    expect(list.some((b) => fightSize(b) === 3)).toBe(true)
+  })
+
+  it('runs the reel past pictured bosses, never one twice in a row or the result last', () => {
+    const pool = ['a', 'b', 'c', 'd'].map((key) => ({ key, icons: [key] }))
+    for (let seed = 0; seed < 50; seed++) {
+      let n = seed
+      const random = () => (n = (n * 9301 + 49297) % 233280) / 233280
+      const reel = reelOf([...pool, { key: 'bare', icons: [] }], 'a', BOSS_REEL, random)
+      expect(reel).toHaveLength(BOSS_REEL)
+      expect(reel.every((b) => b.icons.length)).toBe(true)
+      for (let i = 1; i < reel.length; i++) expect(reel[i]!.key).not.toBe(reel[i - 1]!.key)
+      expect(reel.at(-1)!.key).not.toBe('a')
+    }
+    expect(reelOf(pool.slice(0, 1), 'a')).toEqual([])
   })
 })

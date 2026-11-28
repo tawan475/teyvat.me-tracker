@@ -86,7 +86,12 @@
     "where": {
       "land": "Darat",
       "water": "Bawah air"
-    }
+    },
+    "leaveOut": "Keluarkan",
+    "details": "Detail musuh",
+    "fight": "{n} untuk dilawan",
+    "hint": "Klik boss untuk mengeluarkannya, atau seret melewati beberapa.",
+    "announce": "Hasil acak: {name}"
   },
   "cards": {
     "draw": "Ambil kartu",

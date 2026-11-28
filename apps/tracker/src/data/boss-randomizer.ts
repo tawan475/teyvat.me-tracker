@@ -114,3 +114,45 @@ export function listsBoss(
 export function pickOne<T>(list: readonly T[], random: () => number = Math.random): T | null {
   return list.length ? list[Math.min(list.length - 1, Math.floor(random() * list.length))]! : null
 }
+
+/** How many monsters the fight has (a pair of Local Legends: 2; one legend: 3). */
+export const fightSize = (boss: Pick<BossEntry, 'icons'>): number => Math.max(1, boss.icons.length)
+
+/**
+ * The pictures shown small beside the first: the fight's other monsters
+ * that look different. A pair that shares one picture shows none.
+ */
+export function otherIcons(boss: Pick<BossEntry, 'icons'>): string[] {
+  const first = boss.icons[0]
+  return [...new Set(boss.icons)].filter((icon) => icon !== first)
+}
+
+/** How many pictures the roll's reel runs through before it stops. */
+export const BOSS_REEL = 12
+/** How long the reel runs, ms. */
+export const BOSS_REEL_MS = 1600
+
+/**
+ * The bosses the reel runs past, in order, before it stops on `result`:
+ * random picks of `pool`, no picture twice in a row and none the same as
+ * the result just before it (so each tick reads as a new boss). Only those
+ * with a picture; empty when the pool has fewer than two of them.
+ */
+export function reelOf<T extends Pick<BossEntry, 'key' | 'icons'>>(
+  pool: readonly T[],
+  result: string,
+  count = BOSS_REEL,
+  random: () => number = Math.random,
+): T[] {
+  const pictured = pool.filter((b) => b.icons.length)
+  if (pictured.length < 2) return []
+  const out: T[] = []
+  for (let i = 0; i < count; i++) {
+    const before = out[i - 1]?.key
+    // The last one sits just above the result.
+    const after = i === count - 1 ? result : null
+    const choices = pictured.filter((b) => b.key !== before && b.key !== after)
+    out.push(pickOne(choices.length ? choices : pictured, random)!)
+  }
+  return out
+}

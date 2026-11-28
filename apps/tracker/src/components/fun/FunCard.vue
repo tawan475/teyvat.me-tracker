@@ -30,7 +30,8 @@ defineProps<{
       </span>
       <UiBadge v-if="isNew" tone="accent">{{ $t('fun.new') }}</UiBadge>
     </span>
-    <span class="mt-auto flex min-w-0 items-center gap-1">
+    <!-- Under the icon, not pushed to the foot: a two-line pitch on one card would lift its title above its neighbours'. -->
+    <span class="flex min-w-0 items-center gap-1">
       <span class="line-clamp-2 min-w-0 leading-snug font-semibold break-words">{{ title }}</span>
       <ChevronRight
         class="size-5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5"
